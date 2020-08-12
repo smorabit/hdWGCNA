@@ -1,4 +1,3 @@
-
 #' construct_metacells
 #'
 #' This function takes a Seurat object and constructs averaged 'metacells' based
@@ -13,7 +12,7 @@
 #' @export
 #' @examples
 #' construct_metacells(pbmc)
-construct_metacells <- function(seurat_obj, k=50, name='agg', reduction='umap', assay='RNA', slot='data'){
+construct_metacells <- function(seurat_obj, name='agg', k=50, reduction='umap', assay='RNA', slot='data'){
 
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
@@ -66,11 +65,62 @@ construct_metacells <- function(seurat_obj, k=50, name='agg', reduction='umap', 
   new_exprs <- (exprs_old %*% mask) / k
   colnames(new_exprs) <- paste0(name, '_', 1:ncol(new_exprs))
   rownames(cell_sample) <- paste0(name, '_', 1:ncol(new_exprs))
+  colnames(cell_sample) <- paste0('knn_', 1:ncol(cell_sample))
 
   # make seurat obj:
   seurat_aggr <- CreateSeuratObject(
     counts = new_exprs
   )
-  list(seurat_aggr, cell_sample)
+  seurat_aggr
 
+}
+
+#' metacells_by_groups
+#'
+#' This function takes a Seurat object and constructs averaged 'metacells' based
+#' on neighboring cells in provided groupings, such as cluster or cell type.
+#' @param seurat_obj A Seurat object
+#' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed. Default = 'seurat_clusters'
+#' @param k Number of nearest neighbors to aggregate. Default = 50
+#' @param name A string appended to resulting metalcells. Default = 'agg'
+#' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
+#' @param assay Assay to extract data for aggregation. Default = 'RNA'
+#' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' metacells_by_groups(pbmc)
+metacells_by_groups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, reduction='umap', assay='RNA', slot='data'){
+
+  # should replace this apply with something faster
+  if(length(group.by) > 1){
+    seurat_obj$metacell_grouping <- apply(seurat_obj@meta.data[, group.by], 1, paste, collapse='_')
+  } else {
+    seurat_obj$metacell_grouping <- seurat_obj@meta.data[[group.by]]
+  }
+
+  groupings <- unique(seurat_obj$metacell_grouping)
+
+  # split seurat obj by groupings
+  seurat_list <- lapply(groupings, function(x){seurat_obj[,seurat_obj$metacell_grouping == x]})
+  names(seurat_list) <- groupings
+
+  # construct metacells
+  out <- future_mapply(scWGCNA::construct_metacells, seurat_list, groupings, MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot))
+  names(out) <- groupings
+
+  # merge seurat objects:
+  for(i in 1:length(out)){
+    if(length(group.by) > 1){
+      cur_groups <- unlist(strsplit(groupings[i], '_'))
+      for(j in length(group.by)){
+        out[[groupings[i]]]@meta.data[[group.by[j]]] <- cur_groups[j]
+      }
+    } else{
+      out[[groupings[i]]]@meta.data[[group.by]] <- groupings[i]
+    }
+  }
+
+  seurat_merged <- merge(out[[1]], out[2:length(out)])
+  seurat_merged
 }
