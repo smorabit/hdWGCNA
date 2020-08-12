@@ -91,7 +91,7 @@ construct_metacells <- function(seurat_obj, name='agg', k=50, reduction='umap', 
 #' @examples
 #' metacells_by_groups(pbmc)
 metacells_by_groups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, reduction='umap', assay='RNA', slot='data'){
-
+  
   # should replace this apply with something faster
   if(length(group.by) > 1){
     seurat_obj$metacell_grouping <- apply(seurat_obj@meta.data[, group.by], 1, paste, collapse='_')
@@ -113,7 +113,7 @@ metacells_by_groups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50,
   for(i in 1:length(out)){
     if(length(group.by) > 1){
       cur_groups <- unlist(strsplit(groupings[i], '_'))
-      for(j in length(group.by)){
+      for(j in 1:length(group.by)){
         out[[groupings[i]]]@meta.data[[group.by[j]]] <- cur_groups[j]
       }
     } else{
