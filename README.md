@@ -34,6 +34,12 @@ Now you can install the scWGCNA package using `devtools`:
 devtools::install_github('smorabit/scWGCNA')
 ```
 
+## Citation
+
+If scWGCNA is useful in your research, please consider citing our publication.
+
+* [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease](https://www.nature.com/articles/s41588-021-00894-z)
+
 ## scWGCNA tutorial
 
 Here I will walk you through how to go from a processed Seurat object and then
