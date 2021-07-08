@@ -40,13 +40,13 @@ If scWGCNA is useful in your research, please consider citing our publication.
 
 * [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease](https://www.nature.com/articles/s41588-021-00894-z)
 
-## scWGCNA tutorial
+# scWGCNA tutorial
 
 Here I will walk you through how to go from a processed Seurat object and then
 to metacells. If you already have a clustered dataset, you can skip the next two sections down to
 the "Constructing metacells" section.
 
-### Clustering and dimensionality reduction
+## Clustering and dimensionality reduction
 
 First, I collected several datasets from published snRNA-seq studies of the human
 brain in health and disease, totaling over 500k single-nucleus transcriptomes. This
@@ -162,15 +162,12 @@ The following UMAP shows the clusters that we just computed using online iNMF.
 
 ![Clustered snRNA-seq dataset](./tutorial_images/umap_liger_clusters.png)
 
-### Subset a specific cell-type of interest.
+## Subset a specific cell-type of interest.
 
 In order to identify co-expression modules within a given cell-type, we repeat the
 above analysis using only a subset of the data. Here we are interested in doing this
 analysis in oligodendrocyte lineage cells, including oligodendrocyte progenitors and
 mature oligodendrocytes.
-
-
-# ODC + OPC analysis
 
 ```{r eval=FALSE}
 
@@ -257,7 +254,7 @@ clusters based on known marker genes.
 
 ![ODC UMAP](./tutorial_images/umap_odc_group.png)
 
-### Constructing ***metacells***
+## Constructing ***metacells***
 
 We are now ready to construct metacells. To save on memory, I am only using highly
 variable genes to construct metacells and to perform downstream WGCNA. Your downstream
@@ -341,7 +338,7 @@ the aggregation process. Now we are ready to do some WGCNA.
 ![metacell UMAP](./tutorial_images/metacell_umap_group.png)
 
 
-### WGCNA
+## Run WGCNA
 
 First we format the data for WGCNA.
 
@@ -522,12 +519,12 @@ dev.off()
 
 ![ODC WGCNA Dendrogram](./tutorial_images/dendro.png)
 
-### Visualizations
+## Visualizations
 
 Here I will show some more visualizations you can use to show the results of the
 co-expression analysis:
 
-#### Module Trajectories:
+### Module Trajectories:
 
 
 We plot the distribution of module eigengenes in each of the differnt ODC subgroups and
@@ -561,7 +558,7 @@ dev.off()
 
 ![Module Eigengenes](./tutorial_images/MEs.png)
 
-#### Network Plots
+### Network Plots
 
 We can plot the most connected genes in each module using a network plot:
 
