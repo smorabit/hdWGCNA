@@ -1,4 +1,4 @@
-#' construct_metacells
+#' ConstructMetacells
 #'
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells.
@@ -8,11 +8,27 @@
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' construct_metacells(pbmc)
-construct_metacells <- function(seurat_obj, name='agg', k=50, reduction='umap', assay='RNA', slot='data', meta=NULL){
+#' ConstructMetacells(pbmc)
+ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', assay='RNA', slot='counts',  meta=NULL, return_metacell=FALSE){
+
+  # check reduction
+  if(!(reduction %in% names(seurat_obj@reductions))){
+    stop(paste0("Invalid reduction (", reduction, "). Reductions in Seurat object: ", paste(names(seurat_obj@reductions), collapse=', ')))
+  }
+
+  # check assay
+  if(!(assay %in% names(seurat_obj@assays))){
+    stop(paste0("Invalid assay (", assay, "). Assays in Seurat object: ", paste(names(seurat_obj@assays), collapse=', ')))
+  }
+
+  # check slot
+  if(!(slot %in% c('counts', 'data', 'scale.data'))){
+    stop(paste0("Invalid slot (", slot, "). Valid options for slot: counts, data, scale.data "))
+  }
 
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
@@ -78,23 +94,70 @@ construct_metacells <- function(seurat_obj, name='agg', k=50, reduction='umap', 
     for(x in meta_names){
       seurat_aggr@meta.data[[x]] <- meta[[x]]
     }
-  }
+  } else(
+    warning('meta not found')
+  )
 
   # add seurat metacell object to the main seurat object:
-  seurat_obj@misc$wgcna_metacell_obj <- seurat_aggr
-
-  # add other info
-  if(is.null(seurat_obj@misc$wgcna_params)){
-    seurat_obj@misc$wgcna_params <- list('metacell_k' = k)
+  if(return_metacell){
+    out <- seurat_aggr
   } else{
-    seurat_obj@misc$wgcna_params[["metacell_k"]] <- k
-  }
+    seurat_obj@misc$wgcna_metacell_obj <- seurat_aggr
 
-  seurat_obj
+    # add other info
+    if(is.null(seurat_obj@misc$wgcna_params)){
+      seurat_obj@misc$wgcna_params <- list(
+        'metacell_k' = k,
+        'metacell_reduction' = reduction,
+        'metacell_slot' = slot,
+        'metacell_assay' = assay
+      )
+    } else{
+      seurat_obj@misc$wgcna_params[["metacell_k"]] <- k
+      seurat_obj@misc$wgcna_params[["metacell_reduction"]] <- reduction
+      seurat_obj@misc$wgcna_params[["metacell_slot"]] <- slot
+      seurat_obj@misc$wgcna_params[["metacell_assay"]] <- assay
+    }
+
+    out <- seurat_obj
+  }
+  out
 
 }
 
-#' metacells_by_groups
+#' NormalizeMetacells
+#'
+#' Wrapper function to run Seurat's NormalizeData function on the metacell object.
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' NormalizeMetadata
+NormalizeMetacells <- function(seurat_obj, ...){
+  seurat_obj@misc$wgcna_metacell_obj <- NormalizeData(seurat_obj@misc$wgcna_metacell_obj, ...)
+}
+
+#' ScaleMetacells
+#'
+#' Wrapper function to run Seurat's ScaleData function on the metacell object.
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ScaleMetadata
+ScaleMetacells <- function(seurat_obj, ...){
+  if(!exists("features")){
+    features = VariableFeatures(seurat_obj)
+  }
+  print(features)
+  seurat_obj@misc$wgcna_metacell_obj <- ScaleData(seurat_obj@misc$wgcna_metacell_obj, ...)
+}
+
+
+
+#' MetacellsByGroups
 #'
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells in provided groupings, such as cluster or cell type.
@@ -108,44 +171,73 @@ construct_metacells <- function(seurat_obj, name='agg', k=50, reduction='umap', 
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' metacells_by_groups(pbmc)
-metacells_by_groups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, reduction='umap', assay='RNA', slot='data'){
+#' MetacellsByGroups(pbmc)
+MetacellsByGroups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, reduction='umap', assay='RNA', slot='counts'){
 
-  # should replace this apply with something faster
+  # setup grouping variables
   if(length(group.by) > 1){
-    seurat_obj$metacell_grouping <- apply(seurat_obj@meta.data[, group.by], 1, paste, collapse='_')
+    seurat_meta <- seurat_obj@meta.data[,group.by]
+    for(col in colnames(seurat_meta)){
+      seurat_meta[[col]] <- as.character(seurat_meta[[col]])
+    }
+    seurat_obj$metacell_grouping <- apply(seurat_meta, 1, paste, collapse='_')
   } else {
-    seurat_obj$metacell_grouping <- seurat_obj@meta.data[[group.by]]
+    seurat_obj$metacell_grouping <- as.character(seurat_obj@meta.data[[group.by]])
   }
-
   groupings <- unique(seurat_obj$metacell_grouping)
+  print(groupings)
+
+  # unique meta-data for each group
+  meta_df <- as.data.frame(do.call(rbind, strsplit(groupings, '_')))
+  colnames(meta_df) <- group.by
+
+  # list of meta-data to pass to each metacell seurat object
+  meta_list <- lapply(1:nrow(meta_df), function(i){
+    x <- list(as.character(meta_df[i,]))[[1]]
+    names(x) <- colnames(meta_df)
+    x
+  })
 
   # split seurat obj by groupings
   seurat_list <- lapply(groupings, function(x){seurat_obj[,seurat_obj$metacell_grouping == x]})
   names(seurat_list) <- groupings
 
   # construct metacells
-  out <- future_mapply(scWGCNA::construct_metacells, seurat_list, groupings, MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot))
-  names(out) <- groupings
+  metacell_list <- mapply(
+    ConstructMetacells,
+    seurat_obj = seurat_list,
+    name = groupings,
+    meta = meta_list,
+    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE)
+  )
+  names(metacell_list) <- groupings
 
-  # merge seurat objects:
-  for(i in 1:length(out)){
-    if(length(group.by) > 1){
-      cur_groups <- unlist(strsplit(groupings[i], '_'))
-      for(j in 1:length(group.by)){
-        out[[groupings[i]]]@meta.data[[group.by[j]]] <- cur_groups[j]
-      }
-    } else{
-      out[[groupings[i]]]@meta.data[[group.by]] <- groupings[i]
-    }
+  # combine metacell objects
+  metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+
+  # add seurat metacell object to the main seurat object:
+  seurat_obj@misc$wgcna_metacell_obj <- metacell_obj
+
+  # add other info
+  if(is.null(seurat_obj@misc$wgcna_params)){
+    seurat_obj@misc$wgcna_params <- list(
+      'metacell_k' = k,
+      'metacell_reduction' = reduction,
+      'metacell_slot' = slot,
+      'metacell_assay' = assay,
+      'metacell_groups' = group.by
+    )
+  } else{
+    seurat_obj@misc$wgcna_params[["metacell_k"]] <- k
+    seurat_obj@misc$wgcna_params[["metacell_reduction"]] <- reduction
+    seurat_obj@misc$wgcna_params[["metacell_slot"]] <- slot
+    seurat_obj@misc$wgcna_params[["metacell_assay"]] <- assay
   }
-
-  seurat_merged <- merge(out[[1]], out[2:length(out)])
-  seurat_merged
+  seurat_obj
 }
 
 
-#' select_WGCNA_genes
+#' SelectNetworkGenes
 #'
 #' This function
 #' on neighboring cells in provided groupings, such as cluster or cell type.
@@ -156,8 +248,8 @@ metacells_by_groups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50,
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' metacells_by_groups(pbmc)
-select_WGCNA_genes <- function(seurat_obj, type="variable", fraction=0.05, gene_list=NULL){
+#' MetacellsByGroups(pbmc)
+SelectNetworkGenes <- function(seurat_obj, type="variable", fraction=0.05, gene_list=NULL){
 
   # validate inputs:
   if(!(type %in% c("variable", "fraction", "all", "custom"))){
