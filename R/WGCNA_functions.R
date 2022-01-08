@@ -22,11 +22,11 @@ SelectNetworkGenes <- function(seurat_obj, type="variable", fraction=0.05, gene_
   if(type == "fraction"){
 
     # binarize counts matrix
-    expr_mat <- GetAssayData(cur_seurat, slot='counts')
+    expr_mat <- GetAssayData(seurat_obj, slot='counts')
     expr_mat[expr_mat>0] <- 1
 
     # identify genes that are expressed in at least some fraction of cells
-    gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(cur_seurat));
+    gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
     gene_list <- rownames(seurat_obj)[gene_filter]
 
   } else if(type == "variable"){
@@ -77,9 +77,13 @@ SelectNetworkGenes <- function(seurat_obj, type="variable", fraction=0.05, gene_
 #' @examples
 #' GetDatExpr(pbmc)
 GetDatExpr <- function(seurat_obj, ...){
+
+  # get parameters from seurat object
   params <- seurat_obj@misc$wgcna_params
   genes_use <- seurat_obj@misc$wgcna_genes
   assay <- params$metacell_assay
+
+  # get expression data from seurat obj
   datExpr <- as.data.frame(
     Seurat::GetAssayData(
       seurat_obj,
@@ -87,14 +91,12 @@ GetDatExpr <- function(seurat_obj, ...){
       slot='data'
     )[genes_use,]
   )
-  tic("transposing dataset")
-  datExpr <- as.data.frame(t(datExpr))
-  toc()
-  # only get good genes:
-  tic("Running goodGenes")
-  datExpr <- datExpr[,WGCNA::goodGenes(datExpr, ...)]
-  toc()
 
+  # transpose data
+  datExpr <- as.data.frame(t(datExpr))
+
+  # only get good genes:
+  datExpr <- datExpr[,WGCNA::goodGenes(datExpr, ...)]
   datExpr
 }
 
@@ -185,15 +187,24 @@ TestSoftPowers <- function(seurat_obj, powers=c(seq(1,10,by=1), seq(12,30, by=2)
 
 #' ConstructNetwork
 #'
-#' This function gets the expression matrix from the metacell object.
+#' This function constructs a co-expression network from a Seurat object
 #'
 #' @param seurat_obj A Seurat object
-#' @param power
+#' @param soft_power
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' ConstructNetwork(pbmc)
-ConstructNetwork <- function(seurat_obj, soft_power=NULL, cur_celltype='net'){
+ConstructNetwork <- function(
+  seurat_obj, soft_power=NULL, cur_celltype='net', tom_outdir="TOM",
+  blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
+  consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
+  TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
+  sampleForScaling = TRUE, sampleForScalingFactor = 1000,
+  useDiskCache = TRUE, chunkSize = NULL,
+  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
+  mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
+){
 
   # get datExpr from seurat object
   datExpr <- seurat_obj@misc$wgcna_datExpr
@@ -205,32 +216,180 @@ ConstructNetwork <- function(seurat_obj, soft_power=NULL, cur_celltype='net'){
   multiExpr[[cur_celltype]] <- list(data=datExpr)
   checkSets(multiExpr) # check data size
 
+  if(!dir.exists(tom_outdir)){
+    dir.create(tom_outdir)
+  }
 
 
-  net=blockwiseConsensusModules(multiExpr, blocks = NULL,
-                                           maxBlockSize = 30000, ## This should be set to a smaller size if the user has limited RAM
-                                           randomSeed = 12345,
-                                           corType = "pearson", ## no use for bicor
-                                           power = soft_power,
-                                           consensusQuantile = 0.3,
-                                           networkType = "signed",
-                                           TOMType = "unsigned",
-                                           TOMDenom = "min",
-                                           scaleTOMs = TRUE, scaleQuantile = 0.8,
-                                           sampleForScaling = TRUE, sampleForScalingFactor = 1000,
-                                           useDiskCache = TRUE, chunkSize = NULL,
-                                           deepSplit = 4,
-                                           pamStage=FALSE,
-                                           detectCutHeight = 0.995, minModuleSize = 50,
-                                           mergeCutHeight = 0.2,
-                                           saveConsensusTOMs = TRUE,
-                                           consensusTOMFilePattern = "ConsensusTOM-block.%b.rda")
-
+  net <- WGCNA::blockwiseConsensusModules(
+    multiExpr,
+    power = soft_power,
+    blocks = blocks,
+    maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
+    randomSeed = randomSeed,
+    corType = corType,
+    consensusQuantile = consensusQuantile,
+    networkType = networkType,
+    TOMType = TOMType,
+    TOMDenom = TOMDenom,
+    scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
+    sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+    useDiskCache = useDiskCache, chunkSize = chunkSize,
+    deepSplit = deepSplit,
+    pamStage=pamStage,
+    detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
+    mergeCutHeight = mergeCutHeight,
+    saveConsensusTOMs = saveConsensusTOMs,
+    consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
 
   # rename consensusTOM file:
-  file.rename('ConsensusTOM-block.1.rda', paste0('data/', gsub(' ', '_',cur_celltype), '_ConsensusTOM-block.1.rda'))
+  file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',cur_celltype), '_ConsensusTOM-block.1.rda'))
 
+  # add network parameters to the Seurat object:
+
+  net_params <- list(
+    power = soft_power,
+    blocks = blocks,
+    maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
+    randomSeed = randomSeed,
+    corType = corType,
+    consensusQuantile = consensusQuantile,
+    networkType = networkType,
+    TOMType = TOMType,
+    TOMDenom = TOMDenom,
+    scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
+    sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+    useDiskCache = useDiskCache, chunkSize = chunkSize,
+    deepSplit = deepSplit,
+    pamStage=pamStage,
+    detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
+    mergeCutHeight = mergeCutHeight,
+    saveConsensusTOMs = saveConsensusTOMs
+  )
+
+  seurat_obj@misc$wgcna_params$net_params <- net_params
+
+  # add network to seurat obj
   seurat_obj@misc$wgcna_net <- net
   seurat_obj
+
+}
+
+#' ComputeModuleEigengene
+#'
+#' Internal helper function that computes module eigengene for a single module.
+#'
+#' @param seurat_obj A Seurat object
+#' @param cur_mod name of a module found in seurat_obj@misc$wgcna_net$colors
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ConstructNetwork(pbmc)
+ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verbose=TRUE, ...){
+
+  # get genes in this module
+  cur_genes <- names(seurat_obj@misc$wgcna_net$colors[seurat_obj@misc$wgcna_net$colors == cur_mod])
+
+  # run PCA with Seurat function
+  cur_pca <- Seurat::RunPCA(
+    seurat_obj,
+    features = cur_genes,
+    reduction.key=paste0('pca', cur_mod),
+    verbose=verbose, ...
+  )@reductions$pca@cell.embeddings
+
+  # add this PCA as its own reduction in the seurat object
+  seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
+    embeddings = cur_pca,
+    assay = Seurat::DefaultAssay(seurat_obj)
+  )
+
+  # run harmony
+  if(!is.null(group.by.vars)){
+    cur_harmony <- harmony::RunHarmony(
+      seurat_obj,
+      group.by.vars=group.by.vars,
+      reduction="ME", verbose=verbose, ...
+    )@reductions$harmony@cell.embeddings
+
+    # add harmonized PCA as its own reduction in the seurat object
+    seurat_obj@reductions$ME_harmony <- Seurat::CreateDimReducObject(
+      embeddings = cur_harmony,
+      assay = Seurat::DefaultAssay(seurat_obj)
+    )
+  }
+
+  # return seurat object
+  seurat_obj
+
+}
+
+#' ModuleEigengenes
+#'
+#' Computes module eigengenes for all WGCNA co-expression modules
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#'  ModuleEigengenes(pbmc)
+ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
+
+  me_list <- list()
+  harmonized_me_list <- list()
+  modules <- unique(seurat_obj@misc$wgcna_net$colors)
+
+  # loop over modules:
+  for(cur_mod in modules){
+
+    print(cur_mod)
+
+    # compute module eigengenes for this module
+    seurat_obj <- ComputeModuleEigengene(
+      seurat_obj = seurat_obj, cur_mod = cur_mod,
+      group.by.vars=group.by.vars, verbose=verbose, ...
+    )
+
+    # add module eigengene to ongoing list
+    cur_me <- seurat_obj@reductions$ME@cell.embeddings[,1]
+    me_list[[cur_mod]] <- cur_me
+
+    # run harmony
+    if(!is.null(group.by.vars)){
+      # add module eigengene to ongoing list
+      cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[,1]
+      harmonized_me_list[[cur_mod]] <- cur_harmonized_me
+    }
+  }
+
+  # merge module eigengene lists into a dataframe, add to Seurat obj
+  me_df <- do.call(cbind, me_list)
+  seurat_obj@misc$wgcna_MEs <- me_df
+
+  # merge harmonized module eigengene lists into a dataframe, add to Seurat obj
+  if(!is.null(group.by.vars)){
+    hme_df <- do.call(cbind, harmonized_me_list)
+    seurat_obj@misc$wgcna_hMEs <- hme_df
+  }
+
+  # remove temp dim reductions by setting to NULL
+  seurat_obj@reductions$ME <- NULL
+  seurat_obj@reductions$ME_harmony <- NULL
+
+  # return seurat object
+  seurat_obj
+}
+
+
+#' ModuleConnectivity
+#'
+#' Computes intramodular connectivity (kME) based on module eigengenes.
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ModuleConnectivity(pbmc)
+ModuleConnectivity <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
 
 }
