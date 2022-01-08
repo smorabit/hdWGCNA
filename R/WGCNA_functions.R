@@ -380,6 +380,24 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
   seurat_obj
 }
 
+#' GetMEs
+#'
+#' Function to retrieve module eigengens from Seurat object.
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#'  ModuleEigengenes(pbmc)
+GetMEs <- function(seurat_obj, harmonized=TRUE){
+  if(harmonized == TRUE && !is.null(seurat_obj@misc$wgcna_hMEs)){
+    MEs <- seurat_obj@misc$wgcna_hMEs
+  } else{
+    MEs <- seurat_obj@misc$wgcna_MEs
+  }
+  MEs
+}
+
 
 #' ModuleConnectivity
 #'
@@ -390,6 +408,37 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
 #' @export
 #' @examples
 #' ModuleConnectivity(pbmc)
-ModuleConnectivity <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
+ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, ...){
+
+  # get expression matrix
+  genes_use <- names(seurat_obj@misc$wgcna_net$colors)
+
+  # datExpr for full expression dataset
+  # transpose expression data and subset by genes used for WGCNA
+  datExpr <- t(GetAssayData(
+    seurat_obj,
+    assay=seurat_obj@misc$wgcna_params$metacell_assay,
+    slot=seurat_obj@misc$wgcna_params$metacell_slot
+  ))[,genes_use]
+
+  # get MEs:
+  MEs <- GetMEs(seurat_obj=seurat_obj, harmonized=harmonized)
+
+  tic("SignedKME")
+  kMEs <- signedKME(
+    datExpr,
+    MEs,
+    outputColumnName = "kME",
+    corFnc = "bicor",
+    ...
+  )
+  toc()
+
+  # add module color to the kMEs table
+  kMEs <- cbind(cur_seurat@misc$wgcna_net$colors, kMEs)
+  colnames(kMEs) <- c('module', colnames(MEs))
+
+  seurat_obj@misc$wgcna_kMEs <- kMEs
+  seurat_obj
 
 }
