@@ -9,7 +9,7 @@
 #' @examples
 #' NormalizeMetadata
 NormalizeMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc$wgcna_metacell_obj <- Seurat::NormalizeData(seurat_obj@misc$wgcna_metacell_obj, ...)
+  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::NormalizeData(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
 }
 
@@ -26,7 +26,7 @@ ScaleMetacells <- function(seurat_obj, ...){
   if(!exists("features")){
     features = VariableFeatures(seurat_obj)
   }
-  seurat_obj@misc$wgcna_metacell_obj <- Seurat::ScaleData(seurat_obj@misc$wgcna_metacell_obj, ...)
+  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::ScaleData(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
 }
 
@@ -40,7 +40,7 @@ ScaleMetacells <- function(seurat_obj, ...){
 #' @examples
 #' NormalizeMetadata
 RunPCAMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc$wgcna_metacell_obj <- Seurat::RunPCA(seurat_obj@misc$wgcna_metacell_obj, ...)
+  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::RunPCA(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
 }
 
@@ -54,7 +54,7 @@ RunPCAMetacells <- function(seurat_obj, ...){
 #' @examples
 #' NormalizeMetadata
 RunHarmonyMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc$wgcna_metacell_obj <- harmony::RunHarmony(seurat_obj@misc$wgcna_metacell_obj, ...)
+  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- harmony::RunHarmony(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
 }
 
@@ -68,7 +68,7 @@ RunHarmonyMetacells <- function(seurat_obj, ...){
 #' @examples
 #' NormalizeMetadata
 RunUMAPMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc$wgcna_metacell_obj <- Seurat::RunUMAP(seurat_obj@misc$wgcna_metacell_obj, ...)
+  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::RunUMAP(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
 }
 
@@ -83,5 +83,5 @@ RunUMAPMetacells <- function(seurat_obj, ...){
 #' @examples
 #' NormalizeMetadata
 DimPlotMetacells <- function(seurat_obj, ...){
-  Seurat::DimPlot(seurat_obj@misc$wgcna_metacell_obj, ...)
+  Seurat::DimPlot(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
 }

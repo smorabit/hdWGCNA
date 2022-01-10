@@ -15,8 +15,8 @@ PlotDendrogram <- function(
 ){
 
   WGCNA::plotDendroAndColors(
-    seurat_obj@misc$wgcna_net$dendrograms[[1]],
-    as.character(seurat_obj@misc$wgcna_net$colors),
+    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$dendrograms[[1]],
+    as.character(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors),
     groupLabels=groupLabels,
     dendroLabels = dendroLabels,
     hang = hang,
@@ -59,6 +59,8 @@ MEFeaturePlot<- function(
   for(cur_mod in modules){
 
     cur_color <- cur_mod
+    print(cur_color)
+    print(head(plot_df[,cur_mod]))
 
     # reset the range of the plot:
     plot_range <- plot_df[,cur_mod] %>% range
