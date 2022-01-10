@@ -10,8 +10,8 @@
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' MetacellsByGroups(pbmc)
-SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05, gene_list=NULL){
+#' SelectNetworkGenes(pbmc)
+SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05, gene_list=NULL, wgcna_name=NULL){
 
   # validate inputs:
   if(!(gene_select %in% c("variable", "fraction", "all", "custom"))){
@@ -57,11 +57,7 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
   }
 
   # add genes to gene list
-  print(gene_list)
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]][[seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$active_wgcna]]$wgcna_genes <- gene_list
-
-  # set VariableFeatures slot for metacell object as these genes
-  # VariableFeatures(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj) <- gene_list
+  seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list, wgcna_name)
 
   # return updated seurat obj
   seurat_obj
@@ -69,109 +65,6 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
 }
 
 
-#' SetDatExpr
-#'
-#' This function sets up the expression matrix from the metacell object.
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#' SetDatExpr(pbmc)
-SetDatExpr <- function(seurat_obj, use_metacells=TRUE, name=NULL, ...){
-
-  # get parameters from seurat object
-  params <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params
-  genes_use <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_genes
-  assay <- params$metacell_assay
-
-  # use metacells or whole seurat object?
-  if(use_metacells){
-    s_obj <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj
-  } else{
-    s_obj <- seurat_obj
-  }
-
-  # get expression data from seurat obj
-  datExpr <- as.data.frame(
-    Seurat::GetAssayData(
-      s_obj,
-      assay=assay,
-      slot='data'
-    )[genes_use,]
-  )
-
-  # transpose data
-  datExpr <- as.data.frame(t(datExpr))
-
-  # only get good genes:
-  datExpr <- datExpr[,WGCNA::goodGenes(datExpr, ...)]
-
-  # set the datExpr in the Seurat object
-  if(is.null(name)){
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$datExpr <- datExpr
-  } else{
-    seurat_obj@misc[[name]]$datExpr <- datExpr
-  }
-
-  # return seurat obj
-  seurat_obj
-}
-
-
-#' GetDatExpr
-#'
-#' This function gets the expression matrix from the metacell object.
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#' GetDatExpr(pbmc)
-GetDatExpr <- function(seurat_obj, name=NULL){
-  if(is.null(name)){
-    datExpr <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$datExpr
-  } else{
-    datExpr <- seurat_obj@misc[[name]]$datExpr
-  }
-  datExpr
-}
-
-
-
-# old function, don't think it works as I intended bc it gets the data from the seurat obj not the metacell obj...
-#' GetDatExpr
-#'
-#' This function gets the expression matrix from the metacell object.
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#' GetDatExpr(pbmc)
-# GetDatExpr <- function(seurat_obj, ...){
-#
-#   # get parameters from seurat object
-#   params <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params
-#   genes_use <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_genes
-#   assay <- params$metacell_assay
-#
-#   # get expression data from seurat obj
-#   datExpr <- as.data.frame(
-#     Seurat::GetAssayData(
-#       seurat_obj,
-#       assay=assay,
-#       slot='data'
-#     )[genes_use,]
-#   )
-#
-#   # transpose data
-#   datExpr <- as.data.frame(t(datExpr))
-#
-#   # only get good genes:
-#   datExpr <- datExpr[,WGCNA::goodGenes(datExpr, ...)]
-#   datExpr
-# }
 
 
 #' SetupForWGCNA
@@ -183,15 +76,13 @@ GetDatExpr <- function(seurat_obj, name=NULL){
 #' @export
 #' @examples
 #' SetupForWGCNA(pbmc)
-SetupForWGCNA <- function(seurat_obj, name, ...){
+SetupForWGCNA <- function(seurat_obj, wgcna_name, ...){
 
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$active_wgcna <- name
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]][[seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$active_wgcna]] <- list()
-
+  # set the active WGCNA variable
+  seurat_obj <- SetActiveWGCNA(seurat_obj, wgcna_name)
 
   # select genes for WGCNA:
   seurat_obj <- SelectNetworkGenes(seurat_obj, ...)
-  # print('here')
 
   seurat_obj
 }
@@ -212,13 +103,15 @@ TestSoftPowers <- function(
   seurat_obj,
   use_metacells = TRUE,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  outfile="softpower.pdf", figsize=c(7,7)
+  make_plot=TRUE, outfile="softpower.pdf", figsize=c(7,7)
 ){
 
   # add datExpr if not already added:
-  if(!("datExpr" %in% names(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]))){
+  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
     seurat_obj <- SetDatExpr(seurat_obj, use_metacells)
   }
+
+  # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
 
   # Call the network topology analysis function for each set in turn
@@ -233,42 +126,46 @@ TestSoftPowers <- function(
   );
 
   # Plot the results:
-  pdf(outfile, height=figsize[1], width=figsize[2], useDingbats=FALSE)
+  if(make_plot){
+    pdf(outfile, height=figsize[1], width=figsize[2], useDingbats=FALSE)
 
-      colors = c("blue", "red","black")
-      # Will plot these columns of the returned scale free analysis tables
-      plotCols = c(2,5,6,7)
-      colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Mean connectivity",
-      "Max connectivity");
+        colors = c("blue", "red","black")
+        # Will plot these columns of the returned scale free analysis tables
+        plotCols = c(2,5,6,7)
+        colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Mean connectivity",
+        "Max connectivity");
 
-      # Get the minima and maxima of the plotted points
-      ylim = matrix(NA, nrow = 2, ncol = 4);
-      for (col in 1:length(plotCols)){
-        ylim[1, col] = min(ylim[1, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-        ylim[2, col] = max(ylim[2, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-      }
+        # Get the minima and maxima of the plotted points
+        ylim = matrix(NA, nrow = 2, ncol = 4);
+        for (col in 1:length(plotCols)){
+          ylim[1, col] = min(ylim[1, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
+          ylim[2, col] = max(ylim[2, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
+        }
 
-      # Plot the quantities in the chosen columns vs. the soft thresholding power
-      par(mfcol = c(2,2));
-      par(mar = c(4.2, 4.2 , 2.2, 0.5))
-      cex1 = 0.7;
+        # Plot the quantities in the chosen columns vs. the soft thresholding power
+        par(mfcol = c(2,2));
+        par(mar = c(4.2, 4.2 , 2.2, 0.5))
+        cex1 = 0.7;
 
-      for (col in 1:length(plotCols)){
-        plot(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
-        xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
-        main = colNames[col]);
-        addGrid();
+        for (col in 1:length(plotCols)){
+          plot(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
+          xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+          main = colNames[col]);
+          addGrid();
 
-        if (col==1){
-          text(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
+          if (col==1){
+            text(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
+            labels=powers,cex=cex1,col=colors[1]);
+          } else
+          text(powerTable$data[,1], powerTable$data[,plotCols[col]],
           labels=powers,cex=cex1,col=colors[1]);
-        } else
-        text(powerTable$data[,1], powerTable$data[,plotCols[col]],
-        labels=powers,cex=cex1,col=colors[1]);
-      }
-  dev.off()
+        }
+    dev.off()
+  }
 
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_powerTable <- powerTable$data
+  # set the power table in Seurat object:
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
+
   seurat_obj
 }
 
@@ -294,11 +191,15 @@ ConstructNetwork <- function(
 ){
 
   # add datExpr if not already added:
-  if(!("datExpr" %in% names(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]))){
+  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
     seurat_obj <- SetDatExpr(seurat_obj, use_metacells)
   }
+
+  # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
-  print(dim(datExpr))
+
+  # Add functionality to accept multiExpr and perform consensus WGCNA
+  # TODO
 
   nSets = 1
   setLabels = gsub(' ', '_', cur_celltype)
@@ -338,7 +239,7 @@ ConstructNetwork <- function(
 
   # add network parameters to the Seurat object:
 
-  net_params <- list(
+  params <- list(
     power = soft_power,
     blocks = blocks,
     maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
@@ -358,10 +259,22 @@ ConstructNetwork <- function(
     saveConsensusTOMs = saveConsensusTOMs
   )
 
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params$net_params <- net_params
+  # add parameters:
+  seurat_obj <- SetWGCNAParams(seurat_obj, params)
 
   # add network to seurat obj
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net <- net
+  seurat_obj <- SetNetworkData(seurat_obj, net)
+
+  # set the modules df in the Seurat object
+  mods <- GetNetworkData(seurat_obj)$colors
+  seurat_obj <- SetModules(
+    seurat_obj, mod_df = data.frame(
+      "gene_name" = names(mods),
+      "module" = mods,
+      "color" = mods
+    )
+  )
+
   seurat_obj
 
 }
@@ -376,11 +289,16 @@ ConstructNetwork <- function(
 #' @export
 #' @examples
 #' ConstructNetwork(pbmc)
-ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verbose=TRUE, ...){
+ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verbose=TRUE, wgcna_name=NULL, ...){
 
-  # get genes in this module
-  cur_genes <- names(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors[seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors == cur_mod])
-  print(head(cur_genes))
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get module df:
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # get genes in this module:
+  cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
 
   # run PCA with Seurat function
   cur_pca <- Seurat::RunPCA(
@@ -425,21 +343,25 @@ ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verb
 #' @export
 #' @examples
 #'  ModuleEigengenes(pbmc)
-ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
+ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna_name=NULL, ...){
+
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   me_list <- list()
   harmonized_me_list <- list()
-  modules <- unique(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors)
+  modules <- GetModules(seurat_obj, wgcna_name)
 
   # loop over modules:
-  for(cur_mod in modules){
+  for(cur_mod in unique(modules$module)){
 
     print(cur_mod)
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
       seurat_obj = seurat_obj, cur_mod = cur_mod,
-      group.by.vars=group.by.vars, verbose=verbose, ...
+      group.by.vars=group.by.vars, verbose=verbose,
+      wgcna_name, ...
     )
 
     # add module eigengene to ongoing list
@@ -456,39 +378,22 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, ...){
 
   # merge module eigengene lists into a dataframe, add to Seurat obj
   me_df <- do.call(cbind, me_list)
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$MEs <- me_df
+  seurat_obj <- SetMEs(seurat_obj, me_df, harmonized=FALSE, wgcna_name)
 
   # merge harmonized module eigengene lists into a dataframe, add to Seurat obj
   if(!is.null(group.by.vars)){
     hme_df <- do.call(cbind, harmonized_me_list)
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$hMEs <- hme_df
+    seurat_obj <- SetMEs(seurat_obj, hme_df, harmonized=TRUE, wgcna_name)
   }
 
   # remove temp dim reductions by setting to NULL
   seurat_obj@reductions$ME <- NULL
   seurat_obj@reductions$ME_harmony <- NULL
 
-  # return seurat object
+  # return seurat object f
   seurat_obj
 }
 
-#' GetMEs
-#'
-#' Function to retrieve module eigengens from Seurat object.
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#'  ModuleEigengenes(pbmc)
-GetMEs <- function(seurat_obj, harmonized=TRUE){
-  if(harmonized == TRUE && !is.null(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$hMEs)){
-    MEs <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$hMEs
-  } else{
-    MEs <- seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$MEs
-  }
-  MEs
-}
 
 
 #' ModuleConnectivity
@@ -500,21 +405,26 @@ GetMEs <- function(seurat_obj, harmonized=TRUE){
 #' @export
 #' @examples
 #' ModuleConnectivity(pbmc)
-ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, ...){
+ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...){
 
-  # get expression matrix
-  genes_use <- names(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors)
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get module df, wgcna genes, and wgcna params:
+  modules <- GetModules(seurat_obj, wgcna_name)
+  genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
   # datExpr for full expression dataset
-  # transpose expression data and subset by genes used for WGCNA
   datExpr <- t(GetAssayData(
     seurat_obj,
-    assay=seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params$metacell_assay,
-    slot=seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params$metacell_slot
+    assay=params$metacell_assay,
+    slot=params$metacell_slot
   ))[,genes_use]
 
+
   # get MEs:
-  MEs <- GetMEs(seurat_obj=seurat_obj, harmonized=harmonized)
+  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
 
   tic("SignedKME")
   kMEs <- signedKME(
@@ -527,10 +437,12 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, ...){
   toc()
 
   # add module color to the kMEs table
-  kMEs <- cbind(cur_seurat@misc$wgcna_net$colors, kMEs)
-  colnames(kMEs) <- c('module', colnames(MEs))
+  kMEs <- cbind(modules, kMEs)
+  colnames(kMEs) <- c(colnames(modules), paste0("kME_", colnames(MEs)))
 
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_kMEs <- kMEs
+  # update the modules table in the Seurat object:
+  seurat_obj <- SetModules(seurat_obj, kMEs, wgcna_name)
+
   seurat_obj
 
 }

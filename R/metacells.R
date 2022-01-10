@@ -84,7 +84,7 @@ ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', a
   colnames(cell_sample) <- paste0('knn_', 1:ncol(cell_sample))
 
   # make seurat obj:
-  seurat_aggr <- CreateSeuratObject(
+  metacell_obj <- CreateSeuratObject(
     counts = new_exprs
   )
 
@@ -92,7 +92,7 @@ ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', a
   if(!is.null(meta)){
     meta_names <- names(meta)
     for(x in meta_names){
-      seurat_aggr@meta.data[[x]] <- meta[[x]]
+      metacell_obj@meta.data[[x]] <- meta[[x]]
     }
   } else(
     warning('meta not found')
@@ -100,24 +100,21 @@ ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', a
 
   # add seurat metacell object to the main seurat object:
   if(return_metacell){
-    out <- seurat_aggr
+    out <- metacell_obj
   } else{
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- seurat_aggr
+
+    # add seurat metacell object to the main seurat object:
+    seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj)
 
     # add other info
-    if(is.null(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params)){
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params <- list(
+    seurat_obj <- SetWGCNAParams(
+      seurat_obj, params = list(
         'metacell_k' = k,
         'metacell_reduction' = reduction,
         'metacell_slot' = slot,
         'metacell_assay' = assay
       )
-    } else{
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_k"]] <- k
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_reduction"]] <- reduction
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_slot"]] <- slot
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_assay"]] <- assay
-    }
+    )
 
     out <- seurat_obj
   }
@@ -183,22 +180,16 @@ MetacellsByGroups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, r
   metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
 
   # add seurat metacell object to the main seurat object:
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- metacell_obj
+  seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj)
 
   # add other info
-  if(is.null(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params)){
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params <- list(
+  seurat_obj <- SetWGCNAParams(
+    seurat_obj, params = list(
       'metacell_k' = k,
       'metacell_reduction' = reduction,
       'metacell_slot' = slot,
-      'metacell_assay' = assay,
-      'metacell_groups' = group.by
+      'metacell_assay' = assay
     )
-  } else{
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_k"]] <- k
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_reduction"]] <- reduction
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_slot"]] <- slot
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[["metacell_assay"]] <- assay
-  }
+  )
   seurat_obj
 }
