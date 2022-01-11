@@ -348,6 +348,9 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
+  # are we going to run Harmony?
+  harmonized = !is.null(group.by.vars)
+
   me_list <- list()
   harmonized_me_list <- list()
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -369,28 +372,38 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
     me_list[[cur_mod]] <- cur_me
 
     # run harmony
-    if(!is.null(group.by.vars)){
+    if(harmonized){
       # add module eigengene to ongoing list
       cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[,1]
       harmonized_me_list[[cur_mod]] <- cur_harmonized_me
     }
   }
 
-  # merge module eigengene lists into a dataframe, add to Seurat obj
+  # merge module eigengene lists into a dataframe, order modules, add to Seurat obj
   me_df <- do.call(cbind, me_list)
+  me_df <- WGCNA::orderMEs(me_df)
   seurat_obj <- SetMEs(seurat_obj, me_df, harmonized=FALSE, wgcna_name)
 
   # merge harmonized module eigengene lists into a dataframe, add to Seurat obj
   if(!is.null(group.by.vars)){
     hme_df <- do.call(cbind, harmonized_me_list)
+    hme_df <- WGCNA::orderMEs(hme_df)
     seurat_obj <- SetMEs(seurat_obj, hme_df, harmonized=TRUE, wgcna_name)
   }
+
+  # set module factor levels based on order
+  MEs <- GetMEs(cur_seurat, harmonized, wgcna_name)
+  modules$module <- factor(
+    as.character(modules$module),
+    levels=colnames(MEs)
+  )
+  seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
 
   # remove temp dim reductions by setting to NULL
   seurat_obj@reductions$ME <- NULL
   seurat_obj@reductions$ME_harmony <- NULL
 
-  # return seurat object f
+  # return seurat object
   seurat_obj
 }
 
