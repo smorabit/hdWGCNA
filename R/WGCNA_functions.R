@@ -577,7 +577,7 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
 
   tic("SignedKME")
-  kMEs <- signedKME(
+  kMEs <- WGCNA::signedKME(
     datExpr,
     MEs,
     outputColumnName = "kME",
