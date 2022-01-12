@@ -34,17 +34,19 @@ PlotDendrogram <- function(
   )
 }
 
-#' MECorrelogram
+#' ModuleCorrelogram
 #'
 #' Plot Module Eigengene correlogram
 #'
 #' @param seurat_obj A Seurat object
+#' @param features What to plot? Can select hMEs, MEs, scores, or average
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' MECorrelogram
-MECorrelogram <- function(
+ModuleCorrelogram <- function(
   seurat_obj, wgcna_name = NULL, exclude_grey=TRUE,
+  features = 'hMEs',
   type = 'upper', order='original', method='ellipse',
   tl.col = 'black', tl.srt=45,
   sig.level = c(0.0001, 0.001, 0.01, 0.05),
@@ -54,8 +56,22 @@ MECorrelogram <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
-  # get MEs and convert to matrix
-  MEs <- as.matrix(GetMEs(seurat_obj, wgcna_name))
+  # get MEs, module data from seurat object
+  if(features == 'hMEs'){
+    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
+  } else if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
+  } else if(features == 'scores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else if(features == 'average'){
+    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
+    restrict_range <- FALSE
+  } else(
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
+
+  # convert to matrix
+  MEs <- as.matrix(MEs)
 
   # exclude grey
   if(exclude_grey){
@@ -97,6 +113,7 @@ MECorrelogram <- function(
 #' ModuleCorrNetwork
 ModuleCorrNetwork <- function(
   seurat_obj, wgcna_name=NULL, cluster_col=NULL, exclude_grey=TRUE,
+  features = 'hMEs',
   reduction='umap', cor_cutoff=0.2, label_vertices=FALSE, edge_scale=5,
   vertex_size=15, niter=100, vertex_frame=FALSE
 ){
@@ -104,7 +121,20 @@ ModuleCorrNetwork <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # Get module eigengenes
-  MEs <- GetMEs(seurat_obj, wgcna_name)
+  if(features == 'hMEs'){
+    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
+  } else if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
+  } else if(features == 'scores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else if(features == 'average'){
+    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
+    restrict_range <- FALSE
+  } else(
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
+
+  # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
 
   # exclude grey
@@ -232,15 +262,6 @@ ModuleCorrNetwork <- function(
     vertex.label.cex=0.5,
     vertex.size=vertex_size
   )
-
-  # plot colorbar:
-  # TODO
-  # Possibly get rid of this because it depends on a super random package
-  # (fields) and kinda looks ugly?
-  # colfunc <- colorRampPalette(c( "seagreen", "white", "darkorchid1"))
-  # image.plot(legend.only=T, zlim=c(-1,1), col=colfunc(256) )
-  #
-
 }
 
 
