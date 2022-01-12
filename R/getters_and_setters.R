@@ -31,6 +31,25 @@ GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 }
 
 ############################
+# WGCNA Group
+###########################
+
+SetWGCNAGroup <- function(seurat_obj, group, wgcna_name){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # add gene list to Seurat obj
+  seurat_obj@misc[[wgcna_name]]$wgcna_group <- group
+  seurat_obj
+}
+
+GetWGCNAGroup <- function(seurat_obj, wgcna_name){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$wgcna_group
+}
+
+
+############################
 # metacell object
 ###########################
 
@@ -88,7 +107,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 #' @export
 #' @examples
 #' SetDatExpr(pbmc)
-SetDatExpr <- function(seurat_obj, use_metacells=TRUE, wgcna_name=NULL, ...){
+SetDatExpr <- function(seurat_obj, use_metacells=TRUE, wgcna_name=NULL, group.by=NULL, group_name=NULL, ...){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -105,25 +124,32 @@ SetDatExpr <- function(seurat_obj, use_metacells=TRUE, wgcna_name=NULL, ...){
     s_obj <- seurat_obj
   }
 
+  # columns to group by
+  if(!is.null(group.by)){
+    cells <- s_obj@meta.data %>% subset(get(group.by) == group_name) %>% rownames
+  } else{
+    cells <- colnames(s_obj)
+  }
+
   # get expression data from seurat obj
   datExpr <- as.data.frame(
     Seurat::GetAssayData(
       s_obj,
       assay=assay,
       slot='data'
-    )[genes_use,]
+    )[genes_use,cells]
   )
 
   # transpose data
   datExpr <- as.data.frame(t(datExpr))
 
   # only get good genes:
-  good_genes <- WGCNA::goodGenes(datExpr, ...)
+  gene_list = GetWGCNAGenes(seurat_obj)[WGCNA::goodGenes(datExpr, ...)]
 
   # update the WGCNA gene list:
-  seurat_obj <- SetWGCNAGenes(seurat_obj, good_genes, wgcna_name)
+  seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list, wgcna_name)
 
-  datExpr <- datExpr[,good_genes]
+  datExpr <- datExpr[,gene_list]
 
   # set the datExpr in the Seurat object
   seurat_obj@misc[[wgcna_name]]$datExpr <- datExpr
@@ -276,4 +302,61 @@ GetMEs <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
     MEs <- seurat_obj@misc[[wgcna_name]]$MEs
   }
   MEs
+}
+
+############################
+# GO term table
+###########################
+
+SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # set enrichr table
+  seurat_obj@misc[[wgcna_name]]$enrichr_table <- enrich_table
+  seurat_obj
+}
+
+
+GetEnrichrTable <- function(seurat_obj,  wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$enrichr_table
+}
+
+
+############################
+# Module Scores
+###########################
+
+SetModuleScores <- function(seurat_obj, mod_scores, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$module_scores <- mod_scores
+  seurat_obj
+}
+
+
+GetModuleScores <- function(seurat_obj,  wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$module_scores
+}
+
+############################
+# Average Module Expression
+###########################
+
+SetAvgModuleExpr <- function(seurat_obj, avg_mods, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$avg_modules <- avg_mods
+  seurat_obj
+}
+
+
+GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$avg_modules
 }

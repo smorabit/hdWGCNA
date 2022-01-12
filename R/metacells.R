@@ -13,7 +13,11 @@
 #' @export
 #' @examples
 #' ConstructMetacells(pbmc)
-ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', assay='RNA', slot='counts',  meta=NULL, return_metacell=FALSE){
+ConstructMetacells <- function(
+  seurat_obj, name='agg', ident.group='seurat_clusters', k=50,
+  reduction='umap', assay='RNA',
+  slot='counts',  meta=NULL, return_metacell=FALSE
+){
 
   # check reduction
   if(!(reduction %in% names(seurat_obj@reductions))){
@@ -137,7 +141,10 @@ ConstructMetacells <- function(seurat_obj, name='agg', k=50, reduction='umap', a
 #' @export
 #' @examples
 #' MetacellsByGroups(pbmc)
-MetacellsByGroups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, reduction='umap', assay='RNA', slot='counts'){
+MetacellsByGroups <- function(
+  seurat_obj, group.by=c('seurat_clusters'), ident.group='seurat_clusters',
+  k=50, reduction='umap', assay='RNA', slot='counts'
+){
 
   # setup grouping variables
   if(length(group.by) > 1){
@@ -178,6 +185,9 @@ MetacellsByGroups <- function(seurat_obj, group.by=c('seurat_clusters'), k=50, r
 
   # combine metacell objects
   metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+
+  # set idents for metacell object:
+  Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]
 
   # add seurat metacell object to the main seurat object:
   seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj)

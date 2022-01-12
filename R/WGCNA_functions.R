@@ -76,10 +76,18 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
 #' @export
 #' @examples
 #' SetupForWGCNA(pbmc)
-SetupForWGCNA <- function(seurat_obj, wgcna_name, ...){
+SetupForWGCNA <- function(seurat_obj, wgcna_name, group=NULL, ...){
 
   # set the active WGCNA variable
   seurat_obj <- SetActiveWGCNA(seurat_obj, wgcna_name)
+
+  # set the active WGCNA group, this is used for actually
+  # making the co-expression network
+  if(is.null(group)){
+    seurat_obj <- SetWGCNAGroup(seurat_obj, group='all', wgcna_name)
+  } else{
+    seurat_obj <- SetWGCNAGroup(seurat_obj, group, wgcna_name)
+  }
 
   # select genes for WGCNA:
   seurat_obj <- SelectNetworkGenes(seurat_obj, ...)
@@ -102,15 +110,15 @@ SetupForWGCNA <- function(seurat_obj, wgcna_name, ...){
 TestSoftPowers <- function(
   seurat_obj,
   use_metacells = TRUE,
+  group.by=NULL, group_name=NULL,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
   make_plot=TRUE, outfile="softpower.pdf", figsize=c(7,7)
 ){
 
   # add datExpr if not already added:
   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
-    seurat_obj <- SetDatExpr(seurat_obj, use_metacells)
+    seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
   }
-
   # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
 
@@ -180,7 +188,8 @@ TestSoftPowers <- function(
 #' @examples
 #' ConstructNetwork(pbmc)
 ConstructNetwork <- function(
-  seurat_obj, soft_power=NULL, use_metacells=TRUE, cur_celltype='net', tom_outdir="TOM",
+  seurat_obj, soft_power=NULL, use_metacells=TRUE, group.by=NULL, group_name=NULL,
+  tom_outdir="TOM",
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
@@ -192,20 +201,24 @@ ConstructNetwork <- function(
 
   # add datExpr if not already added:
   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
-    seurat_obj <- SetDatExpr(seurat_obj, use_metacells)
+    seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
   }
 
   # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
 
+  if(is.null(group_name)){
+    group_name <- 'all'
+  }
+
   # Add functionality to accept multiExpr and perform consensus WGCNA
   # TODO
 
   nSets = 1
-  setLabels = gsub(' ', '_', cur_celltype)
+  setLabels = gsub(' ', '_', group_name)
   shortLabels = setLabels
   multiExpr <- list()
-  multiExpr[[cur_celltype]] <- list(data=datExpr)
+  multiExpr[[group_name]] <- list(data=datExpr)
   checkSets(multiExpr) # check data size
 
   if(!dir.exists(tom_outdir)){
@@ -235,7 +248,7 @@ ConstructNetwork <- function(
     consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
 
   # rename consensusTOM file:
-  file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',cur_celltype), '_ConsensusTOM-block.1.rda'))
+  file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',group_name), '_ConsensusTOM-block.1.rda'))
 
   # add network parameters to the Seurat object:
 
@@ -267,6 +280,7 @@ ConstructNetwork <- function(
 
   # set the modules df in the Seurat object
   mods <- GetNetworkData(seurat_obj)$colors
+  print(mods)
   seurat_obj <- SetModules(
     seurat_obj, mod_df = data.frame(
       "gene_name" = names(mods),
@@ -392,7 +406,8 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
   }
 
   # set module factor levels based on order
-  MEs <- GetMEs(cur_seurat, harmonized, wgcna_name)
+  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  print(colnames(MEs))
   modules$module <- factor(
     as.character(modules$module),
     levels=colnames(MEs)
@@ -407,7 +422,129 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
   seurat_obj
 }
 
+#' ModuleExprScores
+#'
+#' Computes module eigengenes for all WGCNA co-expression modules
+#'
+#' @param seurat_obj A Seurat object
+#' @param method Seurat or UCell?
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#'  ModuleExprScores (pbmc)
+ModuleExprScore <- function(
+  seurat_obj, n_genes = 25,
+   wgcna_name=NULL, method='Seurat', ...
+ ){
 
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules:
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- as.character(unique(modules$module))
+  mods <- mods[mods != 'grey']
+
+  # use all genes in the module?
+  if(n_genes == "all"){
+    gene_list <- lapply(mods, function(cur_mod){
+      subset(modules, module == cur_mod) %>% .$gene_name
+    })
+  } else{
+    gene_list <- lapply(mods, function(cur_mod){
+      cur <- subset(modules, module == cur_mod)
+      cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+        top_n(n_genes) %>% .$gene_name
+    })
+  }
+  names(gene_list) <- mods
+
+  # compute Module Scores with Seurat or UCell:
+  if(method == "Seurat"){
+    mod_scores <- Seurat::AddModuleScore(
+      seurat_obj, features=gene_list, ...
+    )@meta.data
+  } else if(method == "UCell"){
+    mod_scores <- UCell::AddModuleScore_UCell(
+      seurat_obj, features=gene_list, ...
+    )@meta.data
+  } else{
+    stop("Invalid method selection. Valid choices are Seurat, UCell")
+  }
+
+  mod_scores <- mod_scores[,(ncol(mod_scores)-length(mods)+1):ncol(mod_scores)]
+
+  # rename module scores:
+  colnames(mod_scores) <- mods
+
+  # order cols
+  col_order <- levels(modules$module)
+  col_order <- col_order[col_order != 'grey']
+  mod_scores <- mod_scores[,col_order]
+
+  # add module scores to seurat object
+  seurat_obj <- SetModuleScores(seurat_obj, mod_scores, wgcna_name)
+
+  seurat_obj
+
+}
+
+
+#' AverageModuleExpr
+#'
+#' Computes module eigengenes for all WGCNA co-expression modules
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#'  AverageModuleExpr (pbmc)
+AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
+
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules:
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- as.character(unique(modules$module))
+  mods <- mods[mods != 'grey']
+
+  # get wgcna params
+  params <- GetWGCNAParams(seurat_obj, wgcna_name)
+
+  # datExpr for full expression dataset
+  datExpr <- GetAssayData(
+    seurat_obj,
+    assay=params$metacell_assay,
+    slot=params$metacell_slot
+  )
+
+  # use all genes in the module?
+  if(n_genes == "all"){
+    gene_list <- lapply(mods, function(cur_mod){
+      subset(modules, module == cur_mod) %>% .$gene_name
+    })
+  } else{
+    gene_list <- lapply(mods, function(cur_mod){
+      cur <- subset(modules, module == cur_mod)
+      cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+        top_n(n_genes) %>% .$gene_name
+    })
+  }
+  names(gene_list) <- mods
+
+  # for each module, compute average expression of genes:
+  avg_mods <- t(do.call(rbind,lapply(gene_list, function(cur_genes){colMeans(datExpr[cur_genes,])})))
+
+  # order cols
+  col_order <- levels(modules$module)
+  col_order <- col_order[col_order != 'grey']
+  avg_mods <- avg_mods[,col_order]
+
+  # add avg module expression to Seurat object
+  seurat_obj <- SetAvgModuleExpr(seurat_obj, avg_mods, wgcna_name)
+  seurat_obj
+}
 
 #' ModuleConnectivity
 #'
@@ -456,6 +593,61 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
   # update the modules table in the Seurat object:
   seurat_obj <- SetModules(seurat_obj, kMEs, wgcna_name)
 
+  seurat_obj
+
+}
+
+#' RunEnrichr
+#'
+#' Computes intramodular connectivity (kME) based on module eigengenes.
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' RunEnrichr
+RunEnrichr <- function(
+  seurat_obj,
+  dbs = c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021'),
+  max_genes = 100,
+  wgcna_name=NULL, ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules:
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- as.character(unique(modules$module))
+
+  # exclude grey
+  mods <- mods[mods != 'grey']
+
+  # run EnrichR for loop:
+  combined_output <- data.frame()
+  for(i in 1:length(mods)){
+  	cur_mod <- mods[i]
+    cur_info <- subset(modules, module == cur_mod)
+    cur_info <- cur_info[,c('gene_name', paste0('kME_', cur_mod))]
+    cur_genes <- top_n(cur_info, max_genes) %>% .$gene_name %>% as.character
+    enriched <- enrichR::enrichr(cur_genes, dbs)
+
+    # collapse into one db
+    for(db in names(enriched)){
+      cur_df <- enriched[[db]]
+      if (nrow(cur_df) > 1){
+        cur_df$db <- db
+        cur_df$module <- cur_mod
+        combined_output <- rbind(combined_output, cur_df)
+      }
+    }
+  }
+
+  # add GO term table to seurat object
+  seurat_obj <- SetEnrichrTable(seurat_obj, combined_output, wgcna_name)
   seurat_obj
 
 }
