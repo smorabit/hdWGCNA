@@ -275,12 +275,14 @@ ConstructNetwork <- function(
   # add parameters:
   seurat_obj <- SetWGCNAParams(seurat_obj, params)
 
+  # append working directory to the TOM file so it has the full path:
+  net$TOMFiles <- paste0(getwd(), '/TOM/', group_name, '_', net$TOMFiles)
+
   # add network to seurat obj
   seurat_obj <- SetNetworkData(seurat_obj, net)
 
   # set the modules df in the Seurat object
   mods <- GetNetworkData(seurat_obj)$colors
-  print(mods)
   seurat_obj <- SetModules(
     seurat_obj, mod_df = data.frame(
       "gene_name" = names(mods),

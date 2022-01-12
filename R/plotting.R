@@ -388,7 +388,7 @@ ModuleFeaturePlot<- function(
 
 
 
-#' PlotEnrichr
+#' EnrichrBarPlot
 #'
 #' Makes barplots from Enrichr data
 #'
@@ -399,8 +399,8 @@ ModuleFeaturePlot<- function(
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' PlotEnrichr
-PlotEnrichr <- function(
+#' EnrichrBarPlot
+EnrichrBarPlot <- function(
   seurat_obj, outdir = "enrichr_plots",
   n_terms = 25, plot_size = c(6,15),
   wgcna_name=NULL, logscale=FALSE, ...
@@ -481,4 +481,199 @@ PlotEnrichr <- function(
     }
     dev.off()
   }
+}
+
+
+#' EnrichrDotPlot
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' EnrichrBarPlot
+EnrichrDotPlot <- function(
+  seurat_obj, database, mods="all", outdir = "enrichr_plots",
+  n_terms = 3, break_ties=TRUE,
+  wgcna_name=NULL, logscale=TRUE, ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules:
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # using all modules?
+  if(mods == 'all'){
+    mods <- as.character(unique(modules$module))
+    mods <- mods[mods != 'grey']
+  }
+
+  # get Enrichr table
+  enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
+
+  # helper function to wrap text
+  wrapText <- function(x, len) {
+      sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), USE.NAMES = FALSE)
+  }
+
+  # get data to plot
+  plot_df <- enrichr_df %>%
+    subset(db == database & module %in% mods) %>%
+    group_by(module) %>%
+    top_n(n_terms, wt=Combined.Score)
+
+  print(table(plot_df$db))
+
+  # sometimes top_n returns more than the desired number if there are ties. so here
+  # we just randomly sample to break ties:
+  if(break_ties){
+    plot_df <- do.call(rbind, lapply(plot_df %>% group_by(module) %>% group_split, function(x){x[sample(n_terms),]}))
+  }
+
+  plot_df$Term <- wrapText(plot_df$Term, 45)
+
+  # set modules factor and re-order:
+  plot_df$module <- factor(
+    as.character(plot_df$module),
+    levels=levels(modules$module)
+  )
+  plot_df <- arrange(plot_df, module)
+
+  # set Terms factor
+  plot_df$Term <- factor(
+    as.character(plot_df$Term),
+    levels = unique(as.character(plot_df$Term))
+  )
+
+  # logscale?
+  if(logscale){
+    plot_df$Combined.Score <- log2(plot_df$Combined.Score)
+    lab <- 'Enrichment\nlog2(combined score)'
+    x <- 0.2
+  } else{lab <- 'Enrichment\n(combined score)'; x <- 5}
+
+
+  p <- plot_df  %>%
+    ggplot(aes(x=module, y=rev(Term))) +
+    geom_point(aes(size=Combined.Score), color=plot_df$module) +
+    RotatedAxis() +
+    ylab('') + xlab('') + labs(size=lab) +
+    ggtitle(database) +
+    theme(
+      plot.title = element_text(hjust = 0.5)
+    )
+
+  p
+}
+
+
+#' PlotEnrichr
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' PlotEnrichr
+ModuleNetworkPlot <- function(
+  seurat_obj, mods="all", outdir="ModuleNetworks",
+  plot_size = c(6,6), wgcna_name=NULL,
+  edge.alpha=0.25, vertex.label.cex=1, vertex.size=6, ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules, MEs:
+  MEs <- GetMEs(seurat_obj, wgcna_name)
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # using all modules?
+  if(mods == 'all'){
+    mods <- as.character(unique(modules$module))
+    mods <- mods[mods != 'grey']
+  }
+
+  # create output folder
+  if(!dir.exists(outdir)){dir.create(outdir)}
+
+  # get TOM
+  TOM <- GetTOM(seurat_obj, wgcna_name)
+
+  # loop over modules
+  for(cur_mod in mods){
+
+    cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+
+    # number of genes, connections
+    # might make a setting to change this later but I will also have to change
+    # how the graph layout works
+    n_genes = 25;
+    n_conns = 500;
+
+    # name of column with current kME info
+    cur_kME <- paste0('kME_', cur_mod)
+
+    # get genes in this module:
+    cur <- subset(modules, module == cur_mod)
+    rowind <- cur[,c('gene_name', cur_kME)] %>%
+      top_n(n_genes) %>% .$gene_name
+    cur <- cur[rowind,]
+
+    # arrange by cur_kME
+    cur <- cur %>% arrange(get(cur_kME), descending=TRUE)
+
+    if (nrow(cur) < n_genes) {
+      n_genes <-  nrow(cur);
+      n_conns <- n_genes * (n_genes - 1);
+    }
+
+    # Identify the columns in the TOM that correspond to these hub genes
+    matchind <- match(cur$gene_name, colnames(TOM))
+    reducedTOM = TOM[matchind,matchind]
+    orderind <- order(reducedTOM,decreasing=TRUE)
+
+    # only  keep top connections
+    connections2keep <- orderind[1:n_conns];
+    reducedTOM <- matrix(0,nrow(reducedTOM),ncol(reducedTOM));
+    reducedTOM[connections2keep] <- 1;
+
+    # top 10 as center
+    gA <- graph.adjacency(as.matrix(reducedTOM[1:10,1:10]),mode="undirected",weighted=TRUE,diag=FALSE)
+    gB <- graph.adjacency(as.matrix(reducedTOM[11:n_genes,11:n_genes]),mode="undirected",weighted=TRUE,diag=FALSE)
+    layoutCircle <- rbind(layout.circle(gA)/2,layout.circle(gB))
+
+    g1 <- graph.adjacency(as.matrix(reducedTOM),mode="undirected",weighted=TRUE,diag=FALSE)
+
+    pdf(paste0(outdir, '/', cur_mod,'.pdf'), width=plot_size[1], height=plot_size[2], useDingbats=FALSE);
+    plot(g1,
+      edge.color=adjustcolor(cur_color, alpha.f=0.25),
+      edge.alpha=edge.alpha,
+      vertex.color=cur_color,
+      vertex.label=as.character(cur$gene_name),
+      vertex.label.dist=1.1,
+      vertex.label.degree=-pi/4,
+      vertex.label.color="black",
+      vertex.label.family='Helvetica',
+      vertex.label.font = 3,
+      vertex.label.cex=vertex.label.cex,
+      vertex.frame.color='black',
+      layout= jitter(layoutCircle),
+      vertex.size=vertex.size,
+      main=paste(cur_mod)
+    )
+    dev.off();
+
+  }
+
 }

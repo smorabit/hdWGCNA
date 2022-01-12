@@ -360,3 +360,23 @@ GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   seurat_obj@misc[[wgcna_name]]$avg_modules
 }
+
+############################
+# TOM
+###########################
+
+GetTOM <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get WGCNA genes:
+  gene_names <- GetWGCNAGenes(seurat_obj, wgcna_name)
+
+  # load TOM
+  tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
+  load(tom_files[[1]])
+
+  TOM <- as.matrix(consTomDS)
+  rownames(TOM) <- gene_names; colnames(TOM) <- gene_names
+  TOM
+
+}
