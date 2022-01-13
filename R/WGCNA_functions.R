@@ -681,6 +681,17 @@ OverlapModulesDEGs <- function(
   mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
+  # subset deg_df by fold change cutoff:
+  if(fc_cutoff >=0 ){
+    deg_df <- subset(deg_df, avg_log2FC >= fc_cutoff)
+  } else{
+    deg_df <- subset(deg_df, avg_log2FC <= fc_cutoff)
+
+    # reverse the sign of the remaining fold changes
+    deg_df$avg_log2FC <- -1 * deg_df$avg_log2FC
+    fc_cutoff <- -1 * fc_cutoff
+  }
+
   # size of genome based on # genes in Seurat object:
   genome.size <- nrow(seurat_obj)
 
@@ -699,8 +710,6 @@ OverlapModulesDEGs <- function(
   overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
     cur_overlap_df <- do.call(rbind, lapply(cell_groups, function(cur_group){
-      # TODO:
-      # get marker gene cutoffs
       cur_DEGs <- deg_df %>% subset(group == cur_group & p_val_adj <= 0.05 & avg_log2FC > fc_cutoff) %>% .$gene
       cur_overlap <- testGeneOverlap(newGeneOverlap(
           cur_module_genes,
@@ -721,9 +730,15 @@ OverlapModulesDEGs <- function(
   # adjust for multiple comparisons:
   overlap_df$fdr <- p.adjust(overlap_df$pval, method='fdr')
 
+  # significance level:
+  overlap_df$Significance <- gtools::stars.pval(overlap_df$fdr)
+  overlap_df$Significance <- ifelse(
+    overlap_df$Significance == '.', '',
+    overlap_df$Significance
+  )
+
   # re-arrange columns:
-  overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Jaccard))
+  overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Significance, Jaccard))
 
   overlap_df
-
 }

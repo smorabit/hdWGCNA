@@ -454,8 +454,8 @@ EnrichrBarPlot <- function(
 
       # logscale?
       if(logscale){
-        plot_df$Combined.Score <- log2(plot_df$Combined.Score)
-        lab <- 'Enrichment log2(combined score)'
+        plot_df$Combined.Score <- log(plot_df$Combined.Score)
+        lab <- 'Enrichment log(combined score)'
         x <- 0.2
       } else{lab <- 'Enrichment (combined score)'; x <- 5}
 
@@ -553,8 +553,8 @@ EnrichrDotPlot <- function(
 
   # logscale?
   if(logscale){
-    plot_df$Combined.Score <- log2(plot_df$Combined.Score)
-    lab <- 'Enrichment\nlog2(combined score)'
+    plot_df$Combined.Score <- log(plot_df$Combined.Score)
+    lab <- 'Enrichment\nlog(combined score)'
     x <- 0.2
   } else{lab <- 'Enrichment\n(combined score)'; x <- 5}
 
@@ -566,7 +566,10 @@ EnrichrDotPlot <- function(
     ylab('') + xlab('') + labs(size=lab) +
     ggtitle(database) +
     theme(
-      plot.title = element_text(hjust = 0.5)
+      plot.title = element_text(hjust = 0.5),
+      axis.line.x = element_blank(),
+      axis.line.y = element_blank(),
+      panel.border = element_rect(colour = "black", fill=NA, size=1)
     )
 
   p
@@ -819,5 +822,124 @@ HubGeneNetworkPlot <- function(
     vertex.label.cex=vertex.label.cex,
     ...
   )
+
+}
+
+
+#' OverlapDotPlot
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' OverlapDotPlot
+OverlapDotPlot <- function(
+  overlap_df, plot_var = 'odds_ratio',
+  logscale=TRUE, neglog=FALSE, plot_significance=TRUE, ...
+){
+
+  label <- plot_var
+  if(logscale){
+    overlap_df[[plot_var]] <- log(overlap_df[[plot_var]])
+    label <- paste0('log(', plot_var, ')')
+  }
+  if(neglog){
+    overlap_df[[plot_var]] <- -1 * overlap_df[[plot_var]]
+    label <- paste0('-', label)
+  }
+
+  p <- overlap_df %>% ggplot(aes(x=module, y=group)) +
+    geom_point(aes(
+      size=get(plot_var),
+      alpha=get(plot_var)),
+      color=overlap_df$color
+    ) +
+    RotatedAxis() +
+    ylab('') + xlab('') + labs(size=label, alpha=label) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      axis.line.x = element_blank(),
+      axis.line.y = element_blank(),
+      panel.border = element_rect(colour = "black", fill=NA, size=1)
+    )
+
+  # plot significance level?
+  if(plot_significance){
+    p <- p + geom_text(aes(label=Significance))
+  }
+
+  p
+}
+
+#' OverlapBarPlot
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' OverlapBarPlot
+OverlapBarPlot <- function(
+  overlap_df, plot_var = 'odds_ratio',
+  logscale=TRUE, neglog=FALSE, ...
+){
+
+  label <- plot_var
+
+  if(plot_var == 'odds_ratio'){
+    yint <- 1
+  } else if(plot_var == 'fdr'){
+    yint <- 0.05
+  }
+
+  if(logscale){
+    overlap_df[[plot_var]] <- log(overlap_df[[plot_var]])
+    label <- paste0('log(', plot_var, ')')
+    yint = log(yint)
+  }
+  if(neglog){
+    overlap_df[[plot_var]] <- -1 * overlap_df[[plot_var]]
+    label <- paste0('-', label)
+    yint = -1 * yint
+  }
+
+  groups <- overlap_df$group %>% as.character %>% unique
+
+  plot_list <- list()
+  for(cur_group in groups){
+
+    cur_df <- overlap_df %>%
+      subset(group == cur_group)
+
+    p <- cur_df %>%
+      ggplot(aes(x=reorder(module, get(plot_var)), y=get(plot_var))) +
+      geom_bar(stat='identity', fill=cur_df$color) +
+      coord_flip() +
+      xlab('') + ylab(label) +
+      ggtitle(cur_group) +
+      theme(
+        axis.line.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0.5)
+      )
+
+      if(plot_var == 'fdr' | plot_var == 'odds_ratio'){
+        p <- p + geom_hline(yintercept=yint, linetype='dashed', color='gray')
+      }
+
+      plot_list[[cur_group]] <- p
+  }
+
+  plot_list
 
 }
