@@ -76,21 +76,28 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
 #' @export
 #' @examples
 #' SetupForWGCNA(pbmc)
-SetupForWGCNA <- function(seurat_obj, wgcna_name, group=NULL, ...){
+SetupForWGCNA <- function(
+  seurat_obj, wgcna_name,
+  group=NULL, features = NULL,...){
 
   # set the active WGCNA variable
   seurat_obj <- SetActiveWGCNA(seurat_obj, wgcna_name)
 
   # set the active WGCNA group, this is used for actually
   # making the co-expression network
+  # TODO: I never actually use WGCNAGroup anywhere??
   if(is.null(group)){
     seurat_obj <- SetWGCNAGroup(seurat_obj, group='all', wgcna_name)
   } else{
     seurat_obj <- SetWGCNAGroup(seurat_obj, group, wgcna_name)
   }
 
-  # select genes for WGCNA:
-  seurat_obj <- SelectNetworkGenes(seurat_obj, ...)
+  # select genes for WGCNA, else use pre-selected:
+  if(is.null(features)){
+    seurat_obj <- SelectNetworkGenes(seurat_obj, wgcna_name=wgcna_name, ...)
+  } else{
+    seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list=features, wgcna_name=wgcna_name)
+  }
 
   seurat_obj
 }
@@ -305,13 +312,14 @@ ConstructNetwork <- function(
 #' @export
 #' @examples
 #' ConstructNetwork(pbmc)
-ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verbose=TRUE, wgcna_name=NULL, ...){
+ComputeModuleEigengene <- function(
+  seurat_obj, cur_mod, modules,
+  group.by.vars=NULL, verbose=TRUE,
+  wgcna_name=NULL, ...
+){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
-  # get module df:
-  modules <- GetModules(seurat_obj, wgcna_name)
 
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
@@ -359,7 +367,11 @@ ComputeModuleEigengene <- function(seurat_obj, cur_mod, group.by.vars=NULL, verb
 #' @export
 #' @examples
 #'  ModuleEigengenes(pbmc)
-ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna_name=NULL, ...){
+ModuleEigengenes <- function(
+  seurat_obj, group.by.vars=NULL,
+  modules=NULL, verbose=TRUE,
+  wgcna_name=NULL, ...
+){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -369,7 +381,11 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
 
   me_list <- list()
   harmonized_me_list <- list()
-  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # get modules from Seurat object, else use provided modules
+  if(is.null(modules)){
+    modules <- GetModules(seurat_obj, wgcna_name)
+  }
 
   # loop over modules:
   for(cur_mod in unique(modules$module)){
@@ -379,8 +395,8 @@ ModuleEigengenes <- function(seurat_obj, group.by.vars=NULL, verbose=TRUE, wgcna
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
       seurat_obj = seurat_obj, cur_mod = cur_mod,
-      group.by.vars=group.by.vars, verbose=verbose,
-      wgcna_name, ...
+      modules=modules, group.by.vars=group.by.vars, verbose=verbose,
+      wgcna_name=wgcna_name, ...
     )
 
     # add module eigengene to ongoing list
