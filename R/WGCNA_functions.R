@@ -653,3 +653,77 @@ RunEnrichr <- function(
   seurat_obj
 
 }
+
+
+#' OverlapModulesDEGs
+#'
+#' Computes intramodular connectivity (kME) based on module eigengenes.
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' OverlapModulesDEGs
+OverlapModulesDEGs <- function(
+  seurat_obj, deg_df, wgcna_name = NULL, fc_cutoff = 0.5, ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  cell_groups <- deg_df$group %>% unique
+
+  # get modules,
+  modules <- GetModules(cur_seurat)
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+
+  # size of genome based on # genes in Seurat object:
+  genome.size <- nrow(seurat_obj)
+
+  # compute overlap:
+  cur_overlap <- GeneOverlap::testGeneOverlap(
+    GeneOverlap::newGeneOverlap(
+      cur_module_genes,
+      cur_DEGs,
+      genome.size=genome.size
+  ))
+  or <- cur_overlap@odds.ratio
+  pval <- cur_overlap@pval
+  jaccard <- cur_overlap@Jaccard
+
+  # run overlaps between module gene lists and DEG lists:
+  overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
+    cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+    cur_overlap_df <- do.call(rbind, lapply(cell_groups, function(cur_group){
+      # TODO:
+      # get marker gene cutoffs
+      cur_DEGs <- deg_df %>% subset(group == cur_group & p_val_adj <= 0.05 & avg_log2FC > fc_cutoff) %>% .$gene
+      cur_overlap <- testGeneOverlap(newGeneOverlap(
+          cur_module_genes,
+          cur_DEGs,
+          genome.size=genome.size
+      ))
+      c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard)
+    })) %>% as.data.frame
+    colnames(cur_overlap_df) <- c('odds_ratio', 'pval', 'Jaccard')
+    cur_overlap_df$module <- cur_mod
+    cur_overlap_df$group <- cell_groups
+
+    # module color:
+    cur_overlap_df$color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+    cur_overlap_df
+  }))
+
+  # adjust for multiple comparisons:
+  overlap_df$fdr <- p.adjust(overlap_df$pval, method='fdr')
+
+  # re-arrange columns:
+  overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Jaccard))
+
+  overlap_df
+
+}

@@ -411,7 +411,7 @@ EnrichrBarPlot <- function(
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- as.character(unique(modules$module))
+  mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
   # get Enrichr table
@@ -510,7 +510,7 @@ EnrichrDotPlot <- function(
 
   # using all modules?
   if(mods == 'all'){
-    mods <- as.character(unique(modules$module))
+    mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
   }
 
@@ -573,7 +573,7 @@ EnrichrDotPlot <- function(
 }
 
 
-#' PlotEnrichr
+#' ModuleNetworkPlot
 #'
 #' Makes barplots from Enrichr data
 #'
@@ -584,7 +584,7 @@ EnrichrDotPlot <- function(
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' PlotEnrichr
+#' ModuleNetworkPlot
 ModuleNetworkPlot <- function(
   seurat_obj, mods="all", outdir="ModuleNetworks",
   plot_size = c(6,6), wgcna_name=NULL,
@@ -600,7 +600,7 @@ ModuleNetworkPlot <- function(
 
   # using all modules?
   if(mods == 'all'){
-    mods <- as.character(unique(modules$module))
+    mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
   }
 
@@ -675,5 +675,149 @@ ModuleNetworkPlot <- function(
     dev.off();
 
   }
+
+}
+
+
+
+#' HubGeneNetworkPlot
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' HubGeneNetworkPlot
+HubGeneNetworkPlot <- function(
+  seurat_obj, mods="all", n_hubs=6, n_other=3,
+  plot_size = c(6,6), wgcna_name=NULL,
+  edge.alpha=0.25, vertex.label.cex=0.5, hub.vertex.size=4,
+  other.vertex.size=1, repulse.exp=3,  ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules, MEs:
+  MEs <- GetMEs(seurat_obj, wgcna_name)
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # using all modules?
+  if(mods == 'all'){
+    mods <- levels(modules$module)
+    mods <- mods[mods != 'grey']
+  } else{
+    modules <- modules %>% subset(module %in% mods)
+  }
+
+  # get TOM
+  TOM <- GetTOM(seurat_obj, wgcna_name)
+
+  # get hub genes:
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+
+  # sample the same number of genes in each module
+  other_genes <- modules %>%
+    subset(!(gene_list %in% unlist(hub_list))) %>%
+    group_by(module) %>%
+    sample_n(n_other, replace=TRUE) %>%
+    .$gene_name %>% unique
+
+  # subset TOM by the selected genes:
+  selected_genes <- c(unlist(hub_list), other_genes)
+  selected_modules <- modules %>% subset(gene_name %in% selected_genes)
+  subset_TOM <- TOM[selected_genes, selected_genes]
+
+  # setup for network plot
+  selected_modules$geneset <- ifelse(
+    selected_modules$gene_name %in% other_genes, 'other', 'hub'
+  )
+  selected_modules$size <- ifelse(selected_modules$geneset == 'hub', hub.vertex.size, other.vertex.size)
+  selected_modules$label <- ifelse(selected_modules$geneset == 'hub', as.character(selected_modules$gene_name), '')
+  selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
+
+  # make sure all nodes have at least one edge!!
+  edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
+  edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+
+  # remove nodes with fewer than n edges:
+  n_fewer = 5
+  remove_nodes <- table(edge_df$Var1)[table(edge_df$Var1) < n_fewer] %>% names
+  edge_df <- subset(edge_df, !(Var1 %in% remove_nodes) & !(Var2 %in% remove_nodes))
+  selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
+
+  # scale edge values between 0 and 1
+  edge_df$value <- (edge_df$value - min(edge_df$value)) / (max(edge_df$value) - min(edge_df$value))
+
+  # set color of each edge based on value:
+  edge_df$color <- sapply(1:nrow(edge_df), function(i){
+    gene1 = as.character(edge_df[i,'Var1'])
+    gene2 = as.character(edge_df[i,'Var2'])
+
+    col1 <- modules %>% subset(gene_name == gene1) %>% .$color
+    col2 <- modules %>% subset(gene_name == gene2) %>% .$color
+
+    if(col1 == col2){
+      col = col1
+    } else{
+      col = 'gray90'
+    }
+    col
+  })
+
+  edge_df$color <- sapply(1:nrow(edge_df), function(i){
+    a = edge_df$value[i]
+    #if(edge_df$value[i] < 0.05){a=0.05}
+    alpha(edge_df$color[i], alpha=a)
+  })
+
+  g <- igraph::graph_from_data_frame(
+    edge_df,
+    directed=FALSE,
+    vertices=selected_modules
+  )
+
+  # qgraph layout
+  e <-  get.edgelist(g, name=FALSE)
+  l <- qgraph.layout.fruchtermanreingold(
+    e, vcount = vcount(g),
+    weights=edge_df$value,
+    repulse.rad=(vcount(g)^repulse.exp),
+    #cool.exp = 0.5,
+    niter=2500,
+    #max.delta = vcount(g)/2
+  )
+
+  # make a communities? (nope, this looks bad)
+  # comm <- igraph::make_clusters(
+  #   g,
+  #   membership=as.numeric(as.factor(V(g)$module)),
+  #   algorithm="scWGCNA"
+  # )
+
+  plot(
+    g, layout=l,
+    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    vertex.size=V(g)$size,
+    edge.curved=0,
+    edge.width=0.5,
+    vertex.color=V(g)$color,
+    vertex.frame.color=V(g)$color,
+    vertex.label=V(g)$label,
+    vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
+    vertex.label.font = 3,
+    vertex.label.color = V(g)$fontcolor,
+    vertex.label.cex=vertex.label.cex,
+    ...
+  )
 
 }
