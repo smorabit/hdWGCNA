@@ -385,10 +385,16 @@ ModuleEigengenes <- function(
   # get modules from Seurat object, else use provided modules
   if(is.null(modules)){
     modules <- GetModules(seurat_obj, wgcna_name)
+    projected <- FALSE
+  } else{
+    projected <- TRUE
   }
 
+  # get list of modules:
+  mods <- levels(modules$module)
+
   # loop over modules:
-  for(cur_mod in unique(modules$module)){
+  for(cur_mod in mods){
 
     print(cur_mod)
 
@@ -413,13 +419,13 @@ ModuleEigengenes <- function(
 
   # merge module eigengene lists into a dataframe, order modules, add to Seurat obj
   me_df <- do.call(cbind, me_list)
-  me_df <- WGCNA::orderMEs(me_df)
+  if(!projected){me_df <- WGCNA::orderMEs(me_df)}
   seurat_obj <- SetMEs(seurat_obj, me_df, harmonized=FALSE, wgcna_name)
 
   # merge harmonized module eigengene lists into a dataframe, add to Seurat obj
   if(!is.null(group.by.vars)){
     hme_df <- do.call(cbind, harmonized_me_list)
-    hme_df <- WGCNA::orderMEs(hme_df)
+    if(!projected){hme_df <- WGCNA::orderMEs(hme_df)}
     seurat_obj <- SetMEs(seurat_obj, hme_df, harmonized=TRUE, wgcna_name)
   }
 
@@ -460,7 +466,7 @@ ModuleExprScore <- function(
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- as.character(unique(modules$module))
+  mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
   # use all genes in the module?
@@ -524,7 +530,7 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- as.character(unique(modules$module))
+  mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
   # get wgcna params
@@ -639,7 +645,7 @@ RunEnrichr <- function(
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- as.character(unique(modules$module))
+  mods <- levels(modules$module)
 
   # exclude grey
   mods <- mods[mods != 'grey']
@@ -757,4 +763,131 @@ OverlapModulesDEGs <- function(
   overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Significance, Jaccard))
 
   overlap_df
+}
+
+
+#' ProjectModules
+#'
+#' Computes intramodular connectivity (kME) based on module eigengenes.
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ProjectModules
+ProjectModules <- function(
+  seurat_obj, seurat_ref,
+  group.by.vars=NULL,
+  gene_mapping=NULL, # table mapping genes from species 1 to species 2
+  genome1_col=NULL, genome2_col=NULL,
+  scale_genes = FALSE,
+  wgcna_name=NULL, wgcna_name_proj=NULL,
+  ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
+
+  # get modules to be projected:
+  modules <- GetModules(seurat_ref, wgcna_name)
+
+  # are we mapping gene names?
+  if(!is.null(gene_mapping)){
+    modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
+  }
+
+  print('here')
+
+  # get genes that overlap between WGCNA genes & seurat_obj genes:
+  gene_names <- modules$gene_name
+  genes_use <- intersect(gene_names, rownames(seurat_obj))
+
+  # subset modules by genes in this seurat object:
+  modules <- modules %>% subset(gene_name %in% genes_use)
+
+  # setup new seurat obj for wgcna:
+  if(!(wgcna_name_proj %in% names(seurat_obj@misc))){
+    seurat_obj <- SetupForWGCNA(
+      seurat_obj,
+      wgcna_name = wgcna_name_proj,
+      features = genes_use
+    )
+  }
+
+  # scale the dataset if needed:
+  if(sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
+    print("Scaling already done.")
+  } else if(scale_genes){
+    print("Scaling dataset...")
+    seurat_obj <- Seurat::ScaleData(
+      seurat_obj, features = genes_use, ...
+    )
+  }
+
+
+  # project modules:
+  seurat_obj <- ModuleEigengenes(
+    seurat_obj,
+    group.by.vars=group.by.vars,
+    modules = modules,
+    wgcna_name = wgcna_name_proj,
+    ...
+  )
+
+  seurat_obj
+
+}
+
+
+
+#' TransferModuleGenome
+#'
+#' Takes a module table and a gene mapping table (like from biomart) with gene
+#' names from two genomes in order to switch
+#'
+#' @param modules module table from GetModules function
+#' @param gene_mapping table that has the gene names for both genomes
+#' @param genome1_col the column in gene_mapping that has gene names for the genome currently present in modules
+#' @param genome2_col the column in gene_mapping that has gene names for the genome to transfer to
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' TransferModuleGenome
+TransferModuleGenome <- function(
+  modules, gene_mapping,
+  genome1_col, genome2_col
+){
+
+  # switch gene names to human:
+  gene_mapping <- hg38_mm10_genes
+  gene_mapping <- gene_mapping[,c(genome1_col, genome2_col)]
+
+  # only keep genome1 genes that are in the WGCNA gene list:
+  gene_list <- modules$gene_name
+  gene_mapping <- gene_mapping[gene_mapping[,genome1_col] %in% gene_list,]
+
+  # subset modules
+  modules <- subset(modules, gene_name %in% gene_mapping[,genome1_col])
+
+  print('here')
+
+  # match the order of the given gene list, and remove NA entries
+  gene_match <- match(gene_list, gene_mapping[,genome1_col])
+  gene_mapping <- na.omit(gene_mapping[gene_match,])
+
+  # update modules table with the new gene names
+  # modules <- na.omit(modules[gene_match,])
+
+  print('here')
+  print(dim(modules))
+  print(dim(gene_mapping))
+  print(length(gene_match))
+
+  modules$gene_name <- gene_mapping[,genome2_col]
+
+  modules
+
 }

@@ -45,13 +45,15 @@ PlotDendrogram <- function(
 #' @examples
 #' MECorrelogram
 ModuleCorrelogram <- function(
-  seurat_obj, wgcna_name = NULL, exclude_grey=TRUE,
+  seurat_obj, MEs2=NULL,
   features = 'hMEs',
-  type = 'upper', order='original', method='ellipse',
+  order='original', method='ellipse',
+  exclude_grey=TRUE, type='upper',
   tl.col = 'black', tl.srt=45,
   sig.level = c(0.0001, 0.001, 0.01, 0.05),
 #  insig='label_sig',
-  pch.cex=0.7, col=NULL, ncolors=200, ...
+  pch.cex=0.7, col=NULL, ncolors=200,
+  wgcna_name=NULL, wgcna_name2=NULL, ...
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -85,12 +87,41 @@ ModuleCorrelogram <- function(
   }
 
   # perform correlation
-  res <- Hmisc::rcorr(MEs)
-  resP <- corrplot::cor.mtest(MEs, conf.level=0.95)$p
+  if(is.null(MEs2)){
+    res <- Hmisc::rcorr(x=MEs)
+  } else{
+
+    print('here')
+
+    # add dataset indicator to cols/rows
+    d1_names <- colnames(MEs); d2_names <- colnames(MEs2);
+    colnames(MEs) <- paste0(d1_names, '_D1')
+    colnames(MEs2) <- paste0(d2_names, '_D2')
+
+    res <- Hmisc::rcorr(x=MEs, y=as.matrix(MEs2))
+
+    print('here')
+    res$r <- res$r[!grepl('_D1', colnames(res$r)),grepl('_D1', colnames(res$r))]
+    colnames(res$r) <- d1_names
+    rownames(res$r) <- d2_names
+
+    res$P <- res$P[!grepl('_D1', colnames(res$P)),grepl('_D1', colnames(res$P))]
+    colnames(res$P) <- d1_names
+    rownames(res$P) <- d2_names
+
+  }
+  res$P[is.na(res$P)] <- 0
+
+  print('right there')
+  print(dim(res$P))
+  print(dim(resP))
+  print(dim(res$r))
+
 
   # plot correlogram
   corrplot::corrplot(
-    res$r, p.mat = resP,
+    res$r,
+    p.mat = res$P,
     type=type, order=order,
     method=method, tl.col=tl.col,
     tl.srt=tl.srt, sig.level=sig.level,
