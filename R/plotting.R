@@ -112,12 +112,6 @@ ModuleCorrelogram <- function(
   }
   res$P[is.na(res$P)] <- 0
 
-  print('right there')
-  print(dim(res$P))
-  print(dim(resP))
-  print(dim(res$r))
-
-
   # plot correlogram
   corrplot::corrplot(
     res$r,
@@ -351,11 +345,14 @@ ModuleFeaturePlot<- function(
   plot_list <- list()
   for(cur_mod in module_names){
 
+    print(cur_mod)
+
     # get the color for this module:
     cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
 
     # reset the range of the plot:
     plot_range <- plot_df[,cur_mod] %>% range
+    print(plot_range)
     if(restrict_range){
       if(abs(plot_range[1]) > abs(plot_range[2])){
         plot_range[1] <- -1*plot_range[2]
@@ -368,38 +365,38 @@ ModuleFeaturePlot<- function(
 
     # order points:
     if(order == TRUE){
-      plot_df <- plot_df %>% dplyr::arrange_(cur_mod)
+      plot_df <- plot_df %>% dplyr::arrange(!!cur_mod)
     } else if(order == "shuffle"){
       plot_df <- plot_df[sample(nrow(plot_df)),]
     }
 
-    # label for plot:
-    label <- cur_mod
+    cur_plot_df <- plot_df[,c(colnames(umap), cur_mod)]
+    colnames(cur_plot_df)[3] <- "val"
 
     # plot with ggplot
-     p <- plot_df %>%
-      ggplot(aes_string(x=x_name, y=y_name, color=cur_mod)) +
+    p <- cur_plot_df %>%
+      ggplot(aes_string(x=x_name, y=y_name, color="val")) +
+      # ggplot(aes(x=umap1, y=umap2, color=val))
       geom_point(size=point_size, alpha=alpha) +
-      ggtitle(label) + umap_theme +
+      ggtitle(cur_mod) + umap_theme +
       labs(color="")
 
     # UCell?
     if(!ucell){
       p <- p + scale_color_gradient2(
         low='grey75', mid='grey95', high=cur_color,
-        breaks = c(plot_range[1], plot_range[2]),
+        breaks = plot_range,
         labels = c('-', '+'),
         guide = guide_colorbar(ticks=FALSE, barwidth=0.5, barheight=4)
       )
     } else{
       p <- p + scale_color_gradient(
         low='grey95', high=cur_color,
-        breaks = c(plot_range[1], plot_range[2]),
+        breaks = plot_range,
         labels = c('0', '+'),
         guide = guide_colorbar(ticks=FALSE, barwidth=0.5, barheight=4)
       )
     }
-
     plot_list[[cur_mod]] <- p
 
   }
@@ -548,6 +545,10 @@ EnrichrDotPlot <- function(
   # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
+  # add color to enrich_table
+  mod_colors <- select(modules, c(module, color)) %>% distinct
+  enrichr_df$color <- mod_colors[match(enrichr_df$module, mod_colors$module), 'color']
+
   # helper function to wrap text
   wrapText <- function(x, len) {
       sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), USE.NAMES = FALSE)
@@ -558,8 +559,6 @@ EnrichrDotPlot <- function(
     subset(db == database & module %in% mods) %>%
     group_by(module) %>%
     top_n(n_terms, wt=Combined.Score)
-
-  print(table(plot_df$db))
 
   # sometimes top_n returns more than the desired number if there are ties. so here
   # we just randomly sample to break ties:
@@ -592,7 +591,7 @@ EnrichrDotPlot <- function(
 
   p <- plot_df  %>%
     ggplot(aes(x=module, y=rev(Term))) +
-    geom_point(aes(size=Combined.Score), color=plot_df$module) +
+    geom_point(aes(size=Combined.Score), color=plot_df$color) +
     RotatedAxis() +
     ylab('') + xlab('') + labs(size=lab) +
     ggtitle(database) +
@@ -837,6 +836,8 @@ HubGeneNetworkPlot <- function(
   #   membership=as.numeric(as.factor(V(g)$module)),
   #   algorithm="scWGCNA"
   # )
+
+  # label vertices?
 
   plot(
     g, layout=l,

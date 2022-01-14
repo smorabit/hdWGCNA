@@ -600,7 +600,6 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
   # get MEs:
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
 
-  tic("SignedKME")
   kMEs <- WGCNA::signedKME(
     datExpr,
     MEs,
@@ -608,7 +607,6 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
     corFnc = "bicor",
     ...
   )
-  toc()
 
   # add module color to the kMEs table
   kMEs <- cbind(modules, kMEs)
@@ -759,6 +757,9 @@ OverlapModulesDEGs <- function(
     overlap_df$Significance
   )
 
+  # set factor levels for modules:
+  overlap_df$module <- factor(overlap_df$module, levels=mods)
+
   # re-arrange columns:
   overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Significance, Jaccard))
 
@@ -818,7 +819,7 @@ ProjectModules <- function(
   }
 
   # scale the dataset if needed:
-  if(sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
+  if(!scale_genes & sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
     print("Scaling already done.")
   } else if(scale_genes){
     print("Scaling dataset...")
@@ -858,11 +859,14 @@ ProjectModules <- function(
 #' TransferModuleGenome
 TransferModuleGenome <- function(
   modules, gene_mapping,
-  genome1_col, genome2_col
+  genome1_col=NULL, genome2_col=NULL
 ){
 
+  # use the first & second columns if these are null
+  if(is.null(genome1_col)){genome1_col <- colnames(gene_mapping)[1]}
+  if(is.null(genome2_col)){genome2_col <- colnames(gene_mapping)[2]}
+
   # switch gene names to human:
-  gene_mapping <- hg38_mm10_genes
   gene_mapping <- gene_mapping[,c(genome1_col, genome2_col)]
 
   # only keep genome1 genes that are in the WGCNA gene list:

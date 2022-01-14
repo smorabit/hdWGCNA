@@ -380,3 +380,131 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
   TOM
 
 }
+
+############################
+# Reset module names:
+###########################
+
+ResetModuleNames <- function(
+  seurat_obj,
+  new_name = "M",
+  wgcna_name=NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  old_mods <- levels(modules$module)
+
+  new_names <- paste0(new_name, 1:(length(old_mods)-1))
+  grey_ind <- which(old_mods == 'grey')
+
+  # account for when grey is first / last
+  if(grey_ind == 1){
+    new_names <- c('grey', new_names)
+  } else if(grey_ind == length(old_mods)){
+    new_names <- c(new_names, 'grey')
+  } else{
+    new_names <- c(new_names[1:(grey_ind-1)], 'grey', new_names[grey_ind:length(new_names)])
+  }
+
+  # update kMEs
+  new_kMEs <- paste0('kME_', new_names)
+  colnames(modules) <- c(colnames(modules)[1:3], new_kMEs)
+
+  # update module names
+  new_mod_df <- data.frame(
+    old = old_mods ,
+    new = new_names
+  )
+
+  modules$module <- factor(
+    new_mod_df[match(modules$module, new_mod_df$old),'new'],
+    levels = as.character(new_mod_df$new)
+  )
+
+  # set module table
+  seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
+
+  # update hME table:
+  hMEs <- GetMEs(seurat_obj, wgcna_name)
+  colnames(hMEs) <- new_mod_df$new
+  seurat_obj <- SetMEs(seurat_obj, hMEs, harmonized=TRUE, wgcna_name)
+
+  # update ME table
+  MEs <- GetMEs(seurat_obj, harmonized=FALSE, wgcna_name)
+  colnames(MEs) <- new_mod_df$new
+  seurat_obj <- SetMEs(seurat_obj, MEs, harmonized=FALSE, wgcna_name)
+
+  # update module scores:
+  module_scores <- GetModuleScores(seurat_obj, wgcna_name)
+  if(!("grey" %in% colnames(module_scores))){
+    colnames(module_scores) <- new_mod_df$new[new_mod_df$new != 'grey']
+  } else {
+    colnames(module_scores) <- new_mod_df$new
+  }
+  seurat_obj <- SetModuleScores(seurat_obj, module_scores, wgcna_name)
+
+  # update average module expression:
+  avg_exp <- GetAvgModuleExpr(seurat_obj, wgcna_name)
+  if(!("grey" %in% colnames(avg_exp))){
+    colnames(avg_exp) <- new_mod_df$new[new_mod_df$new != 'grey']
+  } else {
+    colnames(avg_exp) <- new_mod_df$new
+  }
+  seurat_obj <- SetAvgModuleExpr(seurat_obj, avg_exp, wgcna_name)
+
+  # update enrichr table:
+  enrich_table <- GetEnrichrTable(seurat_obj, wgcna_name)
+  enrich_table$module <- factor(
+    new_mod_df[match(enrich_table$module, new_mod_df$old),'new'],
+    levels = as.character(new_mod_df$new)
+  )
+  seurat_obj <- SetEnrichrTable(seurat_obj, enrich_table, wgcna_name)
+
+  seurat_obj
+
+}
+
+
+############################
+# Reset module names:
+###########################
+
+ResetModuleColors <- function(
+  seurat_obj,
+  new_colors,
+  wgcna_name=NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mod_colors <- select(modules, c(module, color)) %>%
+    distinct %>% arrange(module) %>% .$color
+  grey_ind <- which(mod_colors == 'grey')
+
+  if(grey_ind == 1){
+    new_colors <- c('grey', new_colors)
+  } else if(grey_ind == length(mod_colors)){
+    new_colors <- c(new_colors, 'grey')
+  } else{
+    new_colors <- c(new_colors[1:(grey_ind-1)], 'grey', new_colors[grey_ind:length(new_colors)])
+  }
+  new_colors
+
+  new_color_df <- data.frame(
+    old = mod_colors ,
+    new = new_colors
+  )
+
+  modules$color <- new_color_df[match(modules$color, new_color_df$old),'new']
+
+  # set module table
+  seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
+
+  seurat_obj
+
+}
