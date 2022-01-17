@@ -1,0 +1,1304 @@
+
+# Load data
+
+```{r eval=FALSE}
+
+# conda activate spatial
+library(Seurat)
+library(tidyverse)
+library(cowplot)
+library(Matrix)
+library(viridis)
+library(presto)
+library(harmony)
+library(RColorBrewer)
+library(patchwork)
+library(ggpubr)
+library(tictoc)
+library(RColorBrewer)
+library(Hmisc)
+library(corrplot)
+library(enrichR)
+library(GeneOverlap)
+library(WGCNA)
+enableWGCNAThreads(nThreads = 8)
+
+set.seed(2021)
+colfunc <- colorRampPalette(rev(brewer.pal(11, 'Spectral' )))
+theme_set(theme_cowplot())
+# scp ../../pipelines/scWGCNA/R/* hpc3:/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA/bin/
+setwd("/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA")
+
+# source all of the scWGCNA scripts:
+scripts <- dir("bin/")
+scripts <- scripts[scripts != 'scWGCNA.R']
+for(script in scripts){
+  source(paste0("bin/", script))
+}
+
+# directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+umap_theme <- theme(
+  axis.line=element_blank(),
+  axis.text.x=element_blank(),
+  axis.text.y=element_blank(),
+  axis.ticks=element_blank(),
+  axis.title.x=element_blank(),
+  axis.title.y=element_blank(),
+  panel.background=element_blank(),
+  panel.border=element_blank(),
+  panel.grid.major=element_blank(),
+  panel.grid.minor=element_blank(),
+  plot.background=element_blank(),
+  plot.title = element_text(hjust = 0.5)
+)
+
+# load seurat obj
+seurat_obj <- readRDS('/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/data/harmony_annotated.rds')
+
+# re-load color scheme:
+load('/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/data/color_scheme.rda')
+
+# directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs3b/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, mm10_name, hg38_id, mm10_id))
+
+# load scWGCNA testing seurat object
+cur_seurat <- readRDS(file='data/test_wgcna_seurat.rds')
+
+# # select celltype:
+# cur_celltype <- 'MHb-Neuron'
+#
+# # seurat obj for this celltype
+# cur_seurat <- subset(seurat_obj, cell_type == cur_celltype)
+
+```
+
+
+Running WGCNA
+
+```{r eval=FALSE}
+
+########################################################################
+#  Setup Seurat object for scWGCNA
+########################################################################
+
+groups <- c('Sample', 'cell_type', 'Group')
+
+cur_seurat <- seurat_obj@meta.data %>% subset(
+  cell_type %in% c("LHb-Neuron", "PHb-Neuron", "MHb-Neuron") &
+  as.character(Sample) %in% c("Sample-1", "Sample-2")
+)
+cur_seurat <- seurat_obj[,rownames(cur_seurat)]
+
+# set Idents of Seurat object to cell types
+# this is critical because scWGCNA will look at idents to group
+Idents(cur_seurat) <- cur_seurat$cell_type
+
+# set up Seurat object
+cur_seurat <- SetupForWGCNA(
+  cur_seurat, wgcna_name = "MHb",
+  gene_select = "fraction",
+  fraction = 0.1
+)
+
+# construct metacells:
+cur_seurat <- MetacellsByGroups(
+  seurat_obj = cur_seurat,
+  group.by = groups,
+  ident.group = 'cell_type'
+)
+
+# normalize metacells:
+cur_seurat <- NormalizeMetacells(cur_seurat)
+
+########################################################################
+#  Construct co-expression networks
+########################################################################
+
+# Test different soft powers:
+cur_seurat <- TestSoftPowers(cur_seurat, group.by='cell_type', group_name="MHb")
+
+# construct wgcna network:
+cur_seurat <- ConstructNetwork(
+  cur_seurat, soft_power=8,
+  group.by='cell_type', group_name="MHb"
+)
+
+# plot the dendrogram
+pdf("figures/test_dendro.pdf",height=5, width=8)
+PlotDendrogram(cur_seurat, main='Test')
+dev.off()
+
+########################################################################
+# Compute Module Eigengenes, module connectivity, and module scores
+########################################################################
+
+# scale the gene expression matrix in the Seurat object with all
+# genes used for WGCNA (might take a while to run):
+cur_seurat <- Seurat::ScaleData(
+  cur_seurat,
+  features = GetWGCNAGenes(cur_seurat),
+  vars.to.regress = c('n_genes_by_counts', 'pct_counts_mt')
+)
+
+# compute all MEs in the full single-cell dataset
+cur_seurat <- ModuleEigengenes(cur_seurat, group.by.vars="Sample")
+
+# compute module connectivity:
+cur_seurat <- ModuleConnectivity(cur_seurat)
+
+# change module names:
+
+# compute module expression score & average module expression:
+cur_seurat <- ModuleExprScore(cur_seurat, n_genes = 25, method='Seurat')
+cur_seurat <- AvgModuleExpr(cur_seurat, n_genes = 100)
+
+########################################################################
+# Module correlation analysis
+########################################################################
+
+library(igraph)
+library(qgraph)
+
+# plot the Module Correlation plot:
+pdf("figures/test_ME_correlogram.pdf",height=6, width=6)
+ModuleCorrelogram(cur_seurat, sig.level = 0.001, pch.cex=2)
+dev.off()
+
+# plot the Module Correlation plot for average exp:
+pdf("figures/test_ME_correlogram_avg.pdf",height=6, width=6)
+ModuleCorrelogram(cur_seurat, sig.level = 0.001, pch.cex=2, features='average')
+dev.off()
+
+# plot the Module Correlation plot for hub scores:
+pdf("figures/test_ME_correlogram_scores.pdf",height=6, width=6)
+ModuleCorrelogram(cur_seurat, sig.level = 0.001, pch.cex=2, features='scores')
+dev.off()
+
+# correlation network
+pdf(paste0('figures/test_module_corr_graph.pdf'), width=6, height=6, useDingbats=FALSE)
+ModuleCorrNetwork(
+  cur_seurat, label_vertices=TRUE, features='scores',
+  vertex_size=20, cor_cutoff=.2,
+  niter=1000, vertex_frame=TRUE
+)
+dev.off()
+
+########################################################################
+# plot module eigengene & Module genescores featureplots
+########################################################################
+
+# plot single ME FeaturePlot
+p <- ModuleFeaturePlot(cur_seurat, "blue", features='hMEs', alpha=0.5)
+pdf("figures/test_MEFeaturePlot.pdf",height=4, width=4)
+p
+dev.off()
+
+# plot single ME FeaturePlot shuffle points
+# is it actually shuffling??
+p1 <- ModuleFeaturePlot(cur_seurat, "blue", features='hMEs', order="shuffle")
+p2 <- ModuleFeaturePlot(cur_seurat, "blue", features='hMEs', order=FALSE)
+p3 <- ModuleFeaturePlot(cur_seurat, "blue", features='hMEs', order=TRUE)
+pdf("figures/test_MEFeaturePlot.pdf",height=4, width=10)
+p1 + p2 + p3
+dev.off()
+
+# plot all MEs:
+plot_list <- ModuleFeaturePlot(cur_seurat)
+pdf("figures/test_MEFeaturePlot_multi.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# plot module scores (UCell)
+cur_seurat <- ModuleExprScore(cur_seurat, n_genes = 'all', method='UCell')
+plot_list <- ModuleFeaturePlot(cur_seurat, features='scores', ucell=TRUE, order=FALSE)
+pdf("figures/test_MEFeaturePlot_scores_UCell_multi.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# plot module scores (Seurat)
+cur_seurat <- ModuleExprScore(cur_seurat, n_genes = 25, method='Seurat')
+plot_list <- ModuleFeaturePlot(cur_seurat, features='scores')
+pdf("figures/test_MEFeaturePlot_scores_Seurat_multi.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# plot average module expression
+plot_list <- ModuleFeaturePlot(cur_seurat, features='average')
+pdf("figures/test_MEFeaturePlot_averages_multi.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+########################################################################
+# GO Term enrichment analysis
+########################################################################
+
+library(enrichR)
+dbs<-c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021','LINCS_L1000_Chem_Pert_up','LINCS_L1000_Chem_Pert_down', 'WikiPathways_2019_Mouse', 'KEGG_2019_Mouse')
+
+# compute GO terms:
+cur_seurat <- RunEnrichr(cur_seurat, dbs=dbs)
+
+# make GO term plots:
+EnrichrBarPlot(
+  cur_seurat,
+  outdir = "figures/enrichr_plots",
+  n_terms = 10, plot_size = c(5,7),
+  logscale=TRUE
+)
+
+# enrichr dotplot
+p <- EnrichrDotPlot(
+  cur_seurat,
+  database = dbs[1], n_terms=2
+)
+pdf(paste0(fig_dir, 'test_GO_dotplot.pdf'), width=10, height=10, useDingbats=FALSE)
+p
+dev.off()
+
+
+# add color to enrichdf
+modules <- GetModules(cur_seurat)
+
+mod_colors <- select(modules, c(module, color)) %>% distinct
+enrich_table$color <- mod_colors[match(enrich_table$module, mod_colors$module), 'color']
+
+########################################################################
+# Network plotting:
+########################################################################
+
+# individual module networks
+ModuleNetworkPlot(cur_seurat)
+
+# hubgene network
+pdf(paste0(fig_dir, 'test_hubgene_graph.pdf'), width=7, height=7, useDingbats=FALSE)
+HubGeneNetworkPlot(
+  cur_seurat,
+  n_hubs = 10, n_other=10,
+  mods = 'all'
+)
+dev.off()
+
+########################################################################
+# Overlap between modules & marker genes:
+########################################################################
+
+library(GeneOverlap)
+
+markers <- read.csv('../DEGs/data/cluster_marker_DEGs.csv')
+condition_DEGs <- read.csv('../DEGs/data/cluster_Nurr2c_vs_GFP.csv')
+
+# compute marker gene overlaps
+overlap_df <- OverlapModulesDEGs(
+  cur_seurat, deg_df = markers,
+  fc_cutoff = 2.0
+)
+
+# compute condition DEG gene overlaps
+overlap_df <- OverlapModulesDEGs(
+  cur_seurat, condition_DEGs, fc_cutoff = 0.2
+)
+
+# compute condition DEG gene overlaps
+overlap_df <- OverlapModulesDEGs(
+  cur_seurat, condition_DEGs, fc_cutoff = -0.2
+)
+
+# plot odds ratio of the overlap
+p <- OverlapDotPlot(overlap_df, plot_var = 'odds_ratio')
+
+pdf(paste0(fig_dir, 'test_overlap_dotplot.pdf'), width=6, height=6, useDingbats=FALSE)
+p
+dev.off()
+
+# overlap barplot
+plot_list <- OverlapBarPlot(
+  overlap_df
+)
+
+pdf(paste0(fig_dir, 'test_overlap_barplot.pdf'), width=10, height=12, useDingbats=FALSE)
+wrap_plots(plot_list, ncol=5)
+dev.off()
+
+
+########################################################################
+# save / re-load
+########################################################################
+
+saveRDS(cur_seurat, file='data/test_wgcna_seurat.rds')
+cur_seurat <- readRDS(file='data/test_wgcna_seurat.rds')
+
+```
+
+
+Project Modules onto new dataset:
+
+```{r eval=FALSE}
+
+# Seurat object to project to:
+seurat_proj <- seurat_obj@meta.data %>% subset(
+  cell_type %in% c("LHb-Neuron", "PHb-Neuron", "MHb-Neuron") &
+  as.character(Sample) %in% c("Sample-3", "Sample-4")
+)
+seurat_proj <- seurat_obj[,rownames(seurat_proj)]
+
+
+# project modules onto new dataset
+# if we don't scale it, the result actually looks way different for the MEs!!
+seurat_proj <- ProjectModules(
+  seurat_obj = seurat_proj,
+  seurat_ref = cur_seurat,
+  group.by.vars=c("Sample"),
+  wgcna_name_proj = "MHb_projected",
+  vars.to.regress = c('n_genes_by_counts', 'pct_counts_mt'),
+  verbose=TRUE, scale_genes=TRUE
+)
+
+# compute module expression score & average module expression:
+seurat_proj <- ModuleExprScore(seurat_proj, n_genes = 25, method='Seurat')
+seurat_proj <- AvgModuleExpr(seurat_proj, n_genes = 100)
+
+################################################################################
+# Plots for projected dataset:
+################################################################################
+
+# ME featureplot of projected data:
+plot_list <- ModuleFeaturePlot(seurat_proj, features='hMEs', order='shuffle')
+pdf("figures/test_MEFeaturePlot_projected.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# ME featureplot of projected data:
+plot_list <- ModuleFeaturePlot(seurat_proj, features='scores', order='shuffle')
+pdf("figures/test_MEFeaturePlot_projected_scores.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# ME correlogram of projected data:
+pdf("figures/test_ME_correlogram_projected.pdf",height=6, width=6)
+ModuleCorrelogram(seurat_proj, sig.level = 0.001, pch.cex=2, features='hMEs')
+dev.off()
+
+# ME correlogram of projected data:
+pdf("figures/test_ME_correlogram_score_vs_MEs.pdf",height=6, width=6)
+ModuleCorrelogram(
+  cur_seurat, MEs2 = GetModuleScores(cur_seurat),
+  sig.level = 0.001, pch.cex=2, features='hMEs'
+)
+dev.off()
+
+
+```
+
+ROC Curve comparing original modules & projected modules in a shared cell space
+
+```{r eval=FALSE}
+
+group.by <- 'annotation'
+groups <- as.character(unique(cur_seurat@meta.data[[group.by]]))
+
+# get Modules
+modules <- GetModules(cur_seurat)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
+
+# get MEs:
+MEs <- GetMEs(cur_seurat, harmonized=TRUE) %>% mutate(group = cur_seurat@meta.data[[group.by]])
+MEs_p <- as.data.frame(GetMEs(seurat_proj, harmonized=TRUE)) %>% mutate(group = seurat_proj@meta.data[[group.by]])
+
+# compute average MEs in each group:
+avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))
+avg_MEs_p <- MEs_p %>% group_by(group) %>% summarise(across(!!mods, mean))
+groups <- avg_MEs$group
+
+# scale each column between 0 & 1
+avg_MEs <- avg_MEs %>% summarise(across(!!mods, scale01))
+avg_MEs_p <- avg_MEs_p %>% summarise(across(!!mods, scale01))
+
+# convert to binary labels:
+thresh <- 0.75
+labels <- avg_MEs %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
+labels <- as.data.frame(do.call(cbind, labels));
+rownames(labels) <- as.character(groups)
+
+predictions <- avg_MEs_p %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
+predictions <- as.data.frame(do.call(cbind, predictions));
+rownames(predictions) <- as.character(groups)
+
+# loop over modules to compute ROC curves:
+plot_df <- data.frame()
+conf_df <- data.frame()
+auc_list <- list()
+mod_colors <- list()
+for(cur_mod in mods){
+  print(cur_mod)
+  cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+  mod_colors[[cur_mod]] <- cur_color
+
+  # compute ROC
+  rocobj <- pROC::roc(labels[,cur_mod], avg_MEs_p[[cur_mod]])
+  auc_list[[cur_mod]] <- as.numeric(rocobj$auc)
+  # confidence intervals:
+  # sens_ci <- ci.se(rocobj)
+
+  cur_df <- data.frame(
+    specificity = 1-rocobj$specificities,
+    sensitivity = rocobj$sensitivities,
+    #auc = rocobj$auc,
+    module = cur_mod,
+    color = cur_color,
+    auc = as.numeric(rocobj$auc)
+  #  ci_lo = sens_ci[,1],
+  #  ci_med = sens_ci[,2],
+  #  ci_hi = sens_ci[,3]
+
+  )
+  plot_df <- rbind(plot_df, cur_df)
+
+  cur_conf <- as.data.frame(ci.se(rocobj))
+  cur_conf$sensitivity <- 1-as.numeric(rownames(cur_conf))
+  cur_conf$module <- cur_mod
+  cur_conf$color <- cur_color
+  conf_df <- rbind(conf_df, cur_conf)
+
+}
+colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
+
+
+
+library(pROC)
+rocobj <- pROC::roc(labels$red, avg_MEs_p$red)
+rocobj$auc
+
+sens_ci <- ci.se(rocobj)
+
+
+p <- ggroc(rocobj)
+
+pdf(paste0(fig_dir, 'test_ROC_blue.pdf'), width=6, height=6)
+p
+dev.off()
+#
+#
+# # confidence intervals:
+# sens_ci <- ci.se(rocobj)
+#
+#
+# plot_df <- data.frame(
+#   specificity = rocobj$specificities,
+#   sensitivity = 1-rocobj$sensitivities,
+#   #auc = rocobj$auc,
+#   module = "blue",
+#   color = "blue"
+# #  ci_lo = sens_ci[,1],
+# #  ci_med = sens_ci[,2],
+# #  ci_hi = sens_ci[,3]
+#
+# )
+
+plot_df <- plot_df %>% group_by(module) %>% arrange(sensitivity)
+conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
+auc_df <- distinct(plot_df[,c('module', 'auc')])
+
+p <- plot_df %>% ggplot(
+  aes(x=specificity, y=sensitivity, color=module, fill=module),
+) +
+  geom_line() +
+  geom_ribbon(
+    data=conf_df,
+    aes(x = sensitivity, ymin=lo, ymax=hi, fill=module),
+    inherit.aes=FALSE, alpha=0.4
+  ) +
+  scale_color_manual(values = unlist(mod_colors)) +
+  scale_fill_manual(values = unlist(mod_colors)) +
+  scale_x_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+  scale_y_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+  xlab("1 - Specificity (FPR)") + ylab("Sensitivity (TPR)") +
+  geom_text(
+    data = auc_df,
+    aes(color=module),
+    x=0.75, y=0.1, label=paste0("AUC: ", format(auc_df$auc, digits=2)),
+    inherit.aes=FALSE, size=4, color='black'
+  )
+  #annotate("text", x=0.75, y=0.1, label=paste0("AUC: ", plot_df$auc))
+  # theme(
+  #   axis.text = element_blank(),
+  #   axis.ticks = element_blank()
+  # )
+
+
+
+pdf(paste0(fig_dir, 'test_ROC.pdf'), width=9, height=6)
+p + facet_wrap(~module, ncol=5) + NoLegend()
+dev.off()
+
+
+unlist(auc_list)
+
+```
+
+
+Project onto human AD dataset:
+
+```{r eval=FALSE}
+
+# load AD NatGen dataset
+NucSeq <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/NucSeq_batch_correct_seurat.rds')
+
+# keep only a few samples:
+NucSeq <- subset(NucSeq, Sample.ID %in% c("Sample-100", "Sample-45"))
+
+NucSeq <- ProjectModules(
+  seurat_obj=NucSeq,
+  seurat_ref=cur_seurat,
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="mm10_name",
+  genome2_col="hg38_name",
+  scale_genes=TRUE,
+  wgcna_name_proj="MHb_projected"
+)
+
+# compute module expression score & average module expression:
+NucSeq <- ModuleExprScore(NucSeq, n_genes = 25, method='Seurat')
+
+# ME featureplot of projected data:
+plot_list <- ModuleFeaturePlot(NucSeq, features='scores', order='shuffle', reduction='umap')
+pdf("figures/test_MEFeaturePlot_projected_human.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+
+# ME correlogram of projected data:
+pdf("figures/test_ME_correlogram_projected_human.pdf",height=6, width=6)
+ModuleCorrelogram(subset(NucSeq, Cell.Type == 'ASC'), sig.level = 0.001, pch.cex=2, features='hMEs')
+dev.off()
+
+```
+
+
+
+Test changing the module names
+
+```{r eval=FALSE}
+
+# cur_seurat_backup <- cur_seurat
+cur_seurat <- cur_seurat_backup
+
+# run RenameModules
+cur_seurat <- ResetModuleNames(
+  cur_seurat,
+  new_name = "MHb"
+)
+
+plot_list <- ModuleFeaturePlot(
+  cur_seurat,
+  features='hMEs',
+  order=TRUE
+)
+
+pdf("figures/test_MEFeaturePlot_renamed.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# plot the Module Correlation plot:
+pdf("figures/test_ME_correlogram_renamesd.pdf",height=6, width=6)
+ModuleCorrelogram(cur_seurat, sig.level = 0.001, pch.cex=2)
+dev.off()
+
+
+```
+
+Test changing colors
+
+```{r eval=FALSE}
+
+library(MetBrewer)
+
+# new_colors <- paste0(met.brewer("Morgenstern", n=length(mod_colors)-1))
+# cur_seurat <- cur_seurat_backup
+
+modules <- GetModules(cur_seurat)
+mods <- levels(modules$module)
+mod_colors <- select(modules, c(module, color)) %>%
+  distinct %>% arrange(module) %>% .$color
+n_colors <- length(mod_colors) -1
+
+new_colors <- paste0(met.brewer("Tiepolo", n=n_colors))
+cur_seurat <- ResetModuleColors(cur_seurat, new_colors)
+
+plot_list <- ModuleFeaturePlot(
+  cur_seurat,
+  features='scores',
+  # restrict_range=FALSE,
+  ucell=TRUE,
+  order=FALSE
+)
+
+pdf("figures/test_MEFeaturePlot_recolored.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+```
+
+TF overlap with genes using motif matchr
+
+```{r eval=FALSE}
+
+library(motifmatchr)
+library(TFBSTools)
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(JASPAR2018)
+library(JASPAR2020)
+library(EnsDb.Mmusculus.v79)
+library(GenomicRanges)
+library(ggpubr)
+library(ggrepel)
+library(cowplot)
+theme_set(theme_cowplot())
+
+pfm_core <- TFBSTools::getMatrixSet(
+  x = JASPAR2020,
+  opts = list(collection = "CORE", tax_group = 'vertebrates', all_versions = FALSE)
+)
+
+# get a dataframe of just the motif name and the motif ID:
+motif_df <- data.frame(
+  motif_name = purrr::map(1:length(pfm_core), function(i){pfm_core[[i]]@name}) %>% unlist,
+  motif_ID = purrr::map(1:length(pfm_core), function(i){pfm_core[[i]]@ID}) %>% unlist
+)
+
+# get promoter regions for this species (mouse for now)
+# THIS DOES NOT WORK IF I USE X & Y
+
+gene.promoters <- promoters(EnsDb.Mmusculus.v79, filter = ~ gene_biotype == "protein_coding") %>% subset(seqnames %in% c(1:19))
+
+gene.coords <- genes(EnsDb.Mmusculus.v79, filter = ~ gene_biotype == "protein_coding") %>% subset(seqnames %in% c(1:19))
+
+gene.promoters$symbol <- gene.coords$symbol[match(gene.promoters$gene_id, names(gene.coords))]
+gene.promoters <- keepSeqlevels(gene.promoters, value= levels(droplevels(seqnames(gene.promoters))))
+
+# rename seqlevels
+old_levels <- levels(seqnames(gene.promoters))
+new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
+gene.promoters <- renameSeqlevels(gene.promoters, new_levels)
+
+
+# GenomeInfoDb::seqlevelsStyle(gene.promoters) <- 'UCSC'
+genome(seqinfo(gene.promoters)) <- 'mm10'
+
+# set up promoters object
+my_promoters <- GRanges(
+  seqnames =  droplevels(seqnames(gene.promoters)),
+  IRanges(
+    start = start(gene.promoters),
+    end = end(gene.promoters)
+  ),
+  symbol = gene.promoters$symbol,
+  genome='mm10'
+)
+
+# match the motifs with the promoters
+motif_ix <- matchMotifs(pfm_core, my_promoters, genome='mm10');
+
+x <- motifMatches(motif_ix)
+rownames(x) <- my_promoters$symbol
+
+# cur_gene for genes in Seurat object,
+#   get motif matches for this gene.
+#   update ongoing list
+#   some genes have multiple promoter regions so maybe just check for any
+#   binding site in any column?
+
+
+
+# Make a set of peaks
+data(example_motifs, package = "motifmatchr")
+
+peaks <- GRanges(seqnames = c("chr1","chr2","chr2"),
+                 ranges = IRanges(start = c(76585873,42772928,100183786),
+                                  width = 500))
+motif_ix <- matchMotifs(example_motifs[1:2], peaks, genome = "mm10")
+
+motif_ix <- matchMotifs(pfm_core, peaks, genome = "mm10")
+
+```
+
+
+Project onto a mouse visium dataset (one of our new ones?)
+
+```{r eval=FALSE}
+
+
+
+```
+
+
+
+Module Eigengene Violin Plots
+
+```{r eval=FALSE}
+
+MEs <- GetMEs(cur_seurat)
+plot_df <- cbind(cur_seurat@meta.data, MEs)
+mods <- colnames(MEs)
+
+plot_list <- list()
+for(cur_mod in mods){
+
+  plot_list[[cur_mod]] <- ggplot(plot_df, aes_string(x="annotation", y=cur_mod, fill="annotation")) +
+    geom_violin() +
+    geom_boxplot(outlier.shape=NA, width=.2, fill='white') +
+    geom_hline(yintercept=0, linetype='dashed') +
+    NoLegend() + RotatedAxis() +
+    xlab('') + theme(
+      axis.ticks.x=element_blank(),
+      axis.text.x=element_blank(),
+      plot.margin = margin(t = 0,  # Top margin
+                             r = 0,  # Right margin
+                             b = 0,  # Bottom margin
+                             l = 0)
+    )
+}
+
+pdf("figures/test_ME_violin.pdf",height=10, width=10)
+wrap_plots(plot_list, ncol=1)
+dev.off()
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Testing scWGCNA functions
+
+```{r eval=FALSE}
+
+
+################################################################################
+# testing ConstructMetacells
+################################################################################
+
+cur_seurat <- subset(seurat_obj, cell_type == cur_celltype & Sample == 'Sample-1')
+
+meta_list <- list(
+  "Sample" = "Sample-1",
+  "Group" = 'Nurr2c',
+  "cell_type" = cur_celltype
+)
+
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="MHb",
+  k=50, reduction='umap',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+cur_seurat@misc
+
+# pass invalid reduction
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='BAD',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+
+# pass invalid assay
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='umap',
+  assay='BAD', slot='counts',
+  meta = meta_list
+)
+
+
+################################################################################
+# testing NormalizeMetacells
+################################################################################
+
+cur_seurat <- subset(seurat_obj, cell_type == cur_celltype & Sample == 'Sample-1')
+
+meta_list <- list(
+  "Sample" = "Sample-1",
+  "Group" = 'Nurr2c',
+  "cell_type" = cur_celltype
+)
+
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='umap',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+
+# run with default settings
+NormalizeMetacells(cur_seurat)
+
+# pass additional settings to NormalizeData
+NormalizeMetacells(cur_seurat, scale.factor=100
+NormalizeMetacells(cur_seurat, scale.factor=100, verbose=FALSE)
+
+################################################################################
+# testing ScaleMetacells
+################################################################################
+
+cur_seurat <- subset(seurat_obj, cell_type == cur_celltype & Sample == 'Sample-1')
+cur_seurat
+
+meta_list <- list(
+  "Sample" = "Sample-1",
+  "Group" = 'Nurr2c',
+  "cell_type" = cur_celltype
+)
+
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='umap',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+dim(cur_seurat)
+
+# run with default settings
+cur_seurat <- NormalizeMetacells(cur_seurat)
+dim(cur_seurat)
+
+# default settings
+ScaleMetacells(cur_seurat)
+
+# use ScaleData settings
+ScaleMetacells(cur_seurat, scale.max=5)
+ScaleMetacells(cur_seurat, features=rownames(cur_seurat)[1:1000])
+
+
+################################################################################
+# testing RunPCAMetacells, RunHarmonyMetacells, RunUMAPMetacells
+################################################################################
+
+cur_seurat <- subset(seurat_obj, cell_type == cur_celltype & Sample == 'Sample-1')
+
+meta_list <- list(
+  "Sample" = "Sample-1",
+  "Group" = 'Nurr2c',
+  "cell_type" = cur_celltype
+)
+
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='umap',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+
+# run with default settings
+cur_seurat <- NormalizeMetacells(cur_seurat)
+cur_seurat <- ScaleMetacells(cur_seurat)
+cur_seurat <- RunPCAMetacells(cur_seurat, features=VariableFeatures(cur_seurat))
+cur_seurat <- RunHarmonyMetacells(
+  cur_seurat,
+  group.by='Sample',
+  dims=1:15,
+  max.iter.harmony=3
+)
+cur_seurat <- RunUMAPMetacells(cur_seurat, reduction='harmony', dims=1:15)
+
+p1 <- DimPlotMetacells(cur_seurat, group.by='cell_type') + umap_theme
+p2 <- DimPlotMetacells(cur_seurat, group.by='Sample') + umap_theme
+
+pdf('figures/test_metacell_umap.pdf', width=10, height=4)
+p1 | p2
+dev.off()
+
+################################################################################
+# construct metacells for each metacell group and merge into one seurat obj
+################################################################################
+
+library(future.apply)
+plan(sequential)
+# check how many cores:
+# availableCores()
+# plan(multicore, workers=8)
+# options(future.globals.maxSize= 16*1024^3 )
+
+
+groups <- c('Sample', 'cell_type', 'Group')
+
+
+# make a seurat obj for testing:
+test_seurat <- seurat_obj@meta.data %>% subset(
+  cell_type %in% c("LHb-Neuron", "PHb-Neuron", "MHb-Neuron"),
+  as.character(Sample) %in% c("Sample-1", "Sample-2")
+)
+test_seurat <- seurat_obj[,rownames(test_seurat)]
+
+
+
+# test using multiple meta-data columns for grouping
+out <- MetacellsByGroups(
+  seurat_obj = test_seurat,
+  group.by = groups
+)
+
+# test using only one meta-data column for grouping
+out <- MetacellsByGroups(
+  seurat_obj = test_seurat,
+  group.by = c("Sample")
+)
+
+
+################################################################################
+# Use UMAP versus harmony for metacell construction?
+################################################################################
+
+#cur_seurat <- cur_seurat[genes.keep,]
+cur_seurat <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='umap',
+  assay='RNA', slot='counts',
+  meta = meta_list
+)
+cur_seurat@misc$wgcna_metacell_obj <- NormalizeData(cur_seurat@misc$wgcna_metacell_obj)
+
+
+
+cur_seurat2 <- ConstructMetacells(
+  cur_seurat, name="test",
+  k=50, reduction='harmony',
+  assay='RNA', slot='counts'
+)
+cur_seurat2@misc$wgcna_metacell_obj <- NormalizeData(cur_seurat2@misc$wgcna_metacell_obj)
+
+
+# correlate metacells?
+
+# average expression in 1
+expr_mat1 <- Seurat::GetAssayData(
+  cur_seurat@misc$wgcna_metacell_obj,
+  slot = 'data'
+)
+avg_exp1 <- rowMeans(expr_mat1)
+
+expr_mat2 <- Seurat::GetAssayData(
+  cur_seurat2@misc$wgcna_metacell_obj,
+  slot = 'data'
+)
+avg_exp2 <- rowMeans(expr_mat2)
+
+exp_cor <- stats::cor(
+  x = as.numeric(avg_exp1),
+  y = as.numeric(avg_exp2), method='pearson'
+)
+exp_cor
+
+df <- data.frame(
+  'umap' = avg_exp1,
+  'harmony' = avg_exp2
+)
+
+p <- ggplot(df, aes(x=umap, y=harmony)) +
+  geom_point() +
+  geom_smooth(method = 'lm', color='black') +
+  stat_cor(p.accuracy = 0.00001, r.accuracy = 0.000001, color='black', label.y = 0.9, label.x=0) +
+  xlab('Average Expression, UMAP aggregation') + ylab('Average Expression, Harmony aggregation')
+
+
+pdf('figures/umap_harmony_metacell_correlation.pdf', width=5, height=5)
+p
+dev.off()
+
+
+
+################################################################################
+# testing SelectNetworkGenes
+################################################################################
+
+# default settings
+cur_seurat <- SelectNetworkGenes(cur_seurat)
+length(cur_seurat@misc$wgcna_genes)
+
+# custom gene list with good genes
+test_genes <- c(head(VariableFeatures(cur_seurat), 600))
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='custom', gene_list = test_genes)
+
+# custom gene list with few genes
+test_genes <- c(head(VariableFeatures(cur_seurat), 60))
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='custom', gene_list = test_genes)
+
+# custom gene list with bad genes
+test_genes <- c(VariableFeatures(cur_seurat), 'APOE', 'BADGENE')
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='custom', gene_list = test_genes)
+
+# fraction with default:
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='fraction')
+length(cur_seurat@misc$wgcna_genes)
+
+# fraction with 10%:
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='fraction', fraction = 0.10)
+length(cur_seurat@misc$wgcna_genes)
+
+# fraction with 100% (should throw an error)
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='fraction', fraction = 1.0)
+length(cur_seurat@misc$wgcna_genes)
+
+# all genes
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='all')
+
+# invalid selection type
+cur_seurat <- SelectNetworkGenes(cur_seurat, type='random')
+
+# head the wgcna_genes
+head(seurat_obj@misc$wgcna_genes)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Test module eigengenes function
+
+```{r eval=FALSE}
+
+# compute one ME
+cur_seurat <- ComputeModuleEigengene(cur_seurat, group.by.vars=NULL, cur_mod="yellow")
+
+# compute one ME and harmonize
+cur_seurat <- ComputeModuleEigengene(cur_seurat, group.by.vars="Sample", cur_mod="yellow")
+
+# compute one ME and pass extra variables to RunPCA:
+cur_seurat <- ComputeModuleEigengene(cur_seurat, group.by.vars="Sample", cur_mod="yellow", npcs=30)
+
+# compute one ME and pass extra variables to RunPCA and to RunHarmony:
+cur_seurat <- ComputeModuleEigengene(cur_seurat, group.by.vars="Sample", cur_mod="yellow", npcs=30, dims.use=1:30)
+
+# compute all MEs
+cur_seurat <- ModuleEigengenes(cur_seurat, group.by.vars="Sample", npcs=30, dims.use=1:30)
+
+saveRDS(cur_seurat, file='data/test_wgcna_seurat.rds')
+
+
+
+
+
+Make my own module eigengenes function
+```{r eval=FALSE}
+
+# loop over modules:
+me_list <- list()
+harmonized_me_list <- list()
+modules <- unique(cur_seurat@misc$wgcna_net$colors)
+
+for(cur_mod in modules){
+
+  print(cur_mod)
+  cur_genes <- names(cur_seurat@misc$wgcna_net$colors[cur_seurat@misc$wgcna_net$colors == cur_mod])
+
+  cur_seurat <- RunPCA(cur_seurat, features =cur_genes, reduction.key=paste0('PCA', cur_mod), verbose=FALSE)
+
+  cur_seurat <- RunHarmony(cur_seurat, group.by.vars="Sample", reduction='pca')
+
+  cur_harmonized_me <- cur_seurat@reductions$harmony@cell.embeddings[,1]
+  harmonized_me_list[[cur_mod]] <- cur_harmonized_me
+
+  cur_me <- cur_seurat@reductions$pca@cell.embeddings[,1]
+  me_list[[cur_mod]] <- cur_me
+
+}
+
+test <- RunPCA(cur_seurat, features =cur_genes, reduction.key=paste0('PCA', cur_mod), verbose=FALSE)@reductions$pca@cell.embeddings
+
+cur_seurat@reductions$ME <- Seurat::CreateDimReducObject(
+  embeddings = test,
+  assay = Seurat::DefaultAssay(cur_seurat)
+)
+
+
+test <- do.call(cbind, me_list)
+colnames(test) <- paste0('ME_', colnames(test))
+modules <- colnames(test)
+modules <- modules[modules != 'ME_grey']
+
+plot_df <- cbind(cur_seurat@meta.data, test)
+
+plot_list <- list()
+for(cur_mod in modules){
+
+  # get color from mod:
+  cur_color <- str_split(cur_mod, '_')[[1]][2]
+
+  print(cur_mod)
+  plot_range <- plot_df[[cur_mod]] %>% range
+  if(abs(plot_range[1]) > abs(plot_range[2])){
+    plot_range[1] <- -1*plot_range[2]
+  } else{
+    plot_range[2] <- -1*plot_range[1]
+  }
+
+  plot_df[[cur_mod]] <- ifelse(plot_df[[cur_mod]] > plot_range[2], plot_range[2], plot_df[[cur_mod]])
+  plot_df[[cur_mod]] <- ifelse(plot_df[[cur_mod]] < plot_range[1], plot_range[1], plot_df[[cur_mod]])
+
+  plot_list[[cur_mod]] <- plot_df %>%
+    arrange_(cur_mod) %>%
+    ggplot(aes_string(x="UMAP_1", y="UMAP_2", color=cur_mod)) +
+    geom_point(size=0.5) +
+    scale_color_gradient2(low='grey75', mid='grey95', high=cur_color) +
+    umap_theme + ggtitle('')
+
+}
+
+pdf('figures/test_me_featureplot.pdf', width=10, height=10)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+
+
+
+plot_df %>% arrange_(cur_mod) %>% head
+
+plot_df %>% arrange(UQ(cur_mod)) %>% head
+
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=ME_blue)) +
+  geom_point(size=0.5) +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red')) +
+  umap_theme + ggtitle(cur_mod)
+
+
+
+p2 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=ME_turquoise)) +
+  geom_point(size=0.5) +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red')) +
+  umap_theme + ggtitle(cur_mod)
+
+p3 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=ME_yellow)) +
+  geom_point(size=0.5) +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red')) +
+  umap_theme + ggtitle(cur_mod)
+
+
+
+p4 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=ME_brown)) +
+  geom_point(size=0.5) +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red')) +
+  umap_theme + ggtitle(cur_mod)
+
+
+p5 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=ME_grey)) +
+  geom_point(size=0.5) +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red')) +
+  umap_theme + ggtitle(cur_mod)
+
+pdf('figures/test_me_featureplot.pdf', width=12,height=9)
+(p1 + p2 + p3 ) / (p4 + p5)
+dev.off()
+
+
+
+
+
+
+
+cur_mod <- 'blue'
+cur_genes <- names(cur_seurat@misc$wgcna_net$colors[cur_seurat@misc$wgcna_net$colors == cur_mod])
+
+test <- RunPCA(cur_seurat, features =cur_genes, reduction.key=paste0('PCA', cur_mod))
+
+test <- RunHarmony(test, group.by.vars="Sample", reduction='pca')
+
+
+
+# plot harmonized ME
+
+cur_me <- test@reductions$harmony@cell.embeddings[,1]
+test@meta.data$test_me <- cur_me
+
+plot_range <- test$test_me %>% range
+if(abs(plot_range[1]) > abs(plot_range[2])){
+  plot_range[1] <- -1*plot_range[2]
+} else{
+  plot_range[2] <- -1*plot_range[1]
+}
+plot_range
+
+test$test_me <- ifelse(test$test_me > plot_range[2], plot_range[2], test$test_me)
+test$test_me <- ifelse(test$test_me < plot_range[1], plot_range[1], test$test_me)
+
+p1 <- FeaturePlot(test, features='test_me', order=TRUE) + umap_theme +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red'), limits=plot_range) +
+  ggtitle('Harmonized ME')
+
+# plot ME
+
+cur_me <- test@reductions$pca@cell.embeddings[,1]
+test@meta.data$test_me <- cur_me
+
+plot_range <- test$test_me %>% range
+if(abs(plot_range[1]) > abs(plot_range[2])){
+  plot_range[1] <- -1*plot_range[2]
+} else{
+  plot_range[2] <- -1*plot_range[1]
+}
+plot_range
+
+test$test_me <- ifelse(test$test_me > plot_range[2], plot_range[2], test$test_me)
+test$test_me <- ifelse(test$test_me < plot_range[1], plot_range[1], test$test_me)
+
+p2 <- FeaturePlot(test, features='test_me', order=TRUE) + umap_theme +
+  scale_color_gradient2(low=scales::muted('blue'), mid='lightgrey', high=scales::muted('red'), limits=plot_range) +
+  ggtitle('ME')
+
+pdf('figures/test_me_featureplot.pdf', width=10,height=5)
+p1 | p2
+dev.off()
+
+
+```
