@@ -18,6 +18,11 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
 
+  # TODO:
+  # get genes that are expressed in a fraction of cells in select groups (ie celltypes)
+  # this would reduce a bias against genes that are only expressed in underrepresented
+  # cell-types
+
   # handle different selection strategies
   if(gene_select == "fraction"){
 
@@ -293,7 +298,7 @@ ConstructNetwork <- function(
   seurat_obj <- SetModules(
     seurat_obj, mod_df = data.frame(
       "gene_name" = names(mods),
-      "module" = mods,
+      "module" = factor(mods, levels=unique(mods)),
       "color" = mods
     )
   )

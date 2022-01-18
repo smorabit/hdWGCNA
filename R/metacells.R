@@ -16,8 +16,11 @@
 ConstructMetacells <- function(
   seurat_obj, name='agg', ident.group='seurat_clusters', k=50,
   reduction='umap', assay='RNA',
-  slot='counts',  meta=NULL, return_metacell=FALSE
+  cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
+  slot='counts',  meta=NULL, return_metacell=FALSE, wgcna_name=NULL
 ){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # check reduction
   if(!(reduction %in% names(seurat_obj@reductions))){
@@ -33,6 +36,14 @@ ConstructMetacells <- function(
   if(!(slot %in% c('counts', 'data', 'scale.data'))){
     stop(paste0("Invalid slot (", slot, "). Valid options for slot: counts, data, scale.data "))
   }
+
+  # subset seurat object by selected cells:
+  if(!is.null(cells.use)){
+    seurat_full <- seurat_obj
+    seurat_obj <- seurat_obj[,cells.use]
+  }
+
+  print(dim(seurat_obj))
 
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
@@ -107,8 +118,13 @@ ConstructMetacells <- function(
     out <- metacell_obj
   } else{
 
+    # revert to full seurat object if we subsetted earlier
+    if(!is.null(cells.use)){
+      seurat_obj <- seurat_full
+    }
+
     # add seurat metacell object to the main seurat object:
-    seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj)
+    seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 
     # add other info
     seurat_obj <- SetWGCNAParams(
@@ -117,7 +133,8 @@ ConstructMetacells <- function(
         'metacell_reduction' = reduction,
         'metacell_slot' = slot,
         'metacell_assay' = assay
-      )
+      ),
+      wgcna_name
     )
 
     out <- seurat_obj
@@ -143,8 +160,18 @@ ConstructMetacells <- function(
 #' MetacellsByGroups(pbmc)
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'), ident.group='seurat_clusters',
-  k=50, reduction='umap', assay='RNA', slot='counts'
+  k=50, reduction='umap', assay='RNA',
+  cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
+  slot='counts', wgcna_name=NULL
 ){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # subset seurat object by seleted cells:
+  if(!is.null(cells.use)){
+    seurat_full <- seurat_obj
+    seurat_obj <- seurat_obj[,cells.use]
+  }
 
   # setup grouping variables
   if(length(group.by) > 1){
@@ -157,6 +184,12 @@ MetacellsByGroups <- function(
     seurat_obj$metacell_grouping <- as.character(seurat_obj@meta.data[[group.by]])
   }
   groupings <- unique(seurat_obj$metacell_grouping)
+  groupings <- groupings[order(groupings)]
+
+  # remove groups that are too small:
+  # TODO: add a warning to let the user know that some groups are skipped?
+  groupings <- groupings[table(seurat_obj$metacell_grouping) >= 2*k]
+  print(groupings)
 
   # unique meta-data for each group
   meta_df <- as.data.frame(do.call(rbind, strsplit(groupings, '_')))
@@ -179,7 +212,7 @@ MetacellsByGroups <- function(
     seurat_obj = seurat_list,
     name = groupings,
     meta = meta_list,
-    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE)
+    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE, wgcna_name=wgcna_name)
   )
   names(metacell_list) <- groupings
 
@@ -189,8 +222,13 @@ MetacellsByGroups <- function(
   # set idents for metacell object:
   Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]
 
+  # revert to full seurat object if we subsetted earlier
+  if(!is.null(cells.use)){
+    seurat_obj <- seurat_full
+  }
+
   # add seurat metacell object to the main seurat object:
-  seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj)
+  seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 
   # add other info
   seurat_obj <- SetWGCNAParams(
@@ -199,7 +237,8 @@ MetacellsByGroups <- function(
       'metacell_reduction' = reduction,
       'metacell_slot' = slot,
       'metacell_assay' = assay
-    )
+    ),
+    wgcna_name
   )
   seurat_obj
 }

@@ -1,0 +1,384 @@
+
+# Load data
+
+```{r eval=FALSE}
+
+# conda activate spatial
+library(Seurat)
+library(tidyverse)
+library(cowplot)
+library(Matrix)
+library(viridis)
+library(presto)
+library(harmony)
+library(RColorBrewer)
+library(patchwork)
+library(ggpubr)
+library(tictoc)
+library(RColorBrewer)
+library(Hmisc)
+library(corrplot)
+library(enrichR)
+library(GeneOverlap)
+library(WGCNA)
+enableWGCNAThreads(nThreads = 8)
+
+set.seed(2021)
+colfunc <- colorRampPalette(rev(brewer.pal(11, 'Spectral' )))
+theme_set(theme_cowplot())
+# scp ../../pipelines/scWGCNA/R/* hpc3:/dfs3b/swaruplab/smorabit/analysis/scWGCNA/bin/
+setwd("/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA")
+
+# source all of the scWGCNA scripts:
+scripts <- dir("bin/")
+scripts <- scripts[scripts != 'scWGCNA.R']
+for(script in scripts){
+  source(paste0("bin/", script))
+}
+
+# directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+umap_theme <- theme(
+  axis.line=element_blank(),
+  axis.text.x=element_blank(),
+  axis.text.y=element_blank(),
+  axis.ticks=element_blank(),
+  axis.title.x=element_blank(),
+  axis.title.y=element_blank(),
+  panel.background=element_blank(),
+  panel.border=element_blank(),
+  panel.grid.major=element_blank(),
+  panel.grid.minor=element_blank(),
+  plot.background=element_blank(),
+  plot.title = element_text(hjust = 0.5)
+)
+
+# load seurat obj from AD NatGen paper:
+NucSeq <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/NucSeq_batch_correct_seurat.rds')
+
+# load NatGen color scheme:
+load('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/color_scheme.rda')
+
+
+# directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs3b/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, mm10_name, hg38_id, mm10_id))
+
+# load scWGCNA testing seurat object
+seurat_obj <- readRDS(file='data/test_wgcna_seurat.rds')
+
+# # select celltype:
+# cur_celltype <- 'MHb-Neuron'
+#
+# # seurat obj for this celltype
+# seurat_obj <- subset(seurat_obj, cell_type == cur_celltype)
+
+```
+
+Violin Plots for Vivek's grant:
+
+```{r eval=FALSE}
+
+genes <- c("APP", "BACE1", "ADAM10", "BIN1")
+
+plot_list <- VlnPlot(NucSeq, features=genes, split.by='Diagnosis', group.by='Cell.Type', combine=FALSE, split.plot=TRUE, pt.size=0)
+
+for(i in 1:length(plot_list)){
+  plot_list[[i]] <- plot_list[[i]] + NoLegend() + xlab('') + ylab('')  +
+  stat_compare_means(method='wilcox', label='p.signif')
+}
+
+pdf(paste0(fig_dir, 'vlnplot_for_vivek.pdf'), width=5, height=4)
+plot_list
+dev.off()
+
+
+```
+
+
+Human
+Run scWGCNA on 80/20 train/test split
+project Modules onto test data
+run ROC code
+
+```{r eval=FALSE}
+
+################################################################################
+# Setup data
+#
+# Note: all genes have already been Scaled for this Seurat object
+################################################################################
+
+set.seed(12345)
+
+# get only control samples
+seurat_obj <- subset(NucSeq, Diagnosis == 'Control' & Cell.Type != "PER.END")
+table(seurat_obj$Cell.Type, seurat_obj$Sample.ID)
+
+# 80/20 train/test split:
+train_prop = 0.8
+train_cells <- sample(colnames(seurat_obj), round(train_prop * ncol(seurat_obj)))
+seurat_obj$wgcna_train <- ifelse(colnames(seurat_obj) %in% train_cells, 'train', 'test')
+
+# setup training data for scWGCNA:
+seurat_obj <- SetupForWGCNA(
+  seurat_obj, wgcna_name = "train",
+  gene_select  = "fraction",
+  fraction = 0.1
+)
+
+# construct metacells:
+seurat_obj <- MetacellsByGroups(
+  seurat_obj = seurat_obj,
+  group.by = c("Cell.Type", "Sample.ID"),
+  cells.use = rownames(subset(seurat_obj@meta.data, wgcna_train == 'train')),
+  k = 25,
+  ident.group = 'Cell.Type'
+)
+
+# normalize metacells:
+seurat_obj <- NormalizeMetacells(seurat_obj)
+
+########################################################################
+#  Construct co-expression networks
+########################################################################
+
+# Test different soft powers:
+seurat_obj <- TestSoftPowers(seurat_obj, group.by='Cell.Type', group_name="ASC")
+
+# construct wgcna network:
+seurat_obj <- ConstructNetwork(
+  seurat_obj, soft_power=8,
+  group.by='Cell.Type', group_name="ASC"
+)
+
+# plot the dendrogram
+pdf("figures/test_human_ASC_dendro.pdf",height=5, width=8)
+PlotDendrogram(seurat_obj, main='ASC')
+dev.off()
+
+
+########################################################################
+# Compute Module Eigengenes, module connectivity, and module scores
+########################################################################
+
+# compute all MEs in the full single-cell dataset
+seurat_obj <- ModuleEigengenes(seurat_obj, group.by.vars="Batch")
+
+# compute module connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+# compute module hub gene scores:
+seurat_obj <- ModuleExprScore(seurat_obj, n_genes = 25, method='Seurat')
+
+plot_list <- ModuleFeaturePlot(seurat_obj)
+pdf("figures/test_MEFeaturePlot_human_hMEs.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# plot module scores (Seurat)
+plot_list <- ModuleFeaturePlot(seurat_obj, features='scores')
+pdf("figures/test_MEFeaturePlot_human_scores.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+# save processed object:
+saveRDS(seurat_obj, file=paste0(data_dir, 'human_AD_NatGen_scWGCNA.rds'))
+
+```
+
+Make ROC functions
+
+should be able to take one seurat object with a train/test metadata column,
+or to take two seurat objects as input
+
+
+```{r eval=FALSE}
+
+library(pROC)
+
+# get Modules
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
+
+seurat_obj$wgcna_train <- ifelse(seurat_obj$wgcna_train == 'train', TRUE, FALSE)
+
+split_col <- 'wgcna_train'
+group.by <- 'monocle_clusters_umap_ID'
+groups <- as.character(unique(seurat_obj@meta.data[[group.by]]))
+
+# split into two seurat objects based on train & test split:
+seurat_train <- seurat_obj[,seurat_obj@meta.data[[split_col]]]
+seurat_test <- seurat_obj[,!seurat_obj@meta.data[[split_col]]]
+
+# project modules for train
+seurat_train <- ProjectModules(
+  seurat_train,
+  seurat_ref = seurat_obj,
+  group.by.vars="Batch",
+  wgcna_name_proj="ROC",
+  scale_genes=FALSE, verbose=TRUE
+)
+
+# project modules for test
+seurat_test <- ProjectModules(
+  seurat_test,
+  seurat_ref = seurat_obj,
+  group.by.vars="Batch",
+  wgcna_name_proj="ROC",
+  scale_genes=FALSE, verbose=TRUE
+)
+
+# get hMEs for ROC comparison:
+MEs <- as.data.frame(GetMEs(seurat_train, harmonized=TRUE, wgcna_name="ROC")) %>% mutate(group = seurat_train@meta.data[[group.by]])
+MEs_p <- as.data.frame(GetMEs(seurat_test, harmonized=TRUE, wgcna_name="ROC")) %>% mutate(group = seurat_test@meta.data[[group.by]])
+
+# compute average MEs in each group:
+avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))
+avg_MEs_p <- MEs_p %>% group_by(group) %>% summarise(across(!!mods, mean))
+groups <- avg_MEs$group
+
+# scale each column between 0 & 1
+avg_MEs <- avg_MEs %>% summarise(across(!!mods, scale01))
+avg_MEs_p <- avg_MEs_p %>% summarise(across(!!mods, scale01))
+
+# convert to binary labels:
+thresh <- 0.75
+labels <- avg_MEs %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
+labels <- as.data.frame(do.call(cbind, labels));
+rownames(labels) <- as.character(groups)
+
+predictions <- avg_MEs_p %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
+predictions <- as.data.frame(do.call(cbind, predictions));
+rownames(predictions) <- as.character(groups)
+
+# loop over modules to compute ROC curves:
+plot_df <- data.frame()
+conf_df <- data.frame()
+auc_list <- list()
+mod_colors <- list()
+for(cur_mod in mods){
+  print(cur_mod)
+  cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+  mod_colors[[cur_mod]] <- cur_color
+
+  # compute ROC
+  rocobj <- pROC::roc(labels[,cur_mod], avg_MEs_p[[cur_mod]])
+  auc_list[[cur_mod]] <- as.numeric(rocobj$auc)
+  # confidence intervals:
+  # sens_ci <- ci.se(rocobj)
+
+  cur_df <- data.frame(
+    specificity = 1-rocobj$specificities,
+    sensitivity = rocobj$sensitivities,
+    #auc = rocobj$auc,
+    module = cur_mod,
+    color = cur_color,
+    auc = as.numeric(rocobj$auc)
+  #  ci_lo = sens_ci[,1],
+  #  ci_med = sens_ci[,2],
+  #  ci_hi = sens_ci[,3]
+
+  )
+  plot_df <- rbind(plot_df, cur_df)
+
+  cur_conf <- as.data.frame(ci.se(rocobj))
+  cur_conf$sensitivity <- 1-as.numeric(rownames(cur_conf))
+  cur_conf$module <- cur_mod
+  cur_conf$color <- cur_color
+  conf_df <- rbind(conf_df, cur_conf)
+
+}
+colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
+
+# plot the ROC curve
+plot_df <- plot_df %>% group_by(module) %>% arrange(sensitivity)
+conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
+auc_df <- distinct(plot_df[,c('module', 'auc')])
+
+p <- plot_df %>% ggplot(
+  aes(x=specificity, y=sensitivity, color=module, fill=module),
+) +
+  geom_line() +
+  geom_ribbon(
+    data=conf_df,
+    aes(x = sensitivity, ymin=lo, ymax=hi, fill=module),
+    inherit.aes=FALSE, alpha=0.4
+  ) +
+  scale_color_manual(values = unlist(mod_colors)) +
+  scale_fill_manual(values = unlist(mod_colors)) +
+  scale_x_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+  scale_y_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+  xlab("1 - Specificity (FPR)") + ylab("Sensitivity (TPR)") +
+  geom_text(
+    data = auc_df,
+    aes(color=module),
+    x=0.75, y=0.1, label=paste0("AUC: ", format(auc_df$auc, digits=2)),
+    inherit.aes=FALSE, size=4, color='black'
+  )
+  #annotate("text", x=0.75, y=0.1, label=paste0("AUC: ", plot_df$auc))
+  # theme(
+  #   axis.text = element_blank(),
+  #   axis.ticks = element_blank()
+  # )
+
+
+
+pdf(paste0(fig_dir, 'test_ROC_human.pdf'), width=8, height=6)
+p + facet_wrap(~module, ncol=4) + NoLegend()
+dev.off()
+
+
+unlist(auc_list)
+
+```
+
+
+Project onto human AD dataset:
+
+```{r eval=FALSE}
+
+# load AD NatGen dataset
+NucSeq <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/NucSeq_batch_correct_seurat.rds')
+
+# keep only a few samples:
+NucSeq <- subset(NucSeq, Sample.ID %in% c("Sample-100", "Sample-45"))
+
+NucSeq <- ProjectModules(
+  seurat_obj=NucSeq,
+  seurat_ref=seurat_obj,
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="mm10_name",
+  genome2_col="hg38_name",
+  scale_genes=TRUE,
+  wgcna_name_proj="MHb_projected"
+)
+
+# compute module expression score & average module expression:
+NucSeq <- ModuleExprScore(NucSeq, n_genes = 25, method='Seurat')
+
+# ME featureplot of projected data:
+plot_list <- ModuleFeaturePlot(NucSeq, features='scores', order='shuffle', reduction='umap')
+pdf("figures/test_MEFeaturePlot_projected_human.pdf",height=12, width=12)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+
+# ME correlogram of projected data:
+pdf("figures/test_ME_correlogram_projected_human.pdf",height=6, width=6)
+ModuleCorrelogram(subset(NucSeq, Cell.Type == 'ASC'), sig.level = 0.001, pch.cex=2, features='hMEs')
+dev.off()
+
+```

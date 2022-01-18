@@ -680,7 +680,7 @@ motif_df <- data.frame(
 )
 
 # get promoter regions for this species (mouse for now)
-# THIS DOES NOT WORK IF I USE X & Y
+# THIS DOES NOT WORK IF I USE X & Y chromosomes!?#?/???
 
 gene.promoters <- promoters(EnsDb.Mmusculus.v79, filter = ~ gene_biotype == "protein_coding") %>% subset(seqnames %in% c(1:19))
 
