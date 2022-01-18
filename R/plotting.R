@@ -975,3 +975,69 @@ OverlapBarPlot <- function(
   plot_list
 
 }
+
+
+#' ROCCurves
+#'
+#' Makes barplots from Enrichr data
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs List of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ROCCurves
+ROCCurves <- function(
+  seurat_obj,
+  roc_df, conf_df, wgcna_name=NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get Modules
+  modules <- GetModules(seurat_obj)
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+
+  # get module colors:
+  mod_colors <- modules %>% subset(module %in% mods) %>%
+    select(c(module, color)) %>%
+    distinct %>%
+    arrange(module) %>% .$color
+
+  # plot the ROC curve
+  roc_df <- roc_df %>% group_by(module) %>% arrange(sensitivity)
+  conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
+  auc_df <- distinct(roc_df[,c('module', 'auc')])
+
+  # set factor levels for modules:
+  roc_df$module <- factor(roc_df$module, levels=mods)
+  conf_df$module <- factor(conf_df$module, levels=mods)
+  auc_df$module <- factor(auc_df$module, levels=mods)
+
+  p <- roc_df %>% ggplot(
+    aes(x=specificity, y=sensitivity, color=module, fill=module),
+  ) +
+    geom_line() +
+    geom_ribbon(
+      data=conf_df,
+      aes(x = sensitivity, ymin=lo, ymax=hi, fill=module),
+      inherit.aes=FALSE, alpha=0.4
+    ) +
+    scale_color_manual(values = unlist(mod_colors)) +
+    scale_fill_manual(values = unlist(mod_colors)) +
+    scale_x_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+    scale_y_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
+    xlab("1 - Specificity (FPR)") + ylab("Sensitivity (TPR)") +
+    geom_text(
+      data = auc_df,
+      aes(color=module),
+      x=0.75, y=0.1, label=paste0("AUC: ", format(auc_df$auc, digits=2)),
+      inherit.aes=FALSE, size=4, color='black'
+    )
+
+  p
+
+}

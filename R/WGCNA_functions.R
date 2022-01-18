@@ -900,3 +900,182 @@ TransferModuleGenome <- function(
   modules
 
 }
+
+
+#' ComputeROC
+#'
+#'
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ComputeROC
+ComputeROC <- function(
+  seurat_obj, group.by=NULL,
+  split_col=NULL, # needs to be a logical!!!
+  features = 'hMEs',
+  seurat_test=NULL,
+  harmony_group_vars=NULL,
+  scale_genes=TRUE,
+  verbose=FALSE,
+  exp_thresh = 0.75,
+  wgcna_name=NULL, wgcna_name_test=NULL
+){
+
+  #TODO:
+  # should be able to skip the ME computation if
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get Modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+
+  # if group.by column is null, use Idents:
+  if(is.null(group.by)){
+    group.by <- 'roc_group'
+    seurat_obj@meta.data[[group.by]] <- Idents(seurat_obj)
+  }
+
+  # get names of different cell groupings
+  groups <- as.character(unique(Idents(seurat_obj)))
+  groups <- groups[order(groups)]
+
+  # split seurat object into training & testing if the testing is not provided
+  if(is.null(seurat_test)){
+
+    print('splitting seurat obj')
+
+    # split into two seurat objects based on train & test split:
+    seurat_train <- seurat_obj[,seurat_obj@meta.data[[split_col]]]
+    seurat_test <- seurat_obj[,!seurat_obj@meta.data[[split_col]]]
+
+    # project modules for train
+    wgcna_name_train <- "ROC"
+    seurat_train <- ProjectModules(
+      seurat_train,
+      seurat_ref = seurat_obj,
+      group.by.vars=harmony_group_vars,
+      wgcna_name_proj=wgcna_name_train,
+      scale_genes=scale_genes, verbose=verbose
+    )
+
+  } else{
+
+    if(is.null(wgcna_name_test)){wgcna_name_test <- seurat_test@misc$active_wgcna}
+
+    # if group.by column is null, use Idents:
+    if(is.null(group.by)){
+      group.by <- 'roc_group'
+      seurat_test@meta.data[[group.by]] <- Idents(seurat_test)
+    }
+
+    seurat_train <- seurat_obj
+    wgcna_name_train <- wgcna_name
+
+  }
+
+  print('here')
+
+  # get names of different cell groupings in test
+  groups_test <- as.character(unique(Idents(seurat_test)))
+  groups_test <- groups_test[order(groups_test)]
+
+  # check if groups are equal:
+  if(sum(groups == groups_test) != length(groups)){
+    stop("Different groups present in train & test data. Idents likely do not match.")
+  }
+
+  # project modules for test
+  seurat_test <- ProjectModules(
+    seurat_test,
+    seurat_ref = seurat_obj,
+    group.by.vars=harmony_group_vars,
+    wgcna_name_proj="ROC",
+    scale_genes=scale_genes, verbose=verbose
+  )
+
+  # get MEs from seurat object
+  if(features == 'hMEs'){
+    MEs <- GetMEs(seurat_train, TRUE, wgcna_name_train)
+    MEs_p <- GetMEs(seurat_test, TRUE, "ROC")
+  } else if(features == 'MEs'){
+    MEs <- GetMEs(seurat_train, FALSE, wgcna_name_train)
+    MEs_p <- GetMEs(seurat_test, FALSE, "ROC")
+  } else if(features == 'scores'){
+    MEs <- GetModuleScores(seurat_train, wgcna_name_train)
+    MEs_p <- GetModuleScores(seurat_test, "ROC")
+    stop("Haven't implemented this one yet >.<")
+  } else(
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores.')
+  )
+
+  print('train')
+  print(dim(MEs))
+  print(dim(seurat_train))
+  print('test')
+  print(dim(MEs_p))
+  print(dim(seurat_test))
+
+  # add group column to MEs:
+  MEs <- as.data.frame(MEs) %>% mutate(group = seurat_train@meta.data[[group.by]])
+  MEs_p <- as.data.frame(MEs_p) %>% mutate(group = seurat_test@meta.data[[group.by]])
+
+  # compute average MEs in each group:
+  avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))
+  avg_MEs_p <- MEs_p %>% group_by(group) %>% summarise(across(!!mods, mean))
+  groups <- avg_MEs$group
+
+  # scale each column between 0 & 1
+  avg_MEs <- avg_MEs %>% summarise(across(!!mods, scale01))
+  avg_MEs_p <- avg_MEs_p %>% summarise(across(!!mods, scale01))
+
+  # convert to binary labels:
+  labels <- avg_MEs %>% purrr::map(~ifelse(. >= exp_thresh, TRUE, FALSE))
+  labels <- as.data.frame(do.call(cbind, labels));
+  rownames(labels) <- as.character(groups)
+
+  # loop over modules to compute ROC curves:
+  plot_df <- data.frame()
+  conf_df <- data.frame()
+  auc_list <- list()
+  mod_colors <- list()
+  roc_list <- list()
+  for(cur_mod in mods){
+    print(cur_mod)
+    cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+    mod_colors[[cur_mod]] <- cur_color
+
+    # compute ROC
+    rocobj <- pROC::roc(labels[,cur_mod], avg_MEs_p[[cur_mod]])
+    auc_list[[cur_mod]] <- as.numeric(rocobj$auc)
+    roc_list[[cur_mod]] <- rocobj
+
+    # update plotting df
+    cur_df <- data.frame(
+      specificity = 1-rocobj$specificities,
+      sensitivity = rocobj$sensitivities,
+      module = cur_mod,
+      color = cur_color,
+      auc = as.numeric(rocobj$auc)
+    )
+    plot_df <- rbind(plot_df, cur_df)
+
+    # update confidence interval df
+    cur_conf <- as.data.frame(pROC::ci.se(rocobj))
+    cur_conf$sensitivity <- 1-as.numeric(rownames(cur_conf))
+    cur_conf$module <- cur_mod
+    cur_conf$color <- cur_color
+    conf_df <- rbind(conf_df, cur_conf)
+
+  }
+  colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
+
+  # return ROC tables & objects:
+  list(
+    roc = plot_df,
+    conf = conf_df,
+    objects = roc_list
+  )
+
+}

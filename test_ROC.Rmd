@@ -181,8 +181,27 @@ seurat_obj <- ModuleConnectivity(seurat_obj)
 
 # compute module hub gene scores:
 seurat_obj <- ModuleExprScore(seurat_obj, n_genes = 25, method='Seurat')
+seurat_obj <- AvgModuleExpr(seurat_obj, n_genes = 100)
 
-plot_list <- ModuleFeaturePlot(seurat_obj)
+# run RenameModules
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = "M"
+)
+print(names(GetModules(seurat_obj)))
+
+# reset colors:
+library(MetBrewer)
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mod_colors <- select(modules, c(module, color)) %>%
+  distinct %>% arrange(module) %>% .$color
+n_colors <- length(mod_colors) -1
+
+new_colors <- paste0(met.brewer("Tiepolo", n=n_colors))
+seurat_obj <- ResetModuleColors(seurat_obj, new_colors)
+
+plot_list <- ModuleFeaturePlot(seurat_obj, order='shuffle')
 pdf("figures/test_MEFeaturePlot_human_hMEs.pdf",height=12, width=12)
 wrap_plots(plot_list, ncol=4)
 dev.off()
@@ -195,6 +214,7 @@ dev.off()
 
 # save processed object:
 saveRDS(seurat_obj, file=paste0(data_dir, 'human_AD_NatGen_scWGCNA.rds'))
+seurat_obj <- readRDS(file=paste0(data_dir, 'human_AD_NatGen_scWGCNA.rds'))
 
 ```
 
@@ -213,100 +233,57 @@ modules <- GetModules(seurat_obj)
 mods <- levels(modules$module)
 mods <- mods[mods != 'grey']
 
-seurat_obj$wgcna_train <- ifelse(seurat_obj$wgcna_train == 'train', TRUE, FALSE)
+seurat_obj$wgcna_train_binary <- ifelse(seurat_obj$wgcna_train == 'train', TRUE, FALSE)
 
-split_col <- 'wgcna_train'
-group.by <- 'monocle_clusters_umap_ID'
-groups <- as.character(unique(seurat_obj@meta.data[[group.by]]))
-
-# split into two seurat objects based on train & test split:
-seurat_train <- seurat_obj[,seurat_obj@meta.data[[split_col]]]
-seurat_test <- seurat_obj[,!seurat_obj@meta.data[[split_col]]]
-
-# project modules for train
-seurat_train <- ProjectModules(
-  seurat_train,
-  seurat_ref = seurat_obj,
-  group.by.vars="Batch",
-  wgcna_name_proj="ROC",
-  scale_genes=FALSE, verbose=TRUE
+# ROC with a single seurat obj
+test <- ComputeROC(
+  seurat_obj,
+  group.by = 'monocle_clusters_umap_ID',
+  split_col = 'wgcna_train_binary',
+  features = 'hMEs',
+  harmony_group_vars = "Batch",
+  scale_genes = FALSE,
+  verbose=TRUE
 )
 
-# project modules for test
-seurat_test <- ProjectModules(
-  seurat_test,
-  seurat_ref = seurat_obj,
-  group.by.vars="Batch",
-  wgcna_name_proj="ROC",
-  scale_genes=FALSE, verbose=TRUE
+# plot the ROC Curves
+p <- ROCCurves(
+  seurat_obj,
+  roc_df = test$roc,
+  conf_df = test$conf
 )
 
-# get hMEs for ROC comparison:
-MEs <- as.data.frame(GetMEs(seurat_train, harmonized=TRUE, wgcna_name="ROC")) %>% mutate(group = seurat_train@meta.data[[group.by]])
-MEs_p <- as.data.frame(GetMEs(seurat_test, harmonized=TRUE, wgcna_name="ROC")) %>% mutate(group = seurat_test@meta.data[[group.by]])
+pdf(paste0(fig_dir, 'test_ROC_human_func.pdf'), width=8, height=6)
+p + facet_wrap(~module, ncol=4) + NoLegend()
+dev.off()
 
-# compute average MEs in each group:
-avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))
-avg_MEs_p <- MEs_p %>% group_by(group) %>% summarise(across(!!mods, mean))
-groups <- avg_MEs$group
 
-# scale each column between 0 & 1
-avg_MEs <- avg_MEs %>% summarise(across(!!mods, scale01))
-avg_MEs_p <- avg_MEs_p %>% summarise(across(!!mods, scale01))
 
-# convert to binary labels:
-thresh <- 0.75
-labels <- avg_MEs %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
-labels <- as.data.frame(do.call(cbind, labels));
-rownames(labels) <- as.character(groups)
+# ROC with two separate seurat objects (TO-DO)
+plot_df <- test$roc
+conf_df <- test$conf
 
-predictions <- avg_MEs_p %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
-predictions <- as.data.frame(do.call(cbind, predictions));
-rownames(predictions) <- as.character(groups)
+# get Modules
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
 
-# loop over modules to compute ROC curves:
-plot_df <- data.frame()
-conf_df <- data.frame()
-auc_list <- list()
-mod_colors <- list()
-for(cur_mod in mods){
-  print(cur_mod)
-  cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
-  mod_colors[[cur_mod]] <- cur_color
+# get module colors:
+mod_colors <- modules %>% subset(module %in% mods) %>%
+  select(c(module, color)) %>%
+  distinct %>%
+  arrange(module) %>% .$color
 
-  # compute ROC
-  rocobj <- pROC::roc(labels[,cur_mod], avg_MEs_p[[cur_mod]])
-  auc_list[[cur_mod]] <- as.numeric(rocobj$auc)
-  # confidence intervals:
-  # sens_ci <- ci.se(rocobj)
-
-  cur_df <- data.frame(
-    specificity = 1-rocobj$specificities,
-    sensitivity = rocobj$sensitivities,
-    #auc = rocobj$auc,
-    module = cur_mod,
-    color = cur_color,
-    auc = as.numeric(rocobj$auc)
-  #  ci_lo = sens_ci[,1],
-  #  ci_med = sens_ci[,2],
-  #  ci_hi = sens_ci[,3]
-
-  )
-  plot_df <- rbind(plot_df, cur_df)
-
-  cur_conf <- as.data.frame(ci.se(rocobj))
-  cur_conf$sensitivity <- 1-as.numeric(rownames(cur_conf))
-  cur_conf$module <- cur_mod
-  cur_conf$color <- cur_color
-  conf_df <- rbind(conf_df, cur_conf)
-
-}
-colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
 
 # plot the ROC curve
 plot_df <- plot_df %>% group_by(module) %>% arrange(sensitivity)
 conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
 auc_df <- distinct(plot_df[,c('module', 'auc')])
+
+# set factor levels for modules:
+plot_df$module <- factor(plot_df$module, levels=mods)
+conf_df$module <- factor(conf_df$module, levels=mods)
+auc_df$module <- factor(auc_df$module, levels=mods)
 
 p <- plot_df %>% ggplot(
   aes(x=specificity, y=sensitivity, color=module, fill=module),
@@ -328,15 +305,9 @@ p <- plot_df %>% ggplot(
     x=0.75, y=0.1, label=paste0("AUC: ", format(auc_df$auc, digits=2)),
     inherit.aes=FALSE, size=4, color='black'
   )
-  #annotate("text", x=0.75, y=0.1, label=paste0("AUC: ", plot_df$auc))
-  # theme(
-  #   axis.text = element_blank(),
-  #   axis.ticks = element_blank()
-  # )
 
 
-
-pdf(paste0(fig_dir, 'test_ROC_human.pdf'), width=8, height=6)
+pdf(paste0(fig_dir, 'test_ROC_human_func.pdf'), width=8, height=6)
 p + facet_wrap(~module, ncol=4) + NoLegend()
 dev.off()
 
