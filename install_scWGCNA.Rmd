@@ -1,0 +1,28 @@
+# WGCNA installation
+
+1. First create a new conda environment for R:
+
+`conda create -n scWGCNA -c conda-forge r-base r-essentials`
+
+2. Install Bioconductor, install/update all:
+
+```r
+install.packages('BiocManager')
+BiocManager::install()
+```
+
+3. Install Seurat
+
+```r
+install.packages('Seurat')
+```
+
+4. Install Other R dependencies
+
+* Haromony
+* UCell
+* igraph (is it already instealled?)
+* qgraph (definitely make this one optional)
+* TF packages (optional as well)
+  - GenomicRanges
+  - motifmatchr

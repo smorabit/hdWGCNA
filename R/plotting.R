@@ -908,9 +908,7 @@ OverlapDotPlot <- function(
   p
 }
 
-#' OverlapBarPlot
-#'
-#' Makes barplots from Enrichr data
+#' Plots the results from OverlapModulesDEGs as a bar plot
 #'
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
@@ -991,7 +989,7 @@ OverlapBarPlot <- function(
 #' ROCCurves
 ROCCurves <- function(
   seurat_obj,
-  roc_df, conf_df, wgcna_name=NULL
+  roc_df=NULL, conf_df=NULL, wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -1007,15 +1005,21 @@ ROCCurves <- function(
     distinct %>%
     arrange(module) %>% .$color
 
+  # get the ROC info from seurat obj:
+  if(is.null(roc_df) | is.null(conf_df)){
+    roc_df <- GetROCData(seurat_obj, wgcna_name)$roc
+    conf_df <- GetROCData(seurat_obj, wgcna_name)$conf
+  }
+
   # plot the ROC curve
   roc_df <- roc_df %>% group_by(module) %>% arrange(sensitivity)
   conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
   auc_df <- distinct(roc_df[,c('module', 'auc')])
 
   # set factor levels for modules:
-  roc_df$module <- factor(roc_df$module, levels=mods)
-  conf_df$module <- factor(conf_df$module, levels=mods)
-  auc_df$module <- factor(auc_df$module, levels=mods)
+  roc_df$module <- factor(as.character(roc_df$module), levels=mods)
+  conf_df$module <- factor(as.character(conf_df$module), levels=mods)
+  auc_df$module <- factor(as.character(auc_df$module), levels=mods)
 
   p <- roc_df %>% ggplot(
     aes(x=specificity, y=sensitivity, color=module, fill=module),

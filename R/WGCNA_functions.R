@@ -918,6 +918,7 @@ ComputeROC <- function(
   scale_genes=TRUE,
   verbose=FALSE,
   exp_thresh = 0.75,
+  return_seurat=TRUE,
   wgcna_name=NULL, wgcna_name_test=NULL
 ){
 
@@ -975,7 +976,6 @@ ComputeROC <- function(
 
   }
 
-  print('here')
 
   # get names of different cell groupings in test
   groups_test <- as.character(unique(Idents(seurat_test)))
@@ -1009,13 +1009,6 @@ ComputeROC <- function(
   } else(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores.')
   )
-
-  print('train')
-  print(dim(MEs))
-  print(dim(seurat_train))
-  print('test')
-  print(dim(MEs_p))
-  print(dim(seurat_test))
 
   # add group column to MEs:
   MEs <- as.data.frame(MEs) %>% mutate(group = seurat_train@meta.data[[group.by]])
@@ -1072,10 +1065,19 @@ ComputeROC <- function(
   colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
 
   # return ROC tables & objects:
-  list(
+  roc_info = list(
     roc = plot_df,
     conf = conf_df,
     objects = roc_list
   )
 
+  if(return_seurat){
+    # add roc info to seurat object:
+    seurat_obj <- SetROCData(seurat_obj, roc_info, wgcna_name)
+    out <- seurat_obj
+  } else{
+    out <- roc_info
+  }
+
+  out
 }

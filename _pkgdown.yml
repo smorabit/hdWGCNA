@@ -1,0 +1,35 @@
+title: scWGCNA
+url: https://smorabit.github.io/scWGCNA/
+template:
+  bootstrap: 5
+
+home:
+  title: single-cell WGCNA
+
+authors:
+  Samuel Morabito:
+    href: https://smorabit.github.io
+
+reference:
+  - title: Metacells
+    desc: Functions for constructing metacells from single-cell data
+    contents:
+      - '`ConstructMetacells`'
+      - '`MetacellsByGroups`'
+
+  - title: Plotting
+    desc: Functions for generating plots with scWGCNA
+    contents:
+      - '`OverlapBarPlot`'
+      - '`OverlapDotPlot`'
+      - '`ModuleFeaturePlot`'
+
+  - title: Seurat wrappers
+    desc: Wrapper functions to run Seurat commands on the metacell data
+    contents:
+      - '`NormalizeMetacells`'
+      - '`ScaleMetacells`'
+      - '`RunPCAMetacells`'
+      - '`RunHarmonyMetacells`'
+      - '`RunUMAPMetacells`'
+      - '`DimPlotMetacells`'

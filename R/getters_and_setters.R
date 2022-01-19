@@ -382,6 +382,27 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
 }
 
 ############################
+# ROC Curve
+###########################
+
+SetROCData <- function(seurat_obj, roc_info, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$roc_data <- roc_info
+  seurat_obj
+}
+
+
+GetROCData <- function(seurat_obj,  wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$roc_data
+}
+
+
+############################
 # Reset module names:
 ###########################
 
@@ -477,6 +498,21 @@ ResetModuleNames <- function(
       levels = as.character(new_mod_df$new)
     )
     seurat_obj <- SetEnrichrTable(seurat_obj, enrich_table, wgcna_name)
+  }
+
+  # update ROC info:
+  # THIS DOES NOT UPDATE THE ROC OBJECTS THEMSELVES!!!
+  roc_data <- GetROCData(seurat_obj, wgcna_name)
+  if(!is.na(roc_data)){
+    roc_data$roc$module <- factor(
+      new_mod_df[match(roc_data$roc$module, new_mod_df$old),'new'],
+      levels = as.character(new_mod_df$new)
+    )
+    roc_data$conf$module <- factor(
+      new_mod_df[match(roc_data$conf$module, new_mod_df$old),'new'],
+      levels = as.character(new_mod_df$new)
+    )
+    seurat_obj <- SetROCData(seurat_obj, roc_data, wgcna_name)
   }
 
   seurat_obj

@@ -654,6 +654,7 @@ dev.off()
 
 TF overlap with genes using motif matchr
 
+
 ```{r eval=FALSE}
 
 library(motifmatchr)
@@ -667,6 +668,16 @@ library(ggpubr)
 library(ggrepel)
 library(cowplot)
 theme_set(theme_cowplot())
+
+# WARNING: parallelizing keeps giving me seg faults
+#library(future.apply)
+#library(furrr)
+# check how many cores:
+# availableCores()
+# future::plan(multicore, workers=8)
+#future::plan(sequential)
+# options(future.globals.maxSize= 16*1024^3 )
+
 
 pfm_core <- TFBSTools::getMatrixSet(
   x = JASPAR2020,
@@ -715,23 +726,54 @@ motif_ix <- matchMotifs(pfm_core, my_promoters, genome='mm10');
 x <- motifMatches(motif_ix)
 rownames(x) <- my_promoters$symbol
 
+# get matches for each gene in Seurat object:
+
+
 # cur_gene for genes in Seurat object,
 #   get motif matches for this gene.
 #   update ongoing list
 #   some genes have multiple promoter regions so maybe just check for any
 #   binding site in any column?
 
+gene_list <- rownames(cur_seurat)
+gene_list <- gene_list[gene_list %in% rownames(x)]
+
+# compute target gene scores for all TFs, and make it it's own assay in Seurat obj
+
+# this part is hella slow but it keeps seg faulting when I try to parallelize
+# might be simpler to try not to collapse in cases where there are multiple
+# promoters listed for the same gene...
+
+# test <- do.call(rbind, furrr::future_map(gene_list, function(cur_gene){
+test <- do.call(rbind, lapply(1:length(gene_list), function(i){
+  cur_gene <- gene_list[i]
+
+  if(i%%1000 == 0){
+    print(i)
+  }
+
+  cur_rows <- which(rownames(x) == cur_gene)
+  cur_tf_matches <- x[cur_rows,]
+
+  if(is.null(dim(cur_tf_matches))){
+    cur_tf_matches <- as.numeric(cur_tf_matches)
+  } else{
+    cur_tf_matches <- colSums(cur_tf_matches)
+  }
+  cur_tf_matches
+}))
 
 
-# Make a set of peaks
-data(example_motifs, package = "motifmatchr")
-
-peaks <- GRanges(seqnames = c("chr1","chr2","chr2"),
-                 ranges = IRanges(start = c(76585873,42772928,100183786),
-                                  width = 500))
-motif_ix <- matchMotifs(example_motifs[1:2], peaks, genome = "mm10")
-
-motif_ix <- matchMotifs(pfm_core, peaks, genome = "mm10")
+# testing on a super small example:
+# # Make a set of peaks
+# data(example_motifs, package = "motifmatchr")
+#
+# peaks <- GRanges(seqnames = c("chr1","chr2","chr2"),
+#                  ranges = IRanges(start = c(76585873,42772928,100183786),
+#                                   width = 500))
+# motif_ix <- matchMotifs(example_motifs[1:2], peaks, genome = "mm10")
+#
+# motif_ix <- matchMotifs(pfm_core, peaks, genome = "mm10")
 
 ```
 

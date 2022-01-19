@@ -1,0 +1,31 @@
+
+
+This command builds the site and previews it
+`pkgdown::build_site()`
+
+Their .yml file:
+https://github.com/r-lib/pkgdown/blob/main/pkgdown/_pkgdown.yml
+
+
+The home page is just from the README.md. Not sure how to add more pages yet.
+
+
+Need to make function documentation before building the package!!!
+This is done with the following command from the main directory in the pacakge scWGCNA/:
+Found this here: https://tinyheero.github.io/jekyll/update/2015/07/26/making-your-first-R-package.html
+```
+
+# document the functions
+devtools::document()
+
+# build the site:
+pkgdown::build_site()
+
+```
+
+To group functions together in the reference page, you need to maually add them
+in the .yml config file. Currently I have only put a few functions in each group
+so there's more I need to add. This is also nice since we can just easily ignore
+random helper functions.
+
+I have no idea how to deploy yet. I also have no idea how to customize it.
