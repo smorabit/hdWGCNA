@@ -8,9 +8,10 @@
 #' @export
 #' @examples
 #' NormalizeMetadata
-NormalizeMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::NormalizeData(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
-  seurat_obj
+NormalizeMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
+  metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  metacell_obj <- Seurat::NormalizeData(metacell_obj, ...)
+  SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 }
 
 #' ScaleMetacells
@@ -22,12 +23,13 @@ NormalizeMetacells <- function(seurat_obj, ...){
 #' @export
 #' @examples
 #' ScaleMetadata
-ScaleMetacells <- function(seurat_obj, ...){
+ScaleMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
   if(!exists("features")){
     features = VariableFeatures(seurat_obj)
   }
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::ScaleData(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
-  seurat_obj
+  metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  metacell_obj <- Seurat::ScaleData(metacell_obj, ...)
+  SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 }
 
 #' RunPCAMetacells
@@ -39,9 +41,10 @@ ScaleMetacells <- function(seurat_obj, ...){
 #' @export
 #' @examples
 #' NormalizeMetadata
-RunPCAMetacells <- function(seurat_obj, ...){
-  seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::RunPCA(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
-  seurat_obj
+RunPCAMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
+  metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  metacell_obj <- Seurat::RunPCA(metacell_obj, ...)
+  SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 }
 
 #' RunHarmonyMetacells

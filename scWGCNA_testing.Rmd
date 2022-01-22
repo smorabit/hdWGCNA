@@ -3,13 +3,12 @@
 
 ```{r eval=FALSE}
 
-# conda activate spatial
+# conda activate cicero
 library(Seurat)
 library(tidyverse)
 library(cowplot)
 library(Matrix)
 library(viridis)
-library(presto)
 library(harmony)
 library(RColorBrewer)
 library(patchwork)
@@ -652,14 +651,75 @@ dev.off()
 
 ```
 
-TF overlap with genes using motif matchr
-
+Test MotifScan function
 
 ```{r eval=FALSE}
 
+library(JASPAR2020)
 library(motifmatchr)
 library(TFBSTools)
-library(BSgenome.Mmusculus.UCSC.mm10)
+library(EnsDb.Mmusculus.v79)
+library(GenomicRanges)
+
+# get the pfm from JASPAR2020 using TFBSTools
+pfm_core <- TFBSTools::getMatrixSet(
+  x = JASPAR2020,
+  opts = list(collection = "CORE", tax_group = 'vertebrates', all_versions = FALSE)
+)
+
+# run the motif scan with these settings
+cur_seurat <- MotifScan(
+  seurat_obj = cur_seurat,
+  species_genome = 'mm10',
+  pfm = pfm_core,
+  EnsDb = EnsDb.Mmusculus.v79
+)
+
+#################################################################################
+# run the motif scan on human dataset (seems to work!):
+#################################################################################
+
+library(EnsDb.Hsapiens.v86)
+NucSeq <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/NucSeq_batch_correct_seurat.rds')
+NucSeq <- MotifScan(
+  seurat_obj = NucSeq,
+  species_genome = 'hg38',
+  pfm = pfm_core[1:10],
+  EnsDb = EnsDb.Hsapiens.v86
+)
+dim(GetMotifMatrix(NucSeq))
+
+```
+
+TF targets overlap with scWGCNA modules
+
+```{r eval=FALSE}
+
+# compute the overlap statistics between modules & TF target genes:
+cur_seurat <- OverlapModulesMotifs(cur_seurat)
+
+# plot the top TFs overlapping with
+MotifOverlapBarPlot(
+  cur_seurat,
+  motif_font = 'xkcd_regular',
+  outdir = 'figures/MotifOverlaps/',
+  plot_size=c(5,6)
+)
+
+```
+
+
+
+
+
+Test TF overlap with genes using motif matchr
+
+```{r eval=FALSE}
+library(JASPAR2020)
+
+library(motifmatchr)
+library(TFBSTools)
+# library(BSgenome.Mmusculus.UCSC.mm10)
 library(JASPAR2018)
 library(JASPAR2020)
 library(EnsDb.Mmusculus.v79)
@@ -738,30 +798,71 @@ rownames(x) <- my_promoters$symbol
 gene_list <- rownames(cur_seurat)
 gene_list <- gene_list[gene_list %in% rownames(x)]
 
-# compute target gene scores for all TFs, and make it it's own assay in Seurat obj
+# subset TF matches that are in the seurat object
+x <- x[gene_list,]
 
-# this part is hella slow but it keeps seg faulting when I try to parallelize
-# might be simpler to try not to collapse in cases where there are multiple
-# promoters listed for the same gene...
+# add TF match matrix to Seurat object:
+# TODO
 
-# test <- do.call(rbind, furrr::future_map(gene_list, function(cur_gene){
-test <- do.call(rbind, lapply(1:length(gene_list), function(i){
-  cur_gene <- gene_list[i]
+# make seurat module scores for each TF:
+tfs <- colnames(x)
+tf_gene_list <- list()
+tf_lengths <- list()
+for(cur_tf in tfs){
+  print(cur_tf)
+  tf_gene_list[[cur_tf]] <- names(x[,cur_tf][x[,cur_tf]])
+  tf_lengths[[cur_tf]] <- length( names(x[,cur_tf][x[,cur_tf]]))
+}
 
-  if(i%%1000 == 0){
-    print(i)
-  }
+length_df <- data.frame(
+  tf = names(tf_lengths),
+  length = unlist(tf_lengths)
+)
 
-  cur_rows <- which(rownames(x) == cur_gene)
-  cur_tf_matches <- x[cur_rows,]
+length_df %>% arrange(length) %>% tail
+quantile(length_df$length)
 
-  if(is.null(dim(cur_tf_matches))){
-    cur_tf_matches <- as.numeric(cur_tf_matches)
-  } else{
-    cur_tf_matches <- colSums(cur_tf_matches)
-  }
-  cur_tf_matches
-}))
+# some TFs have a ton of targets, some have only a few... What does this mean?
+library(tictoc)
+tic('TF Module Scores')
+tf_scores <- Seurat::AddModuleScore(
+  cur_seurat, features=tf_gene_list
+)@meta.data
+toc()
+
+tf_scores <- tf_scores[,(ncol(tf_scores)-length(tf_gene_list)+1):ncol(tf_scores)]
+colnames(tf_scores) <- names(tf_gene_list)
+
+save(tf_scores, file='data/tf_scores.rda')
+
+tf_scores_test <- Seurat::AddModuleScore(
+  cur_seurat, features=tf_gene_list[1]
+)@meta.data[,ncol(cur_seurat@meta.data)+1]
+
+
+
+# try to parallelize the module score thing:
+library(future.apply)
+# library(furrr)
+plan(multiprocess)
+#availableCores()
+#future::plan(multicore, workers=8)
+#future::plan(sequential)
+options(future.globals.maxSize= 16*1024^3 )
+
+# this works
+test <- future_lapply(1:10000, function(i){
+  i*i
+})
+
+
+# maybe it doesn't work because I don't have enough memory??
+test <- future_lapply(1:100, function(i){
+  Seurat::AddModuleScore(
+    cur_seurat, features=tf_gene_list[i]
+  )@meta.data[,ncol(cur_seurat@meta.data)+1]
+})
+
 
 
 # testing on a super small example:

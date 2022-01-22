@@ -1,13 +1,15 @@
 
+* I installed pkgdown on my laptop locally under the "seurat" conda env
+`conda activate seurat`
 
-This command builds the site and previews it
+* This command builds the site and previews it
 `pkgdown::build_site()`
 
-Their .yml file:
+* This is the .yml configuration file for the actual pkgdown site:
 https://github.com/r-lib/pkgdown/blob/main/pkgdown/_pkgdown.yml
+  - idk how some things work, like I can't change author name??
 
-
-The home page is just from the README.md. Not sure how to add more pages yet.
+* The home page is just from the README.md. Not sure how to add more pages yet.
 
 
 Need to make function documentation before building the package!!!

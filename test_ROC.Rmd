@@ -86,27 +86,6 @@ seurat_obj <- readRDS(file='data/test_wgcna_seurat.rds')
 
 ```
 
-Violin Plots for Vivek's grant:
-
-```{r eval=FALSE}
-
-genes <- c("APP", "BACE1", "ADAM10", "BIN1")
-
-plot_list <- VlnPlot(NucSeq, features=genes, split.by='Diagnosis', group.by='Cell.Type', combine=FALSE, split.plot=TRUE, pt.size=0)
-
-for(i in 1:length(plot_list)){
-  plot_list[[i]] <- plot_list[[i]] + NoLegend() + xlab('') + ylab('')  +
-  stat_compare_means(method='wilcox', label='p.signif')
-}
-
-pdf(paste0(fig_dir, 'vlnplot_for_vivek.pdf'), width=5, height=4)
-plot_list
-dev.off()
-
-
-```
-
-
 Human
 Run scWGCNA on 80/20 train/test split
 project Modules onto test data
@@ -255,7 +234,6 @@ p <- ROCCurves(seurat_obj=seurat_obj)
 pdf(paste0(fig_dir, 'test_ROC_human_func.pdf'), width=8, height=6)
 p + facet_wrap(~module, ncol=4) + NoLegend()
 dev.off()
-
 
 ```
 

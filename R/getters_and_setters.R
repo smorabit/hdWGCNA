@@ -403,6 +403,99 @@ GetROCData <- function(seurat_obj,  wgcna_name=NULL){
 
 
 ############################
+# TF Match Matrix (not stored within the WGCNA slot)
+###########################
+
+SetMotifMatrix <- function(seurat_obj, tf_match){
+
+  # make a spot for the motif info if it's not already there:
+  if(is.null(seurat_obj@misc$motifs)){
+    seurat_obj@misc$motifs <- list()
+  }
+  seurat_obj@misc$motifs$tf_match_matrix <- tf_match
+  seurat_obj
+}
+
+GetMotifMatrix <- function(seurat_obj){
+  seurat_obj@misc$motifs$tf_match_matrix
+}
+
+
+############################
+# Motif table
+###########################
+
+SetMotifs <- function(seurat_obj, motif_df){
+
+  # make a spot for the motif info if it's not already there:
+  if(is.null(seurat_obj@misc$motifs)){
+    seurat_obj@misc$motifs <- list()
+  }
+  seurat_obj@misc$motifs$motif_df <- motif_df
+  seurat_obj
+}
+
+GetMotifs <- function(seurat_obj){
+  seurat_obj@misc$motifs$motif_df
+}
+
+############################
+# PFM List
+###########################
+
+SetPFMList <- function(seurat_obj, pfm_list){
+
+  # make a spot for the motif info if it's not already there:
+  if(is.null(seurat_obj@misc$motifs)){
+    seurat_obj@misc$motifs <- list()
+  }
+  seurat_obj@misc$motifs$pfm_list <- pfm_list
+  seurat_obj
+}
+
+GetPFMList <- function(seurat_obj){
+  seurat_obj@misc$motifs$pfm_list
+}
+
+
+############################
+# TF Target Genes:
+###########################
+
+SetMotifTargets <- function(seurat_obj, motif_targets){
+
+  # make a spot for the motif info if it's not already there:
+  if(is.null(seurat_obj@misc$motifs)){
+    seurat_obj@misc$motifs <- list()
+  }
+  seurat_obj@misc$motifs$motif_targets <- motif_targets
+  seurat_obj
+}
+
+GetMotifTargets <- function(seurat_obj){
+  seurat_obj@misc$motifs$motif_targets
+}
+
+
+############################
+# motif overlap
+###########################
+
+SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$motif_module_overlaps <- overlap_df
+  seurat_obj
+}
+
+GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$motif_module_overlaps
+}
+
+
+
+############################
 # Reset module names:
 ###########################
 
@@ -411,10 +504,6 @@ ResetModuleNames <- function(
   new_name = "M",
   wgcna_name=NULL
 ){
-
-  #TODO:
-  # only re-name things if they exist. For example, skip the avg mod exp step
-  # if we never ran it!
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -433,8 +522,6 @@ ResetModuleNames <- function(
   } else{
     new_names <- c(new_names[1:(grey_ind-1)], 'grey', new_names[grey_ind:length(new_names)])
   }
-
-  print('here')
 
   # update kMEs
   new_kMEs <- paste0('kME_', new_names)
@@ -456,21 +543,21 @@ ResetModuleNames <- function(
 
   # update hME table:
   hMEs <- GetMEs(seurat_obj, harmonized=TRUE, wgcna_name)
-  if(!is.na(hMEs)){
+  if(!is.null(hMEs)){
     colnames(hMEs) <- new_mod_df$new
     seurat_obj <- SetMEs(seurat_obj, hMEs, harmonized=TRUE, wgcna_name)
   }
 
   # update ME table
   MEs <- GetMEs(seurat_obj, harmonized=FALSE, wgcna_name)
-  if(!is.na(MEs)){
+  if(!is.null(MEs)){
     colnames(MEs) <- new_mod_df$new
     seurat_obj <- SetMEs(seurat_obj, MEs, harmonized=FALSE, wgcna_name)
   }
 
   # update module scores:
   module_scores <- GetModuleScores(seurat_obj, wgcna_name)
-  if(!is.na(module_scores)){
+  if(!is.null(module_scores)){
     if(!("grey" %in% colnames(module_scores))){
       colnames(module_scores) <- new_mod_df$new[new_mod_df$new != 'grey']
     } else {
@@ -481,7 +568,7 @@ ResetModuleNames <- function(
 
   # update average module expression:
   avg_exp <- GetAvgModuleExpr(seurat_obj, wgcna_name)
-  if(!is.na(avg_exp)){
+  if(!is.null(avg_exp)){
     if(!("grey" %in% colnames(avg_exp))){
       colnames(avg_exp) <- new_mod_df$new[new_mod_df$new != 'grey']
     } else {
@@ -492,7 +579,7 @@ ResetModuleNames <- function(
 
   # update enrichr table:
   enrich_table <- GetEnrichrTable(seurat_obj, wgcna_name)
-  if(!is.na(enrich_table)){
+  if(!is.null(enrich_table)){
     enrich_table$module <- factor(
       new_mod_df[match(enrich_table$module, new_mod_df$old),'new'],
       levels = as.character(new_mod_df$new)
@@ -503,7 +590,7 @@ ResetModuleNames <- function(
   # update ROC info:
   # THIS DOES NOT UPDATE THE ROC OBJECTS THEMSELVES!!!
   roc_data <- GetROCData(seurat_obj, wgcna_name)
-  if(!is.na(roc_data)){
+  if(!is.null(roc_data)){
     roc_data$roc$module <- factor(
       new_mod_df[match(roc_data$roc$module, new_mod_df$old),'new'],
       levels = as.character(new_mod_df$new)

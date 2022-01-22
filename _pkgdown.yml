@@ -1,7 +1,11 @@
 title: scWGCNA
 url: https://smorabit.github.io/scWGCNA/
+
 template:
   bootstrap: 5
+  opengraph:
+    twitter:
+      creator: "@smudgetendo"
 
 home:
   title: single-cell WGCNA

@@ -11,7 +11,12 @@
 #' @export
 #' @examples
 #' SelectNetworkGenes(pbmc)
-SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05, gene_list=NULL, wgcna_name=NULL){
+SelectNetworkGenes <- function(
+  seurat_obj,
+  gene_select="variable", fraction=0.05,
+  group.by=NULL, # should be a column in the Seurat object, eg clusters
+  gene_list=NULL, wgcna_name=NULL
+ ){
 
   # validate inputs:
   if(!(gene_select %in% c("variable", "fraction", "all", "custom"))){
@@ -28,11 +33,29 @@ SelectNetworkGenes <- function(seurat_obj, gene_select="variable", fraction=0.05
 
     # binarize counts matrix
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
-    expr_mat[expr_mat>0] <- 1
+    expr_mat[expr_mat > 0] <- 1
 
-    # identify genes that are expressed in at least some fraction of cells
-    gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
-    gene_list <- rownames(seurat_obj)[gene_filter]
+    group_gene_list <- list()
+    if(!is.null(group.by)){
+      # identify genes that are expressed
+      print(group.by)
+      groups <- unique(seurat_obj@meta.data[[group.by]])
+      for(cur_group in groups){
+
+        # subset expression matrix by this group
+        cur_expr <- expr_mat[,seurat_obj@meta.data[[group.by]] == cur_group]
+        print(dim(cur_expr))
+
+        gene_filter <- rowSums(cur_expr) >= round(fraction*ncol(cur_expr));
+        group_gene_list[[cur_group]] <- rownames(seurat_obj)[gene_filter]
+      }
+      gene_list <- unique(unlist(group_gene_list))
+
+    } else{
+      # identify genes that are expressed in at least some fraction of cells
+      gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
+      gene_list <- rownames(seurat_obj)[gene_filter]
+    }
 
   } else if(gene_select == "variable"){
     gene_list <- VariableFeatures(seurat_obj)
@@ -123,12 +146,13 @@ TestSoftPowers <- function(
   seurat_obj,
   use_metacells = TRUE,
   group.by=NULL, group_name=NULL,
+  setDatExpr = TRUE,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
   make_plot=TRUE, outfile="softpower.pdf", figsize=c(7,7)
 ){
 
   # add datExpr if not already added:
-  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
+  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
     seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
   }
   # get datExpr
@@ -200,7 +224,8 @@ TestSoftPowers <- function(
 #' @examples
 #' ConstructNetwork(pbmc)
 ConstructNetwork <- function(
-  seurat_obj, soft_power=NULL, use_metacells=TRUE, group.by=NULL, group_name=NULL,
+  seurat_obj, soft_power=NULL, use_metacells=TRUE,
+  setDatExpr=TRUE, group.by=NULL, group_name=NULL,
   tom_outdir="TOM",
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
@@ -212,7 +237,7 @@ ConstructNetwork <- function(
 ){
 
   # add datExpr if not already added:
-  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj)))){
+  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
     seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
   }
 
@@ -702,7 +727,7 @@ OverlapModulesDEGs <- function(
   cell_groups <- deg_df$group %>% unique
 
   # get modules,
-  modules <- GetModules(cur_seurat)
+  modules <- GetModules(seurat_obj)
   mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
@@ -720,17 +745,6 @@ OverlapModulesDEGs <- function(
   # size of genome based on # genes in Seurat object:
   genome.size <- nrow(seurat_obj)
 
-  # compute overlap:
-  cur_overlap <- GeneOverlap::testGeneOverlap(
-    GeneOverlap::newGeneOverlap(
-      cur_module_genes,
-      cur_DEGs,
-      genome.size=genome.size
-  ))
-  or <- cur_overlap@odds.ratio
-  pval <- cur_overlap@pval
-  jaccard <- cur_overlap@Jaccard
-
   # run overlaps between module gene lists and DEG lists:
   overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
@@ -741,9 +755,9 @@ OverlapModulesDEGs <- function(
           cur_DEGs,
           genome.size=genome.size
       ))
-      c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard)
+      c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard, length(cur_overlap@intersection))
     })) %>% as.data.frame
-    colnames(cur_overlap_df) <- c('odds_ratio', 'pval', 'Jaccard')
+    colnames(cur_overlap_df) <- c('odds_ratio', 'pval', 'Jaccard', 'size_intersection')
     cur_overlap_df$module <- cur_mod
     cur_overlap_df$group <- cell_groups
 
@@ -766,7 +780,7 @@ OverlapModulesDEGs <- function(
   overlap_df$module <- factor(overlap_df$module, levels=mods)
 
   # re-arrange columns:
-  overlap_df <- overlap_df %>% select(c(module, group, color, odds_ratio, pval, fdr, Significance, Jaccard))
+  overlap_df <- overlap_df %>% dplyr::select(c(module, group, color, odds_ratio, pval, fdr, Significance, Jaccard, size_intersection))
 
   overlap_df
 }
@@ -1080,4 +1094,172 @@ ComputeROC <- function(
   }
 
   out
+}
+
+
+#' Scan gene promoters for a set of TF PWMs
+#'
+#'
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' MotifScan
+MotifScan <- function(
+  seurat_obj,
+  species_genome, # hg38, mm10, etc...
+  pfm, # matrix set from JASPAR2020 for example
+  EnsDb, # Ensembl database such as EnsDb.Mmusculus.v79
+  wgcna_name=NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get a dataframe of just the motif name and the motif ID:
+  motif_df <- data.frame(
+    motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
+    motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
+  )
+
+  # get promoters of protein coding genes from the given Ensdb
+  # note: everything breaks if I try to use X & Y chromosomes.
+  gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
+    subset(seqnames %in% c(1:100))
+  gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
+    subset(seqnames %in% c(1:100))
+
+  # add the gene name to the promoter object
+  gene.promoters$symbol <- gene.coords$symbol[match(gene.promoters$gene_id, names(gene.coords))]
+
+  # drop unnecessary chromosomes
+  gene.promoters <- keepSeqlevels(gene.promoters, value= levels(droplevels(seqnames(gene.promoters))))
+
+  # rename seqlevels to add 'chr', remove X&Y chromosomes because they break everything
+  old_levels <- levels(seqnames(gene.promoters))
+  new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
+  gene.promoters <- renameSeqlevels(gene.promoters, new_levels)
+
+  # set the genome (not sure if we NEED to do this...)
+  genome(seqinfo(gene.promoters)) <- species_genome
+
+  # set up promoters object that only has the necessary info for motifmatchr
+  my_promoters <- GRanges(
+    seqnames =  droplevels(seqnames(gene.promoters)),
+    IRanges(
+      start = start(gene.promoters),
+      end = end(gene.promoters)
+    ),
+    symbol = gene.promoters$symbol,
+    genome=species_genome
+  )
+
+  # scan these promoters for motifs:
+  print('Matching motifs...')
+  motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome=species_genome)
+
+  # get the matches
+  tf_match <- motifmatchr::motifMatches(motif_ix)
+  rownames(tf_match) <- my_promoters$symbol
+
+  # use motif names as the column names:
+  colnames(tf_match) <- motif_df$motif_name
+
+  # only keep genes that are in the Seurat object and in the given EnsDb:
+  gene_list <- rownames(seurat_obj)
+  gene_list <- gene_list[gene_list %in% rownames(tf_match)]
+  tf_match <- tf_match[gene_list,]
+
+  # get list of target genes for each TF:
+  print('Getting TF target genes...')
+  tfs <- motif_df$motif_name
+  tf_targets <- list()
+  n_targets <- list()
+  for(cur_tf in tfs){
+    tf_targets[[cur_tf]] <- names(tf_match[,cur_tf][tf_match[,cur_tf]])
+    n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]] )
+  }
+  n_targets <- unlist(n_targets)
+
+  # add number of target genes to motif df
+  motif_df$n_targets <- n_targets
+
+  # add info to seurat object
+  seurat_obj <- SetMotifMatrix(seurat_obj, tf_match)
+  seurat_obj <- SetMotifs(seurat_obj, motif_df)
+  seurat_obj <- SetMotifTargets(seurat_obj, tf_targets)
+  seurat_obj <- SetPFMList(seurat_obj, pfm)
+
+  seurat_obj
+}
+
+
+#' Overlap modules with TF target genes
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' OverlapModulesDEGs
+OverlapModulesMotifs <- function(
+  seurat_obj, wgcna_name = NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+
+  # get tf info
+  tf_match <- GetMotifMatrix(seurat_obj)
+  tf_targets <- GetMotifTargets(seurat_obj)
+  motif_df <- GetMotifs(seurat_obj)
+
+  # size of genome based on # genes in Seurat object:
+  genome.size <- nrow(seurat_obj)
+
+  cur_mod <- mods[1]
+  cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+  cur_targets <- as.character(unlist(tf_targets[1]))
+
+  overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
+    cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+    cur_overlap_df <- do.call(rbind, lapply(tf_targets, function(cur_targets){
+      cur_overlap <- testGeneOverlap(newGeneOverlap(
+          cur_module_genes,
+          as.character(unlist(cur_targets)),
+          genome.size=genome.size
+      ))
+      c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard, length(cur_overlap@intersection))
+    })) %>% as.data.frame
+
+    colnames(cur_overlap_df) <- c('odds_ratio', 'pval', 'Jaccard', 'size_intersection')
+    cur_overlap_df$module <- cur_mod
+    cur_overlap_df$tf <- names(tf_targets)
+
+    # module color:
+    cur_overlap_df$color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+    cur_overlap_df
+  }))
+
+  # adjust for multiple comparisons:
+  overlap_df$fdr <- p.adjust(overlap_df$pval, method='fdr')
+
+  # significance level:
+  overlap_df$Significance <- gtools::stars.pval(overlap_df$fdr)
+  overlap_df$Significance <- ifelse(
+    overlap_df$Significance == '.', '',
+    overlap_df$Significance
+  )
+
+  # set factor levels for modules:
+  overlap_df$module <- factor(overlap_df$module, levels=mods)
+
+  # re-arrange columns:
+  overlap_df <- overlap_df %>% dplyr::select(c(module, tf, color, odds_ratio, pval, fdr, Significance, Jaccard, size_intersection))
+
+  # add overlap df to Seurat obj
+  seruat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
+
 }
