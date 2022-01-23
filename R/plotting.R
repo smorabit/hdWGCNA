@@ -413,9 +413,6 @@ ModuleFeaturePlot<- function(
 }
 
 
-
-
-
 #' EnrichrBarPlot
 #'
 #' Makes barplots from Enrichr data
@@ -760,7 +757,7 @@ HubGeneNetworkPlot <- function(
 
   # sample the same number of genes in each module
   other_genes <- modules %>%
-    subset(!(gene_list %in% unlist(hub_list))) %>%
+    subset(!(gene_name %in% unlist(hub_list))) %>%
     group_by(module) %>%
     sample_n(n_other, replace=TRUE) %>%
     .$gene_name %>% unique
@@ -1143,5 +1140,145 @@ MotifOverlapBarPlot <- function(
     dev.off()
 
   }
+
+}
+
+
+
+#' Plots gene expression of hub genes as a heatmap
+#'
+#' This function makes an expression heatmap of the top n hub genes per module
+#' using Seurat's DoHeatmap, and then assembles them all into one big heatmap.
+#'
+#'
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' DoHubGeneHeatmap
+DoHubGeneHeatmap <- function(
+  seurat_obj,
+  n_hubs = 10,
+  n_cells = 200,
+  group.by=NULL,
+  module_names = NULL,
+  combine=TRUE, #returns a list of individual heatmaps if FALSE
+  wgcna_name=NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # use idents as grouping variable if not specified
+  if(is.null(group.by)){
+    group.by <- 'temp_ident'
+    seurat_obj$temp_ident <- Idents(seurat_obj)
+  }
+
+  # get modules
+  modules <- GetModules(seurat_obj)
+  modules <- modules %>% subset(module != 'grey') %>% mutate(module = droplevels(module))
+  mods <- levels(modules$module)
+
+  if(!is.null(module_names)){
+    print('here')
+    mods <- module_names
+    modules <- modules %>% subset(module %in% mods)
+  }
+
+  # get table of module names & colors
+  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+
+  # get hub genes:
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+
+  seurat_obj$barcode <- colnames(seurat_obj)
+  temp <- table(seurat_obj@meta.data[[group.by]])
+
+  # sample cells
+  df <- data.frame()
+  for(i in 1:length(temp)){
+
+    if(temp[[i]] < n_cells){
+      cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i])
+    } else{
+      cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i]) %>% sample_n(n_cells);
+    }
+    df <- rbind(df, cur_df)
+  }
+
+  # make sampled seurat obj for plotting:
+  seurat_plot <- seurat_obj %>% subset(barcode %in% df$barcode)
+
+  plot_list <- list()
+  for(i in 1:length(hub_list)){
+
+    print(i)
+    cur_mod <- names(hub_list)[i]
+    print(i)
+    print(hub_list[[i]])
+    print(i)
+
+    if(i == 1){
+      plot_list[[i]] <- DoHeatmap(
+        seurat_plot,
+        features = hub_list[[i]],
+        group.by=group.by,
+        raster=TRUE, slot='scale.data',
+        disp.min = -2.5, disp.max=2.5,
+        label=FALSE, group.bar=FALSE
+      )
+    } else{
+      plot_list[[i]] <- DoHeatmap(
+       seurat_plot,
+       features=hub_list[[i]],
+       group.by=group.by,
+       raster=TRUE, slot='scale.data',
+       group.bar.height=0,
+       label=FALSE, group.bar=FALSE,
+       disp.min = -2.5, disp.max=2.5
+     ) + NoLegend()
+    }
+    print(i)
+    # margin:
+    plot_list[[i]] <- plot_list[[i]] +
+      theme(
+        plot.margin = margin(0,0,0,0),
+        axis.text.y = element_text(face='italic')
+      )  + scale_y_discrete(position = "right")
+    print(i)
+
+  }
+
+  # module colorbar
+  mod_colors$value <- n_hubs
+  mod_colors$dummy <- 'colorbar'
+  cbar_list <- list()
+  for(i in 1:nrow(mod_colors)){
+    cbar_list[[i]] <- mod_colors[i,] %>% ggplot(aes(y=value, x=dummy)) +
+      geom_bar(position='stack', stat='identity', fill=mod_colors[i,]$color) +
+      umap_theme + theme(
+        plot.margin=margin(0,0,0,0)
+      )
+  }
+  p_cbar <- wrap_plots(cbar_list, ncol=1)
+
+  n_total_cells <- ncol(seurat_plot)
+  width_cbar <- n_total_cells / 50
+
+  if(combine){
+    out <- wrap_plots(plot_list, ncol=1)  + plot_layout(guides='collect')
+    out <- (p_cbar | out) + plot_layout(widths=c(width_cbar, n_total_cells))
+  } else{
+    out <- plot_list
+  }
+
+  out
 
 }
