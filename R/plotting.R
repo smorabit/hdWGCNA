@@ -304,7 +304,7 @@ ModuleCorrNetwork <- function(
 ModuleFeaturePlot<- function(
   seurat_obj, module_names=NULL, wgcna_name = NULL,
   reduction='umap', features = 'hMEs',
-  order=TRUE, restrict_range=TRUE, point_size = 0.5, alpha=1,
+  order_points=TRUE, restrict_range=TRUE, point_size = 0.5, alpha=1,
   label_legend = FALSE, ucell = FALSE
 ){
 
@@ -352,7 +352,6 @@ ModuleFeaturePlot<- function(
 
     # reset the range of the plot:
     plot_range <- plot_df[,cur_mod] %>% range
-    print(plot_range)
     if(restrict_range){
       if(abs(plot_range[1]) > abs(plot_range[2])){
         plot_range[1] <- -1*plot_range[2]
@@ -363,15 +362,15 @@ ModuleFeaturePlot<- function(
       plot_df[,cur_mod] <- ifelse(plot_df[,cur_mod] < plot_range[1], plot_range[1], plot_df[,cur_mod])
     }
 
-    # order points:
-    if(order == TRUE){
-      plot_df <- plot_df %>% dplyr::arrange(!!cur_mod)
-    } else if(order == "shuffle"){
-      plot_df <- plot_df[sample(nrow(plot_df)),]
-    }
-
     cur_plot_df <- plot_df[,c(colnames(umap), cur_mod)]
     colnames(cur_plot_df)[3] <- "val"
+
+    # order points:
+    if(order_points == TRUE){
+      cur_plot_df <- cur_plot_df %>% dplyr::arrange(val)
+    } else if(order_points == "shuffle"){
+      cur_plot_df <- cur_plot_df[sample(nrow(cur_plot_df)),]
+    }
 
     # plot with ggplot
     p <- cur_plot_df %>%
@@ -618,6 +617,7 @@ EnrichrDotPlot <- function(
 ModuleNetworkPlot <- function(
   seurat_obj, mods="all", outdir="ModuleNetworks",
   plot_size = c(6,6), wgcna_name=NULL,
+  label_center = FALSE, # only label the genes in the middle?
   edge.alpha=0.25, vertex.label.cex=1, vertex.size=6, ...
 ){
 
@@ -677,6 +677,9 @@ ModuleNetworkPlot <- function(
     connections2keep <- orderind[1:n_conns];
     reducedTOM <- matrix(0,nrow(reducedTOM),ncol(reducedTOM));
     reducedTOM[connections2keep] <- 1;
+
+    # only label the top 10 genes?
+    if(label_center){cur$gene_name[11:25] <- ''}
 
     # top 10 as center
     gA <- graph.adjacency(as.matrix(reducedTOM[1:10,1:10]),mode="undirected",weighted=TRUE,diag=FALSE)
@@ -986,7 +989,9 @@ OverlapBarPlot <- function(
 #' ROCCurves
 ROCCurves <- function(
   seurat_obj,
-  roc_df=NULL, conf_df=NULL, wgcna_name=NULL
+  roc_df=NULL,
+  conf_df=NULL,
+  wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -1176,8 +1181,11 @@ DoHubGeneHeatmap <- function(
     seurat_obj$temp_ident <- Idents(seurat_obj)
   }
 
+  # drop if there are missing levels:
+  seurat_plot@meta.data[[group.by]] <- droplevels(seurat_plot@meta.data[[group.by]])
+
   # get modules
-  modules <- GetModules(seurat_obj)
+  modules <- GetModules(seurat_obj, wgcna_name)
   modules <- modules %>% subset(module != 'grey') %>% mutate(module = droplevels(module))
   mods <- levels(modules$module)
 
@@ -1256,6 +1264,11 @@ DoHubGeneHeatmap <- function(
 
   }
 
+  # useful for ratios on colorbars
+  n_total_cells <- ncol(seurat_plot)
+  width_cbar <- n_total_cells / 50
+
+
   # module colorbar
   mod_colors$value <- n_hubs
   mod_colors$dummy <- 'colorbar'
@@ -1269,11 +1282,8 @@ DoHubGeneHeatmap <- function(
   }
   p_cbar <- wrap_plots(cbar_list, ncol=1)
 
-  n_total_cells <- ncol(seurat_plot)
-  width_cbar <- n_total_cells / 50
-
   if(combine){
-    out <- wrap_plots(plot_list, ncol=1)  + plot_layout(guides='collect')
+    out <- wrap_plots(plot_list, ncol=1) +plot_layout(guides='collect')
     out <- (p_cbar | out) + plot_layout(widths=c(width_cbar, n_total_cells))
   } else{
     out <- plot_list

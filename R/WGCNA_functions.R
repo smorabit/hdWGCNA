@@ -819,11 +819,12 @@ ProjectModules <- function(
     modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
   }
 
-  print('here')
-
   # get genes that overlap between WGCNA genes & seurat_obj genes:
   gene_names <- modules$gene_name
   genes_use <- intersect(gene_names, rownames(seurat_obj))
+
+  print('n genes:')
+  print(length(genes_use))
 
   # subset modules by genes in this seurat object:
   modules <- modules %>% subset(gene_name %in% genes_use)
@@ -924,7 +925,8 @@ TransferModuleGenome <- function(
 #' @examples
 #' ComputeROC
 ComputeROC <- function(
-  seurat_obj, group.by=NULL,
+  seurat_obj,
+  group.by=NULL, # this needs to be a factor!!!
   split_col=NULL, # needs to be a logical!!!
   features = 'hMEs',
   seurat_test=NULL,
@@ -953,7 +955,7 @@ ComputeROC <- function(
   }
 
   # get names of different cell groupings
-  groups <- as.character(unique(Idents(seurat_obj)))
+  groups <- levels(seurat_obj@meta.data[[group.by]])
   groups <- groups[order(groups)]
 
   # split seurat object into training & testing if the testing is not provided
@@ -990,35 +992,43 @@ ComputeROC <- function(
 
   }
 
-
   # get names of different cell groupings in test
-  groups_test <- as.character(unique(Idents(seurat_test)))
+  groups_test <- levels(seurat_test@meta.data[[group.by]])
   groups_test <- groups_test[order(groups_test)]
+
+  # groups that are in common (some might not have been predicted):
+  groups_common <- intersect(
+    groups,
+    as.character(unique(seurat_test@meta.data[[group.by]]))
+  )
 
   # check if groups are equal:
   if(sum(groups == groups_test) != length(groups)){
     stop("Different groups present in train & test data. Idents likely do not match.")
   }
 
-  # project modules for test
-  seurat_test <- ProjectModules(
-    seurat_test,
-    seurat_ref = seurat_obj,
-    group.by.vars=harmony_group_vars,
-    wgcna_name_proj="ROC",
-    scale_genes=scale_genes, verbose=verbose
-  )
+  # project modules for test if they haven't already been projected:
+  if(is.null(GetModules(seurat_test, wgcna_name=wgcna_name_test))){
+    wgcna_name_test <- "ROC"
+    seurat_test <- ProjectModules(
+      seurat_test,
+      seurat_ref = seurat_obj,
+      group.by.vars=harmony_group_vars,
+      wgcna_name_proj=wgcna_name_test,
+      scale_genes=scale_genes, verbose=verbose
+    )
+  }
 
   # get MEs from seurat object
   if(features == 'hMEs'){
     MEs <- GetMEs(seurat_train, TRUE, wgcna_name_train)
-    MEs_p <- GetMEs(seurat_test, TRUE, "ROC")
+    MEs_p <- GetMEs(seurat_test, TRUE, wgcna_name_test)
   } else if(features == 'MEs'){
     MEs <- GetMEs(seurat_train, FALSE, wgcna_name_train)
-    MEs_p <- GetMEs(seurat_test, FALSE, "ROC")
+    MEs_p <- GetMEs(seurat_test, FALSE, wgcna_name_test)
   } else if(features == 'scores'){
     MEs <- GetModuleScores(seurat_train, wgcna_name_train)
-    MEs_p <- GetModuleScores(seurat_test, "ROC")
+    MEs_p <- GetModuleScores(seurat_test, wgcna_name_test)
     stop("Haven't implemented this one yet >.<")
   } else(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores.')
@@ -1027,6 +1037,10 @@ ComputeROC <- function(
   # add group column to MEs:
   MEs <- as.data.frame(MEs) %>% mutate(group = seurat_train@meta.data[[group.by]])
   MEs_p <- as.data.frame(MEs_p) %>% mutate(group = seurat_test@meta.data[[group.by]])
+
+  # only keep common groups:
+  MEs <- subset(MEs, group %in% groups_common)
+  MEs_p <- subset(MEs_p, group %in% groups_common)
 
   # compute average MEs in each group:
   avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))

@@ -883,7 +883,7 @@ Test Hub gene expression heatmap:
 
 ```{r eval=FALSE}
 
-# TODO: Add Top Colorbar for cell-types 
+# TODO: Add Top Colorbar for cell-types
 
 # run heatmap function
 cur_seurat$annotation <- droplevels(cur_seurat$annotation)
@@ -898,6 +898,7 @@ p <- DoHubGeneHeatmap(
 pdf(paste0(fig_dir, 'test_hubgene_heatmap.pdf'), width=10, height=10, useDingbats=FALSE)
 p
 dev.off()
+
 
 ```
 
