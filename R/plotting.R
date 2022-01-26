@@ -640,9 +640,22 @@ ModuleNetworkPlot <- function(
   # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
 
+  # get hub genes:
+  n_hubs <- 25
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs)
+    colnames(cur)[2] <- 'var'
+    cur %>% arrange(desc(var)) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+
+  print('here')
+
   # loop over modules
   for(cur_mod in mods){
-
+    print(cur_mod)
     cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
 
     # number of genes, connections
@@ -654,22 +667,16 @@ ModuleNetworkPlot <- function(
     # name of column with current kME info
     cur_kME <- paste0('kME_', cur_mod)
 
-    # get genes in this module:
-    cur <- subset(modules, module == cur_mod)
-    rowind <- cur[,c('gene_name', cur_kME)] %>%
-      top_n(n_genes) %>% .$gene_name
-    cur <- cur[rowind,]
+    cur_genes <- hub_list[[cur_mod]]
+    print(cur_genes)
 
-    # arrange by cur_kME
-    cur <- cur %>% arrange(get(cur_kME), descending=TRUE)
-
-    if (nrow(cur) < n_genes) {
-      n_genes <-  nrow(cur);
-      n_conns <- n_genes * (n_genes - 1);
-    }
+    # if (length(cur_genes) < n_genes) {
+    #   n_genes <-  length(cur_genes);
+    #   n_conns <- n_genes * (n_genes - 1);
+    # }
 
     # Identify the columns in the TOM that correspond to these hub genes
-    matchind <- match(cur$gene_name, colnames(TOM))
+    matchind <- match(cur_genes, colnames(TOM))
     reducedTOM = TOM[matchind,matchind]
     orderind <- order(reducedTOM,decreasing=TRUE)
 
@@ -678,8 +685,12 @@ ModuleNetworkPlot <- function(
     reducedTOM <- matrix(0,nrow(reducedTOM),ncol(reducedTOM));
     reducedTOM[connections2keep] <- 1;
 
+    print('here')
+    print(dim(reducedTOM))
+    print(n_genes)
+
     # only label the top 10 genes?
-    if(label_center){cur$gene_name[11:25] <- ''}
+    if(label_center){cur_genes[11:25] <- ''}
 
     # top 10 as center
     gA <- graph.adjacency(as.matrix(reducedTOM[1:10,1:10]),mode="undirected",weighted=TRUE,diag=FALSE)
@@ -693,7 +704,7 @@ ModuleNetworkPlot <- function(
       edge.color=adjustcolor(cur_color, alpha.f=0.25),
       edge.alpha=edge.alpha,
       vertex.color=cur_color,
-      vertex.label=as.character(cur$gene_name),
+      vertex.label=as.character(cur_genes),
       vertex.label.dist=1.1,
       vertex.label.degree=-pi/4,
       vertex.label.color="black",
@@ -1170,6 +1181,8 @@ DoHubGeneHeatmap <- function(
   group.by=NULL,
   module_names = NULL,
   combine=TRUE, #returns a list of individual heatmaps if FALSE
+  draw.lines=TRUE,
+  disp.min = -2.5, disp.max = 2.5, # cutoff expression values
   wgcna_name=NULL
 ){
 
@@ -1182,7 +1195,7 @@ DoHubGeneHeatmap <- function(
   }
 
   # drop if there are missing levels:
-  seurat_plot@meta.data[[group.by]] <- droplevels(seurat_plot@meta.data[[group.by]])
+  seurat_obj@meta.data[[group.by]] <- droplevels(seurat_obj@meta.data[[group.by]])
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -1199,12 +1212,20 @@ DoHubGeneHeatmap <- function(
   mod_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
 
   # get hub genes:
+  # hub_list <- lapply(mods, function(cur_mod){
+  #   cur <- subset(modules, module == cur_mod)
+  #   cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+  #     top_n(n_hubs) %>% .$gene_name
+  # })
   hub_list <- lapply(mods, function(cur_mod){
     cur <- subset(modules, module == cur_mod)
-    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(n_hubs) %>% .$gene_name
+    cur <- cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs)
+    colnames(cur)[2] <- 'var'
+    cur %>% arrange(desc(var)) %>% .$gene_name
   })
   names(hub_list) <- mods
+  print(hub_list)
 
   seurat_obj$barcode <- colnames(seurat_obj)
   temp <- table(seurat_obj@meta.data[[group.by]])
@@ -1239,8 +1260,10 @@ DoHubGeneHeatmap <- function(
         features = hub_list[[i]],
         group.by=group.by,
         raster=TRUE, slot='scale.data',
-        disp.min = -2.5, disp.max=2.5,
-        label=FALSE, group.bar=FALSE
+        disp.min = disp.min, disp.max=disp.max,
+        label=FALSE,
+        group.bar=FALSE,
+        draw.lines=draw.lines
       )
     } else{
       plot_list[[i]] <- DoHeatmap(
@@ -1250,7 +1273,8 @@ DoHubGeneHeatmap <- function(
        raster=TRUE, slot='scale.data',
        group.bar.height=0,
        label=FALSE, group.bar=FALSE,
-       disp.min = -2.5, disp.max=2.5
+       draw.lines=draw.lines,
+       disp.min = disp.min, disp.max=disp.max
      ) + NoLegend()
     }
     print(i)
