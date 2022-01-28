@@ -153,7 +153,7 @@ TestSoftPowers <- function(
 
   # add datExpr if not already added:
   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-    seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
+    seurat_obj <- SetDatExpr(seurat_obj, use_metacells=use_metacells, group.by=group.by, group_name=group_name)
   }
   # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
@@ -238,7 +238,13 @@ ConstructNetwork <- function(
 
   # add datExpr if not already added:
   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-    seurat_obj <- SetDatExpr(seurat_obj, use_metacells, group.by=group.by, group_name=group_name)
+    seurat_obj <- SetDatExpr(
+      seurat_obj,
+      group_name = group_name,
+      group.by=group.by,
+      use_metacells=use_metacells,
+      return_seurat=TRUE
+     )
   }
 
   # get datExpr
@@ -625,7 +631,6 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
     assay=params$metacell_assay,
     slot=params$metacell_slot
   ))[,genes_use]
-
 
   # get MEs:
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)

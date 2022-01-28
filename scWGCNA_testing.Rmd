@@ -30,7 +30,7 @@ theme_set(theme_cowplot())
 setwd("/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA")
 
 # source all of the scWGCNA scripts:
-scripts <- dir("bin/")
+scripts <- dir("/dfs3b/swaruplab/smorabit/analysis/scWGCNA/bin/")
 scripts <- scripts[scripts != 'scWGCNA.R']
 for(script in scripts){
   source(paste0("bin/", script))
@@ -402,155 +402,125 @@ dev.off()
 
 ```
 
-ROC Curve comparing original modules & projected modules in a shared cell space
+
+Testing consensus WGCNA support:
+
+Need to make a function "SetMultiExpr" for consensus
+
+Also will pretty much do a whole workflow to check if the consensus works for
+the downstream tasks.
 
 ```{r eval=FALSE}
 
-group.by <- 'annotation'
-groups <- as.character(unique(cur_seurat@meta.data[[group.by]]))
+# re-load seurat obj
+cur_seurat <- readRDS(file='data/test_wgcna_seurat.rds')
+cur_seurat <- SetModules(cur_seurat, NULL)
 
-# get Modules
-modules <- GetModules(cur_seurat)
-mods <- levels(modules$module)
-mods <- mods[mods != 'grey']
+######################################################
+# MultiExpr
+######################################################
 
-# get MEs:
-MEs <- GetMEs(cur_seurat, harmonized=TRUE) %>% mutate(group = cur_seurat@meta.data[[group.by]])
-MEs_p <- as.data.frame(GetMEs(seurat_proj, harmonized=TRUE)) %>% mutate(group = seurat_proj@meta.data[[group.by]])
-
-# compute average MEs in each group:
-avg_MEs <- MEs %>% group_by(group) %>% summarise(across(!!mods, mean))
-avg_MEs_p <- MEs_p %>% group_by(group) %>% summarise(across(!!mods, mean))
-groups <- avg_MEs$group
-
-# scale each column between 0 & 1
-avg_MEs <- avg_MEs %>% summarise(across(!!mods, scale01))
-avg_MEs_p <- avg_MEs_p %>% summarise(across(!!mods, scale01))
-
-# convert to binary labels:
-thresh <- 0.75
-labels <- avg_MEs %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
-labels <- as.data.frame(do.call(cbind, labels));
-rownames(labels) <- as.character(groups)
-
-predictions <- avg_MEs_p %>% purrr::map(~ifelse(. >= thresh, TRUE, FALSE))
-predictions <- as.data.frame(do.call(cbind, predictions));
-rownames(predictions) <- as.character(groups)
-
-# loop over modules to compute ROC curves:
-plot_df <- data.frame()
-conf_df <- data.frame()
-auc_list <- list()
-mod_colors <- list()
-for(cur_mod in mods){
-  print(cur_mod)
-  cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
-  mod_colors[[cur_mod]] <- cur_color
-
-  # compute ROC
-  rocobj <- pROC::roc(labels[,cur_mod], avg_MEs_p[[cur_mod]])
-  auc_list[[cur_mod]] <- as.numeric(rocobj$auc)
-  # confidence intervals:
-  # sens_ci <- ci.se(rocobj)
-
-  cur_df <- data.frame(
-    specificity = 1-rocobj$specificities,
-    sensitivity = rocobj$sensitivities,
-    #auc = rocobj$auc,
-    module = cur_mod,
-    color = cur_color,
-    auc = as.numeric(rocobj$auc)
-  #  ci_lo = sens_ci[,1],
-  #  ci_med = sens_ci[,2],
-  #  ci_hi = sens_ci[,3]
-
-  )
-  plot_df <- rbind(plot_df, cur_df)
-
-  cur_conf <- as.data.frame(ci.se(rocobj))
-  cur_conf$sensitivity <- 1-as.numeric(rownames(cur_conf))
-  cur_conf$module <- cur_mod
-  cur_conf$color <- cur_color
-  conf_df <- rbind(conf_df, cur_conf)
-
-}
-colnames(conf_df)[1:3] <- c('lo', 'mid', 'hi')
+# just run SetMultiExpr by itself
+test_seurat <- SetMultiExpr(
+  cur_seurat,
+  group_name = "MHb-Neuron",
+  group.by = "cell_type",
+  multi.group.by = "Sample",
+  multi_groups = NULL
+)
+test_mExpr <- GetMultiExpr(test_seurat)
 
 
+######################################################
+# test consensus
+######################################################
 
-library(pROC)
-rocobj <- pROC::roc(labels$red, avg_MEs_p$red)
-rocobj$auc
+cur_seurat <- TestSoftPowersConsensus(
+  cur_seurat,
+  group.by='cell_type', group_name="MHb-Neuron",
+  multi.group.by = 'Sample',
+  multi_groups = NULL,
+  setDatExpr=TRUE
+)
 
-sens_ci <- ci.se(rocobj)
+cur_seurat <- ConstructNetwork(
+  cur_seurat,
+  soft_power=c(5,8), # soft power can be a single number of a vector with a value for each datExpr in multiExpr
+  group.by='cell_type', group_name="MHb-Neuron",
+  multi.group.by = 'Sample',
+  multi_groups = NULL,
+  setDatExpr=FALSE,
+  consensus=TRUE
+)
 
-
-p <- ggroc(rocobj)
-
-pdf(paste0(fig_dir, 'test_ROC_blue.pdf'), width=6, height=6)
-p
+# plot consensus dendro:
+pdf("figures/test_dendro_consensus.pdf",height=5, width=8)
+PlotDendrogram(cur_seurat, main='Test Consensus')
 dev.off()
-#
-#
-# # confidence intervals:
-# sens_ci <- ci.se(rocobj)
-#
-#
-# plot_df <- data.frame(
-#   specificity = rocobj$specificities,
-#   sensitivity = 1-rocobj$sensitivities,
-#   #auc = rocobj$auc,
-#   module = "blue",
-#   color = "blue"
-# #  ci_lo = sens_ci[,1],
-# #  ci_med = sens_ci[,2],
-# #  ci_hi = sens_ci[,3]
-#
-# )
 
-plot_df <- plot_df %>% group_by(module) %>% arrange(sensitivity)
-conf_df <- conf_df %>% group_by(module) %>% arrange(sensitivity)
-auc_df <- distinct(plot_df[,c('module', 'auc')])
+# compute all MEs in the full single-cell dataset
+cur_seurat <- ModuleEigengenes(
+  cur_seurat,
+  group.by.vars="Sample"
+)
 
-p <- plot_df %>% ggplot(
-  aes(x=specificity, y=sensitivity, color=module, fill=module),
-) +
-  geom_line() +
-  geom_ribbon(
-    data=conf_df,
-    aes(x = sensitivity, ymin=lo, ymax=hi, fill=module),
-    inherit.aes=FALSE, alpha=0.4
-  ) +
-  scale_color_manual(values = unlist(mod_colors)) +
-  scale_fill_manual(values = unlist(mod_colors)) +
-  scale_x_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
-  scale_y_continuous(breaks = c(0, 0.5, 1), labels=c("0", "0.5", "1")) +
-  xlab("1 - Specificity (FPR)") + ylab("Sensitivity (TPR)") +
-  geom_text(
-    data = auc_df,
-    aes(color=module),
-    x=0.75, y=0.1, label=paste0("AUC: ", format(auc_df$auc, digits=2)),
-    inherit.aes=FALSE, size=4, color='black'
-  )
-  #annotate("text", x=0.75, y=0.1, label=paste0("AUC: ", plot_df$auc))
-  # theme(
-  #   axis.text = element_blank(),
-  #   axis.ticks = element_blank()
-  # )
+plot_list <- ModuleFeaturePlot(cur_seurat, order=TRUE)
+pdf("figures/test_consensus_hMEs.pdf",height=9, width=15)
+wrap_plots(plot_list, ncol=5)
+dev.off()
+
+# compute module connectivity:
+cur_seurat <- ModuleConnectivity(cur_seurat)
 
 
 
-pdf(paste0(fig_dir, 'test_ROC.pdf'), width=9, height=6)
-p + facet_wrap(~module, ncol=5) + NoLegend()
+library(igraph)
+
+# network plots:
+ModuleNetworkPlot(
+  cur_seurat,
+  outdir = paste0(fig_dir, 'test_consensus_networks/')
+)
+
+
+
+
+######################################################
+# see if old function still works
+######################################################
+
+# re-load seurat obj
+cur_seurat <- readRDS(file='data/test_wgcna_seurat.rds')
+
+# see if old function still works
+cur_seurat <- ConstructNetwork(
+  cur_seurat, soft_power=8,
+  group.by='cell_type', group_name="MHb-Neuron",
+  setDatExpr=TRUE
+)
+
+# plot dendro:
+pdf("figures/test_dendro.pdf",height=5, width=8)
+PlotDendrogram(cur_seurat, main='Test')
 dev.off()
 
 
-unlist(auc_list)
+# network plots:
+ModuleNetworkPlot(
+  cur_seurat,
+  outdir = paste0(fig_dir, 'test_networks/')
+)
+
+
+
+
+
 
 ```
 
 
-Project onto human AD dataset:
+
+Project modules from mouse onto human AD dataset:
 
 ```{r eval=FALSE}
 

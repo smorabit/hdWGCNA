@@ -237,19 +237,6 @@ dev.off()
 
 ```
 
-Analysis for Fig 1 of the scWGCNA paper:
-
-1. Integrate Zhou et al AD dataset & Morabito/Miyoshi et al AD dataset
-2. Train/Test scWGCNA on Zhou with 80/20 split, use Morabito et al as validation set
-
-```{r eval=FALSE}
-
-# TODO
-
-
-```
-
-
 Project onto human AD dataset:
 
 ```{r eval=FALSE}
