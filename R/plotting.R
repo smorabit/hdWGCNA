@@ -800,7 +800,7 @@ HubGeneNetworkPlot <- function(
   selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
 
   # scale edge values between 0 and 1
-  edge_df$value <- (edge_df$value - min(edge_df$value)) / (max(edge_df$value) - min(edge_df$value))
+  edge_df$value <- scale01(edge_df$value)
 
   # set color of each edge based on value:
   edge_df$color <- sapply(1:nrow(edge_df), function(i){

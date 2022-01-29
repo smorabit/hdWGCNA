@@ -458,7 +458,7 @@ pdf("figures/test_dendro_consensus.pdf",height=5, width=8)
 PlotDendrogram(cur_seurat, main='Test Consensus')
 dev.off()
 
-# compute all MEs in the full single-cell dataset
+# compute all MEs in the full single-cell 21  dataset
 cur_seurat <- ModuleEigengenes(
   cur_seurat,
   group.by.vars="Sample"
@@ -475,12 +475,24 @@ cur_seurat <- ModuleConnectivity(cur_seurat)
 
 
 library(igraph)
+library(qgraph)
+library(reshape2)
 
 # network plots:
 ModuleNetworkPlot(
   cur_seurat,
   outdir = paste0(fig_dir, 'test_consensus_networks/')
 )
+
+# hubgene network
+pdf(paste0(fig_dir, 'test_consensus_hubgene_graph.pdf'), width=7, height=7, useDingbats=FALSE)
+HubGeneNetworkPlot(
+  cur_seurat,
+  n_hubs = 10, n_other=10,
+  mods = 'all'
+)
+dev.off()
+
 
 
 
@@ -877,6 +889,11 @@ dev.off()
 Hub gene network plot using UMAP embedding, similar to Pando
 
 ```{r eval=FALSE}
+
+################################################################################
+# Focus on the hub genes:
+################################################################################
+
 # get the TOM
 TOM <- GetTOM(cur_seurat)
 
@@ -908,13 +925,16 @@ other_genes <- modules %>%
 gene_list <- c(as.character(unlist(hub_list)), other_genes)
 cur_TOM <- TOM[gene_list,gene_list]
 
+# alternatively, keep all genes as rows, and keep only hubs as cols (features)
+cur_TOM <- TOM[,unlist(hub_list)]
+
 # run UMAP
 hub_umap <-  uwot::umap(cur_TOM)
 
 # set up plotting df
-plot_df <- as.data.frame(hub_umap) %>%
-  rename(V1='UMAP1', V2='UMAP2') %>%
-  mutate(gene=rownames(cur_TOM))
+plot_df <- as.data.frame(hub_umap)
+colnames(plot_df) <- c("UMAP1", "UMAP2")
+plot_df$gene <- rownames(cur_TOM)
 
 # add module color, and hub gene status to the plotting df:
 
@@ -933,9 +953,161 @@ p <- ggplot(plot_df, aes(x=UMAP1, y=UMAP2)) +
      geom_point(color=plot_df$color, size=plot_df$size) +
      umap_theme
 
-pdf(paste0(fig_dir, 'test_hubgene_umap.pdf'), width=6, height=6, useDingbats=FALSE)
+pdf(paste0(fig_dir, 'test_hubgene_umap2.pdf'), width=6, height=6, useDingbats=FALSE)
 p
 dev.off()
+
+
+################################################################################
+# all the genes (only take a few from the grey mod)
+################################################################################
+
+# get the TOM
+TOM <- GetTOM(cur_seurat)
+
+# get modules, MEs:
+MEs <- GetMEs(cur_seurat)
+modules <- GetModules(cur_seurat)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
+
+n_hubs <- 25
+
+# get hub genes:
+hub_list <- lapply(mods, function(cur_mod){
+  cur <- subset(modules, module == cur_mod)
+  cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+    top_n(n_hubs) %>% .$gene_name
+})
+names(hub_list) <- mods
+
+# get all genes that aren't in gray mod
+selected_genes <- modules[modules$module %in% mods,'gene_name']
+
+
+# subset the TOM for umap
+# keep all genes as rows, and keep only hubs as cols (features)
+umap_TOM <- TOM[selected_genes,unlist(hub_list)]
+
+# run UMAP
+hub_umap <-  uwot::umap(
+  X = umap_TOM,
+  n_neighbors= 25,
+  n_components=2,
+  metric = "cosine",
+  spread=1,
+  min_dist=0.4
+)
+
+# set up plotting df
+plot_df <- as.data.frame(hub_umap)
+colnames(plot_df) <- c("UMAP1", "UMAP2")
+plot_df$gene <- rownames(cur_TOM)
+
+# add module color, and hub gene status to the plotting df:
+ix <- match(plot_df$gene, modules$gene_name)
+plot_df$module <- modules$module[ix]
+plot_df$color <- modules$color[ix]
+plot_df$hub <- ifelse(
+  plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
+)
+
+# size based on hub status
+plot_df$size <- ifelse(
+  plot_df$hub == 'hub', 2,1
+)
+
+# get kME values for each gene
+kMEs <- do.call(rbind, lapply(mods, function(cur_mod){
+  cur <- subset(modules, module == cur_mod)
+  cur <- cur[,c('gene_name', paste0('kME_', cur_mod))]
+  colnames(cur) <- c('gene_name', 'kME')
+
+  # scale kMEs between 0 & 1:
+  cur$kME <- scale01(cur$kME)
+
+  cur
+}))
+
+ix <- kMEs$gene_name[match(plot_df$gene, kMEs$gene_name)]
+plot_df$kME <- kMEs[ix, 'kME']
+
+
+p <- ggplot(plot_df, aes(x=UMAP1, y=UMAP2)) +
+     geom_point(color=plot_df$color, size=plot_df$kME*2) +
+     umap_theme
+
+pdf(paste0(fig_dir, 'test_hubgene_umap2.pdf'), width=5, height=5, useDingbats=FALSE)
+p
+dev.off()
+
+################################################################################
+# plot in igraph:
+################################################################################
+
+# function args
+edge.alpha=0.25
+vertex.label.cex=0.5
+hub.vertex.size=4
+other.vertex.size=1
+repulse.exp=3
+
+selected_modules <- modules %>% subset(gene_name %in% selected_genes)
+subset_TOM <- TOM[selected_genes,selected_genes]
+
+# setup for network plot
+selected_modules$geneset <- ifelse(
+  selected_modules$gene_name %in% other_genes, 'other', 'hub'
+)
+
+selected_modules$size <- ifelse(selected_modules$geneset == 'hub', hub.vertex.size, other.vertex.size)
+selected_modules$label <- ifelse(selected_modules$geneset == 'hub', as.character(selected_modules$gene_name), '')
+selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
+
+
+# make sure all nodes have at least one edge!!
+edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
+edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+
+# remove nodes with fewer than n edges:
+n_fewer = 5
+remove_nodes <- table(edge_df$Var1)[table(edge_df$Var1) < n_fewer] %>% names
+edge_df <- subset(edge_df, !(Var1 %in% remove_nodes) & !(Var2 %in% remove_nodes))
+selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
+
+# scale edge values between 0 and 1
+edge_df$value <- scale01(edge_df$value)
+
+# set color of each edge based on value:
+edge_df$color <- sapply(1:nrow(edge_df), function(i){
+  gene1 = as.character(edge_df[i,'Var1'])
+  gene2 = as.character(edge_df[i,'Var2'])
+
+  col1 <- modules %>% subset(gene_name == gene1) %>% .$color
+  col2 <- modules %>% subset(gene_name == gene2) %>% .$color
+
+  if(col1 == col2){
+    col = col1
+  } else{
+    col = 'gray90'
+  }
+  col
+})
+
+# set alpha of edges
+edge_df$color <- sapply(1:nrow(edge_df), function(i){
+  a = edge_df$value[i]
+  #if(edge_df$value[i] < 0.05){a=0.05}
+  alpha(edge_df$color[i], alpha=a)
+})
+
+# setup igraph:
+g <- igraph::graph_from_data_frame(
+  edge_df,
+  directed=FALSE,
+  vertices=selected_modules
+)
+
 
 ```
 
