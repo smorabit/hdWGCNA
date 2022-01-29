@@ -888,7 +888,19 @@ dev.off()
 
 Hub gene network plot using UMAP embedding, similar to Pando
 
+* label the top 5 hubs of each module
+
 ```{r eval=FALSE}
+
+
+library(future.apply)
+# check how many cores:
+availableCores()
+plan(multicore, workers=8)
+options(future.globals.maxSize= 16*1024^3 )
+
+
+
 
 ################################################################################
 # Focus on the hub genes:
@@ -929,7 +941,7 @@ cur_TOM <- TOM[gene_list,gene_list]
 cur_TOM <- TOM[,unlist(hub_list)]
 
 # run UMAP
-hub_umap <-  uwot::umap(cur_TOM)
+hub_umap <- uwot::umap(cur_TOM)
 
 # set up plotting df
 plot_df <- as.data.frame(hub_umap)
@@ -1025,7 +1037,6 @@ kMEs <- do.call(rbind, lapply(mods, function(cur_mod){
 
   # scale kMEs between 0 & 1:
   cur$kME <- scale01(cur$kME)
-
   cur
 }))
 
@@ -1045,19 +1056,25 @@ dev.off()
 # plot in igraph:
 ################################################################################
 
+
 # function args
-edge.alpha=0.25
+edge.alpha=0.15
 vertex.label.cex=0.5
 hub.vertex.size=4
 other.vertex.size=1
 repulse.exp=3
 
+# subset modules for these genes:
 selected_modules <- modules %>% subset(gene_name %in% selected_genes)
-subset_TOM <- TOM[selected_genes,selected_genes]
+# subset_TOM <- TOM[selected_genes,selected_genes]
+subset_TOM <- umap_TOM
+
+# add UMAP coordinates:
+selected_modules <- cbind(selected_modules, plot_df[ix,c('UMAP1', 'UMAP2', 'kME')])
 
 # setup for network plot
 selected_modules$geneset <- ifelse(
-  selected_modules$gene_name %in% other_genes, 'other', 'hub'
+  selected_modules$gene_name %in% unlist(hub_list), 'hub', 'other'
 )
 
 selected_modules$size <- ifelse(selected_modules$geneset == 'hub', hub.vertex.size, other.vertex.size)
@@ -1068,18 +1085,25 @@ selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50'
 # make sure all nodes have at least one edge!!
 edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
 edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+print(dim(edge_df))
 
 # remove nodes with fewer than n edges:
-n_fewer = 5
-remove_nodes <- table(edge_df$Var1)[table(edge_df$Var1) < n_fewer] %>% names
-edge_df <- subset(edge_df, !(Var1 %in% remove_nodes) & !(Var2 %in% remove_nodes))
-selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
+# n_fewer = 5
+# remove_nodes <- table(edge_df$Var1)[table(edge_df$Var1) < n_fewer] %>% names
+# edge_df <- subset(edge_df, !(Var1 %in% remove_nodes) & !(Var2 %in% remove_nodes))
+# selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
+# print(dim(edge_df))
 
 # scale edge values between 0 and 1
 edge_df$value <- scale01(edge_df$value)
 
+# remove edges below thresh
+# alternatively could just keep edges to hub genes?
+# edge_df <- subset(edge_df, value >= quantile(edge_df$value, .90))
+# print(dim(edge_df))
+
 # set color of each edge based on value:
-edge_df$color <- sapply(1:nrow(edge_df), function(i){
+edge_df$color <- future_sapply(1:nrow(edge_df), function(i){
   gene1 = as.character(edge_df[i,'Var1'])
   gene2 = as.character(edge_df[i,'Var2'])
 
@@ -1094,12 +1118,26 @@ edge_df$color <- sapply(1:nrow(edge_df), function(i){
   col
 })
 
+# edges & vertices are plotted in igraph starting with the first row, so re-order s.t. strong edges are on bottom, all gray on the top of the table:
+edge_df <- edge_df %>% arrange(value)
+edge_df <- rbind(
+  subset(edge_df, color == 'grey90'),
+  subset(edge_df, color != 'grey90')
+)
+head(edge_df)
+
 # set alpha of edges
 edge_df$color <- sapply(1:nrow(edge_df), function(i){
   a = edge_df$value[i]
-  #if(edge_df$value[i] < 0.05){a=0.05}
+  #if(edge_df$value[i] < 0.5){a=0.5}
   alpha(edge_df$color[i], alpha=a)
 })
+
+# re-order vertices so hubs are plotted on top
+selected_modules <- rbind(
+  subset(selected_modules , geneset == 'other'),
+  subset(selected_modules , geneset != 'other')
+)
 
 # setup igraph:
 g <- igraph::graph_from_data_frame(
@@ -1107,6 +1145,35 @@ g <- igraph::graph_from_data_frame(
   directed=FALSE,
   vertices=selected_modules
 )
+head(E(g)$value)
+head(E(g)$color)
+
+pdf(paste0(fig_dir, 'test_hubgene_umap2_igraph.pdf'), width=9, height=9, useDingbats=FALSE)
+
+  plot(
+    g,
+    layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
+    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    #edge.color=E(g)$color,
+    #vertex.size=V(g)$size,
+    vertex.size=V(g)$kME * 3,
+    edge.curved=0,
+    edge.width=0.5,
+    vertex.color=V(g)$color,
+    # vertex.frame.color=V(g)$color,
+  #  vertex.label=V(g)$label,
+    vertex.label="",
+    vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
+    vertex.label.font = 3,
+    vertex.label.color = V(g)$fontcolor,
+    vertex.label.cex=0,
+    vertex.frame.color=ifelse(
+      V(g)$geneset == 'hub',
+      'black', V(g)$color
+    )
+  )
+
+  dev.off()
 
 
 ```
