@@ -634,6 +634,22 @@ GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$motif_module_overlaps
 }
 
+############################
+# ModuleUMAP
+###########################
+
+SetModuleUMAP <- function(seurat_obj, umap_df, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$module_umap <- umap_df
+  seurat_obj
+}
+
+GetModuleUMAP <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$module_umap
+}
+
 
 
 ############################

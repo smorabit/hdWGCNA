@@ -869,6 +869,137 @@ HubGeneNetworkPlot <- function(
 }
 
 
+#' ModuleUMAPPlot
+#'
+#' Makes a igraph network plot using the module UMAP
+#'
+#' @param seurat_obj A Seurat object
+#' @param
+#' @param
+#' @param
+#' @param
+#' @param
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ModuleUMAPPlot
+ModuleUMAPPlot <- function(
+  seurat_obj,
+  edge.alpha=0.25,
+  vertex.label.cex=0.5, hub.vertex.size=4,
+  other.vertex.size=1, repulse.exp=3,
+  harmonized=TRUE,
+  wgcna_name=NULL,
+  return_graph = FALSE, # this returns the igraph object instead of plotting
+  ...
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get the TOM
+  TOM <- GetTOM(seurat_obj, wgcna_name)
+
+  # get modules, MEs:
+  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # get the UMAP df:
+  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
+  mods <- levels(umap_df$modules)
+
+  # subset module df by genes in the UMAP df:
+  selected_modules <- modules[umap_df$gene,]
+  selected_modules <- cbind(selected_modules, umap_df[,c('UMAP1', 'UMAP2', 'hub', 'kME')])
+
+  # subset the TOM:
+  subset_TOM <- TOM[umap_df$gene, umap_df$gene[umap_df$hub == 'hub']]
+
+  # labels
+  selected_modules$label <- ifelse(selected_modules$hub == 'hub', as.character(selected_modules$gene_name), '')
+  selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
+
+
+  # make sure all nodes have at least one edge!!
+  edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
+  edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+  print(dim(edge_df))
+
+  # scale edge values between 0 and 1
+  edge_df$value <- scale01(edge_df$value)
+
+
+  # set color of each edge based on value:
+  edge_df$color <- future.apply::future_sapply(1:nrow(edge_df), function(i){
+    gene1 = as.character(edge_df[i,'Var1'])
+    gene2 = as.character(edge_df[i,'Var2'])
+
+    col1 <- modules %>% subset(gene_name == gene1) %>% .$color
+    col2 <- modules %>% subset(gene_name == gene2) %>% .$color
+
+    if(col1 == col2){
+      col = col1
+    } else{
+      col = 'gray90'
+    }
+    col
+  })
+
+
+  # edges & vertices are plotted in igraph starting with the first row, so re-order s.t. strong edges are on bottom, all gray on the top of the table:
+  edge_df <- edge_df %>% arrange(value)
+  edge_df <- rbind(
+    subset(edge_df, color == 'grey90'),
+    subset(edge_df, color != 'grey90')
+  )
+  head(edge_df)
+
+
+  # set alpha of edges
+  edge_df$color <- sapply(1:nrow(edge_df), function(i){
+    a = edge_df$value[i]
+    #if(edge_df$value[i] < 0.5){a=0.5}
+    alpha(edge_df$color[i], alpha=a)
+  })
+
+  # re-order vertices so hubs are plotted on top
+  selected_modules <- rbind(
+    subset(selected_modules , hub == 'other'),
+    subset(selected_modules , hub != 'other')
+  )
+
+  # setup igraph:
+  g <- igraph::graph_from_data_frame(
+    edge_df,
+    directed=FALSE,
+    vertices=selected_modules
+  )
+
+  if(return_graph){return(g)}
+
+  plot(
+    g,
+    layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
+    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    vertex.size=V(g)$kME * 3,
+    edge.curved=0,
+    edge.width=0.5,
+    vertex.color=V(g)$color,
+    # vertex.frame.color=V(g)$color,
+  #  vertex.label=V(g)$label,
+    vertex.label="",
+    vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
+    vertex.label.font = 3,
+    vertex.label.color = V(g)$fontcolor,
+    vertex.label.cex=0,
+    vertex.frame.color=ifelse(
+      V(g)$geneset == 'hub',
+      'black', V(g)$color
+    )
+  )
+
+}
+
+
 #' OverlapDotPlot
 #'
 #' Makes barplots from Enrichr data

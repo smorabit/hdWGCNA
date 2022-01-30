@@ -1282,3 +1282,98 @@ OverlapModulesMotifs <- function(
   seruat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
 
 }
+
+
+#' Run UMAP on co-expression matrix using hub genes as features.
+#'
+#' @param seurat_obj A Seurat object
+#' @param n_hubs
+#' @param exclude_grey
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' RunModuleUMAP
+RunModuleUMAP <- function(
+  seurat_obj,
+  n_hubs = 50,
+  exclude_grey = TRUE,
+  harmonized=TRUE,
+  wgcna_name = NULL,
+  n_neighbors= 25,
+  metric = "cosine",
+  spread=1,
+  min_dist=0.4,
+  ...
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get the TOM
+  TOM <- GetTOM(seurat_obj, wgcna_name)
+
+  # get modules, MEs:
+  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module)
+
+  if(exclude_grey){
+    mods <- mods[mods != 'grey']
+  }
+
+  # get hub genes:
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+
+  # get all genes that aren't in gray mod
+  selected_genes <- modules[modules$module %in% mods,'gene_name']
+
+  # subset the TOM for umap
+  # keep all genes as rows, and keep only hubs as cols (features)
+  umap_TOM <- TOM[selected_genes,unlist(hub_list)]
+
+  # run UMAP
+  hub_umap <-  uwot::umap(
+    X = umap_TOM,
+    min_dist = min_dist,
+    n_neighbors= n_neighbors,
+    metric = metric,
+    spread=spread,
+    ...
+  )
+
+  # set up plotting df
+  plot_df <- as.data.frame(hub_umap)
+  colnames(plot_df) <- c("UMAP1", "UMAP2")
+  plot_df$gene <- rownames(umap_TOM)
+
+  # add module color, and hub gene status to the plotting df:
+  ix <- match(plot_df$gene, modules$gene_name)
+  plot_df$module <- modules$module[ix]
+  plot_df$color <- modules$color[ix]
+  plot_df$hub <- ifelse(
+    plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
+  )
+
+  # get kME values for each gene
+  kMEs <- do.call(rbind, lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[,c('gene_name', paste0('kME_', cur_mod))]
+    colnames(cur) <- c('gene_name', 'kME')
+
+    # scale kMEs between 0 & 1:
+    cur$kME <- scale01(cur$kME)
+    cur
+  }))
+  ix <- kMEs$gene_name[match(plot_df$gene, kMEs$gene_name)]
+  plot_df$kME <- kMEs[ix, 'kME']
+
+  # add the UMAP to the Seurat object:
+  seurat_obj <- SetModuleUMAP(seurat_obj, plot_df, wgcna_name)
+
+  seurat_obj
+}

@@ -26,7 +26,7 @@ enableWGCNAThreads(nThreads = 8)
 set.seed(2021)
 colfunc <- colorRampPalette(rev(brewer.pal(11, 'Spectral' )))
 theme_set(theme_cowplot())
-# scp ../../pipelines/scWGCNA/R/* hpc3:/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA/bin/
+# scp scp R/* hpc3:/dfs3b/swaruplab/smorabit/analysis/scWGCNA/bin/
 setwd("/dfs3b/swaruplab/smorabit/collab/woodlab/cocaine_mouse_2021/Nurr2c_vs_GFP/scWGCNA")
 
 # source all of the scWGCNA scripts:
@@ -890,6 +890,12 @@ Hub gene network plot using UMAP embedding, similar to Pando
 
 * label the top 5 hubs of each module
 
+* RunModuleUMAP
+* ModuleUMAPPlot
+  - add options to label genes
+  - Change how edges are selected. Add an option for edge selection?
+  - Add an option to return the igraph object instead of plotting.
+
 ```{r eval=FALSE}
 
 
@@ -899,163 +905,37 @@ availableCores()
 plan(multicore, workers=8)
 options(future.globals.maxSize= 16*1024^3 )
 
-
-
-
-################################################################################
-# Focus on the hub genes:
-################################################################################
-
-# get the TOM
-TOM <- GetTOM(cur_seurat)
-
-# get modules, MEs:
-MEs <- GetMEs(cur_seurat)
-modules <- GetModules(cur_seurat)
-mods <- levels(modules$module)
-mods <- mods[mods != 'grey']
-
-n_hubs <- 50
-n_other <- 25
-
-# get hub genes:
-hub_list <- lapply(mods, function(cur_mod){
-  cur <- subset(modules, module == cur_mod)
-  cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-    top_n(n_hubs) %>% .$gene_name
-})
-names(hub_list) <- mods
-
-# sample the same number of genes in each module
-other_genes <- modules %>%
-  subset(!(gene_name %in% unlist(hub_list))) %>%
-  group_by(module) %>%
-  sample_n(n_other, replace=TRUE) %>%
-  .$gene_name %>% unique
-
-# subset TOM by these genes:
-gene_list <- c(as.character(unlist(hub_list)), other_genes)
-cur_TOM <- TOM[gene_list,gene_list]
-
-# alternatively, keep all genes as rows, and keep only hubs as cols (features)
-cur_TOM <- TOM[,unlist(hub_list)]
-
-# run UMAP
-hub_umap <- uwot::umap(cur_TOM)
-
-# set up plotting df
-plot_df <- as.data.frame(hub_umap)
-colnames(plot_df) <- c("UMAP1", "UMAP2")
-plot_df$gene <- rownames(cur_TOM)
-
-# add module color, and hub gene status to the plotting df:
-
-ix <- match(plot_df$gene, modules$gene_name)
-plot_df$module <- modules$module[ix]
-plot_df$color <- modules$color[ix]
-plot_df$hub <- ifelse(
-  plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
-)
-plot_df$size <- ifelse(
-  plot_df$hub == 'hub', 2,1
-)
-
-
-p <- ggplot(plot_df, aes(x=UMAP1, y=UMAP2)) +
-     geom_point(color=plot_df$color, size=plot_df$size) +
-     umap_theme
-
-pdf(paste0(fig_dir, 'test_hubgene_umap2.pdf'), width=6, height=6, useDingbats=FALSE)
-p
-dev.off()
-
-
-################################################################################
-# all the genes (only take a few from the grey mod)
-################################################################################
-
-# get the TOM
-TOM <- GetTOM(cur_seurat)
-
-# get modules, MEs:
-MEs <- GetMEs(cur_seurat)
-modules <- GetModules(cur_seurat)
-mods <- levels(modules$module)
-mods <- mods[mods != 'grey']
-
-n_hubs <- 25
-
-# get hub genes:
-hub_list <- lapply(mods, function(cur_mod){
-  cur <- subset(modules, module == cur_mod)
-  cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-    top_n(n_hubs) %>% .$gene_name
-})
-names(hub_list) <- mods
-
-# get all genes that aren't in gray mod
-selected_genes <- modules[modules$module %in% mods,'gene_name']
-
-
-# subset the TOM for umap
-# keep all genes as rows, and keep only hubs as cols (features)
-umap_TOM <- TOM[selected_genes,unlist(hub_list)]
-
-# run UMAP
-hub_umap <-  uwot::umap(
-  X = umap_TOM,
-  n_neighbors= 25,
-  n_components=2,
-  metric = "cosine",
-  spread=1,
+cur_seurat <- RunModuleUMAP(
+  cur_seurat,
+  n_hubs = 25,
+  exclude_grey = TRUE,
   min_dist=0.4
 )
-
-# set up plotting df
-plot_df <- as.data.frame(hub_umap)
-colnames(plot_df) <- c("UMAP1", "UMAP2")
-plot_df$gene <- rownames(cur_TOM)
-
-# add module color, and hub gene status to the plotting df:
-ix <- match(plot_df$gene, modules$gene_name)
-plot_df$module <- modules$module[ix]
-plot_df$color <- modules$color[ix]
-plot_df$hub <- ifelse(
-  plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
-)
-
-# size based on hub status
-plot_df$size <- ifelse(
-  plot_df$hub == 'hub', 2,1
-)
-
-# get kME values for each gene
-kMEs <- do.call(rbind, lapply(mods, function(cur_mod){
-  cur <- subset(modules, module == cur_mod)
-  cur <- cur[,c('gene_name', paste0('kME_', cur_mod))]
-  colnames(cur) <- c('gene_name', 'kME')
-
-  # scale kMEs between 0 & 1:
-  cur$kME <- scale01(cur$kME)
-  cur
-}))
-
-ix <- kMEs$gene_name[match(plot_df$gene, kMEs$gene_name)]
-plot_df$kME <- kMEs[ix, 'kME']
-
+plot_df <- GetModuleUMAP(cur_seurat)
 
 p <- ggplot(plot_df, aes(x=UMAP1, y=UMAP2)) +
      geom_point(color=plot_df$color, size=plot_df$kME*2) +
      umap_theme
 
-pdf(paste0(fig_dir, 'test_hubgene_umap2.pdf'), width=5, height=5, useDingbats=FALSE)
+pdf(paste0(fig_dir, 'test_hubgene_umap3.pdf'), width=6, height=6, useDingbats=FALSE)
 p
 dev.off()
+
+library(reshape2)
+library(igraph)
+
+pdf(paste0(fig_dir, 'test_hubgene_umap_igraph2.pdf'), width=6, height=6, useDingbats=FALSE)
+ModuleUMAPPlot(
+  cur_seurat
+)
+dev.off()
+
+
+g <- ModuleUMAPPlot(cur_seurat, return_graph=TRUE)
 
 ################################################################################
 # plot in igraph:
 ################################################################################
-
 
 # function args
 edge.alpha=0.15
@@ -1066,6 +946,7 @@ repulse.exp=3
 
 # subset modules for these genes:
 selected_modules <- modules %>% subset(gene_name %in% selected_genes)
+
 # subset_TOM <- TOM[selected_genes,selected_genes]
 subset_TOM <- umap_TOM
 
@@ -1174,6 +1055,72 @@ pdf(paste0(fig_dir, 'test_hubgene_umap2_igraph.pdf'), width=9, height=9, useDing
   )
 
   dev.off()
+
+
+################################################################################
+# Randomly sample 20% of edges (for making a logo)
+################################################################################
+
+edge_df <- edge_df[sample(rownames(edge_df), round(nrow(edge_df)*0.2)),]
+
+edge_df <- edge_df %>% arrange(value)
+edge_df <- rbind(
+  subset(edge_df, color == 'grey90'),
+  subset(edge_df, color != 'grey90')
+)
+head(edge_df)
+
+# set alpha of edges
+edge_df$color <- sapply(1:nrow(edge_df), function(i){
+  a = edge_df$value[i]
+  #if(edge_df$value[i] < 0.5){a=0.5}
+  alpha(edge_df$color[i], alpha=a)
+})
+
+# re-order vertices so hubs are plotted on top
+selected_modules <- rbind(
+  subset(selected_modules , geneset == 'other'),
+  subset(selected_modules , geneset != 'other')
+)
+
+# make black into a dark grey
+selected_modules$color <- ifelse(
+  selected_modules$color == 'black',
+  'grey50',
+  selected_modules$color
+)
+
+# setup igraph:
+g <- igraph::graph_from_data_frame(
+  edge_df,
+  directed=FALSE,
+  vertices=selected_modules
+)
+head(E(g)$value)
+head(E(g)$color)
+
+pdf(paste0(fig_dir, 'test_hubgene_umap2_igraph_logo.pdf'), width=9, height=9, useDingbats=FALSE)
+
+  plot(
+    g,
+    layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
+    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    #edge.color=E(g)$color,
+    #vertex.size=V(g)$size,
+    vertex.size=V(g)$kME * 3,
+    edge.curved=0,
+    edge.width=0.5,
+    vertex.color=V(g)$color,
+    vertex.frame.color=V(g)$color,
+    vertex.label="",
+    vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
+    vertex.label.font = 3,
+    vertex.label.color = V(g)$fontcolor,
+    vertex.label.cex=0,
+  )
+
+  dev.off()
+
 
 
 ```
