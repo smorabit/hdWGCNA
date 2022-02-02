@@ -1,0 +1,16 @@
+citHeader("To cite scWGCNA in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease",
+  author   = "Samuel Morabito, Emily Miyoshi, Neethu Michael, Saba Shahin, Alessandra Cadete Martini, Elizabeth Head, Justine Silva, Kelsey Leavy, Mari Perez-Rosendahl, Vivek Swarup",
+  journal  = "Nature Genetics",
+  year     = "2021",
+  volume   = "53",
+  number   = "",
+  pages    = "1143–1155",
+  url      = "https://doi.org/10.1038/s41588-021-00894-z",
+  textVersion = paste(
+
+  )
+)

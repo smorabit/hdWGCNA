@@ -813,7 +813,7 @@ HubGeneNetworkPlot <- function(
     if(col1 == col2){
       col = col1
     } else{
-      col = 'gray90'
+      col = 'grey90'
     }
     col
   })
@@ -885,12 +885,16 @@ HubGeneNetworkPlot <- function(
 #' ModuleUMAPPlot
 ModuleUMAPPlot <- function(
   seurat_obj,
+  sample_edges = TRUE, # TRUE if we sample edges randomly, FALSE if we take the top edges
+  edge_prop = 0.2,
+  label_hubs = 5, # how many hub genes to label?
   edge.alpha=0.25,
-  vertex.label.cex=0.5, hub.vertex.size=4,
-  other.vertex.size=1, repulse.exp=3,
-  harmonized=TRUE,
-  wgcna_name=NULL,
+  vertex.label.cex=0.5,
+  hub.vertex.size=4,
+  other.vertex.size=1,
+  repulse.exp=3,
   return_graph = FALSE, # this returns the igraph object instead of plotting
+  wgcna_name=NULL,
   ...
 ){
 
@@ -899,8 +903,7 @@ ModuleUMAPPlot <- function(
   # get the TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
 
-  # get modules, MEs:
-  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  # get modules,
   modules <- GetModules(seurat_obj, wgcna_name)
 
   # get the UMAP df:
@@ -915,18 +918,17 @@ ModuleUMAPPlot <- function(
   subset_TOM <- TOM[umap_df$gene, umap_df$gene[umap_df$hub == 'hub']]
 
   # labels
-  selected_modules$label <- ifelse(selected_modules$hub == 'hub', as.character(selected_modules$gene_name), '')
+  label_genes <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
+  selected_modules$label <- ifelse(selected_modules$gene_name %in% label_genes, selected_modules$gene_name, '')
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
+  # set frome color
+  # same color as module for all genes, black outline for the selected hub genes
+  selected_modules$framecolor <- ifelse(selected_modules$gene_name %in% label_genes, 'black', selected_modules$color)
 
-  # make sure all nodes have at least one edge!!
-  edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
-  edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+  # melt TOM into long format
+  edge_df <- subset_TOM %>% melt
   print(dim(edge_df))
-
-  # scale edge values between 0 and 1
-  edge_df$value <- scale01(edge_df$value)
-
 
   # set color of each edge based on value:
   edge_df$color <- future.apply::future_sapply(1:nrow(edge_df), function(i){
@@ -939,11 +941,38 @@ ModuleUMAPPlot <- function(
     if(col1 == col2){
       col = col1
     } else{
-      col = 'gray90'
+      col = 'grey90'
     }
     col
   })
 
+  # subset edges:
+  groups <- unique(edge_df$color)
+  print(groups)
+  if(sample_edges){
+    print('here')
+    # randomly sample
+    temp <- do.call(rbind, lapply(groups, function(cur_group){
+      cur_df <- edge_df %>% subset(color == cur_group)
+      n_edges <- nrow(cur_df)
+      cur_sample <- sample(1:n_edges, round(n_edges * edge_prop))
+      cur_df[cur_sample,]
+    }))
+  } else{
+
+    # get top strongest edges
+    temp <- do.call(rbind, lapply(groups, function(cur_group){
+      cur_df <- edge_df %>% subset(color == cur_group)
+      n_edges <- nrow(cur_df)
+      cur_df %>% dplyr::top_n(round(n_edges * edge_prop), wt=value)
+    }))
+  }
+
+  edge_df <- temp
+  print(dim(edge_df))
+
+  # scale edge values between 0 and 1 for each module
+  edge_df <- edge_df %>% group_by(color) %>% mutate(value=scale01(value))
 
   # edges & vertices are plotted in igraph starting with the first row, so re-order s.t. strong edges are on bottom, all gray on the top of the table:
   edge_df <- edge_df %>% arrange(value)
@@ -953,18 +982,23 @@ ModuleUMAPPlot <- function(
   )
   head(edge_df)
 
-
-  # set alpha of edges
-  edge_df$color <- sapply(1:nrow(edge_df), function(i){
-    a = edge_df$value[i]
-    #if(edge_df$value[i] < 0.5){a=0.5}
-    alpha(edge_df$color[i], alpha=a)
-  })
+  # set alpha of edges based on kME
+  edge_df$color_alpha <- ifelse(
+    edge_df$color == 'grey90',
+    alpha(edge_df$color, alpha=edge_df$value/2),
+    alpha(edge_df$color, alpha=edge_df$value)
+  )
 
   # re-order vertices so hubs are plotted on top
   selected_modules <- rbind(
     subset(selected_modules , hub == 'other'),
     subset(selected_modules , hub != 'other')
+  )
+
+  # re-order vertices so labeled genes are on top
+  selected_modules <- rbind(
+    subset(selected_modules , label == ''),
+    subset(selected_modules , label != '')
   )
 
   # setup igraph:
@@ -979,22 +1013,20 @@ ModuleUMAPPlot <- function(
   plot(
     g,
     layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
-    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    # edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
+    edge.color=adjustcolor(E(g)$color_alpha, alpha.f=edge.alpha),
     vertex.size=V(g)$kME * 3,
     edge.curved=0,
     edge.width=0.5,
     vertex.color=V(g)$color,
-    # vertex.frame.color=V(g)$color,
-  #  vertex.label=V(g)$label,
-    vertex.label="",
+    vertex.label=V(g)$label,
+    vertex.label.dist=1.1,
+    vertex.label.degree=-pi/4,
     vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
     vertex.label.font = 3,
     vertex.label.color = V(g)$fontcolor,
     vertex.label.cex=0,
-    vertex.frame.color=ifelse(
-      V(g)$geneset == 'hub',
-      'black', V(g)$color
-    )
+    vertex.frame.color=V(g)$framecolor
   )
 
 }

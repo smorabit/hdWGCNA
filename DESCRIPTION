@@ -1,12 +1,10 @@
 Package: scWGCNA
-Title: What the Package Does (One Line, Title Case)
+Title: WGCNA
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+Authors@R: c(
+    person("Samuel", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-7768-4856"))
+  )
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license

@@ -759,6 +759,27 @@ ResetModuleNames <- function(
     seurat_obj <- SetROCData(seurat_obj, roc_data, wgcna_name)
   }
 
+  # update motif overlap
+  overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
+  if(!is.null(overlap_df)){
+    overlap_df$module <- factor(
+      new_mod_df[match(overlap_df$module, new_mod_df$old),'new'],
+      levels = as.character(new_mod_df$new)
+    )
+    seurat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
+  }
+
+  # update module umap:
+  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
+  if(!is.null(umap_df)){
+    umap_df$module <- factor(
+      new_mod_df[match(umap_df$module, new_mod_df$old),'new'],
+      levels = as.character(new_mod_df$new)
+    )
+    seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
+  }
+
+
   seurat_obj
 
 }
@@ -778,7 +799,7 @@ ResetModuleColors <- function(
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
-  mod_colors <- select(modules, c(module, color)) %>%
+  mod_colors <- dplyr::select(modules, c(module, color)) %>%
     distinct %>% arrange(module) %>% .$color
   grey_ind <- which(mod_colors == 'grey')
 
@@ -800,6 +821,22 @@ ResetModuleColors <- function(
 
   # set module table
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
+
+
+  # update motif overlap
+  overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
+  if(!is.null(overlap_df)){
+    overlap_df$color <- new_color_df[match(overlap_df$color, new_color_df$old),'new']
+    seurat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
+  }
+
+  # update module umap:
+  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
+  if(!is.null(umap_df)){
+    umap_df$module <- new_color_df[match(umap_df$color, new_color_df$old),'new']
+    seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
+  }
+
 
   seurat_obj
 

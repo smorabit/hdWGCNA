@@ -1,0 +1,937 @@
+---
+title: "scWGCNA Basics"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for applying the core functions of scWGCNA.
+vignette: >
+  %\VignetteIndexEntry{scWGCNA Basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Load Zhou et al data into Seurat
+
+![](man/figures/logo_v2.png)
+
+<img src="man/figures/logo_v2.png" align="center" height="20%" width="20%" />
+
+```{r eval=FALSE}
+
+# load R packages
+library(Seurat)
+library(tidyverse)
+library(cowplot)
+library(Matrix)
+library(viridis)
+library(harmony)
+library(RColorBrewer)
+library(patchwork)
+library(ggpubr)
+library(tictoc)
+library(RColorBrewer)
+library(Hmisc)
+library(corrplot)
+library(enrichR)
+library(GeneOverlap)
+library(WGCNA)
+library(grid)
+library(gridExtra)
+enableWGCNAThreads(nThreads = 8)
+theme_set(theme_cowplot())
+set.seed(12345)
+
+
+setwd('/dfs3b/swaruplab/smorabit/analysis/scWGCNA/')
+
+# output directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+# scp R/* hpc3:/dfs3b/swaruplab/smorabit/analysis/scWGCNA/bin/
+
+scripts <- dir("bin/")
+scripts <- scripts[scripts != 'scWGCNA.R']
+for(script in scripts){
+  source(paste0("bin/", script))
+}
+
+umap_theme <- theme(
+  axis.line=element_blank(),
+  axis.text.x=element_blank(),
+  axis.text.y=element_blank(),
+  axis.ticks=element_blank(),
+  axis.title.x=element_blank(),
+  axis.title.y=element_blank(),
+  panel.background=element_blank(),
+  panel.border=element_blank(),
+  panel.grid.major=element_blank(),
+  panel.grid.minor=element_blank(),
+  plot.background=element_blank(),
+  plot.title = element_text(hjust = 0.5)
+)
+
+# re-load scWGCNA dataset:
+seurat_obj <- readRDS(file=paste0(data_dir, 'Zhou_control_scWGCNA.rds'))
+
+# set annotation factor levels:
+seurat_obj$annotation <- factor(
+  as.character(seurat_obj$annotation),
+  levels = c(
+    "INH VIP+", "INH PVALB+", "INH SST+", "INH LAMP5+",
+    "EX1", 'EX2', 'EX3', 'EX4', 'EX5', 'EX6', 'EX7', 'EX8', 'EX9', 'EX10', 'OPC', 'ODC1', 'ODC2', 'ODC3', 'ODC4',
+    'ODC5', 'ODC6', 'ODC7', 'ODC8', 'ODC9',
+    'ASC1', 'ASC2', 'ASC4', 'MG'
+  )
+)
+
+seurat_obj$cell_type <- factor(
+  as.character(seurat_obj$cell_type),
+  levels = c('INH', 'EX', 'OPC', 'ODC', 'ASC', 'MG')
+)
+
+
+################################################################################
+# make a color scheme for this dataset with MetBrewer:
+################################################################################
+
+library(MetBrewer)
+
+n_groups <- length(levels(seurat_obj$annotation))
+
+# INH + EX
+cluster_colors1 = paste0(met.brewer("Signac", 14, type='discrete'))
+
+# Glia
+cluster_colors2 = paste0(met.brewer("Morgenstern", 8, type='continuous'))
+cluster_colors3 = paste0(met.brewer("Lakota", 6, type='discrete'))
+
+# combine
+cluster_colors <- c(cluster_colors1, cluster_colors2, cluster_colors3)
+
+names(cluster_colors) <- levels(seurat_obj$annotation)
+
+celltype_colors <- cluster_colors[c('INH VIP+', 'EX4', 'OPC', 'ODC5', 'ASC1', 'MG')]
+names(celltype_colors) <- levels(seurat_obj$cell_type)
+
+save(cluster_colors, celltype_colors, file='data/Zhou_color_scheme.rda')
+
+```
+
+Step 0: Plotting UMAPs for the Zhou et al dataset:
+
+
+```{r eval=FALSE}
+# helper function to shuffle points when plotting:
+shuffle_points <- function(df){
+  return(df[sample(1:dim(df)[1], dim(df)[1]),])
+}
+
+################################################################################
+# UMAP colored by cluster annotation
+################################################################################
+
+# training data
+plot_df <- seurat_obj@meta.data
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=annotation)) +
+  scale_color_manual(values=cluster_colors) +
+  geom_point(size=0.5) +
+  umap_theme + ggtitle('') + theme(plot.margin=margin(0,0,0,0))
+
+
+pdf(paste0(fig_dir, 'Zhou_umap_clusters.pdf'), width=6, height=6, useDingbats=FALSE)
+p1 + NoLegend()
+dev.off()
+
+
+png(paste0(fig_dir, 'Zhou_umap_clusters.png'), width=6, height=6, res=1000, units='in')
+p1 + NoLegend()
+dev.off()
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=annotation)) +
+  scale_color_manual(values=cluster_colors) +
+  geom_point(size=3) +
+  umap_theme + ggtitle('')
+
+
+leg <- cowplot::get_legend(p1)
+pdf(paste0(fig_dir, 'Zhou_umap_clusters_legend.pdf'), width=3, height=5, useDingbats=FALSE)
+grid.draw(leg)
+dev.off()
+
+################################################################################
+# UMAP colored by cell type split by condition
+################################################################################
+
+# training data
+plot_df <- seurat_obj@meta.data %>% subset(wgcna_train == "train" ) %>% shuffle_points
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=cell_type)) +
+  scale_color_manual(values=celltype_colors) +
+  geom_point(
+    data = seurat_obj@meta.data,
+    aes(x=UMAP_1, y=UMAP_2), color='lightgray', size=0.1
+  ) +
+  geom_point(size=0.5) +
+  umap_theme + ggtitle('')+ theme(plot.margin=margin(0,0,0,0))
+
+
+# testing data
+plot_df <- seurat_obj@meta.data %>% subset(wgcna_train == 'test') %>% shuffle_points
+
+p2 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=cell_type)) +
+  scale_color_manual(values=celltype_colors) +
+  geom_point(
+    data = seurat_obj@meta.data,
+    aes(x=UMAP_1, y=UMAP_2), color='lightgray', size=0.1
+  ) +
+  geom_point(size=0.5) +
+  umap_theme + ggtitle('')+ theme(plot.margin=margin(0,0,0,0))
+
+pdf(paste0(fig_dir, 'Zhou_umap_celltypes_training.pdf'), width=6, height=6, useDingbats=FALSE)
+p1 + NoLegend()
+dev.off()
+
+pdf(paste0(fig_dir, 'Zhou_umap_celltypes_testing.pdf'), width=6, height=6, useDingbats=FALSE)
+p2 + NoLegend()
+dev.off()
+
+png(paste0(fig_dir, 'Zhou_umap_celltypes_training.png'), width=6, height=6, res=1000, units='in')
+p1 + NoLegend()
+dev.off()
+
+png(paste0(fig_dir, 'Zhou_umap_celltypes_testing.png'), width=6, height=6, res=1000, units='in')
+p2 + NoLegend()
+dev.off()
+
+plot_df <- seurat_obj@meta.data %>% subset(wgcna_train == "train" ) %>% shuffle_points
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=cell_type)) +
+  scale_color_manual(values=celltype_colors) +
+  geom_point(
+    data = seurat_obj@meta.data,
+    aes(x=UMAP_1, y=UMAP_2), color='lightgray', size=0.1
+  ) +
+  geom_point(size=3) +
+  umap_theme + ggtitle('')
+
+
+leg <- cowplot::get_legend(p1)
+pdf(paste0(fig_dir, 'Zhou_umap_celltypes_legend.pdf'), width=3, height=5, useDingbats=FALSE)
+grid.draw(leg)
+dev.off()
+
+################################################################################
+# Metacell UMAP:
+################################################################################
+
+p1 <- DimPlotMetacells(seurat_obj, group.by='cell_type', pt.size=1) +
+  umap_theme +
+  scale_color_manual(values=celltype_colors) + ggtitle('') + theme(plot.margin=margin(0,0,0,0))
+
+png(paste0(fig_dir, 'Zhou_umap_metacell_celltypes_training.png'), width=6, height=6, res=1000, units='in')
+p1 + NoLegend()
+dev.off()
+
+```
+
+
+
+
+Step 1: Set up data for scWGCNA, construct metacells, make metacell UMAP.
+
+I initially tried using a lot of genes for the WGCNA calculation. I was using all genes that were expressed in at least 5% of cells sratified by cluster, which gave around 15k genes. The habenula & AD PFC datasets that I was developing the updated scWGCNA on ended up having ~8k genes each. The soft power threshold ended up being super high with 15k genes. I went back to re-select my genes by not stratifying by cluster.
+
+```{r eval=FALSE}
+
+set.seed(12345)
+
+# load full Zhou et al dataset:
+seurat_obj <- readRDS(file=paste0(data_dir, 'Zhou_2020.rds'))
+
+# get only control samples
+cells_keep <- subset(seurat_obj@meta.data, group == 'C' & !(cell_type %in% c("PER", "END"))) %>% rownames
+seurat_obj <- seurat_obj[,cells_keep]
+table(seurat_obj$cell_type)
+
+# get Variable Genes (only used for the metacell scaling)
+seurat_obj <- FindVariableFeatures(seurat_obj)
+
+# 80/20 train/test split:
+train_prop = 0.8
+train_cells <- sample(colnames(seurat_obj), round(train_prop * ncol(seurat_obj)))
+seurat_obj$wgcna_train <- ifelse(colnames(seurat_obj) %in% train_cells, 'train', 'test')
+
+# setup training data for scWGCNA:
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "fraction",
+  fraction = 0.05,
+  #group.by = 'annotation',
+  wgcna_name = "train"
+)
+
+# how many genes are we going to use?
+length(GetWGCNAGenes(seurat_obj))
+
+# get the cells from the 80% training set:
+training_cells <- rownames(subset(seurat_obj@meta.data, wgcna_train == 'train'))
+
+# construct metacells:
+seurat_obj <- MetacellsByGroups(
+  seurat_obj = seurat_obj,
+  group.by = c("cell_type", "Sample"),
+  cells.use = training_cells,
+  k = 25,
+  ident.group = 'cell_type'
+)
+
+# normalize metacell expression:
+seurat_obj <- NormalizeMetacells(seurat_obj)
+seurat_obj <- ScaleMetacells(seurat_obj)
+seurat_obj <- RunPCAMetacells(seurat_obj, features=VariableFeatures(seurat_obj))
+seurat_obj <- RunHarmonyMetacells(seurat_obj, group.by.vars='Sample')
+seurat_obj <- RunUMAPMetacells(seurat_obj, reduction='harmony', dims=1:15)
+
+p1 <- DimPlotMetacells(seurat_obj, group.by='cell_type') + umap_theme
+p2 <- DimPlotMetacells(seurat_obj, group.by='Sample') + umap_theme
+
+pdf(paste0(fig_dir, 'Zhou_metacell_umap.pdf'), width=10, height=4)
+p1 | p2
+dev.off()
+
+```
+
+Step 1.1 Sparsity analysis of metacells
+
+* Make metacells for k=5, 10, 25, 50, 100
+* compute sparsity for each
+* Also compute sparsity for totally pseudo-bulked data
+
+```{r eval=FALSE}
+
+k_list <- c(5, 10, 50, 100)
+metacell_list <- list()
+
+seurat_test <- seurat_obj
+
+# get the cells from the 80% training set:
+training_cells <- rownames(subset(seurat_obj@meta.data, wgcna_train == 'train'))
+
+for(cur_k in k_list){
+  print(cur_k)
+  # construct metacells:
+  seurat_test <- MetacellsByGroups(
+    seurat_obj = seurat_test,
+    group.by = c("cell_type", "Sample"),
+    cells.use = training_cells,
+    k = cur_k,
+    ident.group = 'cell_type'
+  )
+  metacell_list[[cur_k]] <- GetMetacellObject(seurat_test)
+}
+
+# fix the list:
+metacell_list_fix <- list()
+for(k in k_list){
+  metacell_list_fix[[as.character(k)]] <- metacell_list[[k]]
+}
+metacell_list <- metacell_list_fix; rm(metacell_list_fix)
+
+# add the original one to this list:
+metacell_list[["25"]] <- GetMetacellObject(seurat_obj)
+
+```
+
+Here we compute the density of the original expression matrix and the density
+of the metacell matrix that we just constructed. The density of a matrix is defined
+as the number of non-zero valued elements divided by the total number of elements.
+The sparsity of a matrix is defined as one minus the density of a matrix, or the
+number of zero-valued elements divided by the total number of elements.
+
+Might be able to make a bigger plot for the supplementary figures where we compute
+the density for a bunch of different datasets? For the main fig we can just show this.
+
+Also would be cool to see a graph showing the density versus the number of cells pooled
+for metacells.
+
+```{r eval=FALSE}
+
+################################################################################
+# compute density for full exp matrix:
+################################################################################
+
+# get expression matrix & metacell expression matrix:
+X <- GetAssayData(seurat_obj, slot='counts')
+X[X > 0] <- 1
+X_density <- sum(colSums(X)) / (nrow(X)*ncol(X))
+
+# get density for each celltype:
+ct_density <- lapply(levels(seurat_obj$cell_type), function(cur_group){
+  cur_X <- X[,seurat_obj$cell_type == cur_group]
+  sum(colSums(cur_X)) / (nrow(cur_X)*ncol(cur_X))
+}) %>% unlist
+
+# add density for full dataset:
+ct_density <- c(ct_density, X_density)
+names(ct_density) <- c(levels(seurat_obj$cell_type), 'all')
+
+density_df <- data.frame(
+  'density' = as.numeric(ct_density),
+  'cell_type' = names(ct_density),
+  'data' = 'counts'
+)
+
+for(i in 1:length(metacell_list)){
+
+  k <- names(metacell_list)[i]
+  print(k)
+
+  cur_meta <- metacell_list[[i]]
+  X <- GetAssayData(cur_meta, slot='counts')
+
+  X[X > 0] <- 1
+  X_density <- sum(colSums(X)) / (nrow(X)*ncol(X))
+
+  # get density for each celltype:
+  ct_density <- lapply(levels(seurat_obj$cell_type), function(cur_group){
+    cur_X <- X[,cur_meta$cell_type == cur_group]
+    sum(colSums(cur_X)) / (nrow(cur_X)*ncol(cur_X))
+  }) %>% unlist
+
+  # add density for full dataset:
+  ct_density <- c(ct_density, X_density)
+  names(ct_density) <- c(levels(seurat_obj$cell_type), 'all')
+
+  cur_density_df <- data.frame(
+    'density' = as.numeric(ct_density),
+    'cell_type' = names(ct_density),
+    'data' = k
+  )
+  density_df <- rbind(density_df, cur_density_df)
+
+}
+
+# compute average expression (pseudo-bulk)
+seurat_obj$temp <- paste0(as.character(seurat_obj$Sample), '_', as.character(seurat_obj$cell_type))
+X <- AverageExpression(seurat_obj, group.by='temp', slot='counts')$RNA
+X[X > 0] <- 1
+X_density <- sum(colSums(X)) / (nrow(X)*ncol(X))
+
+avg_df <- data.frame(
+  group = colnames(X),
+  cell_type = as.character(do.call(rbind, strsplit(colnames(X), '_'))[,2])
+)
+
+# get density for each celltype:
+ct_density <- lapply(levels(seurat_obj$cell_type), function(cur_group){
+  cur_X <- X[,avg_df$cell_type == cur_group]
+  sum(colSums(cur_X)) / (nrow(cur_X)*ncol(cur_X))
+}) %>% unlist
+
+# add density for full dataset:
+ct_density <- c(ct_density, X_density)
+names(ct_density) <- c(levels(seurat_obj$cell_type), 'all')
+
+cur_density_df <- data.frame(
+  'density' = as.numeric(ct_density),
+  'cell_type' = names(ct_density),
+  'data' = 'pseudobulk'
+)
+density_df <- rbind(density_df, cur_density_df)
+
+write.csv(density_df, file='data/metacell_density.csv', quote=FALSE)
+density_df <- read.csv(file='data/metacell_density.csv')
+
+# set levels for plotting:
+density_df$data <- factor(
+  as.character(density_df$data),
+  levels = c('counts', '5', '10', '25', '50', '100', 'pseudobulk')
+)
+density_df$cell_type <- factor(
+  as.character(density_df$cell_type),
+  levels = c(levels(seurat_obj$cell_type), 'all')
+)
+
+# plot the barplot:
+p <- density_df %>% ggplot(aes(x=cell_type, y=density, fill=data)) +
+  geom_bar(stat='identity', position='dodge') +
+  scale_fill_manual(values=viridis(7)) +
+  xlab('') + labs('') + ylab('expression matrix density') +
+  RotatedAxis()
+
+pdf(paste0(fig_dir, 'metacell_density_barplot2.pdf'), width=5, height=3)
+p
+dev.off()
+
+```
+
+Step 2: Construct co-expression network for one celltype (EX)
+
+```{r eval=FALSE}
+
+# Test different soft powers:
+seurat_obj <- TestSoftPowers(
+  seurat_obj,
+  group.by='cell_type',
+  group_name="INH",
+  setDatExpr=TRUE,
+  outfile=paste0(fig_dir, "Zhou_INH_softpowers.pdf")
+)
+
+# construct wgcna network:
+seurat_obj <- ConstructNetwork(
+  seurat_obj, soft_power=9,
+  setDatExpr=TRUE,
+  group.by='cell_type',
+  group_name="INH"
+)
+
+# plot the dendrogram
+pdf(paste0(fig_dir, "Zhou_INH_dendro.pdf"),height=5, width=8)
+PlotDendrogram(seurat_obj, main='INH scWGCNA Dendrogram')
+dev.off()
+
+
+```
+
+Step 3: Compute Module eigengenes
+
+```{r eval=FALSE}
+
+# scale the expression matrix for all the WGCNA genes:
+seurat_obj <- Seurat::ScaleData(
+  seurat_obj,
+  features = GetWGCNAGenes(seurat_obj),
+  vars.to.regress = c('n_genes_by_counts', 'pct_counts_mt')
+)
+
+# compute all MEs in the full single-cell dataset
+seurat_obj <- ModuleEigengenes(
+  seurat_obj,
+  group.by.vars="Sample"
+)
+
+# compute module connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+# compute module hub gene scores:
+seurat_obj <- ModuleExprScore(seurat_obj, n_genes = 25, method='Seurat')
+
+# compute average expression of top 25 hub genes
+seurat_obj <- AvgModuleExpr(seurat_obj, n_genes = 25)
+
+# run RenameModules
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = "INH-M"
+)
+print(names(GetModules(seurat_obj)))
+
+```
+
+Step 4: Plotting:
+
+4.1: Plot Module Eigengene FeaturePlots
+
+```{r eval=FALSE}
+
+# plot the Module Correlation plot:
+pdf("figures/Zhou_hME_correlogram.pdf",height=8, width=8)
+ModuleCorrelogram(seurat_obj, sig.level = 0.001, pch.cex=2)
+dev.off()
+
+plot_list <- ModuleFeaturePlot(seurat_obj, order=TRUE)
+pdf("figures/Zhou_featureplot_hMEs.pdf",height=12, width=18)
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+```
+
+Step 5: Save processed Seurat object:
+
+```{r eval=FALSE}
+
+# save processed object:
+saveRDS(seurat_obj, file=paste0(data_dir, 'Zhou_control_scWGCNA.rds'))
+
+```
+
+Step 6: Compute ROC for training set
+
+```{r eval=FALSE}
+
+library(pROC)
+
+seurat_obj$wgcna_train_binary <- ifelse(seurat_obj$wgcna_train == 'train', TRUE, FALSE)
+
+# ROC with a single seurat obj
+seurat_obj <- ComputeROC(
+  seurat_obj,
+  group.by = 'annotation',
+  split_col = 'wgcna_train_binary',
+  features = 'hMEs',
+  harmony_group_vars = "Sample",
+  scale_genes = FALSE,
+  verbose=TRUE,
+  return_seurat=TRUE
+)
+
+roc_data <- GetROCData(seurat_obj)
+head(roc_data$roc)
+
+# plot the ROC Curves
+p <- ROCCurves(seurat_obj=seurat_obj)
+pdf(paste0(fig_dir, 'Zhou_ROC.pdf'), width=9, height=6)
+p + facet_wrap(~module, ncol=6) + NoLegend()
+dev.off()
+
+# save processed object with the ROC data:
+saveRDS(seurat_obj, file=paste0(data_dir, 'Zhou_control_scWGCNA.rds'))
+
+```
+
+Step 7: Compute ROC on Validation dataset(s)
+
+First need to transfer cluster labels from Zhou data to other.
+I want to try using scANVI to do this!! Or maybe scArches?
+
+Validation datasets:
+* Morabito 2020
+* Morabito & Miyoshi 2021 (Controls)
+* Mathys 2019 (Controls)
+
+```{r eval=FALSE}
+
+################################################################################
+# Morabito & Miyoshi 2021 dataset (control samples only)
+################################################################################
+
+# Load Morabito & Miyoshi 2021 dataset:
+seurat_mm2021 <- readRDS(file=paste0(data_dir, 'Swarup_2021.rds'))
+
+# add SCANVI predicted labels from Zhou et al:
+predicted_labels <- read.csv(paste0(data_dir,'/Swarup_2021_predicted_obs.csv'))
+seurat_mm2021$predictions <- predicted_labels$predictions
+
+# subset just control samples:
+seurat_mm2021 <- subset(seurat_mm2021, Diagnosis == 'Control')
+
+# Project modules onto this dataset:
+seurat_mm2021 <- ProjectModules(
+  seurat_obj = seurat_mm2021,
+  seurat_ref = seurat_obj,
+  scale_genes = TRUE,
+  wgcna_name = "train",
+  wgcna_name_proj="Zhou_projected",
+  vars.to.regress = c('n_genes_by_counts', 'pct_counts_mt') # doing this takes a while
+)
+
+# save processed object:
+saveRDS(seurat_mm2021, file=paste0(data_dir, 'Swarup2021_control_scWGCNA.rds'))
+seurat_mm2021 <- readRDS(file=paste0(data_dir, 'Swarup2021_control_scWGCNA.rds'))
+
+# visualize projected modules:
+
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+plot_list <- ModuleFeaturePlot(
+  seurat_mm2021,
+  order=TRUE,
+  module_names = selected_mods,
+  point_size = 0.2
+)
+
+pdf("figures/Swarup_2021_projected_featureplot_hMEs_selected.pdf",height=12, width=2)
+wrap_plots(plot_list, ncol=1)
+dev.off()
+
+# remove legend, title, then plot
+for(i in 1:length(plot_list)){
+  plot_list[[i]] <- plot_list[[i]] + NoLegend() + ggtitle('') + theme(plot.margin = margin(0,0,0,0))
+}
+
+png("figures/Swarup_2021_projected_featureplot_hMEs_selected.png",height=12, width=2, units='in', res=1000)
+wrap_plots(plot_list, ncol=1)
+dev.off()
+
+# setup cell cluster labels for ROC computation
+seurat_obj$roc_group <- factor(
+  as.character(seurat_obj$annotation),
+  levels = levels(seurat_obj$annotation)
+)
+seurat_mm2021$roc_group <- factor(
+  as.character(seurat_mm2021$predictions),
+  levels = levels(seurat_obj$roc_group)
+)
+
+# compute ROC
+seurat_obj <- ComputeROC(
+  seurat_obj = seurat_obj,
+  seurat_test = seurat_mm2021,
+  group.by = 'roc_group'
+)
+
+# plot the ROC Curves
+p <- ROCCurves(seurat_obj=seurat_obj)
+
+pdf(paste0(fig_dir, 'Swarup_2021_projected_ROC.pdf'), width=4.5, height=12)
+p + facet_wrap(~module, ncol=3) + NoLegend()
+dev.off()
+
+# is there a correlation between module size & ROC?
+# Supp Figure
+
+roc_df <- GetROCData(seurat_obj)$roc
+modules <- GetModules(seurat_obj)
+modules <- subset(modules, module != 'grey') %>% mutate(droplevels(module))
+
+# compute size of each module:
+module_sizes <- table(modules$module)
+
+roc_df$mod_size <- as.numeric(module_sizes)[match(roc_df$module, names(module_sizes))]
+
+plot_df <- roc_df %>% select(c(module, color, auc, mod_size)) %>% distinct
+
+p <- plot_df %>% ggplot(aes(x=mod_size, y=auc)) +
+  geom_point(color=plot_df$color)
+
+
+library(ggpubr)
+p <- ggscatter(
+  plot_df, x = "mod_size", y = "auc", color=plot_df$color,
+          add = "reg.line",
+          conf.int = TRUE,                                  # Add confidence interval
+          add.params = list(color = "black",
+                            fill = "lightgray")
+          ) +
+  stat_cor(method = "pearson", label.x = 300, label.y = 0.1) + xlab("Module Size (n genes)") +
+  ylab("ROC AUC")
+
+pdf(paste0(fig_dir, 'Swarup_2021_projected_ROC_modsize_corr.pdf'), width=3, height=3, useDingbats=FALSE)
+p
+dev.off()
+
+
+################################################################################
+# UMAP colored by cell type
+################################################################################
+
+plot_df <- seurat_mm2021@meta.data %>% subset(!(cell_type %in% c('END', 'PER'))) %>% shuffle_points
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=cell_type)) +
+  scale_color_manual(values=celltype_colors) +
+  geom_point(size=0.5) +
+  umap_theme + ggtitle('')+ theme(plot.margin=margin(0,0,0,0))
+
+
+pdf(paste0(fig_dir, 'Swarup_umap_celltypes.pdf'), width=6, height=6, useDingbats=FALSE)
+p1 + NoLegend()
+dev.off()
+
+png(paste0(fig_dir, 'Swarup_umap_celltypes.png'), width=6, height=6, res=1000, units='in')
+p1 + NoLegend()
+dev.off()
+
+################################################################################
+# UMAP colored by predicted label
+################################################################################
+
+plot_df <- seurat_mm2021@meta.data %>% subset(!(cell_type %in% c('END', 'PER'))) %>% shuffle_points
+
+p1 <- plot_df %>%
+  ggplot(aes(x=UMAP_1, y=UMAP_2, color=predictions)) +
+  scale_color_manual(values=cluster_colors) +
+  geom_point(size=0.5) +
+  umap_theme + ggtitle('')+ theme(plot.margin=margin(0,0,0,0))
+
+
+pdf(paste0(fig_dir, 'Swarup_umap_predicted_clusters.pdf'), width=6, height=6, useDingbats=FALSE)
+p1 + NoLegend()
+dev.off()
+
+png(paste0(fig_dir, 'Swarup_umap_predicted_clusters.png'), width=6, height=6, res=1000, units='in')
+p1 + NoLegend()
+dev.off()
+
+
+```
+
+
+
+
+
+
+Make a dotplot of module eigengenes to figure out which
+ones I should show (the ones up in INH)
+
+```{r eval=FALSE}
+
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+
+# set factor levels for cell type
+seurat_obj$cell_type <- factor(
+  as.character(seurat_obj$cell_type),
+  levels = c(
+    'INH', 'EX', 'ODC', 'OPC', 'ASC', 'MG'
+  )
+)
+
+# make dotplot
+p <- DotPlot(
+  seurat_obj,
+  group.by='cell_type',
+  features = rev(mods)
+) + coord_flip() + RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') + xlab('') + ylab('') +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)
+  )
+
+pdf(paste0(fig_dir, 'Zhou_hMEs_dotplot.pdf'), width=5, height=6)
+p
+dev.off()
+
+
+```
+
+Make plots for modules of interest (4,5,7,8,9,10):
+
+* hubgene expression heatmap
+* hME heatmaps
+* network circle plots
+* hME loading plots? (not implemented yet...)
+
+```{r eval=FALSE}
+
+
+################################################################################
+# Module FeaturePlots
+################################################################################
+
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+plot_list <- ModuleFeaturePlot(
+  seurat_obj,
+  order="shuffle",
+  module_names = selected_mods,
+  point_size = 0.2
+)
+
+pdf("figures/Zhou_featureplot_hMEs_selected.pdf",height=12, width=2)
+wrap_plots(plot_list, ncol=1)
+dev.off()
+
+# remove legend, title, then plot
+for(i in 1:length(plot_list)){
+  plot_list[[i]] <- plot_list[[i]] + NoLegend() + ggtitle('') + theme(plot.margin = margin(0,0,0,0))
+}
+
+png("figures/Zhou_featureplot_hMEs_selected.png",height=12, width=2, units='in', res=1000)
+wrap_plots(plot_list, ncol=1)
+dev.off()
+
+################################################################################
+# Hubgene circle plots:
+################################################################################
+library(igraph)
+
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# individual module networks
+ModuleNetworkPlot(
+  seurat_obj,
+  mods = selected_mods,
+  #label_center=TRUE,
+  outdir = paste0(fig_dir, 'selected_mod_hubNetworks/')
+)
+
+################################################################################
+# Hubgene expression heatmap
+################################################################################
+
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# don't plot clusters with fewer than 400 cells:
+exclude <- table(seurat_obj$annotation) < 400
+exclude <- names(exclude)[exclude]
+
+p <- DoHubGeneHeatmap(
+  seurat_obj[,!c(seurat_obj$annotation %in% exclude)],
+  group.by = 'annotation',
+  n_hubs=10,
+  n_cells=400,
+  module_names = selected_mods,
+  draw.lines=FALSE
+)
+
+pdf(paste0(fig_dir, 'Zhou_hubgene_heatmap.pdf'), width=10, height=10, useDingbats=FALSE)
+p
+dev.off()
+
+
+################################################################################
+# Seurat Hubgene expression heatmap (so I can get the colorbar)
+################################################################################
+
+seurat_full <- seurat_obj
+seurat_obj <- seurat_full[,!c(seurat_full$annotation %in% exclude)]
+
+# get modules
+modules <- GetModules(seurat_obj) %>% subset(module %in% selected_mods)
+modules <- modules %>% subset(module != 'grey') %>% mutate(module = droplevels(module))
+mods <- levels(modules$module)
+
+# get hub genes:
+n_hubs <- 10
+hub_list <- lapply(mods, function(cur_mod){
+  cur <- subset(modules, module == cur_mod)
+  cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+    top_n(n_hubs) %>% .$gene_name
+})
+names(hub_list) <- mods
+
+n_cells <- 400
+group.by <- 'annotation'
+seurat_obj$barcode <- colnames(seurat_obj)
+temp <- table(seurat_obj@meta.data[[group.by]])
+
+# sample cells
+df <- data.frame()
+for(i in 1:length(temp)){
+
+  if(temp[[i]] < n_cells){
+    cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i])
+  } else{
+    cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i]) %>% sample_n(n_cells);
+  }
+  df <- rbind(df, cur_df)
+}
+
+# make sampled seurat obj for plotting:
+seurat_plot <- seurat_obj %>% subset(barcode %in% df$barcode)
+
+seurat_plot$annotation <- droplevels(seurat_plot$annotation)
+p <- DoHeatmap(
+  seurat_plot,
+  features=unlist(hub_list),
+  group.by='annotation',
+  group.colors = cluster_colors,
+  draw.lines=FALSE
+)
+
+pdf(paste0(fig_dir, 'Zhou_hubgene_heatmap_Seurat.pdf'), width=10, height=10, useDingbats=FALSE)
+p
+dev.off()
+
+```
