@@ -103,6 +103,10 @@ ConstructMetacells <- function(
     counts = new_exprs
   )
 
+  print('here')
+  print(meta)
+  print(names(meta))
+
   # add meta-data:
   if(!is.null(meta)){
     meta_names <- names(meta)
@@ -148,7 +152,7 @@ ConstructMetacells <- function(
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells in provided groupings, such as cluster or cell type.
 #' @param seurat_obj A Seurat object
-#' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed. Default = 'seurat_clusters'
+#' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
 #' @param k Number of nearest neighbors to aggregate. Default = 50
 #' @param name A string appended to resulting metalcells. Default = 'agg'
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
@@ -167,6 +171,11 @@ MetacellsByGroups <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
+  # check group.by for invalid characters:
+  if(any(grepl('#', group.by))){
+    stop('Invalid character # found in group.by, please re-name the group.')
+  }
+
   # subset seurat object by seleted cells:
   if(!is.null(cells.use)){
     seurat_full <- seurat_obj
@@ -179,7 +188,7 @@ MetacellsByGroups <- function(
     for(col in colnames(seurat_meta)){
       seurat_meta[[col]] <- as.character(seurat_meta[[col]])
     }
-    seurat_obj$metacell_grouping <- apply(seurat_meta, 1, paste, collapse='_')
+    seurat_obj$metacell_grouping <- apply(seurat_meta, 1, paste, collapse='#')
   } else {
     seurat_obj$metacell_grouping <- as.character(seurat_obj@meta.data[[group.by]])
   }
@@ -192,7 +201,7 @@ MetacellsByGroups <- function(
   print(groupings)
 
   # unique meta-data for each group
-  meta_df <- as.data.frame(do.call(rbind, strsplit(groupings, '_')))
+  meta_df <- as.data.frame(do.call(rbind, strsplit(groupings, '#')))
   colnames(meta_df) <- group.by
 
   # list of meta-data to pass to each metacell seurat object
@@ -205,6 +214,8 @@ MetacellsByGroups <- function(
   # split seurat obj by groupings
   seurat_list <- lapply(groupings, function(x){seurat_obj[,seurat_obj$metacell_grouping == x]})
   names(seurat_list) <- groupings
+
+  print(meta_list)
 
   # construct metacells
   metacell_list <- mapply(

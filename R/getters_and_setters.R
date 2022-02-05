@@ -122,6 +122,7 @@ SetDatExpr <- function(
   multi_group_name = NULL,
   return_seurat = TRUE,
   wgcna_name=NULL,
+  slot = 'data',
   ...
 ){
 
@@ -171,7 +172,7 @@ SetDatExpr <- function(
     Seurat::GetAssayData(
       s_obj,
       assay=assay,
-      slot='data'
+      slot=slot
     )[genes_use,cells]
   )
 
@@ -634,6 +635,22 @@ GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$motif_module_overlaps
 }
 
+
+############################
+# motif scores
+###########################
+
+SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$motif_target_scores <- tf_scores
+  seurat_obj
+}
+
+GetMotifScores <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$motif_target_scores
+}
+
 ############################
 # ModuleUMAP
 ###########################
@@ -650,6 +667,20 @@ GetModuleUMAP <- function(seurat_obj, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$module_umap
 }
 
+############################
+# ModuleTraitCorrelation
+###########################
+
+SetModuleTraitCorrelation <- function(seurat_obj, mt_cor, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$mt_cor <- mt_cor
+  seurat_obj
+}
+
+GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$mt_cor
+}
 
 
 ############################
@@ -833,7 +864,7 @@ ResetModuleColors <- function(
   # update module umap:
   umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
   if(!is.null(umap_df)){
-    umap_df$module <- new_color_df[match(umap_df$color, new_color_df$old),'new']
+    umap_df$color <- new_color_df[match(umap_df$color, new_color_df$old),'new']
     seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
   }
 

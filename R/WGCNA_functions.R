@@ -14,6 +14,7 @@
 SelectNetworkGenes <- function(
   seurat_obj,
   gene_select="variable", fraction=0.05,
+  n_chunks = 5, # for binarizing the exp matrix. This can be increased to save memory
   group.by=NULL, # should be a column in the Seurat object, eg clusters
   gene_list=NULL, wgcna_name=NULL
  ){
@@ -23,17 +24,22 @@ SelectNetworkGenes <- function(
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
 
-  # TODO:
-  # get genes that are expressed in a fraction of cells in select groups (ie celltypes)
-  # this would reduce a bias against genes that are only expressed in underrepresented
-  # cell-types
 
   # handle different selection strategies
   if(gene_select == "fraction"){
 
-    # binarize counts matrix
+    print('here1')
+
+    # binarize counts matrix in chunks to save memory
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
-    expr_mat[expr_mat > 0] <- 1
+    chunks <- cut(1:nrow(expr_mat), n_chunks)
+    expr_mat <- do.call(rbind, lapply(levels(chunks), function(x){
+      print(x)
+      cur <- expr_mat[chunks == x,]
+      cur[cur > 0] <- 1
+      cur
+    }))
+    print('here')
 
     group_gene_list <- list()
     if(!is.null(group.by)){
@@ -55,6 +61,7 @@ SelectNetworkGenes <- function(
       # identify genes that are expressed in at least some fraction of cells
       gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
       gene_list <- rownames(seurat_obj)[gene_filter]
+      print('here')
     }
 
   } else if(gene_select == "variable"){
@@ -155,6 +162,7 @@ TestSoftPowers <- function(
   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
     seurat_obj <- SetDatExpr(seurat_obj, use_metacells=use_metacells, group.by=group.by, group_name=group_name)
   }
+
   # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
 
@@ -213,12 +221,114 @@ TestSoftPowers <- function(
   seurat_obj
 }
 
+
+
+TestSoftPowersConsensus <- function(
+  seurat_obj,
+  use_metacells = TRUE,
+  group.by=NULL, group_name=NULL,
+  multi.group.by = NULL,
+  multi_groups = NULL,
+  setDatExpr = TRUE,
+  powers=c(seq(1,10,by=1), seq(12,30, by=2)),
+  make_plot=TRUE, outfile="softpower", figsize=c(7,7)
+){
+
+  # add multiExpr if not already added:
+  if(!("multiExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
+
+    # set
+    seurat_obj <- SetMultiExpr(
+      seurat_obj,
+      group_name = group_name,
+      group.by = group.by,
+      multi.group.by = multi.group.by,
+      multi_groups = multi_groups
+    )
+  }
+
+  multiExpr <- GetMultiExpr(seurat_obj)
+
+  # pick soft thresh for each consensus group:
+  powerTables <- list()
+  for(i in 1:length(multiExpr)){
+
+    cur_group <- names(multiExpr)[i]
+    print(cur_group)
+
+    # Call the network topology analysis function for each set in turn
+    powerTable = list(
+      data = WGCNA::pickSoftThreshold(
+        multiExpr[[cur_group]]$data,
+        powerVector=powers,
+        verbose = 100,
+        networkType="signed",
+        corFnc="bicor"
+      )[[2]]
+    );
+    powerTables[[cur_group]] <- powerTable
+
+    # Plot the results:
+    if(make_plot){
+      pdf(paste0(outfile, '_', cur_group, '.pdf'), height=figsize[1], width=figsize[2], useDingbats=FALSE)
+
+          colors = c("blue", "red","black")
+          # Will plot these columns of the returned scale free analysis tables
+          plotCols = c(2,5,6,7)
+          colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Mean connectivity",
+          "Max connectivity");
+
+          # Get the minima and maxima of the plotted points
+          ylim = matrix(NA, nrow = 2, ncol = 4);
+          for (col in 1:length(plotCols)){
+            ylim[1, col] = min(ylim[1, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
+            ylim[2, col] = max(ylim[2, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
+          }
+
+          # Plot the quantities in the chosen columns vs. the soft thresholding power
+          par(mfcol = c(2,2));
+          par(mar = c(4.2, 4.2 , 2.2, 0.5))
+          cex1 = 0.7;
+
+          for (col in 1:length(plotCols)){
+            plot(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
+            xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+            main = colNames[col]);
+            addGrid();
+
+            if (col==1){
+              text(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
+              labels=powers,cex=cex1,col=colors[1]);
+            } else
+            text(powerTable$data[,1], powerTable$data[,plotCols[col]],
+            labels=powers,cex=cex1,col=colors[1]);
+          }
+      dev.off()
+    }
+  }
+
+  # set the power table in Seurat object:
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
+  seurat_obj
+
+}
+
+
+
 #' ConstructNetwork
 #'
 #' This function constructs a co-expression network from a Seurat object
 #'
 #' @param seurat_obj A Seurat object
 #' @param soft_power
+#' @param
+#' @param
+#' @param
+#' @param
+#' @param
+#' @param
+#' @param
+#' @param
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -226,6 +336,9 @@ TestSoftPowers <- function(
 ConstructNetwork <- function(
   seurat_obj, soft_power=NULL, use_metacells=TRUE,
   setDatExpr=TRUE, group.by=NULL, group_name=NULL,
+  consensus = FALSE,
+  multi.group.by = NULL,
+  multi_groups = NULL,
   tom_outdir="TOM",
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
@@ -236,34 +349,59 @@ ConstructNetwork <- function(
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
 ){
 
-  # add datExpr if not already added:
-  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-    seurat_obj <- SetDatExpr(
-      seurat_obj,
-      group_name = group_name,
-      group.by=group.by,
-      use_metacells=use_metacells,
-      return_seurat=TRUE
-     )
+  # constructing network on multiple datasets (consensus WGCNA)
+  if(consensus){
+
+    # add multiExpr if not already added:
+    if(!("multiExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
+
+      # set
+      seurat_obj <- SetMultiExpr(
+        seurat_obj,
+        group_name = group_name,
+        group.by = group.by,
+        multi.group.by = multi.group.by,
+        multi_groups = multi_groups
+      )
+    }
+
+    multiExpr <- GetMultiExpr(seurat_obj)
+    checkSets(multiExpr) # check data size
+
+  # constructing network on a single dataset
+  } else{
+
+    # add datExpr if not already added:
+    if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
+      print('in here')
+      seurat_obj <- SetDatExpr(
+        seurat_obj,
+        group_name = group_name,
+        group.by=group.by,
+        use_metacells=use_metacells,
+        return_seurat=TRUE
+       )
+       print('out here')
+
+    }
+
+    # get datExpr from seurat object
+    datExpr <- GetDatExpr(seurat_obj)
+
+    if(is.null(group_name)){
+      group_name <- 'all'
+    }
+
+    nSets = 1
+    setLabels = gsub(' ', '_', group_name)
+    shortLabels = setLabels
+    multiExpr <- list()
+    multiExpr[[group_name]] <- list(data=datExpr)
+    checkSets(multiExpr) # check data size
   }
 
-  # get datExpr
-  datExpr <- GetDatExpr(seurat_obj)
 
-  if(is.null(group_name)){
-    group_name <- 'all'
-  }
-
-  # Add functionality to accept multiExpr and perform consensus WGCNA
-  # TODO
-
-  nSets = 1
-  setLabels = gsub(' ', '_', group_name)
-  shortLabels = setLabels
-  multiExpr <- list()
-  multiExpr[[group_name]] <- list(data=datExpr)
-  checkSets(multiExpr) # check data size
-
+  # make output dir for the TOM
   if(!dir.exists(tom_outdir)){
     dir.create(tom_outdir)
   }
@@ -337,6 +475,129 @@ ConstructNetwork <- function(
   seurat_obj
 
 }
+
+#
+# #' ConstructNetwork
+# #'
+# #' This function constructs a co-expression network from a Seurat object
+# #'
+# #' @param seurat_obj A Seurat object
+# #' @param soft_power
+# #' @keywords scRNA-seq
+# #' @export
+# #' @examples
+# #' ConstructNetwork(pbmc)
+# ConstructNetwork <- function(
+#   seurat_obj, soft_power=NULL, use_metacells=TRUE,
+#   setDatExpr=TRUE, group.by=NULL, group_name=NULL,
+#   tom_outdir="TOM",
+#   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
+#   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
+#   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
+#   sampleForScaling = TRUE, sampleForScalingFactor = 1000,
+#   useDiskCache = TRUE, chunkSize = NULL,
+#   deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
+#   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
+# ){
+#
+#   # add datExpr if not already added:
+#   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
+#     seurat_obj <- SetDatExpr(
+#       seurat_obj,
+#       group_name = group_name,
+#       group.by=group.by,
+#       use_metacells=use_metacells,
+#       return_seurat=TRUE
+#      )
+#   }
+#
+#   # get datExpr
+#   datExpr <- GetDatExpr(seurat_obj)
+#
+#   if(is.null(group_name)){
+#     group_name <- 'all'
+#   }
+#
+#   nSets = 1
+#   setLabels = gsub(' ', '_', group_name)
+#   shortLabels = setLabels
+#   multiExpr <- list()
+#   multiExpr[[group_name]] <- list(data=datExpr)
+#   checkSets(multiExpr) # check data size
+#
+#   if(!dir.exists(tom_outdir)){
+#     dir.create(tom_outdir)
+#   }
+#
+#
+#   net <- WGCNA::blockwiseConsensusModules(
+#     multiExpr,
+#     power = soft_power,
+#     blocks = blocks,
+#     maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
+#     randomSeed = randomSeed,
+#     corType = corType,
+#     consensusQuantile = consensusQuantile,
+#     networkType = networkType,
+#     TOMType = TOMType,
+#     TOMDenom = TOMDenom,
+#     scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
+#     sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+#     useDiskCache = useDiskCache, chunkSize = chunkSize,
+#     deepSplit = deepSplit,
+#     pamStage=pamStage,
+#     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
+#     mergeCutHeight = mergeCutHeight,
+#     saveConsensusTOMs = saveConsensusTOMs,
+#     consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
+#
+#   # rename consensusTOM file:
+#   file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',group_name), '_ConsensusTOM-block.1.rda'))
+#
+#   # add network parameters to the Seurat object:
+#
+#   params <- list(
+#     power = soft_power,
+#     blocks = blocks,
+#     maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
+#     randomSeed = randomSeed,
+#     corType = corType,
+#     consensusQuantile = consensusQuantile,
+#     networkType = networkType,
+#     TOMType = TOMType,
+#     TOMDenom = TOMDenom,
+#     scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
+#     sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+#     useDiskCache = useDiskCache, chunkSize = chunkSize,
+#     deepSplit = deepSplit,
+#     pamStage=pamStage,
+#     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
+#     mergeCutHeight = mergeCutHeight,
+#     saveConsensusTOMs = saveConsensusTOMs
+#   )
+#
+#   # add parameters:
+#   seurat_obj <- SetWGCNAParams(seurat_obj, params)
+#
+#   # append working directory to the TOM file so it has the full path:
+#   net$TOMFiles <- paste0(getwd(), '/TOM/', group_name, '_', net$TOMFiles)
+#
+#   # add network to seurat obj
+#   seurat_obj <- SetNetworkData(seurat_obj, net)
+#
+#   # set the modules df in the Seurat object
+#   mods <- GetNetworkData(seurat_obj)$colors
+#   seurat_obj <- SetModules(
+#     seurat_obj, mod_df = data.frame(
+#       "gene_name" = names(mods),
+#       "module" = factor(mods, levels=unique(mods)),
+#       "color" = mods
+#     )
+#   )
+#
+#   seurat_obj
+#
+# }
 
 #' ComputeModuleEigengene
 #'
@@ -482,7 +743,7 @@ ModuleEigengenes <- function(
   seurat_obj
 }
 
-#' ModuleExprScores
+#' ModuleExprScore
 #'
 #' Computes module eigengenes for all WGCNA co-expression modules
 #'
@@ -1284,6 +1545,64 @@ OverlapModulesMotifs <- function(
 }
 
 
+#' MotifTargetScore
+#'
+#' Computes gene expression scores for TF Motif target genes based on the MotifScan.
+#'
+#' @param seurat_obj A Seurat object
+#' @param method Seurat or UCell?
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' MotifTargetScore(pbmc)
+MotifTargetScore <- function(
+  seurat_obj,
+  method='Seurat',
+  wgcna_genes=TRUE,
+  wgcna_name=NULL,
+  ...
+ ){
+
+   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+   # get modules:
+   modules <- GetModules(seurat_obj, wgcna_name)
+
+   # get TF target genes:
+   target_genes <- GetMotifTargets(seurat_obj)
+
+   # subset by WGCNA genes only:
+   if(wgcna_genes){
+     target_genes <- lapply(target_genes, function(x){
+       x[x %in% modules$gene_name]
+     })
+   }
+
+   # run gene scoring function
+   if(method == "Seurat"){
+     tf_scores <- Seurat::AddModuleScore(
+       seurat_obj, features=target_genes, ...
+     )@meta.data
+   } else if(method == "UCell"){
+     tf_scores <- UCell::AddModuleScore_UCell(
+       seurat_obj, features=target_genes, ...
+     )@meta.data
+   } else{
+     stop("Invalid method selection. Valid choices are Seurat, UCell")
+   }
+
+   tf_scores <- tf_scores[,(ncol(tf_scores)-length(target_genes)+1):ncol(tf_scores)]
+   colnames(tf_scores) <- names(target_genes)
+
+   # add tf scores to seurat object:
+   seurat_obj <- SetMotifScores(seurat_obj, tf_scores, wgcna_name)
+
+   seurat_obj
+
+ }
+
+
+
 #' Run UMAP on co-expression matrix using hub genes as features.
 #'
 #' @param seurat_obj A Seurat object
@@ -1375,5 +1694,133 @@ RunModuleUMAP <- function(
   # add the UMAP to the Seurat object:
   seurat_obj <- SetModuleUMAP(seurat_obj, plot_df, wgcna_name)
 
+  seurat_obj
+}
+
+
+#' ModuleTraitCorrelation'
+#'
+#' Correlates categorical and numeric variables with Module Eigengenes or hub-gene scores.
+#'
+#'
+#' @param seurat_obj A Seurat object
+#' @param seurat_obj A list of column names in the Seurat object's metadata that you wish to correlate with each module.
+#' Traits must be a categorical variable (not a character vector), or a numeric variable.
+#' @param features Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores
+#' @param cor_meth Which method to use for correlation? Valid choices are pearson, spearman, kendall.
+#' @param wgcna_name
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ModuleTraitCorrelation
+ModuleTraitCorrelation <- function(
+  seurat_obj,
+  traits,
+  group.by = NULL,
+  features = 'hMEs',
+  cor_method = 'pearson',
+  wgcna_name = NULL,
+  ...
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get MEs, module data from seurat object
+  if(features == 'hMEs'){
+    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
+  } else if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
+  } else if(features == 'scores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else{
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  }
+
+  # check if traits are in the seurat object:
+  if(sum(traits %in% colnames(seurat_obj@meta.data)) != length(traits)){
+    stop(paste('Some of the provided traits were not found in the Seurat obj:', paste(traits[!(traits %in% colnames(seurat_obj@meta.data))], collapse=', ')))
+  }
+
+  #use idents as grouping variable if not specified
+  if(is.null(group.by)){
+    group.by <- 'temp_ident'
+    seurat_obj$temp_ident <- Idents(seurat_obj)
+  }
+
+  # check the class of each trait provided:
+  valid_types <- c('numeric', 'factor', 'integer')
+  data_types <- sapply(traits, function(x){class(seurat_obj@meta.data[,x])})
+
+  if(!all(data_types %in% valid_types)){
+    incorrect <- traits[!(data_types %in% valid_types)]
+    stop(paste0('Invalid data types for ', paste(incorrect, collapse=', '), '. Accepted data types are numeric, factor, integer.'))
+  }
+
+  # print warnings about factor levels:
+  if(any(data_types == 'factor')){
+    factor_traits <- traits[data_types == 'factor']
+    for(tr in factor_traits){
+      warning(paste0("Trait ", tr, ' is a factor with levels ', paste0(levels(seurat_obj@meta.data[,tr]), collapse=', '), '. Levels will be converted to numeric IN THIS ORDER for the correlation, is this the expected order?'))
+    }
+  }
+
+  # get modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+
+  # get trait table:
+  trait_df <- seurat_obj@meta.data[,traits]
+
+  # convert factors to numeric
+  if(any(data_types == 'factor')){
+    factor_traits <- traits[data_types == 'factor']
+    for(tr in factor_traits){
+      trait_df[,tr] <- as.numeric(trait_df[,tr])
+    }
+  }
+
+  # also correlate all cells:
+  cor_list <- list()
+  cor_list[['all_cells']] <- cor(as.matrix(trait_df), as.matrix(MEs), method=cor_method)
+
+
+  trait_df <- cbind(trait_df, seurat_obj@meta.data[,group.by])
+  colnames(trait_df)[ncol(trait_df)] <- 'group'
+
+  MEs <- cbind(as.data.frame(MEs), seurat_obj@meta.data[,group.by])
+  colnames(MEs)[ncol(MEs)] <- 'group'
+
+  if(class(seurat_obj@meta.data[,group.by]) == 'factor'){
+    group_names <- levels(seurat_obj@meta.data[,group.by])
+  } else{
+    group_names <- levels(as.factor(seurat_obj@meta.data[,group.by]))
+  }
+
+  # do the correlation for each group:
+  trait_list <- dplyr::group_split(trait_df, group, .keep=FALSE)
+  ME_list <- dplyr::group_split(MEs, group, .keep=FALSE)
+  names(trait_list) <- group_names
+  names(ME_list) <- group_names
+
+  for(i in names(trait_list)){
+    cor_list[[i]] <- cor(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]), method=cor_method)
+  }
+
+
+  # compute the correlation matrix
+  #cor_mat <- cor(as.matrix(trait_df), as.matrix(MEs), method=cor_method)
+
+  # this is the wgcna way but I think t-test doesn't make sense for single-cell data right???
+  # cor_p  <- corPvalueStudent(cor_mat, ncol(seurat_obj))
+
+  # add Module-trait correlations to the seruat object:
+  mt_cor <- list(
+    'cor_mat' = cor_list,
+    'pval' = NA,
+    'fdr' = NA
+  )
+
+  seurat_obj <- SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name)
   seurat_obj
 }

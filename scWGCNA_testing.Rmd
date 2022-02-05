@@ -618,7 +618,7 @@ mod_colors <- dplyr::select(modules, c(module, color)) %>%
   distinct %>% arrange(module) %>% .$color
 n_colors <- length(mod_colors) -1
 
-new_colors <- paste0(met.brewer("Tiepolo", n=n_colors))
+new_colors <- paste0(met.brewer("Signac", n=n_colors))
 cur_seurat <- ResetModuleColors(cur_seurat, new_colors)
 
 plot_list <- ModuleFeaturePlot(
@@ -694,7 +694,172 @@ MotifOverlapBarPlot(
 
 ```
 
+Try module-trait correlation
 
+```{r eval=FALSE}
+
+# get MEs, modules:
+MEs <- GetMEs(cur_seurat)
+modules <- GetModules(cur_seurat)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
+
+# traits to correlate with, should be cols in seurat metadata:
+traits <- c('pct_counts_mt', 'total_counts')
+
+trait_df <- cur_seurat@meta.data[,traits]
+
+# correlation matrix, but how to get p-val?
+cor_mat <- cor(as.matrix(trait_df), as.matrix(MEs))
+cor_p  <- corPvalueStudent(cor_mat, ncol(seurat_obj))
+
+# compute correlation matrix separately for each group:
+
+
+plot_df <- reshape2::melt(cor_mat)
+
+p <- ggplot(plot_df, aes(x=Var2, y=Var1, fill=value)) +
+  geom_tile() + scale_fill_gradient2(limits=c(-1,1)) +
+  RotatedAxis()
+
+
+
+pdf(paste0(fig_dir, 'test_ME_Trait_correlation.pdf'), width=8, height=3)
+print(p)
+dev.off()
+
+
+```
+
+
+TF target scoring function
+
+allow user to select UCell or Seurat
+
+```{r eval=FALSE}
+
+# this is probably gonna take a long time to run
+cur_seurat <- MotifTargetScore(
+  cur_seurat,
+  method='UCell'
+)
+
+
+head(GetMotifScores(cur_seurat))
+
+
+################################################################################
+# correlate
+################################################################################
+
+# get MEs, modules:
+MEs <- GetMEs(cur_seurat)
+modules <- GetModules(cur_seurat)
+mods <- levels(modules$module)
+mods <- mods[mods != 'grey']
+
+# get TF scores:
+tf_scores <- GetMotifScores(cur_seurat)
+
+# correlation matrix:
+cor_mat <- cor(as.matrix(MEs), as.matrix(tf_scores))
+
+# melt the correlation matrix
+cor_df <- reshape2::melt(cor_mat)
+colnames(cor_df) <- c('module', 'motif', 'cor')
+
+# add module color:
+mod_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+cor_df$color <- mod_colors$color[match( cor_df$module, mod_colors$module)]
+
+library(ggrepel)
+
+plot_list <- list()
+for(cur_mod in mods){
+
+  print(cur_mod)
+  plot_df <- subset(cor_df, module == cur_mod)
+  plot_df$motif <- as.character(plot_df$motif)
+
+  # label the top & bottom 5
+  labeled <- plot_df %>% top_n(5, cor) %>% .$motif
+  labeled <- c(labeled, (plot_df %>% top_n(-5, cor) %>% .$motif))
+
+  plot_df$anno <- ifelse(
+    plot_df$motif %in% labeled,
+    plot_df$motif,
+    ''
+  )
+
+
+  plot_list[[cur_mod]] <- plot_df %>%
+    ggplot(aes(x=reorder(motif, cor), y=cor, fill=cor)) +
+    geom_col(width=1) +
+    geom_text_repel(data = dplyr::filter(plot_df, anno != ''), aes(label=anno), min.segment.length=0, fontface='italic') +
+    scale_fill_gradient2(
+      low='darkorchid4', mid='gray95', high='seagreen',
+      guide = guide_colorbar(barwidth=0.5, barheight=10, ticks=FALSE)
+    ) +
+    theme(
+      axis.text.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.x = element_blank()
+    ) + NoLegend() +
+    ylab(paste0('Correlation of Motif Target Scores with ', cur_mod))
+
+
+}
+
+pdf(paste0(fig_dir, 'test_ME_TF_correlation.pdf'), width=8, height=5)
+for(p in plot_list){
+  print(p)
+}
+dev.off()
+
+
+################################################################################
+# Plot the TF enrichment correlations ranked as a barplot
+################################################################################
+
+# label the top & bottom 5
+plot_df <- motif_df
+
+labeled <- plot_df %>% top_n(7, accessibility_cor) %>% .$motif_name_mouse
+labeled <- c(labeled, (plot_df %>% top_n(-5, accessibility_cor) %>% .$motif_name_mouse))
+
+plot_df$anno <- ifelse(
+  plot_df$motif_name_mouse %in% labeled,
+  plot_df$motif_name_mouse,
+  ''
+)
+
+
+
+p <- plot_df %>%
+  ggplot(aes(x=reorder(motif_id, accessibility_cor), y=accessibility_cor, fill=accessibility_cor)) +
+  geom_col(width=1) +
+  geom_text_repel(data = dplyr::filter(plot_df, anno != ''), aes(label=anno), min.segment.length=0, fontface='italic') +
+  scale_fill_gradient2(
+    low='darkorchid4', mid='gray95', high='seagreen',
+    guide = guide_colorbar(barwidth=0.5, barheight=10, ticks=FALSE)
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_blank()
+  ) + NoLegend() +
+  ylab('Correlation of TF enrichment\nwith pseudotime')
+
+
+
+pdf(paste0(fig_dir,  cur_celltype, '_TF_enrichment_trajectory_correlation.pdf'), width=7, height=3, useDingbats=FALSE)
+p
+dev.off()
+
+
+```
 
 
 
@@ -931,6 +1096,9 @@ pdf(paste0(fig_dir, 'test_hubgene_umap_igraph2.pdf'), width=6, height=6, useDing
 ModuleUMAPPlot(
   cur_seurat,
   edge.alpha=0.15,
+  sample_edges=TRUE,
+  label_hubs=3,
+  edge_prop=0.2
 )
 dev.off()
 

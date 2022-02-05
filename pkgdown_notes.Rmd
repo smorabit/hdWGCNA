@@ -33,3 +33,6 @@ random helper functions.
 I have no idea how to deploy yet. I also have no idea how to customize it.
 
 The author info goes into the DESCRIPTION file, and the citation goes in inst/CITATION
+
+
+To embed images inside of articles, images must all be placed inside of docs/articles !!! Sub-directories inside of docs/articles can be used for organization.
