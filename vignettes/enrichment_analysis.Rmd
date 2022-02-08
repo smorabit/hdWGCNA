@@ -1,0 +1,16 @@
+---
+title: "scWGCNA Basics"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for performing enrichment analysis.
+vignette: >
+  %\VignetteIndexEntry{scWGCNA Basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r eval=FALSE}
+print('hello world')
+```

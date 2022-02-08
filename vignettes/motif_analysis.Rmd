@@ -1,0 +1,16 @@
+---
+title: "Motif Analysis"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for identifying transcription factor binding motifs that are related
+  to scWGCNA modules.
+vignette: >
+  %\VignetteIndexEntry{Motif Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r eval=FALSE}
+
+
+```

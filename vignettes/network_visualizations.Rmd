@@ -1,0 +1,14 @@
+---
+title: "scWGCNA Basics"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for applying the core functions of scWGCNA.
+vignette: >
+  %\VignetteIndexEntry{scWGCNA Basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r eval=FALSE}
+print('hello world')
+```

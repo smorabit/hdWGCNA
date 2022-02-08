@@ -19,6 +19,27 @@ articles:
     navbar: ~
     contents:
       - basic_tutorial
+  - title: Network Visualization
+    navbar: ~
+    contents:
+      - network_visualizations
+  - title: Enrichment Analysis
+    navbar: ~
+    contents:
+      - enrichment_analysis
+  - title: Module Trait Correlation
+    navbar: ~
+    contents:
+      - module_trait_correlation
+  - title: Projecting Modules
+    navbar: ~
+    contents:
+      - projecting_modules
+  - title: Motif Analysis
+    navbar: ~
+    contents:
+      - motif_analysis
+
 
 reference:
   - title: Metacells

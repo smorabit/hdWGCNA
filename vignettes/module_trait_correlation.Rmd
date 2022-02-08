@@ -1,0 +1,15 @@
+---
+title: "Module Trait Correlation"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for identifying relationships between scWGCNA modules with biological and technical variables.
+vignette: >
+  %\VignetteIndexEntry{Module Trait Correlation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r eval=FALSE}
+print('hello world')
+```

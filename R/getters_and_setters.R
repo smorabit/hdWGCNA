@@ -98,7 +98,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 ###########################
 
 
-#' SetDatExpr
+#' spr
 #'
 #' This function sets up the expression matrix from the metacell object.
 #'

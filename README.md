@@ -1,5 +1,5 @@
 
-# scWGCNA <img src="man/figures/logo_v2.png" align="right" height="20%" width="20%" />
+# scWGCNA <img src="man/figures/logo.png" align="right" height="20%" width="20%" />
 
 scWGCNA is an R package for performing [weighted gene co-expression network analysis (WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in single-cell
 RNA-seq data. scWGCNA constructs co-expression networks in a cell-type-specific manner,

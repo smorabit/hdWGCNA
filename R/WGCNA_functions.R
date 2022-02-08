@@ -113,7 +113,9 @@ SelectNetworkGenes <- function(
 #' SetupForWGCNA(pbmc)
 SetupForWGCNA <- function(
   seurat_obj, wgcna_name,
-  group=NULL, features = NULL,...){
+  group=NULL, features = NULL,
+  ...
+){
 
   # set the active WGCNA variable
   seurat_obj <- SetActiveWGCNA(seurat_obj, wgcna_name)
