@@ -1,15 +1,17 @@
 title: scWGCNA
+
 url: https://smorabit.github.io/scWGCNA/
+
 template:
   bootstrap: 5
-  opengraph:
-    twitter:
-      creator: '@smudgetendo'
+
 home:
-  title: single-cell WGCNA
+  title: scWGCNA
+
 authors:
   Samuel Morabito:
     href: https://smorabit.github.io
+
 articles:
 - title: scWGCNA Basics
   navbar: ~
@@ -54,3 +56,5 @@ reference:
   - '`RunUMAPMetacells`'
   - '`DimPlotMetacells`'
 
+deploy:
+  install_metadata: true
