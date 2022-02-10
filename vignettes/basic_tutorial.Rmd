@@ -36,6 +36,9 @@ following prerequisites:
 An example of running the prerequisite data processing steps can be found in
 the [Seurat Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html).
 
+Additionally, there are a lot of WGCNA-specific terminology and acronyms, which
+are all clarified in [this table](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559/tables/1).
+
 ## Load the dataset and required libraries
 
 First we will load the single-cell dataset and the required R libraries for this
@@ -114,7 +117,7 @@ seurat_obj <- SetupForWGCNA(
 After we have set up our Seurat object, the first step in the scWGCNA pipeine is
 to construct metacells from the single-cell
 dataset. Briefly, metacells are aggregates of small groups of similar cells originating
-from the same biological sample of origin. Nearest neighbors algorithm is used to
+from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to
 identify groups of similar cells to aggregate, and then the average expression
 is computed, thus yielding a metacell gene expression matrix. The sparsity of the
 metacell expression matrix is considerably reduced when compared to the original
@@ -329,10 +332,11 @@ these technical artifacts as well, and scWGCNA seeks to alleviate these effects.
 
 scWGCNA includes a function `ModuleEigengenes` to compute MEs in the Seurat object
 using Seurat's `RunPCA` function under the hood. Additionally, we allow the user
-to apply Harmony batch correction to alleviate the technical effects.
+to apply Harmony batch correction to the MEs, yielding **harmonized module eigengenes (hMEs)**.
 
-As in the Seurat workflow, the expression matrix must be scaled with `ScaleData`
-before we run `ModuleEigengenes`. The following code scales the expression matrix
+As in the `RunPCA` step of the Seurat workflow, the expression matrix must be scaled with `ScaleData`
+before we run `ModuleEigengenes`. At this stage, the user may also wish to regress
+out certain technical factors, which we demonstrate below. The following code scales the expression matrix
 for the WGCNA genes, and then performs the module eigengene computation harmonizing
 by the Sample of origin using the `group.by.vars` parameter.
 
@@ -353,34 +357,236 @@ seurat_obj <- ModuleEigengenes(
 
 ```
 
-## Compute hub gene signature scores
+The ME matrices are stored as a matrix where each row is a cell and each column is a
+module. This matrix can be extracted from the Seurat object using the `GetMEs`
+function, which retrieves the **hMEs by default**.
 
 ```{r eval=FALSE}
 
+# harmonized module eigengenes:
+hMEs <- GetMEs(seurat_obj)
+
+# module eigengenes:
+MEs <- GetMEs(seurat_obj, harmonized=FALSE)
+
+```
+
+## Compute module connectivity
+
+In co-expression network analysis, we often want to focus on the "hub genes", those
+which are highly connected within each module. Therefore we wish to determine the
+*intramodular connectivity*, also known as *kME*, of each gene. scWGCNA includes
+the `ModuleConnectivity` to compute the *kME* values in the full single-cell dataset,
+rather than the metacell dataset.
+
+```{r eval=FALSE}
+
+# compute intramodular connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+```
+
+## Getting the module assignment table
+
+scWGCNA allows for easy access of the module assignment table using the `GetModules`
+function. This table consists of three columns: `gene_name` stores the gene's symbol or ID, `module` stores the gene's module assignment, and `color` stores a color mapping
+for each module, which is used in many downstream plotting steps. If `ModuleConnectivity` has been called on this scWGCNA experiment, this table will
+have additional columns for the *kME* of each module.
+
+```{r eval=FALSE}
+
+# get the module assignment table:
+modules <- GetModules(seurat_obj)
+
+```
+
+This wraps up the critical analysis steps for scWGCNA, so remember to save your
+output.
+
+```{r eval=FALSE}
+saveRDS(seurat_obj, file='scWGCNA_object.rds')
+```
+
+
+### Optional: compute hub gene signature scores
+
+Gene scoring analysis is a popular method in single-cell transcriptomics for computing
+a score for the overall signature of a set of genes. Seurat implements their own
+gene scoring technique using the `AddModuleScore` function, but there are also
+alternative approaches such as [UCell](https://github.com/carmonalab/UCell).
+scWGCNA includes the function `ModuleExprScore` to compute gene scores for
+a give number of genes for each module, using either the Seurat or UCell algorithm.
+
+```{r eval=FALSE}
+
+# compute gene scoring for the top 25 hub genes by kME for each module
+# with Seurat method
 seurat_obj <- ModuleExprScore(
   seurat_obj,
   n_genes = 25,
   method='Seurat'
 )
 
+# compute gene scoring for the top 25 hub genes by kME for each module
+# with UCell method
+library(UCell)
+seurat_obj <- ModuleExprScore(
+  seurat_obj,
+  n_genes = 25,
+  method='UCell'
+)
+
 ```
 
-## Visualization
+# Basic Visualization
+
+Here we showcase some of the basic visualization capabilities of scWGCNA,
+and we demonstrate how to use some of Seurat's built-in plotting tools to
+visualize our scWGCNA results. Note that we have a separate tutorial for visualization of the scWGCNA networks.
+
+## Module Feature Plots
+
+[FeaturePlot](https://www.rdocumentation.org/packages/Seurat/versions/4.1.0/topics/FeaturePlot) is a commonly used Seurat visualization to show a feature of interest
+directly on the dimensionality reduction. scWGCNA includes the `ModuleFeaturePlot`
+function to consruct FeaturePlots for each co-expression module colored by each
+module's uniquely assigned color.
 
 ```{r eval=FALSE}
 
-plot_list <- ModuleFeaturePlot(seurat_obj, order=TRUE)
+# make a featureplot of hMEs for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_obj,
+  features='hMEs', # plot the hMEs
+  order=TRUE # order so the points with highest hMEs are on top
+)
+
+# stitch together with patchwork
 wrap_plots(plot_list, ncol=6)
 
-
-
-
 ```
 
-## Module Correlation analysis
+![](figures/basic_tutorial/ME_featureplot.png)
+
+We can also plot the hub gene signature score using the same function:
 
 ```{r eval=FALSE}
 
-ModuleCorrelogram(seurat_obj, sig.level = 0.001, pch.cex=2)
+# make a featureplot of hub scores for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_obj,
+  features='scores', # plot the hub gene scores
+  order='shuffle' # order so cells are shuffled
+)
+
+# stitch together with patchwork
+wrap_plots(plot_list, ncol=6)
 
 ```
+
+![](figures/basic_tutorial/ME_featureplot_scores.png)
+
+
+## Module Correlations
+
+scWGCNA includes the `ModuleCorrelogram` function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package [corrplot](https://rpubs.com/melike/corrplot).
+
+```{r eval=FALSE}
+
+# plot module correlagram
+ModuleCorrelogram(seurat_obj)
+
+```
+
+![](figures/basic_tutorial/ME_correlogram.png)
+
+While scWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
+the relationship between different modules, and we encourage users to explore
+their data beyond the functions that we provide here. Here is an example of
+inspecting the correlation structure of the hMEs using an alternative approach,
+[GGally](rdocumentation.org/packages/GGally/versions/1.5.0):
+
+```{r eval=FALSE}
+
+# use GGally to investigate 6 selected modules:
+GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
+
+```
+
+![](figures/basic_tutorial/ME_correlation_GGally.png)
+
+## Seurat plotting functions
+
+The base Seurat plotting functions are also great for visualizing scWGCNA outputs.
+Here we demonstrate plotting hMEs using `DotPlot` and `VlnPlot`. The key to using
+Seurat's plotting functions to visualize the scWGCNA data is to add it into the
+Seurat object's `@meta.data` slot:
+
+```{r eval=FALSE}
+
+# add hMEs to Seurat meta-data:
+seurat_obj@meta.data <- cbind(
+  seurat_obj@meta.data,
+  GetMEs(seurat_obj, harmonized=TRUE)
+)
+
+```
+
+Now we can easily use Seurat's `DotPlot` function:
+
+```{r eval=FALSE}
+
+# modules to plot:
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(
+    seurat_obj,
+    features = selected_mods,
+    group.by = 'cell_type'
+)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  coord_flip() +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+
+# plot output
+p
+
+```
+
+![](figures/basic_tutorial/ME_dotplot.png)
+
+Here is another example where we use Seurat's `VlnPlot` function:
+
+```{r eval=FALSE}
+
+# Plot INH-M4 hME using Seurat VlnPlot function
+p <- VlnPlot(
+  seurat_obj,
+  features = 'INH-M4',
+  group.by = 'cell_type',
+  pt.size = 0 # don't show actual data points
+)
+
+# add box-and-whisker plots on top:
+p <- p + geom_boxplot(width=.25, fill='white')
+
+# change axis labels and remove legend:
+p <- p + xlab('') + ylab('hME') + NoLegend()
+
+# plot output
+p
+
+
+```
+
+![](figures/basic_tutorial/ME_vlnplot.png)
+
+
+# Conclusion
+
+In this tutorial we went over the core functions for performing co-expression
+network analysis in single-cell transcriptomics data. We encourage you to explore
+our other tutorials for downstream analysis of these scWGCNA results.
