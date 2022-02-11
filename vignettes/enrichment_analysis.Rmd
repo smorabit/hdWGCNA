@@ -1,5 +1,5 @@
 ---
-title: "scWGCNA Basics"
+title: "Enrichment Analysis"
 output: rmarkdown::html_vignette
 description: >
   Tutorial for performing enrichment analysis.

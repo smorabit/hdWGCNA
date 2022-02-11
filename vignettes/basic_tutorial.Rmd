@@ -47,13 +47,19 @@ tutorial.
 
 ```{r eval=FALSE}
 
-#knitr::include_graphics("man/figures/logo.png")
-
+# single-cell analysis package
 library(Seurat)
+
+# plotting and data science packages
 library(tidyverse)
 library(cowplot)
 library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
 library(scWGCNA)
+
+# using the cowplot theme for ggplot
 theme_set(theme_cowplot())
 
 # set random seed for reproducibility

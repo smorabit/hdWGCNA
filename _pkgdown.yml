@@ -12,28 +12,36 @@ authors:
   Samuel Morabito:
     href: https://smorabit.github.io
 
-articles:
-- title: scWGCNA Basics
-  navbar: ~
-  contents: basic_tutorial
-- title: Network Visualization
-  navbar: ~
-  contents: network_visualizations
-- title: Enrichment Analysis
-  navbar: ~
-  contents: enrichment_analysis
-- title: Module Trait Correlation
-  navbar: ~
-  contents: module_trait_correlation
-- title: Projecting Modules
-  navbar: ~
-  contents: projecting_modules
-- title: Motif Analysis
-  navbar: ~
-  contents: motif_analysis
-- title: Consensus WGCNA
-  navbar: ~
-  contents: consensus_wgcna
+navbar:
+ components:
+   articles:
+    text: Articles
+    menu:
+    - text: Core functionality
+    - text: scWGCNA basics
+      href: articles/basic_tutorial.html
+    - text: Network visualization
+      href: articles/network_visualizations.html
+    - text: -------
+    - text: Biological context for co-expression modules
+    - text: Module trait correlation
+      href: articles/module_trait_correlation.html
+    - text: Enrichment analysis
+      href: articles/enrichment_analysis.html
+    - text: -------
+    - text: Advanced topics
+    - text: Consensus WGCNA
+      href: articles/consensus_wgcna.html
+    - text: Motif analysis
+      href: articles/motif_analysis.html
+    - text: Projecting modules onto new datasets
+      href: articles/projecting_modules.html
+    - text: -------
+    - text: All articles
+      href: articles/index.html
+
+
+
 reference:
 - title: Metacells
   desc: Functions for constructing metacells from single-cell data

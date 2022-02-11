@@ -3,12 +3,13 @@ pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   basic_tutorial: basic_tutorial.html
+  consensus_wgcna: consensus_wgcna.html
   enrichment_analysis: enrichment_analysis.html
   module_trait_correlation: module_trait_correlation.html
   motif_analysis: motif_analysis.html
   network_visualizations: network_visualizations.html
   projecting_modules: projecting_modules.html
-last_built: 2022-02-10T22:42Z
+last_built: 2022-02-11T00:53Z
 urls:
   reference: https://smorabit.github.io/scWGCNA/reference
   article: https://smorabit.github.io/scWGCNA/articles
