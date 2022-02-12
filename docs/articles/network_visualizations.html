@@ -166,6 +166,21 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="moduleumapplot">
+<code>ModuleUMAPPlot</code><a class="anchor" aria-label="anchor" href="#moduleumapplot"></a>
+</h2>
+<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions.</p>
+<p>scWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the scWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes.</p>
+<p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_hubs <span class="op">=</span> <span class="fl">10</span>, <span class="co"># number of hub genes to include for the UMAP embedding</span>
+  n_neighbors<span class="op">=</span><span class="fl">15</span>, <span class="co"># neighbors parameter for UMAP</span>
+  min_dist<span class="op">=</span><span class="fl">0.1</span> <span class="co"># min distance between points in UMAP space</span>
+<span class="op">)</span></code></pre></div>
+</div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
 </div>
