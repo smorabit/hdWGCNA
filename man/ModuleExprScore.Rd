@@ -2,7 +2,7 @@
 % Please edit documentation in R/WGCNA_functions.R
 \name{ModuleExprScore}
 \alias{ModuleExprScore}
-\title{ModuleExprScores}
+\title{ModuleExprScore}
 \usage{
 ModuleExprScore(
   seurat_obj,

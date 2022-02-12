@@ -15,7 +15,7 @@ authors:
 navbar:
  components:
    articles:
-    text: Articles
+    text: Vignettes
     menu:
     - text: Core functionality
     - text: scWGCNA basics
@@ -37,7 +37,7 @@ navbar:
     - text: Projecting modules onto new datasets
       href: articles/projecting_modules.html
     - text: -------
-    - text: All articles
+    - text: All vignettes
       href: articles/index.html
 
 

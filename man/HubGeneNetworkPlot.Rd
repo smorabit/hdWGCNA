@@ -9,25 +9,42 @@ HubGeneNetworkPlot(
   mods = "all",
   n_hubs = 6,
   n_other = 3,
-  plot_size = c(6, 6),
-  wgcna_name = NULL,
+  sample_edges = TRUE,
+  edge_prop = 0.5,
+  return_graph = FALSE,
   edge.alpha = 0.25,
   vertex.label.cex = 0.5,
   hub.vertex.size = 4,
   other.vertex.size = 1,
-  repulse.exp = 3,
+  wgcna_name = NULL,
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{dbs}{List of EnrichR databases}
+\item{mods}{Names of the modules to plot. If mods = "all", all modules are plotted.}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{n_hubs}{The number of hub genes to plot for each module.}
+
+\item{n_other}{The number of non-hub genes to sample from each module}
+
+\item{edge_prop}{The proportion of edges in the graph to sample.}
+
+\item{return_graph}{logical determining whether we return the graph (TRUE) or plot the graph (FALSE)}
+
+\item{edge.alpha}{Scaling factor for the edge opacity}
+
+\item{vertex.label.cex}{The font size of the gene labels}
+
+\item{hub.vertex.size}{The size of the hub gene nodes}
+
+\item{other.vertex.size}{The size of the other gene nodes}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Makes barplots from Enrichr data
+Construct a unified network plot comprising hub genes for multiple modules.
 }
 \examples{
 HubGeneNetworkPlot

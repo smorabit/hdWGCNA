@@ -64,6 +64,9 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/DimPlotMetacells.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/DoHubGeneHeatmap.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/EnrichrBarPlot.html</loc>
   </url>
   <url>
@@ -74,6 +77,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/GetMEs.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMultiExpr.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/HubGeneNetworkPlot.html</loc>
@@ -103,6 +109,21 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/ModuleNetworkPlot.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/ModuleTraitCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/ModuleUMAPPlot.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/MotifOverlapBarPlot.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/MotifScan.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/MotifTargetScore.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/NormalizeMetacells.html</loc>
   </url>
   <url>
@@ -113,6 +134,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/OverlapModulesDEGs.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/OverlapModulesMotifs.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/PlotDendrogram.html</loc>
@@ -130,6 +154,9 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/RunHarmonyMetacells.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/RunModuleUMAP.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/RunPCAMetacells.html</loc>
   </url>
   <url>
@@ -143,6 +170,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetDatExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMultiExpr.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetupForWGCNA.html</loc>

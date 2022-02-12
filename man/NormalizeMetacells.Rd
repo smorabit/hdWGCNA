@@ -4,7 +4,7 @@
 \alias{NormalizeMetacells}
 \title{NormalizeMetacells}
 \usage{
-NormalizeMetacells(seurat_obj, ...)
+NormalizeMetacells(seurat_obj, wgcna_name = NULL, ...)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}

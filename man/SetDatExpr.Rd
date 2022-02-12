@@ -2,19 +2,35 @@
 % Please edit documentation in R/getters_and_setters.R
 \name{SetDatExpr}
 \alias{SetDatExpr}
-\title{SetDatExpr}
+\title{spr}
 \usage{
 SetDatExpr(
   seurat_obj,
+  group_name,
   use_metacells = TRUE,
-  wgcna_name = NULL,
   group.by = NULL,
-  group_name = NULL,
+  multi.group.by = NULL,
+  multi_group_name = NULL,
+  return_seurat = TRUE,
+  wgcna_name = NULL,
+  slot = "data",
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{group_name}{A string containing a group present in the provided group.by column or in the Seurat Idents.}
+
+\item{use_metacells}{A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)}
+
+\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.}
+
+\item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
+
+\item{multi_group_name}{A string containing the name of a group present in the multi.group.by column.}
+
+\item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }
 \description{
 This function sets up the expression matrix from the metacell object.

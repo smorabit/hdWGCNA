@@ -48,8 +48,8 @@
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-vignettes">Vignettes</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-vignettes">
     <h6 class="dropdown-header" data-toc-skip>Core functionality</h6>
     <a class="dropdown-item" href="../articles/basic_tutorial.html">scWGCNA basics</a>
     <a class="dropdown-item" href="../articles/network_visualizations.html">Network visualization</a>
@@ -63,7 +63,7 @@
     <a class="dropdown-item" href="../articles/motif_analysis.html">Motif analysis</a>
     <a class="dropdown-item" href="../articles/projecting_modules.html">Projecting modules onto new datasets</a>
     <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="../articles/index.html">All articles</a>
+    <a class="dropdown-item" href="../articles/index.html">All vignettes</a>
   </div>
 </li>
       </ul>
@@ -245,7 +245,7 @@
 <div class="section level3">
 <h3 id="construct-co-expression-network">Construct co-expression network<a class="anchor" aria-label="anchor" href="#construct-co-expression-network"></a>
 </h3>
-<p>It’s the moment you’ve been waiting for, we now have everything that we need to construct our co-expression network. Here we use the scWGCNA function <code>ConstructNetwork</code>, which calls the WGCNA function <a href="https://www.rdocumentation.org/packages/WGCNA/versions/1.70-3/topics/blockwiseConsensusModules" class="external-link"><code>blockwiseConsensusModules</code></a> under the hood. This function has quite a few parameters to play with if you are an advanced user, but we have selected default parameters that work well with many single-cell datasets. The parameters for <code>blockwiseConsensusModules</code> can be passed directly to <code>ConstructNetwork</code> with the same parameter names.</p>
+<p>We now have everything that we need to construct our co-expression network. Here we use the scWGCNA function <code>ConstructNetwork</code>, which calls the WGCNA function <a href="https://www.rdocumentation.org/packages/WGCNA/versions/1.70-3/topics/blockwiseConsensusModules" class="external-link"><code>blockwiseConsensusModules</code></a> under the hood. This function has quite a few parameters to play with if you are an advanced user, but we have selected default parameters that work well with many single-cell datasets. The parameters for <code>blockwiseConsensusModules</code> can be passed directly to <code>ConstructNetwork</code> with the same parameter names.</p>
 <p>The following code construtcts the co-expression network using the soft power threshold selected above:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># construct co-expression network:</span>
@@ -432,7 +432,7 @@
 </div>
 </div>
 <div class="section level2">
-<h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+<h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
 <p>In this tutorial we went over the core functions for performing co-expression network analysis in single-cell transcriptomics data. We encourage you to explore our other tutorials for downstream analysis of these scWGCNA results.</p>
 </div>

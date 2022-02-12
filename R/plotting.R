@@ -419,7 +419,7 @@ ModuleFeaturePlot<- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -515,7 +515,7 @@ EnrichrBarPlot <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -586,10 +586,11 @@ EnrichrDotPlot <- function(
 
 
   p <- plot_df  %>%
-    ggplot(aes(x=module, y=rev(Term))) +
+    ggplot(aes(x=module, y=Term)) +
     geom_point(aes(size=Combined.Score), color=plot_df$color) +
     RotatedAxis() +
     ylab('') + xlab('') + labs(size=lab) +
+    scale_y_discrete(limits=rev) +
     ggtitle(database) +
     theme(
       plot.title = element_text(hjust = 0.5),
@@ -604,21 +605,27 @@ EnrichrDotPlot <- function(
 
 #' ModuleNetworkPlot
 #'
-#' Makes barplots from Enrichr data
+#' Visualizes the top hub genes for selected modules as a circular network plot
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
+#' @param outdir The directory where the plots will be stored.
+#' @param plot_size A vector containing the width and height of the network plots.
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' ModuleNetworkPlot
 ModuleNetworkPlot <- function(
-  seurat_obj, mods="all", outdir="ModuleNetworks",
-  plot_size = c(6,6), wgcna_name=NULL,
+  seurat_obj,
+  mods="all",
+  outdir="ModuleNetworks",
+  plot_size = c(6,6),
+  wgcna_name=NULL,
   label_center = FALSE, # only label the genes in the middle?
-  edge.alpha=0.25, vertex.label.cex=1, vertex.size=6, ...
+  edge.alpha=0.25,
+  vertex.label.cex=1,
+  vertex.size=6, ...
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -726,21 +733,35 @@ ModuleNetworkPlot <- function(
 
 #' HubGeneNetworkPlot
 #'
-#' Makes barplots from Enrichr data
+#' Construct a unified network plot comprising hub genes for multiple modules.
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
+#' @param n_hubs The number of hub genes to plot for each module.
+#' @param n_other The number of non-hub genes to sample from each module
+#' @param edge_prop The proportion of edges in the graph to sample.
+#' @param return_graph logical determining whether we return the graph (TRUE) or plot the graph (FALSE)
+#' @param edge.alpha Scaling factor for the edge opacity
+#' @param vertex.label.cex The font size of the gene labels
+#' @param hub.vertex.size The size of the hub gene nodes
+#' @param other.vertex.size The size of the other gene nodes
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' HubGeneNetworkPlot
 HubGeneNetworkPlot <- function(
-  seurat_obj, mods="all", n_hubs=6, n_other=3,
-  plot_size = c(6,6), wgcna_name=NULL,
-  edge.alpha=0.25, vertex.label.cex=0.5, hub.vertex.size=4,
-  other.vertex.size=1, repulse.exp=3,  ...
+  seurat_obj, mods="all",
+  n_hubs=6, n_other=3,
+  sample_edges = TRUE,
+  edge_prop = 0.5,
+  return_graph=FALSE,
+  edge.alpha=0.25,
+  vertex.label.cex=0.5,
+  hub.vertex.size=4,
+  other.vertex.size=1,
+  wgcna_name=NULL,
+  ...
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -789,21 +810,13 @@ HubGeneNetworkPlot <- function(
   selected_modules$label <- ifelse(selected_modules$geneset == 'hub', as.character(selected_modules$gene_name), '')
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
+  print(table(selected_modules$module))
+
   # make sure all nodes have at least one edge!!
   edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
-  edge_df <- subset_TOM %>% melt %>% subset(value >= edge_cutoff)
+  edge_df <- reshape2::melt(subset_TOM) %>% subset(value >= edge_cutoff)
 
-  # remove nodes with fewer than n edges:
-  n_fewer = 5
-  remove_nodes <- table(edge_df$Var1)[table(edge_df$Var1) < n_fewer] %>% names
-  edge_df <- subset(edge_df, !(Var1 %in% remove_nodes) & !(Var2 %in% remove_nodes))
-  selected_modules <- subset(selected_modules, !(gene_name %in% remove_nodes))
-
-  # scale edge values between 0 and 1
-  edge_df$value <- scale01(edge_df$value)
-
-  # set color of each edge based on value:
-  edge_df$color <- sapply(1:nrow(edge_df), function(i){
+  edge_df$color <- future.apply::future_sapply(1:nrow(edge_df), function(i){
     gene1 = as.character(edge_df[i,'Var1'])
     gene2 = as.character(edge_df[i,'Var2'])
 
@@ -818,6 +831,34 @@ HubGeneNetworkPlot <- function(
     col
   })
 
+  # subset edges:
+  groups <- unique(edge_df$color)
+  print(groups)
+  if(sample_edges){
+    print('here')
+    # randomly sample
+    temp <- do.call(rbind, lapply(groups, function(cur_group){
+      cur_df <- edge_df %>% subset(color == cur_group)
+      n_edges <- nrow(cur_df)
+      cur_sample <- sample(1:n_edges, round(n_edges * edge_prop))
+      cur_df[cur_sample,]
+    }))
+  } else{
+
+    # get top strongest edges
+    temp <- do.call(rbind, lapply(groups, function(cur_group){
+      cur_df <- edge_df %>% subset(color == cur_group)
+      n_edges <- nrow(cur_df)
+      cur_df %>% dplyr::top_n(round(n_edges * edge_prop), wt=value)
+    }))
+  }
+
+  edge_df <- temp
+  print(dim(edge_df))
+
+  # scale edge values between 0 and 1 for each module
+  edge_df <- edge_df %>% group_by(color) %>% mutate(value=scale01(value))
+
   edge_df$color <- sapply(1:nrow(edge_df), function(i){
     a = edge_df$value[i]
     #if(edge_df$value[i] < 0.05){a=0.05}
@@ -830,25 +871,9 @@ HubGeneNetworkPlot <- function(
     vertices=selected_modules
   )
 
-  # qgraph layout
-  e <-  get.edgelist(g, name=FALSE)
-  l <- qgraph.layout.fruchtermanreingold(
-    e, vcount = vcount(g),
-    weights=edge_df$value,
-    repulse.rad=(vcount(g)^repulse.exp),
-    #cool.exp = 0.5,
-    niter=2500,
-    #max.delta = vcount(g)/2
-  )
+  l <- igraph::layout_with_fr(g, ...)
 
-  # make a communities? (nope, this looks bad)
-  # comm <- igraph::make_clusters(
-  #   g,
-  #   membership=as.numeric(as.factor(V(g)$module)),
-  #   algorithm="scWGCNA"
-  # )
-
-  # label vertices?
+  if(return_graph){return(g)}
 
   plot(
     g, layout=l,
@@ -892,8 +917,7 @@ ModuleUMAPPlot <- function(
   vertex.label.cex=0.5,
   hub.vertex.size=4,
   other.vertex.size=1,
-  repulse.exp=3,
-  return_graph = FALSE, # this returns the igraph object instead of plotting
+    return_graph = FALSE, # this returns the igraph object instead of plotting
   wgcna_name=NULL,
   ...
 ){
@@ -1039,7 +1063,7 @@ ModuleUMAPPlot <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1087,7 +1111,7 @@ OverlapDotPlot <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1156,7 +1180,7 @@ OverlapBarPlot <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1227,7 +1251,7 @@ ROCCurves <- function(
 #' Displays the top n TFs in a set of modules as a bar plot
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1332,7 +1356,7 @@ MotifOverlapBarPlot <- function(
 #'
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples

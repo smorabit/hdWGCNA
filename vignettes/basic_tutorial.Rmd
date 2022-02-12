@@ -9,9 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
-
-
 # Overview and prerequisites
 
 This tutorial covers the basics of using scWGCNA to perform co-expression network
@@ -284,7 +281,7 @@ power_table <- GetPowerTable(seurat_obj)
 
 ## Construct co-expression network
 
-It's the moment you've been waiting for, we now have everything that we need to
+We now have everything that we need to
 construct our co-expression network. Here we use the scWGCNA function `ConstructNetwork`,
 which calls the WGCNA function [`blockwiseConsensusModules`](https://www.rdocumentation.org/packages/WGCNA/versions/1.70-3/topics/blockwiseConsensusModules) under the hood. This function has
 quite a few parameters to play with if you are an advanced user, but we have selected
@@ -591,7 +588,7 @@ p
 ![](figures/basic_tutorial/ME_vlnplot.png)
 
 
-# Conclusion
+# Next steps
 
 In this tutorial we went over the core functions for performing co-expression
 network analysis in single-cell transcriptomics data. We encourage you to explore

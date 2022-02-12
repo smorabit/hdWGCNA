@@ -19,7 +19,7 @@ MetacellsByGroups(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{group.by}{A character vector of Seurat metadata column names representing groups for which metacells will be computed. Default = 'seurat_clusters'}
+\item{group.by}{A character vector of Seurat metadata column names representing groups for which metacells will be computed.}
 
 \item{k}{Number of nearest neighbors to aggregate. Default = 50}
 

@@ -4,7 +4,7 @@
 \alias{ScaleMetacells}
 \title{ScaleMetacells}
 \usage{
-ScaleMetacells(seurat_obj, ...)
+ScaleMetacells(seurat_obj, wgcna_name = NULL, ...)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}

@@ -10,7 +10,7 @@ ModuleFeaturePlot(
   wgcna_name = NULL,
   reduction = "umap",
   features = "hMEs",
-  order = TRUE,
+  order_points = TRUE,
   restrict_range = TRUE,
   point_size = 0.5,
   alpha = 1,

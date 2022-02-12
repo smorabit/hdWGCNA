@@ -4,7 +4,7 @@
 \alias{RunPCAMetacells}
 \title{RunPCAMetacells}
 \usage{
-RunPCAMetacells(seurat_obj, ...)
+RunPCAMetacells(seurat_obj, wgcna_name = NULL, ...)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}

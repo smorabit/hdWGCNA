@@ -9,6 +9,7 @@ TestSoftPowers(
   use_metacells = TRUE,
   group.by = NULL,
   group_name = NULL,
+  setDatExpr = TRUE,
   powers = c(seq(1, 10, by = 1), seq(12, 30, by = 2)),
   make_plot = TRUE,
   outfile = "softpower.pdf",

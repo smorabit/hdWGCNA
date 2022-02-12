@@ -10,6 +10,7 @@ ModuleNetworkPlot(
   outdir = "ModuleNetworks",
   plot_size = c(6, 6),
   wgcna_name = NULL,
+  label_center = FALSE,
   edge.alpha = 0.25,
   vertex.label.cex = 1,
   vertex.size = 6,
@@ -19,12 +20,16 @@ ModuleNetworkPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{dbs}{List of EnrichR databases}
+\item{mods}{Names of the modules to plot. If mods = "all", all modules are plotted.}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{outdir}{The directory where the plots will be stored.}
+
+\item{plot_size}{A vector containing the width and height of the network plots.}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Makes barplots from Enrichr data
+Visualizes the top hub genes for selected modules as a circular network plot
 }
 \examples{
 ModuleNetworkPlot

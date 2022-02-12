@@ -19,6 +19,8 @@ OverlapDotPlot(
 \item{dbs}{List of EnrichR databases}
 
 \item{max_genes}{Max number of genes to include per module, ranked by kME.}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Makes barplots from Enrichr data
