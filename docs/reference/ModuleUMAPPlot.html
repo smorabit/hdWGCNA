@@ -68,8 +68,6 @@
   label_hubs <span class="op">=</span> <span class="fl">5</span>,
   edge.alpha <span class="op">=</span> <span class="fl">0.25</span>,
   vertex.label.cex <span class="op">=</span> <span class="fl">0.5</span>,
-  hub.vertex.size <span class="op">=</span> <span class="fl">4</span>,
-  other.vertex.size <span class="op">=</span> <span class="fl">1</span>,
   return_graph <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -80,15 +78,28 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>seurat_obj</dt>
 <dd><p>A Seurat object</p></dd>
+<dt>sample_edges</dt>
+<dd><p>logical determining whether we downsample edges for plotting (TRUE), or take the strongst edges.</p></dd>
+<dt>edge_prop</dt>
+<dd><p>proportion of edges to plot. If sample_edges=FALSE, the strongest edges are selected.</p></dd>
+<dt>label_hubs</dt>
+<dd><p>the number of hub genes to label in each module</p></dd>
+<dt>edge.alpha</dt>
+<dd><p>scaling factor for edge opacity</p></dd>
+<dt>vertex.label.cex</dt>
+<dd><p>font size for labeled genes</p></dd>
+<dt>return_graph</dt>
+<dd><p>logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)</p></dd>
+<dt>wgcna_name</dt>
+<dd><p>The name of the scWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModuleUMAPPlot</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, sample_edges = TRUE, edge_prop = 0.2, label_hubs = 5, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, hub.vertex.size = 4, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     other.vertex.size = 1, return_graph = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, return_graph = FALSE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -175,7 +186,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = V(g)$fontcolor, vertex.label.cex = 0, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbd574cdee0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fcfe68568f8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

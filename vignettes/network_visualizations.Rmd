@@ -86,14 +86,12 @@ visualize the top 3 hub genes and 6 other genes per module.
 ```{r eval=FALSE}
 
 # hubgene network
-png(paste0('network_vis/test_hubgene_graph.png'), width=7, height=7, units='in', res=400)
 HubGeneNetworkPlot(
   seurat_obj,
   n_hubs = 3, n_other=5,
   edge_prop = 0.75,
   mods = 'all'
 )
-dev.off()
 
 ```
 
@@ -169,15 +167,15 @@ relationships.
 
 ModuleUMAPPlot(
   seurat_obj,
-  edge.alpha=0.15, as
+  edge.alpha=0.15,
   sample_edges=TRUE,
-  label_hubs=2, # how many hub genes to plot per module?
-  edge_prop=0.2 # proportion of edges to sample (20% here)
+  edge_prop=0.2, # proportion of edges to sample (20% here)
+  label_hubs=2 # how many hub genes to plot per module?
 )
 
 ```
 
-![](figures/network_vis/hub_umap_igraph.png)
+![](figures/network_vis/hubgene_umap_igraph.png)
 
 This plot is similar to the one that we made with ggplot2, but we are showing
 the co-expression network, and labeling 2 hub genes in each module. For visual clarity,
@@ -232,18 +230,21 @@ ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
 
 ![](figures/network_vis/hubgene_umap_supervised.png)
 
-Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP we
-had made previously.
+Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we
+made previously. To demonstrate what the supervised UMAP looks like using different
+weights for the labels, we can make a different UMAP for several values of `target_weight`
+and compare the outputs using [`gganimate`](https://gganimate.com/).
 
 ```{r eval=FALSE}
 
-
+# different label weights to test
 weights <- 0:10/10
 
+# loop through different weights
 df <- data.frame()
 for(cur_weight in weights){
 
-  print(cur_weight)
+  # make a module UMAP using different label weights
   seurat_obj <- RunModuleUMAP(
     seurat_obj,
     n_hubs = 10,
@@ -253,11 +254,36 @@ for(cur_weight in weights){
     supervised=TRUE,
     target_weight = cur_weight
   )
+
+  # add to ongoing dataframe
   cur_df <- GetModuleUMAP(seurat_obj)
   cur_df$weight <- cur_weight
   df <- rbind(df, cur_df)
-
 }
 
+# ggplot animation library
+library(gganimate)
+
+# plot with ggplot + gganimate
+p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(color=df$color, size=df$kME*2 ) +
+  ggtitle("Supervised weight: {closest_state}") +
+  transition_states(
+    weight,
+    transition_length = 2,
+    state_length = 2,
+    wrap = TRUE
+  ) +
+  view_follow() +
+  enter_fade() +
+  umap_theme()
+
+animate(p, fps=30, duration=25)
 
 ```
+
+![](figures/network_vis/umap_animation.gif)
+
+
+Here we can clearly see the influence that the label weight has on the final UMAP,
+and it looks like we should avoid using `target_weight=1`.

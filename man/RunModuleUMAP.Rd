@@ -2,28 +2,29 @@
 % Please edit documentation in R/WGCNA_functions.R
 \name{RunModuleUMAP}
 \alias{RunModuleUMAP}
-\title{Run UMAP on co-expression matrix using hub genes as features.}
+\title{RunModuleUMAP}
 \usage{
 RunModuleUMAP(
   seurat_obj,
   n_hubs = 50,
   exclude_grey = TRUE,
-  harmonized = TRUE,
   wgcna_name = NULL,
   n_neighbors = 25,
   metric = "cosine",
   spread = 1,
   min_dist = 0.4,
+  supervised = FALSE,
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Additional parameters supplied to uwot::umap}
 }
 \description{
 Run UMAP on co-expression matrix using hub genes as features.
-}
-\examples{
-RunModuleUMAP
 }
 \keyword{scRNA-seq}

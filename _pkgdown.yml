@@ -40,19 +40,31 @@ navbar:
     - text: All vignettes
       href: articles/index.html
 
-
-
 reference:
 - title: Metacells
   desc: Functions for constructing metacells from single-cell data
   contents:
   - '`ConstructMetacells`'
   - '`MetacellsByGroups`'
+- title: Network Visualization
+  desc: Functions for visualizing the scWGCNA co-expression network
+  contents:
+    - '`ModuleNetworkPlot`'
+    - '`HubGeneNetworkPlot`'
+    - '`RunModuleUMAP`'
+    - '`ModuleUMAPPlot`'
+- title: Enrichment Analysis
+  desc: Functions for Enrichr analysis and DEG overlap analysis
+  contents:
+    - '`RunEnrichr`'
+    - '`EnrichrBarPlot`'
+    - '`EnrichrDotPlot`'
+    - '`OverlapModulesDEGs`'
+    - '`OverlapBarPlot`'
+    - '`OverlapDotPlot`'
 - title: Plotting
   desc: Functions for generating plots with scWGCNA
   contents:
-  - '`OverlapBarPlot`'
-  - '`OverlapDotPlot`'
   - '`ModuleFeaturePlot`'
 - title: Seurat wrappers
   desc: Wrapper functions to run Seurat commands on the metacell data

@@ -151,14 +151,12 @@
 <p>Here we will make a network plot combining all of the modules together using the <code>HubGeneNetworkPlot</code> function. This function takes the top <em>n</em> hub genes as specified by the user, and other randomly selected genes, and constructs a joint network using the <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing" class="external-link">force-directed graph drawing algorithm</a>. For visual clarity, the number of edges in the network can be downsampled using the <code>edge_prop</code> parameter. In the following example, we visualize the top 3 hub genes and 6 other genes per module.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># hubgene network</span>
-<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'network_vis/test_hubgene_graph.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">7</span>, height<span class="op">=</span><span class="fl">7</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span><span class="op">)</span>
 <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   n_hubs <span class="op">=</span> <span class="fl">3</span>, n_other<span class="op">=</span><span class="fl">5</span>,
   edge_prop <span class="op">=</span> <span class="fl">0.75</span>,
   mods <span class="op">=</span> <span class="st">'all'</span>
-<span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hub_net.png"></p>
 <p>As in the previous network plot, each node represents a gene and each edge represents a co-expression relationship. In this network, we color intramodular edges with the module’s color, and intermodular edges gray. The opacity of edges in this network is scaled by the strength of the co-expression relationship. Additional network layout settings can be passed to the <a href="https://www.rdocumentation.org/packages/igraph/versions/1.2.11/topics/layout_with_fr" class="external-link"><code>layout_with_fr</code></a> function in igraph. The user can also specify <code>return_graph = TRUE</code> to return the igraph object to plot using their own custom code.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -191,14 +189,15 @@
   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap.png"></p>
 <p>In this plot, each point represents a single gene. The size of each dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is sufficient to visualize the genes in the module UMAP, but here we are not visualizing the underlying network. We can use the function <code>ModuleUMAPPlot</code> to plot the genes and their co-expression relationships.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ModuleUMAPPlot</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">edge.alpha=</span><span class="fl">0.15</span>, as</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_edges=</span><span class="cn">TRUE</span>,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_hubs=</span><span class="dv">2</span>, <span class="co"># how many hub genes to plot per module?</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">edge_prop=</span><span class="fl">0.2</span> <span class="co"># proportion of edges to sample (20% here)</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-<p><img src="figures/network_vis/hub_umap_igraph.png"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
+  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
+  edge_prop<span class="op">=</span><span class="fl">0.2</span>, <span class="co"># proportion of edges to sample (20% here)</span>
+  label_hubs<span class="op">=</span><span class="fl">2</span> <span class="co"># how many hub genes to plot per module?</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/hubgene_umap_igraph.png"></p>
 <p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 20% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -229,14 +228,16 @@
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_supervised.png"></p>
-<p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP we had made previously.</p>
+<p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we made previously. To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span><span class="op">/</span><span class="fl">10</span>
+<code class="sourceCode R"><span class="co"># different label weights to test</span>
+<span class="va">weights</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span><span class="op">/</span><span class="fl">10</span>
 
+<span class="co"># loop through different weights</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">cur_weight</span> <span class="kw">in</span> <span class="va">weights</span><span class="op">)</span><span class="op">{</span>
 
-  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cur_weight</span><span class="op">)</span>
+  <span class="co"># make a module UMAP using different label weights</span>
   <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
     <span class="va">seurat_obj</span>,
     n_hubs <span class="op">=</span> <span class="fl">10</span>,
@@ -246,11 +247,33 @@
     supervised<span class="op">=</span><span class="cn">TRUE</span>,
     target_weight <span class="op">=</span> <span class="va">cur_weight</span>
   <span class="op">)</span>
+
+  <span class="co"># add to ongoing dataframe</span>
   <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
   <span class="va">cur_df</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="va">cur_weight</span>
   <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cur_df</span><span class="op">)</span>
+<span class="op">}</span>
 
-<span class="op">}</span></code></pre></div>
+<span class="co"># ggplot animation library</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gganimate.com" class="external-link">gganimate</a></span><span class="op">)</span>
+
+<span class="co"># plot with ggplot + gganimate</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">df</span><span class="op">$</span><span class="va">color</span>, size<span class="op">=</span><span class="va">df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Supervised weight: {closest_state}"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/transition_states.html" class="external-link">transition_states</a></span><span class="op">(</span>
+    <span class="va">weight</span>,
+    transition_length <span class="op">=</span> <span class="fl">2</span>,
+    state_length <span class="op">=</span> <span class="fl">2</span>,
+    wrap <span class="op">=</span> <span class="cn">TRUE</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/view_follow.html" class="external-link">view_follow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/enter_exit.html" class="external-link">enter_fade</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/umap_animation.gif"></p>
+<p>Here we can clearly see the influence that the label weight has on the final UMAP, and it looks like we should avoid using <code>target_weight=1</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

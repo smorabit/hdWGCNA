@@ -414,11 +414,13 @@ ModuleFeaturePlot<- function(
 
 #' EnrichrBarPlot
 #'
-#' Makes barplots from Enrichr data
+#' Makes barplots from RunEnrhcr output.
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param outdir directory to place output .pdf files
+#' @param n_terms the number of terms to plot in each barplot
+#' @param plot_size the size of the output .pdf files (width, height)
+#' @param logscale logical controlling whether to plot the enrichment on a log scale
 #' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
@@ -427,7 +429,7 @@ ModuleFeaturePlot<- function(
 EnrichrBarPlot <- function(
   seurat_obj, outdir = "enrichr_plots",
   n_terms = 25, plot_size = c(6,15),
-  wgcna_name=NULL, logscale=FALSE, ...
+  logscale=FALSE, wgcna_name=NULL,  ...
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -513,17 +515,20 @@ EnrichrBarPlot <- function(
 #' Makes barplots from Enrichr data
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param database name of the enrichr database to plot.
+#' @param mods names of modules to plot. All modules are plotted if mods='all' (default)
+#' @param n_terms number of enriched terms to plot for each module
+#' @param break_ties logical controlling whether or not to randomly select terms with equal enrichments to precisely enforce n_terms.
+#' @param logscale logical controlling whether to plot the enrichment on a log scale.
 #' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' EnrichrBarPlot
+#' EnrichrDotPlot
 EnrichrDotPlot <- function(
-  seurat_obj, database, mods="all", outdir = "enrichr_plots",
+  seurat_obj, database, mods="all",
   n_terms = 3, break_ties=TRUE,
-  wgcna_name=NULL, logscale=TRUE, ...
+   logscale=TRUE, wgcna_name=NULL, ...
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -758,7 +763,7 @@ HubGeneNetworkPlot <- function(
   return_graph=FALSE,
   edge.alpha=0.25,
   vertex.label.cex=0.5,
-  hub.vertex.size=4,Ω
+  hub.vertex.size=4,
   other.vertex.size=1,
   wgcna_name=NULL,
   ...
@@ -899,11 +904,13 @@ HubGeneNetworkPlot <- function(
 #' Makes a igraph network plot using the module UMAP
 #'
 #' @param seurat_obj A Seurat object
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
+#' @param sample_edges logical determining whether we downsample edges for plotting (TRUE), or take the strongst edges.
+#' @param edge_prop proportion of edges to plot. If sample_edges=FALSE, the strongest edges are selected.
+#' @param label_hubs the number of hub genes to label in each module
+#' @param edge.alpha scaling factor for edge opacity
+#' @param vertex.label.cex font size for labeled genes
+#' @param return_graph logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -915,9 +922,7 @@ ModuleUMAPPlot <- function(
   label_hubs = 5, # how many hub genes to label?
   edge.alpha=0.25,
   vertex.label.cex=0.5,
-  hub.vertex.size=4,
-  other.vertex.size=1,
-    return_graph = FALSE, # this returns the igraph object instead of plotting
+  return_graph = FALSE, # this returns the igraph object instead of plotting
   wgcna_name=NULL,
   ...
 ){
@@ -1060,17 +1065,21 @@ ModuleUMAPPlot <- function(
 #'
 #' Makes barplots from Enrichr data
 #'
-#' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param overlap_df the Module/DEG overlap table from OverlapModulesDEGs
+#' @param plot_var the name of the overlap statistic to plot
+#' @param logscale logical controlling whether to plot the result on a log scale, useful for odds ratio
+#' @param neglog logical controlling wehether to plot the result as a negative log, useful for p-value / FDR
+#' @param plot_significance logical controlling whether to plot the significance levels on top of the dots
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' OverlapDotPlot
 OverlapDotPlot <- function(
   overlap_df, plot_var = 'odds_ratio',
-  logscale=TRUE, neglog=FALSE, plot_significance=TRUE, ...
+  logscale=TRUE,
+  neglog=FALSE,
+  plot_significance=TRUE,
+  ...
 ){
 
   label <- plot_var
@@ -1106,19 +1115,25 @@ OverlapDotPlot <- function(
   p
 }
 
+#' OverlapBarPlot
+#'
 #' Plots the results from OverlapModulesDEGs as a bar plot
 #'
-#' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param overlap_df the Module/DEG overlap table from OverlapModulesDEGs
+#' @param plot_var the name of the overlap statistic to plot
+#' @param logscale logical controlling whether to plot the result on a log scale, useful for odds ratio
+#' @param neglog logical controlling wehether to plot the result as a negative log, useful for p-value / FDR
+#' @param label_size the size of the module labels in the bar plot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' OverlapBarPlot
 OverlapBarPlot <- function(
-  overlap_df, plot_var = 'odds_ratio',
-  logscale=TRUE, neglog=FALSE, ...
+  overlap_df,
+  plot_var = 'odds_ratio',
+  logscale=FALSE, neglog=FALSE,
+  label_size=2,
+  ...
 ){
 
   label <- plot_var
@@ -1135,9 +1150,9 @@ OverlapBarPlot <- function(
     yint = log(yint)
   }
   if(neglog){
-    overlap_df[[plot_var]] <- -1 * overlap_df[[plot_var]]
-    label <- paste0('-', label)
-    yint = -1 * yint
+    overlap_df[[plot_var]] <- -1 * log(overlap_df[[plot_var]])
+    label <- paste0('-log(', label, ')')
+    yint = -1 * log(yint)
   }
 
   groups <- overlap_df$group %>% as.character %>% unique
@@ -1164,6 +1179,12 @@ OverlapBarPlot <- function(
       if(plot_var == 'fdr' | plot_var == 'odds_ratio'){
         p <- p + geom_hline(yintercept=yint, linetype='dashed', color='gray')
       }
+
+      # add the labels:
+      p <- p +
+        geom_text(
+          aes(label=module, x=module, y=get(plot_var)), color='black', size=label_size, hjust='inward'
+        )
 
       plot_list[[cur_group]] <- p
   }

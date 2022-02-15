@@ -247,7 +247,7 @@ dev.off()
 ########################################################################
 
 library(enrichR)
-dbs<-c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021','LINCS_L1000_Chem_Pert_up','LINCS_L1000_Chem_Pert_down', 'WikiPathways_2019_Mouse', 'KEGG_2019_Mouse')
+dbs<-c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021')
 
 # compute GO terms:
 cur_seurat <- RunEnrichr(cur_seurat, dbs=dbs)
@@ -329,8 +329,8 @@ plot_list <- OverlapBarPlot(
   overlap_df
 )
 
-pdf(paste0(fig_dir, 'test_overlap_barplot.pdf'), width=10, height=12, useDingbats=FALSE)
-wrap_plots(plot_list, ncol=5)
+pdf(paste0(fig_dir, 'test_overlap_barplot.pdf'), width=12, height=5, useDingbats=FALSE)
+wrap_plots(plot_list, ncol=6)
 dev.off()
 
 

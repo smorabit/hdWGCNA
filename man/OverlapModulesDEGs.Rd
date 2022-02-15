@@ -4,17 +4,28 @@
 \alias{OverlapModulesDEGs}
 \title{OverlapModulesDEGs}
 \usage{
-OverlapModulesDEGs(seurat_obj, deg_df, wgcna_name = NULL, fc_cutoff = 0.5, ...)
+OverlapModulesDEGs(
+  seurat_obj,
+  deg_df,
+  fc_cutoff = 0.5,
+  group_col = "cluster",
+  wgcna_name = NULL,
+  ...
+)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{dbs}{List of EnrichR databases}
+\item{deg_df}{DEG table formatted like the output from Seurat's FindMarkers}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{fc_cutoff}{log fold change cutoff for DEGs to be included in the overlap test}
+
+\item{group_col}{the name of the column in deg_df containing the cell grouping information}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Computes intramodular connectivity (kME) based on module eigengenes.
+Performs Fisher's Exact Test for overlap between DEGs and scWGCNA modules.
 }
 \examples{
 OverlapModulesDEGs

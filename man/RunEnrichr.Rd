@@ -16,12 +16,14 @@ RunEnrichr(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{dbs}{List of EnrichR databases}
+\item{dbs}{character vector of EnrichR databases}
 
 \item{max_genes}{Max number of genes to include per module, ranked by kME.}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Computes intramodular connectivity (kME) based on module eigengenes.
+Run Enrichr gene set enrichment tests on scWGCNA modules
 }
 \examples{
 RunEnrichr

@@ -9,22 +9,26 @@ EnrichrBarPlot(
   outdir = "enrichr_plots",
   n_terms = 25,
   plot_size = c(6, 15),
-  wgcna_name = NULL,
   logscale = FALSE,
+  wgcna_name = NULL,
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
+\item{outdir}{directory to place output .pdf files}
+
+\item{n_terms}{the number of terms to plot in each barplot}
+
+\item{plot_size}{the size of the output .pdf files (width, height)}
+
+\item{logscale}{logical controlling whether to plot the enrichment on a log scale}
+
 \item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
-
-\item{dbs}{List of EnrichR databases}
-
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
 }
 \description{
-Makes barplots from Enrichr data
+Makes barplots from RunEnrhcr output.
 }
 \examples{
 EnrichrBarPlot

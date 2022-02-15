@@ -2,24 +2,27 @@
 % Please edit documentation in R/plotting.R
 \name{OverlapBarPlot}
 \alias{OverlapBarPlot}
-\title{Plots the results from OverlapModulesDEGs as a bar plot}
+\title{OverlapBarPlot}
 \usage{
 OverlapBarPlot(
   overlap_df,
   plot_var = "odds_ratio",
-  logscale = TRUE,
+  logscale = FALSE,
   neglog = FALSE,
+  label_size = 2,
   ...
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{overlap_df}{the Module/DEG overlap table from OverlapModulesDEGs}
 
-\item{dbs}{List of EnrichR databases}
+\item{plot_var}{the name of the overlap statistic to plot}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{logscale}{logical controlling whether to plot the result on a log scale, useful for odds ratio}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{neglog}{logical controlling wehether to plot the result as a negative log, useful for p-value / FDR}
+
+\item{label_size}{the size of the module labels in the bar plot}
 }
 \description{
 Plots the results from OverlapModulesDEGs as a bar plot

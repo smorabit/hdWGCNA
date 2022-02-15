@@ -919,12 +919,12 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
 
 #' RunEnrichr
 #'
-#' Computes intramodular connectivity (kME) based on module eigengenes.
+#' Run Enrichr gene set enrichment tests on scWGCNA modules
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
+#' @param dbs character vector of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -975,23 +975,30 @@ RunEnrichr <- function(
 
 #' OverlapModulesDEGs
 #'
-#' Computes intramodular connectivity (kME) based on module eigengenes.
+#' Performs Fisher's Exact Test for overlap between DEGs and scWGCNA modules.
 #'
 #' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param deg_df DEG table formatted like the output from Seurat's FindMarkers
+#' @param fc_cutoff log fold change cutoff for DEGs to be included in the overlap test
+#' @param group_col the name of the column in deg_df containing the cell grouping information
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' OverlapModulesDEGs
 OverlapModulesDEGs <- function(
-  seurat_obj, deg_df, wgcna_name = NULL, fc_cutoff = 0.5, ...
+  seurat_obj,
+  deg_df,
+  fc_cutoff = 0.5,
+  group_col = 'cluster',
+  wgcna_name = NULL,
+  ...
 ){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
+  deg_df$group <- deg_df[,group_col]
   cell_groups <- deg_df$group %>% unique
 
   # get modules,
@@ -1015,8 +1022,10 @@ OverlapModulesDEGs <- function(
 
   # run overlaps between module gene lists and DEG lists:
   overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
+    #print(cur_mod)
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
     cur_overlap_df <- do.call(rbind, lapply(cell_groups, function(cur_group){
+      #print(cur_group)
       cur_DEGs <- deg_df %>% subset(group == cur_group & p_val_adj <= 0.05 & avg_log2FC > fc_cutoff) %>% .$gene
       cur_overlap <- testGeneOverlap(newGeneOverlap(
           cur_module_genes,
@@ -1033,6 +1042,7 @@ OverlapModulesDEGs <- function(
     cur_overlap_df$color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
     cur_overlap_df
   }))
+
 
   # adjust for multiple comparisons:
   overlap_df$fdr <- p.adjust(overlap_df$pval, method='fdr')
@@ -1061,7 +1071,7 @@ OverlapModulesDEGs <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1477,7 +1487,7 @@ MotifScan <- function(
 #' Overlap modules with TF target genes
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1604,22 +1614,23 @@ MotifTargetScore <- function(
  }
 
 
-
+ #' RunModuleUMAP
+ #'
 #' Run UMAP on co-expression matrix using hub genes as features.
 #'
 #' @param seurat_obj A Seurat object
 #' @param n_hubs
 #' @param exclude_grey
-#' @param wgcna_name
+#' @param
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Additional parameters supplied to uwot::umap
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' RunModuleUMAP
 RunModuleUMAP <- function(
   seurat_obj,
   n_hubs = 50,
   exclude_grey = TRUE,
-  harmonized=TRUE,
   wgcna_name = NULL,
   n_neighbors= 25,
   metric = "cosine",
@@ -1634,8 +1645,7 @@ RunModuleUMAP <- function(
   # get the TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
 
-  # get modules, MEs:
-  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  # get modules,
   modules <- GetModules(seurat_obj, wgcna_name)
   mods <- levels(modules$module)
 
@@ -1725,7 +1735,7 @@ RunModuleUMAP <- function(
 #' Traits must be a categorical variable (not a character vector), or a numeric variable.
 #' @param features Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores
 #' @param cor_meth Which method to use for correlation? Valid choices are pearson, spearman, kendall.
-#' @param wgcna_name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples

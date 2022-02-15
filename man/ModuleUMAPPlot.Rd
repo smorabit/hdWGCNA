@@ -11,8 +11,6 @@ ModuleUMAPPlot(
   label_hubs = 5,
   edge.alpha = 0.25,
   vertex.label.cex = 0.5,
-  hub.vertex.size = 4,
-  other.vertex.size = 1,
   return_graph = FALSE,
   wgcna_name = NULL,
   ...
@@ -20,6 +18,20 @@ ModuleUMAPPlot(
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{sample_edges}{logical determining whether we downsample edges for plotting (TRUE), or take the strongst edges.}
+
+\item{edge_prop}{proportion of edges to plot. If sample_edges=FALSE, the strongest edges are selected.}
+
+\item{label_hubs}{the number of hub genes to label in each module}
+
+\item{edge.alpha}{scaling factor for edge opacity}
+
+\item{vertex.label.cex}{font size for labeled genes}
+
+\item{return_graph}{logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Makes a igraph network plot using the module UMAP

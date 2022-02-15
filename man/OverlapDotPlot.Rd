@@ -14,13 +14,15 @@ OverlapDotPlot(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{overlap_df}{the Module/DEG overlap table from OverlapModulesDEGs}
 
-\item{dbs}{List of EnrichR databases}
+\item{plot_var}{the name of the overlap statistic to plot}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{logscale}{logical controlling whether to plot the result on a log scale, useful for odds ratio}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{neglog}{logical controlling wehether to plot the result as a negative log, useful for p-value / FDR}
+
+\item{plot_significance}{logical controlling whether to plot the significance levels on top of the dots}
 }
 \description{
 Makes barplots from Enrichr data

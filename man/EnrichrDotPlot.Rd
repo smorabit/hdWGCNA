@@ -8,27 +8,32 @@ EnrichrDotPlot(
   seurat_obj,
   database,
   mods = "all",
-  outdir = "enrichr_plots",
   n_terms = 3,
   break_ties = TRUE,
-  wgcna_name = NULL,
   logscale = TRUE,
+  wgcna_name = NULL,
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
+\item{database}{name of the enrichr database to plot.}
+
+\item{mods}{names of modules to plot. All modules are plotted if mods='all' (default)}
+
+\item{n_terms}{number of enriched terms to plot for each module}
+
+\item{break_ties}{logical controlling whether or not to randomly select terms with equal enrichments to precisely enforce n_terms.}
+
+\item{logscale}{logical controlling whether to plot the enrichment on a log scale.}
+
 \item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
-
-\item{dbs}{List of EnrichR databases}
-
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
 }
 \description{
 Makes barplots from Enrichr data
 }
 \examples{
-EnrichrBarPlot
+EnrichrDotPlot
 }
 \keyword{scRNA-seq}
