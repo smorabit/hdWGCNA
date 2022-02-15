@@ -377,7 +377,7 @@ ModuleFeaturePlot<- function(
       ggplot(aes_string(x=x_name, y=y_name, color="val")) +
       # ggplot(aes(x=umap1, y=umap2, color=val))
       geom_point(size=point_size, alpha=alpha) +
-      ggtitle(cur_mod) + umap_theme +
+      ggtitle(cur_mod) + umap_theme() +
       labs(color="")
 
     # UCell?
@@ -1508,7 +1508,7 @@ DoHubGeneHeatmap <- function(
   for(i in 1:nrow(mod_colors)){
     cbar_list[[i]] <- mod_colors[i,] %>% ggplot(aes(y=value, x=dummy)) +
       geom_bar(position='stack', stat='identity', fill=mod_colors[i,]$color) +
-      umap_theme + theme(
+      umap_theme() + theme(
         plot.margin=margin(0,0,0,0)
       )
   }

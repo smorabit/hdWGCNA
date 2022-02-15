@@ -389,6 +389,20 @@ seurat_obj <- ModuleConnectivity(seurat_obj)
 
 ```
 
+For convenience, we re-name the scWGCNA modules to indicate that they are from
+the inhibitory neuron group. More information about renaming modules can be
+found in the [module customization tutorial](articles/customization.html).
+
+```{r eval=FALSE}
+
+# rename the modules
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = "INH-M"
+)
+
+```
+
 ## Getting the module assignment table
 
 scWGCNA allows for easy access of the module assignment table using the `GetModules`

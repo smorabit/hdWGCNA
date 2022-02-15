@@ -1,0 +1,131 @@
+---
+title: "Module customization"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for customizing module colors and module names in scWGCNA.
+vignette: >
+  %\VignetteIndexEntry{customization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+By default, scWGCNA (and WGCNA) assign each module a unique color, and often modules
+are referred to by this color. In this tutorial, we show how we can rename the
+scWGCNA modules, and assign a new color to the scWGCNA modules.
+
+First, we load the required libraries and the dataset.
+
+```{r eval=FALSE}
+
+# single-cell analysis package
+library(Seurat)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(scWGCNA)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# load the Zhou et al snRNA-seq dataset
+seurat_obj <- readRDS('data/Zhou_control.rds')
+
+```
+
+## Renaming scWGCNA modules
+
+scWGCNA includes the `ResetModuleNames` function, which assigns a new name to each
+module. The `new_name` parameter takes a string as the base name for each module,
+and a number is then appended to this name. The modules will be re-named in the
+entire scWGCNA experiment, so all subsequent plots etc will show the updated names.
+The following code shows how to rename the scWGCNA modules.
+
+```{r eval=FALSE}
+
+# run RenameModules
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = "Renamed-M" # the base name for the new modules
+)
+
+```
+
+In the next section, we will re-make some of the scWGCNA visualizations so we can
+see that the module names have been updated.
+
+## Re-coloring scWGCNA modules
+
+Here we demonstrate how to assign new colors to the scWGCNA modules using the
+`ResetModuleColors` function. This function simply takes a list of new colors to
+replace the old colors. The ordering of the colors depends on the factor level
+of the scWGCNA modules themselves. Additionally, this function ensures that the
+"grey moddule", which contains genes that did not get assigned to a co-expression
+module, remains grey. In this example, we use the
+[`MetBrewer`](https://github.com/BlakeRMills/MetBrewer) package to select a
+new color scheme for our modules.
+
+```{r eval=FALSE}
+
+# load MetBrewer color scheme pakckage
+library(MetBrewer)
+
+# get a table of just the module and it's unique color
+mod_color_df <- GetModules(seurat_obj) %>%
+  dplyr::select(c(module, color)) %>%
+  distinct %>% arrange(module)
+
+# the number of unique modules (subtract 1 because the grey module stays grey):
+n_mods <- nrow(mod_color_df) - 1
+
+# using the "Signac" palette from metbrewer, selecting for the number of modules
+new_colors <- paste0(met.brewer("Signac", n=n_mods))
+
+# reset the module colors
+seurat_obj <- ResetModuleColors(seurat_obj, new_colors)
+
+```
+
+Now we will test two of the different visualization functions to see if the colors
+were successfully modified.
+
+
+```{r eval=FALSE}
+PlotDendrogram(seurat_obj, main='Recolored Dendrogram')
+```
+
+![](figures/customization/dendro.png)
+
+
+```{r eval=FALSE}
+
+# make a featureplot of hMEs for each module
+plot_list <- ModuleFeaturePlot(seurat_obj)
+
+# stitch together with patchwork
+wrap_plots(plot_list, ncol=6)
+
+```
+
+![](figures/customization/featureplot.png)
+
+```{r eval=FALSE}
+
+ModuleUMAPPlot(
+  seurat_obj,
+  edge.alpha=0.15,
+  sample_edges=TRUE,
+  edge_prop=0.2,
+  label_hubs=2
+)
+
+```
+
+![](figures/customization/module_umap.png)

@@ -1619,9 +1619,8 @@ MotifTargetScore <- function(
 #' Run UMAP on co-expression matrix using hub genes as features.
 #'
 #' @param seurat_obj A Seurat object
-#' @param n_hubs
-#' @param exclude_grey
-#' @param
+#' @param n_hubs number of hub genes to use in the UMAP computation
+#' @param exclude_grey logical indicating whether to include grey module
 #' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
 #' @param ... Additional parameters supplied to uwot::umap
 #' @keywords scRNA-seq
@@ -1629,7 +1628,7 @@ MotifTargetScore <- function(
 #' @examples
 RunModuleUMAP <- function(
   seurat_obj,
-  n_hubs = 50,
+  n_hubs = 10,
   exclude_grey = TRUE,
   wgcna_name = NULL,
   n_neighbors= 25,

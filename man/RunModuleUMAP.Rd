@@ -6,7 +6,7 @@
 \usage{
 RunModuleUMAP(
   seurat_obj,
-  n_hubs = 50,
+  n_hubs = 10,
   exclude_grey = TRUE,
   wgcna_name = NULL,
   n_neighbors = 25,
@@ -19,6 +19,10 @@ RunModuleUMAP(
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{n_hubs}{number of hub genes to use in the UMAP computation}
+
+\item{exclude_grey}{logical indicating whether to include grey module}
 
 \item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 

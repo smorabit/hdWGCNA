@@ -687,6 +687,17 @@ GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
 # Reset module names:
 ###########################
 
+
+#' ResetModuleNames
+#'
+#' Reset the uname of each scWGCNA module
+#'
+#' @param seurat_obj A Seurat object
+#' @param new_name string containing the base name to re-name the modules
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples
 ResetModuleNames <- function(
   seurat_obj,
   new_name = "M",
@@ -820,6 +831,16 @@ ResetModuleNames <- function(
 # Reset module names:
 ###########################
 
+#' ResetModuleColors
+#'
+#' Reset the unique color for each scWGCNA module
+#'
+#' @param seurat_obj A Seurat object
+#' @param new_colors a character vector containing the new colors
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples
 ResetModuleColors <- function(
   seurat_obj,
   new_colors,
@@ -853,7 +874,6 @@ ResetModuleColors <- function(
   # set module table
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
 
-
   # update motif overlap
   overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
   if(!is.null(overlap_df)){
@@ -868,6 +888,10 @@ ResetModuleColors <- function(
     seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
   }
 
+  # update scWGCNA dendrogram:
+  net <- GetNetworkData(seurat_obj, wgcna_name)
+  net$colors <- new_color_df[match(net$colors, new_color_df$old),'new']
+  seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
 
   seurat_obj
 

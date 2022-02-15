@@ -37,6 +37,10 @@ navbar:
     - text: Projecting modules onto new datasets
       href: articles/projecting_modules.html
     - text: -------
+    - text: Other
+    - text: Module customization
+      href: articles/customization.html
+    - text: -------
     - text: All vignettes
       href: articles/index.html
 
@@ -75,6 +79,11 @@ reference:
   - '`RunHarmonyMetacells`'
   - '`RunUMAPMetacells`'
   - '`DimPlotMetacells`'
+- title: Other
+  desc: Other functions
+  contents:
+    -'`ResetModuleColors`'
+    -'`ResetModuleNames`'
 
 deploy:
   install_metadata: true

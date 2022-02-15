@@ -5,19 +5,23 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="Tutorial for applying the core functions of scWGCNA.
+<meta name="description" content="Tutorial for customizing module colors and module names in scWGCNA.
 ">
-<title>scWGCNA Basics • scWGCNA</title>
+<title>Module customization • scWGCNA</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="scWGCNA Basics">
-<meta property="og:description" content="Tutorial for applying the core functions of scWGCNA.
+<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Module customization">
+<meta property="og:description" content="Tutorial for customizing module colors and module names in scWGCNA.
 ">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:creator" content="@smudgetendo">
-<meta name="twitter:site" content="@smudgetendo">
+<meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -43,10 +47,26 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/basic_tutorial.html">scWGCNA Basics</a>
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-vignettes">Vignettes</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-vignettes">
+    <h6 class="dropdown-header" data-toc-skip>Core functionality</h6>
+    <a class="dropdown-item" href="../articles/basic_tutorial.html">scWGCNA basics</a>
+    <a class="dropdown-item" href="../articles/network_visualizations.html">Network visualization</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Biological context for co-expression modules</h6>
+    <a class="dropdown-item" href="../articles/module_trait_correlation.html">Module trait correlation</a>
+    <a class="dropdown-item" href="../articles/enrichment_analysis.html">Enrichment analysis</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Advanced topics</h6>
+    <a class="dropdown-item" href="../articles/consensus_wgcna.html">Consensus WGCNA</a>
+    <a class="dropdown-item" href="../articles/motif_analysis.html">Motif analysis</a>
+    <a class="dropdown-item" href="../articles/projecting_modules.html">Projecting modules onto new datasets</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Other</h6>
+    <a class="dropdown-item" href="../articles/customization.html">Module customization</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/index.html">All vignettes</a>
   </div>
 </li>
       </ul>
@@ -66,7 +86,7 @@
 
 <div class="row">
   <main id="main"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>scWGCNA Basics</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Module customization</h1>
             
       
       
@@ -75,110 +95,85 @@
 
     
     
-<p>Load Zhou et al data into Seurat</p>
-<p><img src="figures/logo_v2.png"></p>
-<p><img src="figures/logo_v2.png" align="center" height="20%" width="20%"></p>
+<p>By default, scWGCNA (and WGCNA) assign each module a unique color, and often modules are referred to by this color. In this tutorial, we show how we can rename the scWGCNA modules, and assign a new color to the scWGCNA modules.</p>
+<p>First, we load the required libraries and the dataset.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#knitr::include_graphics("man/figures/logo_v2.png")</span>
-
-<span class="co"># load R packages</span>
+<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
+
+<span class="co"># plotting and data science packages</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org/" class="external-link">Matrix</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">harmony</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/" class="external-link">ggpubr</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/collectivemedia/tictoc" class="external-link">tictoc</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hbiostat.org/R/Hmisc/" class="external-link">Hmisc</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/taiyun/corrplot" class="external-link">corrplot</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">enrichR</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GeneOverlap</span><span class="op">)</span>
+
+<span class="co"># co-expression network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gridExtra</span><span class="op">)</span>
-<span class="fu">enableWGCNAThreads</span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+
+<span class="co"># using the cowplot theme for ggplot</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># set random seed for reproducibility</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
 
-
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">'/dfs3b/swaruplab/smorabit/analysis/scWGCNA/'</span><span class="op">)</span>
-
-<span class="co"># output directories</span>
-<span class="va">data_dir</span> <span class="op">&lt;-</span> <span class="st">"data/"</span>
-<span class="va">fig_dir</span> <span class="op">&lt;-</span> <span class="st">'figures/'</span>
-
-<span class="co"># scp R/* hpc3:/dfs3b/swaruplab/smorabit/analysis/scWGCNA/bin/</span>
-
-<span class="va">scripts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="st">"bin/"</span><span class="op">)</span>
-<span class="va">scripts</span> <span class="op">&lt;-</span> <span class="va">scripts</span><span class="op">[</span><span class="va">scripts</span> <span class="op">!=</span> <span class="st">'scWGCNA.R'</span><span class="op">]</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">script</span> <span class="kw">in</span> <span class="va">scripts</span><span class="op">)</span><span class="op">{</span>
-  <span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"bin/"</span>, <span class="va">script</span><span class="op">)</span><span class="op">)</span>
-<span class="op">}</span>
-
-<span class="va">umap_theme</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
-  axis.line<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  axis.text.x<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  axis.text.y<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  axis.ticks<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  axis.title.x<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  axis.title.y<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  panel.background<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  panel.border<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  panel.grid.major<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  panel.grid.minor<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  plot.background<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
-  plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>
-<span class="op">)</span>
-
-<span class="co"># re-load scWGCNA dataset:</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Zhou_control_scWGCNA.rds'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set annotation factor levels:</span>
-<span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>,
-  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
-    <span class="st">"INH VIP+"</span>, <span class="st">"INH PVALB+"</span>, <span class="st">"INH SST+"</span>, <span class="st">"INH LAMP5+"</span>,
-    <span class="st">"EX1"</span>, <span class="st">'EX2'</span>, <span class="st">'EX3'</span>, <span class="st">'EX4'</span>, <span class="st">'EX5'</span>, <span class="st">'EX6'</span>, <span class="st">'EX7'</span>, <span class="st">'EX8'</span>, <span class="st">'EX9'</span>, <span class="st">'EX10'</span>, <span class="st">'OPC'</span>, <span class="st">'ODC1'</span>, <span class="st">'ODC2'</span>, <span class="st">'ODC3'</span>, <span class="st">'ODC4'</span>,
-    <span class="st">'ODC5'</span>, <span class="st">'ODC6'</span>, <span class="st">'ODC7'</span>, <span class="st">'ODC8'</span>, <span class="st">'ODC9'</span>,
-    <span class="st">'ASC1'</span>, <span class="st">'ASC2'</span>, <span class="st">'ASC4'</span>, <span class="st">'MG'</span>
-  <span class="op">)</span>
-<span class="op">)</span>
-
-<span class="va">seurat_obj</span><span class="op">$</span><span class="va">cell_type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">cell_type</span><span class="op">)</span>,
-  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH'</span>, <span class="st">'EX'</span>, <span class="st">'OPC'</span>, <span class="st">'ODC'</span>, <span class="st">'ASC'</span>, <span class="st">'MG'</span><span class="op">)</span>
-<span class="op">)</span>
-
-
-<span class="co">################################################################################</span>
-<span class="co"># make a color scheme for this dataset with MetBrewer:</span>
-<span class="co">################################################################################</span>
-
+<span class="co"># load the Zhou et al snRNA-seq dataset</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
+<div class="section level2">
+<h2 id="renaming-scwgcna-modules">Renaming scWGCNA modules<a class="anchor" aria-label="anchor" href="#renaming-scwgcna-modules"></a>
+</h2>
+<p>scWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire scWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the scWGCNA modules.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run RenameModules</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  new_name <span class="op">=</span> <span class="st">"Renamed-M"</span> <span class="co"># the base name for the new modules</span>
+<span class="op">)</span></code></pre></div>
+<p>In the next section, we will re-make some of the scWGCNA visualizations so we can see that the module names have been updated.</p>
+</div>
+<div class="section level2">
+<h2 id="re-coloring-scwgcna-modules">Re-coloring scWGCNA modules<a class="anchor" aria-label="anchor" href="#re-coloring-scwgcna-modules"></a>
+</h2>
+<p>Here we demonstrate how to assign new colors to the scWGCNA modules using the <code>ResetModuleColors</code> function. This function simply takes a list of new colors to replace the old colors. The ordering of the colors depends on the factor level of the scWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey. In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load MetBrewer color scheme pakckage</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span>
 
-<span class="va">n_groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span><span class="op">)</span>
+<span class="co"># get a table of just the module and it's unique color</span>
+<span class="va">mod_color_df</span> <span class="op">&lt;-</span> <span class="fu">GetModules</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span>
 
-<span class="co"># INH + EX</span>
-<span class="va">cluster_colors1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Signac"</span>, <span class="fl">14</span>, type<span class="op">=</span><span class="st">'discrete'</span><span class="op">)</span><span class="op">)</span>
+<span class="co"># the number of unique modules (subtract 1 because the grey module stays grey):</span>
+<span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_color_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>
 
-<span class="co"># Glia</span>
-<span class="va">cluster_colors2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Morgenstern"</span>, <span class="fl">8</span>, type<span class="op">=</span><span class="st">'continuous'</span><span class="op">)</span><span class="op">)</span>
-<span class="va">cluster_colors3</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Lakota"</span>, <span class="fl">6</span>, type<span class="op">=</span><span class="st">'discrete'</span><span class="op">)</span><span class="op">)</span>
+<span class="co"># using the "Signac" palette from metbrewer, selecting for the number of modules</span>
+<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span>
 
-<span class="co"># combine</span>
-<span class="va">cluster_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cluster_colors1</span>, <span class="va">cluster_colors2</span>, <span class="va">cluster_colors3</span><span class="op">)</span>
+<span class="co"># reset the module colors</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></code></pre></div>
+<p>Now we will test two of the different visualization functions to see if the colors were successfully modified.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Recolored Dendrogram'</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/customization/dendro.png"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cluster_colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>
-
-<span class="va">celltype_colors</span> <span class="op">&lt;-</span> <span class="va">cluster_colors</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH VIP+'</span>, <span class="st">'EX4'</span>, <span class="st">'OPC'</span>, <span class="st">'ODC5'</span>, <span class="st">'ASC1'</span>, <span class="st">'MG'</span><span class="op">)</span><span class="op">]</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">celltype_colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">cell_type</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">cluster_colors</span>, <span class="va">celltype_colors</span>, file<span class="op">=</span><span class="st">'data/Zhou_color_scheme.rda'</span><span class="op">)</span></code></pre></div>
-  </main>
+<span class="co"># stitch together with patchwork</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/customization/featureplot.png"></p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
+  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
+  edge_prop<span class="op">=</span><span class="fl">0.2</span>,
+  label_hubs<span class="op">=</span><span class="fl">2</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/customization/module_umap.png"></p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
