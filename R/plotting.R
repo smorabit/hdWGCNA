@@ -758,7 +758,7 @@ HubGeneNetworkPlot <- function(
   return_graph=FALSE,
   edge.alpha=0.25,
   vertex.label.cex=0.5,
-  hub.vertex.size=4,
+  hub.vertex.size=4,Ω
   other.vertex.size=1,
   wgcna_name=NULL,
   ...

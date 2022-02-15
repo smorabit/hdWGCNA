@@ -127,8 +127,7 @@
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
 <div class="section level2">
-<h2 id="modulenetworkplot">
-<code>ModuleNetworkPlot</code><a class="anchor" aria-label="anchor" href="#modulenetworkplot"></a>
+<h2 id="individual-module-network-plots">Individual module network plots<a class="anchor" aria-label="anchor" href="#individual-module-network-plots"></a>
 </h2>
 <p>Here we demonstrate using the ModuleNetworkPlot function to visualize the network underlying the top 25 hub genes for each module. By default, this function creates a new folder called “ModuleNetworks”, and generates a .pdf figure for each module. There are a few parameters that you can adjust for this function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -147,8 +146,7 @@
 </ul>
 </div>
 <div class="section level2">
-<h2 id="hubgenenetworkplot">
-<code>HubGeneNetworkPlot</code><a class="anchor" aria-label="anchor" href="#hubgenenetworkplot"></a>
+<h2 id="combined-hub-gene-network-plots">Combined hub gene network plots<a class="anchor" aria-label="anchor" href="#combined-hub-gene-network-plots"></a>
 </h2>
 <p>Here we will make a network plot combining all of the modules together using the <code>HubGeneNetworkPlot</code> function. This function takes the top <em>n</em> hub genes as specified by the user, and other randomly selected genes, and constructs a joint network using the <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing" class="external-link">force-directed graph drawing algorithm</a>. For visual clarity, the number of edges in the network can be downsampled using the <code>edge_prop</code> parameter. In the following example, we visualize the top 3 hub genes and 6 other genes per module.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -167,10 +165,9 @@
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="moduleumapplot">
-<code>ModuleUMAPPlot</code><a class="anchor" aria-label="anchor" href="#moduleumapplot"></a>
+<h2 id="applying-umap-to-co-expression-networks">Applying UMAP to co-expression networks<a class="anchor" aria-label="anchor" href="#applying-umap-to-co-expression-networks"></a>
 </h2>
-<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions.</p>
+<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the scWGCNA network in a low-dimensional manifold.</p>
 <p>scWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the scWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes.</p>
 <p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -180,6 +177,81 @@
   n_neighbors<span class="op">=</span><span class="fl">15</span>, <span class="co"># neighbors parameter for UMAP</span>
   min_dist<span class="op">=</span><span class="fl">0.1</span> <span class="co"># min distance between points in UMAP space</span>
 <span class="op">)</span></code></pre></div>
+<p>Next we will make a simple visualization of the UMAP using ggplot2:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the hub gene UMAP table from the seurat object</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># plot with ggplot</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>
+   color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, <span class="co"># color each point by WGCNA module</span>
+   size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="co"># size of each point based on intramodular connectivity</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/hubgene_umap.png"></p>
+<p>In this plot, each point represents a single gene. The size of each dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is sufficient to visualize the genes in the module UMAP, but here we are not visualizing the underlying network. We can use the function <code>ModuleUMAPPlot</code> to plot the genes and their co-expression relationships.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ModuleUMAPPlot</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">edge.alpha=</span><span class="fl">0.15</span>, as</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_edges=</span><span class="cn">TRUE</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_hubs=</span><span class="dv">2</span>, <span class="co"># how many hub genes to plot per module?</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">edge_prop=</span><span class="fl">0.2</span> <span class="co"># proportion of edges to sample (20% here)</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><img src="figures/network_vis/hub_umap_igraph.png"></p>
+<p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 20% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<div class="section level3">
+<h3 id="supervised-umap">Supervised UMAP<a class="anchor" aria-label="anchor" href="#supervised-umap"></a>
+</h3>
+<p>UMAP is often used as an unsupervised approach to project data points into a dimensionally-reduced spaced, but we can also supply UMAP with known labels to perform a supervised analysis. In principal, UMAP can better distinguish between different groups of data points in the embedding if the algorithm is aware of these groupings. Therefore, we allow the user to run a supervised UMAP using the RunModuleUMAP function, where each gene’s module assignment is supplied as the label.</p>
+<p>To perform a supervised UMAP analysis, we set <code>supervised=TRUE</code>, and we can optionally use the <code>target_weight</code> parameter to determine how much influnce the labels will have on the final embedding. A <code>target_weight</code> closer to 0 weights based on the structure of the data while a <code>target_weight</code> closer to 1 weights based on the labels. The following code shows how to run and visualize the supervised UMAP:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run supervised UMAP:</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_hubs <span class="op">=</span> <span class="fl">10</span>,
+  n_neighbors<span class="op">=</span><span class="fl">15</span>,
+  min_dist<span class="op">=</span><span class="fl">0.1</span>,
+  supervised<span class="op">=</span><span class="cn">TRUE</span>,
+  target_weight<span class="op">=</span><span class="fl">0.5</span>
+<span class="op">)</span>
+
+<span class="co"># get the hub gene UMAP table from the seurat object</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># plot with ggplot</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>
+   color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, <span class="co"># color each point by WGCNA module</span>
+   size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="co"># size of each point based on intramodular connectivity</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/hubgene_umap_supervised.png"></p>
+<p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP we had made previously.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span><span class="op">/</span><span class="fl">10</span>
+
+<span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">cur_weight</span> <span class="kw">in</span> <span class="va">weights</span><span class="op">)</span><span class="op">{</span>
+
+  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cur_weight</span><span class="op">)</span>
+  <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    n_hubs <span class="op">=</span> <span class="fl">10</span>,
+    n_neighbors<span class="op">=</span><span class="fl">15</span>,
+    exclude_grey <span class="op">=</span> <span class="cn">TRUE</span>,
+    min_dist<span class="op">=</span><span class="fl">0.1</span>,
+    supervised<span class="op">=</span><span class="cn">TRUE</span>,
+    target_weight <span class="op">=</span> <span class="va">cur_weight</span>
+  <span class="op">)</span>
+  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+  <span class="va">cur_df</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="va">cur_weight</span>
+  <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cur_df</span><span class="op">)</span>
+
+<span class="op">}</span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

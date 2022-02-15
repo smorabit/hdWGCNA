@@ -1625,6 +1625,7 @@ RunModuleUMAP <- function(
   metric = "cosine",
   spread=1,
   min_dist=0.4,
+  supervised = FALSE,
   ...
 ){
 
@@ -1658,14 +1659,28 @@ RunModuleUMAP <- function(
   umap_TOM <- TOM[selected_genes,unlist(hub_list)]
 
   # run UMAP
-  hub_umap <-  uwot::umap(
-    X = umap_TOM,
-    min_dist = min_dist,
-    n_neighbors= n_neighbors,
-    metric = metric,
-    spread=spread,
-    ...
-  )
+  if(supervised){
+    print('running supervised UMAP:')
+    hub_umap <-  uwot::umap(
+      X = umap_TOM,
+      min_dist = min_dist,
+      n_neighbors= n_neighbors,
+      metric = metric,
+      spread=spread,
+      y = modules$module, # for supervised UMAP
+      ...
+    )
+  } else {
+    hub_umap <-  uwot::umap(
+      X = umap_TOM,
+      min_dist = min_dist,
+      n_neighbors= n_neighbors,
+      metric = metric,
+      spread=spread,
+      ...
+    )
+  }
+
 
   # set up plotting df
   plot_df <- as.data.frame(hub_umap)

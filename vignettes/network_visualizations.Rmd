@@ -48,7 +48,7 @@ seurat_obj <- readRDS('data/Zhou_control.rds')
 
 ```
 
-## `ModuleNetworkPlot`
+## Individual module network plots
 
 Here we demonstrate using the ModuleNetworkPlot function to visualize the network
 underlying the top 25 hub genes for each module. By default, this function creates
@@ -74,7 +74,7 @@ Optionally, certain visualization parameters can be changed in this plot:
 * `vertex.size`: determines the size of the nodes
 * `vertex.label.cex`: determines the font size of the gene label
 
-## `HubGeneNetworkPlot`
+## Combined hub gene network plots
 
 Here we will make a network plot combining all of the modules together using the
 `HubGeneNetworkPlot` function. This function takes the top *n* hub genes as specified
@@ -111,12 +111,13 @@ using their own custom code.
 g <- HubGeneNetworkPlot(seurat_obj,  return_graph=TRUE)
 ```
 
-## `ModuleUMAPPlot`
+## Applying UMAP to co-expression networks
 
 Previously we visualized a subset of the co-expression network with an emphasis
 on the hub genes. Here, we use an alternative approach to visualize all genes
 in the co-expression network simultaneously. [UMAP](https://arxiv.org/abs/1802.03426)
-is a suitable method for visualizing high-dimensional data in two dimensions.
+is a suitable method for visualizing high-dimensional data in two dimensions,
+and here we apply UMAP to embed the scWGCNA network in a low-dimensional manifold.
 
 scWGCNA includes the function `RunModuleUMAP` to run the UMAP algorithm on the
 scWGCNA [topological overlap matrix (TOM)](https://doi.org/10.1186/1471-2105-8-22).
@@ -136,5 +137,127 @@ seurat_obj <- RunModuleUMAP(
   n_neighbors=15, # neighbors parameter for UMAP
   min_dist=0.1 # min distance between points in UMAP space
 )
+
+```
+
+Next we will make a simple visualization of the UMAP using ggplot2:
+
+```{r eval=FALSE}
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(seurat_obj)
+
+# plot with ggplot
+ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color, # color each point by WGCNA module
+   size=umap_df$kME*2 # size of each point based on intramodular connectivity
+  ) +
+  umap_theme()
+
+```
+
+![](figures/network_vis/hubgene_umap.png)
+
+In this plot, each point represents a single gene. The size of each dot is scaled
+by the gene's kME for it's assigned module. ggplot2 is sufficient to visualize the
+genes in the module UMAP, but here we are not visualizing the underlying network.
+We can use the function `ModuleUMAPPlot` to plot the genes and their co-expression
+relationships.
+
+```{r eval=FALSE}
+
+ModuleUMAPPlot(
+  seurat_obj,
+  edge.alpha=0.15, as
+  sample_edges=TRUE,
+  label_hubs=2, # how many hub genes to plot per module?
+  edge_prop=0.2 # proportion of edges to sample (20% here)
+)
+
+```
+
+![](figures/network_vis/hub_umap_igraph.png)
+
+This plot is similar to the one that we made with ggplot2, but we are showing
+the co-expression network, and labeling 2 hub genes in each module. For visual clarity,
+the we downsample to keep only 20% of the edges in this network using the `edge_prop`
+parameter. We also allow the user to also return the igraph object to make their
+own custom plots or to perform downstream network analysis:
+
+```{r eval=FALSE}
+g <- ModuleUMAPPlot(seurat_obj,  return_graph=TRUE)
+```
+
+### Supervised UMAP
+
+UMAP is often used as an unsupervised approach to project data points into a
+dimensionally-reduced spaced, but we can also supply UMAP with known labels to
+perform a supervised analysis. In principal, UMAP can better distinguish between
+different groups of data points in the embedding if the algorithm is aware of these
+groupings. Therefore, we allow the user to run a supervised UMAP using the RunModuleUMAP
+function, where each gene's module assignment is supplied as the label.
+
+To perform a supervised UMAP analysis, we set `supervised=TRUE`, and we can optionally
+use the `target_weight` parameter to determine how much influnce the labels will
+have on the final embedding. A `target_weight` closer to 0 weights
+based on the structure of the data while a `target_weight` closer to 1 weights
+based on the labels. The following code shows how to run and visualize the supervised
+UMAP:
+
+```{r eval=FALSE}
+
+# run supervised UMAP:
+seurat_obj <- RunModuleUMAP(
+  seurat_obj,
+  n_hubs = 10,
+  n_neighbors=15,
+  min_dist=0.1,
+  supervised=TRUE,
+  target_weight=0.5
+)
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(seurat_obj)
+
+# plot with ggplot
+ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color, # color each point by WGCNA module
+   size=umap_df$kME*2 # size of each point based on intramodular connectivity
+  ) +
+  umap_theme()
+
+```
+
+![](figures/network_vis/hubgene_umap_supervised.png)
+
+Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP we
+had made previously.
+
+```{r eval=FALSE}
+
+
+weights <- 0:10/10
+
+df <- data.frame()
+for(cur_weight in weights){
+
+  print(cur_weight)
+  seurat_obj <- RunModuleUMAP(
+    seurat_obj,
+    n_hubs = 10,
+    n_neighbors=15,
+    exclude_grey = TRUE,
+    min_dist=0.1,
+    supervised=TRUE,
+    target_weight = cur_weight
+  )
+  cur_df <- GetModuleUMAP(seurat_obj)
+  cur_df$weight <- cur_weight
+  df <- rbind(df, cur_df)
+
+}
+
 
 ```
