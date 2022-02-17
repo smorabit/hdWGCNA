@@ -1859,9 +1859,15 @@ ModuleTraitCorrelation <- function(
 #'
 #' Computes module preservation statistics in a query dataset for a given reference dataset
 #'
-#'
 #' @param seurat_obj A Seurat object
+#' @param seurat_ref A Seurat object serving as the reference for the module preservation analysis
+#' @param name The name to give the module preservation analysis.
+#' @param n_permutations Number of permutations for the module preservation test.
+#' @param parallel logical determining whether to run preservation analysis in parallel
+#' @param seed random seed for the permutation analysis.
+#' @param return_raw if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the scWGCNA experiment.
 #' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name_ref The name of the scWGCNA experiment in the seurat_ref@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples

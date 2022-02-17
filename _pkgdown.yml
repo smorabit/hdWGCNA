@@ -70,6 +70,11 @@ reference:
   desc: Functions for generating plots with scWGCNA
   contents:
   - '`ModuleFeaturePlot`'
+- title: Module Preservation
+  desc: Functions for performing module preservation analysis
+  contents:
+  - '`ModulePreservation`'
+  - '`PlotModulePreservation`'
 - title: Seurat wrappers
   desc: Wrapper functions to run Seurat commands on the metacell data
   contents:

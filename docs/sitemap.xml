@@ -109,6 +109,9 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/ModuleNetworkPlot.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/ModulePreservation.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/ModuleTraitCorrelation.html</loc>
   </url>
   <url>
@@ -140,6 +143,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/PlotDendrogram.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/PlotModulePreservation.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/ProjectModules.html</loc>

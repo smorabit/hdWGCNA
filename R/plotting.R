@@ -1525,8 +1525,21 @@ DoHubGeneHeatmap <- function(
 
 }
 
-
-
+#' PlotModulePreservatgion
+#'
+#' Plotting function for Module Preservation statistics
+#'
+#' @param seurat_obj A Seurat object
+#' @param name The name of the module preservation analysis to plot given in ModulePreservation
+#' @param statistics Which module preservation statistics to plot? Choices are summary, all, or a custom list
+#' @param plot_labels logical determining whether to plot the module labels
+#' @param label_size the size of the module labels
+#' @param mod_point_size the size of the points in each plot
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' PlotModulePreservation
 PlotModulePreservation <- function(
   seurat_obj,
   name,
