@@ -682,6 +682,27 @@ GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$mt_cor
 }
 
+############################
+# ModulePreservation
+###########################
+
+SetModulePreservation <- function(seurat_obj, mod_pres, mod_name, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # make an empty list if module preservation hasn't been called yet
+  if(is.null(seurat_obj@misc[[wgcna_name]]$module_preservation)){
+    seurat_obj@misc[[wgcna_name]]$module_preservation <- list()
+  }
+
+  seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]] <- mod_pres
+  seurat_obj
+}
+
+GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]]
+}
+
 
 ############################
 # Reset module names:

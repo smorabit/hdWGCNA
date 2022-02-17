@@ -1524,3 +1524,109 @@ DoHubGeneHeatmap <- function(
   out
 
 }
+
+
+
+PlotModulePreservation <- function(
+  seurat_obj,
+  name,
+  statistics = 'summary', # can be summary, all, or a custom list
+  plot_labels = TRUE,
+  label_size = 4,
+  mod_point_size = 4,
+  wgcna_name = NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+
+  # get the module preservation stats:
+  mod_pres <- GetModulePreservation(seurat_obj, name, wgcna_name)
+  obs_df <- mod_pres$obs
+  Z_df <- mod_pres$Z
+
+  # get module colors:
+  modules <- GetModules(seurat_obj, wgcna_name)
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+  mods <- rownames(Z_df)
+  mod_colors <- module_colors$color[match(mods, module_colors$module)]
+  mod_colors = ifelse(is.na(mod_colors), 'gold', mod_colors)
+
+  # what are we going to plot?
+  if(statistics == 'summary'){
+    stat_list <- c("medianRank.pres", "Zsummary.pres")
+  } else if(statistics == 'all'){
+    stat_list <- c(colnames(obs_df[,-1]), colnames(Z_df[,-1]))
+  } else{
+    stat_list <- statistics
+  }
+
+  stat_list <- stat_list[stat_list != 'moduleSize']
+
+
+  plot_list <- list()
+  for(statistic in stat_list){
+
+    print(statistic)
+
+    if(statistic %in% colnames(obs_df)){
+      values <- obs_df[,statistic]
+    } else if(statistic %in% colnames(Z_df)){
+      values <- Z_df[,statistic]
+    } else{
+      stop("Invalid name for statistic.")
+    }
+
+    # setup plotting df
+    plot_df <- data.frame(
+      module = mods,
+      color = mod_colors,
+      value = values,
+      size = Z_df$moduleSize
+    )
+
+    # don't include grey & gold:
+    plot_df <- plot_df %>% subset(!(module %in% c('grey', 'gold')))
+
+
+    if(grepl("Rank", statistic)){
+      cur_p <-  plot_df %>% ggplot(aes(x=size, y=value, fill=module, color=module)) +
+        geom_point(size=mod_point_size, pch=21, color='black') +
+        scale_y_reverse()
+    } else{
+      cur_p <- plot_df %>% ggplot(aes(x=size, y=value, fill=module, color=module)) +
+        geom_rect(
+          data = plot_df[1,],
+          aes(xmin=0, xmax=Inf, ymin=-Inf, ymax=2), fill='grey75', alpha=0.8, color=NA) +
+        geom_rect(
+          data=plot_df[1,],
+          aes(xmin=0, xmax=Inf, ymin=2, ymax=10), fill='grey92', alpha=0.8, color=NA) +
+        geom_point(size=mod_point_size, pch=21, color='black')
+    }
+
+    cur_p <- cur_p +
+      scale_fill_manual(values=plot_df$color) +
+      scale_color_manual(values=plot_df$color) +
+      scale_x_continuous(trans='log10') +
+      ylab(statistic) +
+      xlab("Module Size") +
+      ggtitle(statistic) +
+      NoLegend() +
+      theme(
+        plot.title = element_text(hjust = 0.5)
+      )
+
+
+    if(plot_labels){
+      cur_p <- cur_p + geom_text_repel(label = plot_df$module, size=label_size)
+    }
+
+    plot_list[[statistic]] <- cur_p
+
+  }
+
+  if(length(plot_list) == 1){return(plot_list[[1]])}
+
+  plot_list
+
+}

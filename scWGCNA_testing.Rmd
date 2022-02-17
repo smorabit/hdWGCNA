@@ -415,6 +415,8 @@ the downstream tasks.
 
 # re-load seurat obj
 cur_seurat <- readRDS(file='data/test_wgcna_seurat.rds')
+
+# Set Modules to NULL
 cur_seurat <- SetModules(cur_seurat, NULL)
 
 ######################################################
