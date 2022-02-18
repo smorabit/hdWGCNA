@@ -1,0 +1,14 @@
+---
+title: "Cross-species and cross-modality analysis"
+output: rmarkdown::html_vignette
+description: >
+  Projecting scWGCNA co-expression modules across species and -omics modalities.
+vignette: >
+  %\VignetteIndexEntry{Cross-species and cross-modality analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r eval=FALSE}
+print('hello world')
+```

@@ -3,8 +3,9 @@ title: scWGCNA
 url: https://smorabit.github.io/scWGCNA/
 
 template:
-  bootstrap: 5
-
+  params:
+    bootswatch: flatly
+  
 home:
   title: scWGCNA
   sidebar:
@@ -40,13 +41,19 @@ navbar:
     - text: Enrichment analysis
       href: articles/enrichment_analysis.html
     - text: -------
+    - text: Exploring modules in external datasets
+    - text: Projecting modules to new datasets
+      href: articles/projecting_modules.html
+    - text: Cross-species and cross-modality analysis
+      href: articles/projecting_modules_cross.html
+    - text: Module preservation and reproducibility
+      href: articles/module_preservation.html
+    - text: -------
     - text: Advanced topics
-    - text: Consensus WGCNA
+    - text: Consensus network analysis
       href: articles/consensus_wgcna.html
     - text: Motif analysis
       href: articles/motif_analysis.html
-    - text: Projecting modules onto new datasets
-      href: articles/projecting_modules.html
     - text: -------
     - text: Other
     - text: Module customization

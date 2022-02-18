@@ -1,13 +1,14 @@
 ---
-title: "Consensus network analysis"
+title: "Module Preservation"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for applying the core functions of scWGCNA.
+  Tutorial for performing module preservation tests in scWGCNA.
 vignette: >
-  %\VignetteIndexEntry{Consensus network analysis}
+  %\VignetteIndexEntry{Module Preservation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
 
 ```{r eval=FALSE}
 print('hello world')

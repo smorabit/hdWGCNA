@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 description: >
   Tutorial for applying the core functions of scWGCNA.
 vignette: >
-  %\VignetteIndexEntry{scWGCNA Basics}
+  %\VignetteIndexEntry{Projecting modules}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

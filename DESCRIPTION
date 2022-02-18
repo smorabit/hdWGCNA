@@ -5,7 +5,7 @@ Authors@R: c(
     person("Samuel", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856"))
   )
-Description: What the package does (one paragraph).
+Description: scWGCNA is an R package for performing weighted gene co-expression network analysis in single-cell RNA-seq data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
