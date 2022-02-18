@@ -73,7 +73,7 @@ we have grouped cells into clusters and cell types.
 
 ```{r eval=FALSE}
 p <- DimPlot(seurat_obj, group.by='cell_type', label=FALSE) +
-   umap_theme + ggtitle('Cell Type')
+   umap_theme() + ggtitle('Cell Type')
 
 p
 ```
@@ -197,8 +197,9 @@ seurat_obj <- RunUMAPMetacells(seurat_obj, reduction='harmony', dims=1:15)
 
 seurat_obj <- seurat_obj %>%
   NormalizeMetacells() %>%
-  RunPCAMetacells(features=VariableFeatures(seurat_obj))
-  RunHarmonyMetacells(group.by.vars='Sample')
+  ScaleMetacells() %>%
+  RunPCAMetacells(features=VariableFeatures(seurat_obj)) %>%
+  RunHarmonyMetacells(group.by.vars='Sample') %>%
   RunUMAPMetacells(reduction='harmony', dims=1:15)
 
 

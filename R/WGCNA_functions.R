@@ -878,13 +878,19 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 #' @export
 #' @examples
 #' ModuleConnectivity(pbmc)
-ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...){
+ModuleConnectivity <- function(
+  seurat_obj,
+  harmonized=TRUE,
+  wgcna_name=NULL,
+  ...
+){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # get module df, wgcna genes, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
+  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
@@ -895,8 +901,10 @@ ModuleConnectivity <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL, ...
     slot=params$metacell_slot
   ))[,genes_use]
 
-  # get MEs:
-  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  print('datExpr')
+  print(dim(datExpr))
+
+  print('running signedKME:')
 
   kMEs <- WGCNA::signedKME(
     datExpr,
