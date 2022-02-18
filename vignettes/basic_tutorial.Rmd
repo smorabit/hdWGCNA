@@ -170,8 +170,8 @@ seurat_obj <- NormalizeMetacells(seurat_obj)
 ## Optional: Process the Metacell Seurat Object
 
 Since we store the Metacell expression information as its own Seurat object,
-can we run Seurat functions on it? Absolutely! We have included a function
-to easily extract the metacell seurat object.
+we can run Seurat functions on the metacell data. We can get the metacell object
+from the scWGCNA experiment using `GetMetacellObject`.
 
 ```{r eval=FALSE}
 metacell_obj <- GetMetacellObject(seurat_obj)
@@ -182,7 +182,7 @@ to the metacell object within the scWGCNA experiment. Here we apply these wrappe
 functions to process the metacell object and visualize the aggregated expression
 profiles in two dimensions with UMAP.
 
-```{r eval=FALSE}
+```{r eval=FALSE, echo=FALSE}
 
 # process metacell seurat object with wrapper functions
 seurat_obj <- NormalizeMetacells(seurat_obj) # already run above
@@ -190,6 +190,17 @@ seurat_obj <- ScaleMetacells(seurat_obj)
 seurat_obj <- RunPCAMetacells(seurat_obj, features=VariableFeatures(seurat_obj))
 seurat_obj <- RunHarmonyMetacells(seurat_obj, group.by.vars='Sample')
 seurat_obj <- RunUMAPMetacells(seurat_obj, reduction='harmony', dims=1:15)
+
+```
+
+```{r eval=FALSE}
+
+seurat_obj <- seurat_obj %>%
+  NormalizeMetacells() %>%
+  RunPCAMetacells(features=VariableFeatures(seurat_obj))
+  RunHarmonyMetacells(group.by.vars='Sample')
+  RunUMAPMetacells(reduction='harmony', dims=1:15)
+
 
 p1 <- DimPlotMetacells(seurat_obj, group.by='cell_type') + umap_theme + ggtitle("Cell Type")
 p2 <- DimPlotMetacells(seurat_obj, group.by='Sample') + umap_theme + ggtitle("Sample")
@@ -425,7 +436,7 @@ saveRDS(seurat_obj, file='scWGCNA_object.rds')
 ```
 
 
-### Optional: compute hub gene signature scores
+### Compute hub gene signature scores
 
 Gene scoring analysis is a popular method in single-cell transcriptomics for computing
 a score for the overall signature of a set of genes. Seurat implements their own

@@ -5,14 +5,14 @@ url: https://smorabit.github.io/scWGCNA/
 template:
   params:
     bootswatch: flatly
-  
+
 home:
   title: scWGCNA
   sidebar:
     structure: [license, citation, authors, dev]
 
 authors:
-  Samuel Morabito:
+  Sam Morabito:
     href: https://smorabit.github.io
 
 navbar:

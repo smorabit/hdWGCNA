@@ -122,7 +122,8 @@ EnrichrBarPlot(
 
 The following bar plot is a single example of the `EnrichrBarPlot` output:
 
-![](figures/enrichment/inh-m7_example.png)
+<img src="figures/enrichment/inh-m7_example.png" width="500" height="500">
+
 
 ***Interpreting Enrichr results***
 

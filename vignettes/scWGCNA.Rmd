@@ -14,7 +14,7 @@ vignette: >
 These tutorials cover the essentials of performing co-expression network
 analysis in single-cell transcriptomics data, and visualizing the key results.
 
-### [scWGCNA basics](articles/basic_tutorial.html)
+### [scWGCNA basics](basic_tutorial.html)
 This tutorial covers the essential functions to construct a co-expression network
 in single-cell transcriptomics data with scWGCNA.
 
@@ -22,7 +22,7 @@ in single-cell transcriptomics data with scWGCNA.
 <img src="figures/basic_tutorial/Zhou_featureplot_hMEs_selected_wide.png" width="500" height="500">
 
 
-### [Network visualization](articles/network_visualizations.html)
+### [Network visualization](network_visualizations.html)
 
 This tutorial highlights several approaches for visualizing the scWGCNA co-expression
 networks.
@@ -35,13 +35,13 @@ These tutorials will provide further biological context for our co-expression
 modules, potentially revealing what experimental conditions and biological
 processes that these modules are involved in.
 
-### [Module trait correlation](articles/module_trait_correlation.html)
+### [Module trait correlation](module_trait_correlation.html)
 
 This tutorial covers how to correlate continuous and categorical variables with
 module eigengenes or module expression scores, revealing which modules are related
 to different experimental conditions or covariates.
 
-### [Enrichment analysis](articles/enrichment_analysis.html)
+### [Enrichment analysis](enrichment_analysis.html)
 
 Here we show how to use Enrichr to compare the gene members of each co-expression
 module to curated gene lists, thereby pointing towards the biological functions
@@ -51,18 +51,22 @@ of the co-expression modules.
 
 ## Exploring modules in external datasets
 
-### [Projecting modules to new datasets](articles/projecting_modules.html)
+### [Projecting modules to new datasets](projecting_modules.html)
 
-### [Cross-species and cross-modality analysis](articles/projecting_modules_cross.html)
+### [Cross-species and cross-modality analysis](projecting_modules_cross.html)
 
-### [Module preservation and reproducibility](articles/module_preservation.html)
+### [Module preservation and reproducibility](module_preservation.html)
 
 ## Advanced topics
 
-### [Consensus network analysis](articles/consensus_wgcna.html)
+### [Consensus network analysis](consensus_wgcna.html)
 
-### [Motif analysis](articles/motif_analysis.html)
+### [Motif analysis](motif_analysis.html)
 
 ## Other
 
-### [Module customization](articles/customization.html)
+### [Module customization](customization.html)
+
+This tutorial covers how to change the default names and colors for scWGCNA modules.
+
+<img src="figures/customization/featureplot.png" width="400" height="400">
