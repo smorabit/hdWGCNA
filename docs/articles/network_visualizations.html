@@ -45,7 +45,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+  <a class="nav-link" href="../articles/scWGCNA.html">Get started</a>
 </li>
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-vignettes">Vignettes</a>
@@ -68,6 +68,12 @@
     <div class="dropdown-divider"></div>
     <a class="dropdown-item" href="../articles/index.html">All vignettes</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">News</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -169,7 +175,7 @@
 <h2 id="applying-umap-to-co-expression-networks">Applying UMAP to co-expression networks<a class="anchor" aria-label="anchor" href="#applying-umap-to-co-expression-networks"></a>
 </h2>
 <p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the scWGCNA network in a low-dimensional manifold.</p>
-<p>scWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the scWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes.</p>
+<p>scWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the scWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R package, so additional UMAP parameters for the <code><a href="https://rdrr.io/pkg/uwot/man/umap.html" class="external-link">uwot::umap</a></code> function such as <code>min_dist</code> or <code>spread</code> can be included in <code>RunModuleUMAP</code>.</p>
 <p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
@@ -205,11 +211,61 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="section level3">
+<h3 id="varying-the-number-of-hub-genes">Varying the number of hub genes<a class="anchor" aria-label="anchor" href="#varying-the-number-of-hub-genes"></a>
+</h3>
+<p>The number of hub genes that we include in the UMAP calculation influences the downstream visualization. Here we use <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a> to visually compare the UMAPs that are computed with different numbers of hub genes.</p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># different label weights to test</span>
+<span class="va">n_hubs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">*</span><span class="fl">5</span><span class="op">)</span>
+
+<span class="co"># loop through different weights</span>
+<span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">cur_hubs</span> <span class="kw">in</span> <span class="va">n_hubs</span><span class="op">)</span><span class="op">{</span>
+
+  <span class="co"># make a module UMAP using different label weights</span>
+  <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    n_hubs <span class="op">=</span> <span class="va">cur_hubs</span>,
+    n_neighbors<span class="op">=</span><span class="fl">15</span>,
+    exclude_grey <span class="op">=</span> <span class="cn">TRUE</span>,
+    min_dist<span class="op">=</span><span class="fl">0.1</span>
+  <span class="op">)</span>
+
+  <span class="co"># add to ongoing dataframe</span>
+  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+  <span class="va">cur_df</span><span class="op">$</span><span class="va">n_hubs</span> <span class="op">&lt;-</span> <span class="va">cur_hubs</span>
+  <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cur_df</span><span class="op">)</span>
+<span class="op">}</span>
+
+<span class="co"># ggplot animation library</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gganimate.com" class="external-link">gganimate</a></span><span class="op">)</span>
+
+<span class="co"># plot with ggplot + gganimate</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">df</span><span class="op">$</span><span class="va">color</span>, size<span class="op">=</span><span class="va">df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Supervised weight: {closest_state}"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/transition_states.html" class="external-link">transition_states</a></span><span class="op">(</span>
+    <span class="va">weight</span>,
+    transition_length <span class="op">=</span> <span class="fl">2</span>,
+    state_length <span class="op">=</span> <span class="fl">2</span>,
+    wrap <span class="op">=</span> <span class="cn">TRUE</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/view_follow.html" class="external-link">view_follow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://gganimate.com/reference/enter_exit.html" class="external-link">enter_fade</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
+</details><p><img src="figures/network_vis/hub_umap.gif"></p>
+<p>This animation shows each of the UMAPs generated using different numbers of hub genes.</p>
+</div>
+<div class="section level3">
 <h3 id="supervised-umap">Supervised UMAP<a class="anchor" aria-label="anchor" href="#supervised-umap"></a>
 </h3>
 <p>UMAP is often used as an unsupervised approach to project data points into a dimensionally-reduced spaced, but we can also supply UMAP with known labels to perform a supervised analysis. In principal, UMAP can better distinguish between different groups of data points in the embedding if the algorithm is aware of these groupings. Therefore, we allow the user to run a supervised UMAP using the RunModuleUMAP function, where each gene’s module assignment is supplied as the label.</p>
 <p>To perform a supervised UMAP analysis, we set <code>supervised=TRUE</code>, and we can optionally use the <code>target_weight</code> parameter to determine how much influnce the labels will have on the final embedding. A <code>target_weight</code> closer to 0 weights based on the structure of the data while a <code>target_weight</code> closer to 1 weights based on the labels. The following code shows how to run and visualize the supervised UMAP:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run supervised UMAP:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -232,7 +288,9 @@
   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_supervised.png"></p>
 <p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we made previously. To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># different label weights to test</span>
 <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span><span class="op">/</span><span class="fl">10</span>
 
@@ -275,7 +333,7 @@
   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/network_vis/umap_animation.gif"></p>
+</details><p><img src="figures/network_vis/umap_animation.gif"></p>
 <p>Here we can clearly see the influence that the label weight has on the final UMAP, and it looks like we should avoid using <code>target_weight=1</code>.</p>
 </div>
 </div>

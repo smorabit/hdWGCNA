@@ -1,6 +1,6 @@
 ---
 title: "Network Visualization"
-output: rmarkdown::html_vignette
+output:  rmarkdown::html_vignette
 description: >
   Tutorial for visualizing the scWGCNA networks using igraph.
 vignette: >
@@ -122,7 +122,10 @@ scWGCNA [topological overlap matrix (TOM)](https://doi.org/10.1186/1471-2105-8-2
 For the UMAP analysis, we subset the columns in the TOM to only contain the top
 *n* hub genes by kME for each module, as specified by the user. Therefore, the
 organization of each gene in UMAP space is dependent on that gene's connectivity
-with the network's hub genes.
+with the network's hub genes. This function leverages the UMAP implementation from
+the [`uwot`](https://github.com/jlmelville/uwot) R package, so additional UMAP
+parameters for the `uwot::umap` function such as `min_dist` or `spread` can be included
+in `RunModuleUMAP`.
 
 The following code demonstrates using the `RunModuleUMAP` function with 10
 hub genes per module:
@@ -187,6 +190,92 @@ own custom plots or to perform downstream network analysis:
 g <- ModuleUMAPPlot(seurat_obj,  return_graph=TRUE)
 ```
 
+### Varying the number of hub genes
+
+The number of hub genes that we include in the UMAP calculation influences the
+downstream visualization. Here we use [`gganimate`](https://gganimate.com/) to
+visually compare the UMAPs that are computed with different numbers of hub genes.
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# different label weights to test
+n_hubs <- c(1, 1:10*5)
+
+# loop through different weights
+df <- data.frame()
+for(cur_hubs in n_hubs){
+
+  # make a module UMAP using different label weights
+  seurat_obj <- RunModuleUMAP(
+    seurat_obj,
+    n_hubs = cur_hubs,
+    n_neighbors=15,
+    exclude_grey = TRUE,
+    min_dist=0.1
+  )
+
+  # add to ongoing dataframe
+  cur_df <- GetModuleUMAP(seurat_obj)
+  cur_df$n_hubs <- cur_hubs
+  df <- rbind(df, cur_df)
+}
+
+# ggplot animation library
+library(gganimate)
+
+# plot with ggplot + gganimate
+p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(color=df$color, size=df$kME*2 ) +
+  ggtitle("Supervised weight: {closest_state}") +
+  transition_states(
+    weight,
+    transition_length = 2,
+    state_length = 2,
+    wrap = TRUE
+  ) +
+  view_follow() +
+  enter_fade() +
+  umap_theme()
+
+animate(p, fps=30, duration=25)
+
+```
+</details>
+
+
+```{r eval=FALSE, echo=FALSE}
+
+# for both gganimates, we run the animation locally on the laptop
+
+library(tidyverse)
+library(gganimate)
+
+df <- read.csv("~/Desktop/animate_hub_umap.csv")
+
+# plot with ggplot + gganimate
+p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(color=df$color, size=df$kME*2 ) +
+  ggtitle("N hubs: {closest_state}") +
+  transition_states(
+    n_hubs,
+    transition_length = 2,
+    state_length = 2,
+    wrap = TRUE
+  ) +
+  view_follow() +
+  enter_fade() +
+  umap_theme()
+
+animate(p, fps=30, duration=25)
+anim_save("~/Desktop/hub_umap.gif")
+
+```
+
+![](figures/network_vis/hub_umap.gif)
+
+This animation shows each of the UMAPs generated using different numbers of hub genes.
+
 ### Supervised UMAP
 
 UMAP is often used as an unsupervised approach to project data points into a
@@ -235,6 +324,7 @@ made previously. To demonstrate what the supervised UMAP looks like using differ
 weights for the labels, we can make a different UMAP for several values of `target_weight`
 and compare the outputs using [`gganimate`](https://gganimate.com/).
 
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 
 # different label weights to test
@@ -281,6 +371,9 @@ p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
 animate(p, fps=30, duration=25)
 
 ```
+</details>
+
+
 
 ![](figures/network_vis/umap_animation.gif)
 

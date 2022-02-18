@@ -1552,7 +1552,6 @@ PlotModulePreservation <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
-
   # get the module preservation stats:
   mod_pres <- GetModulePreservation(seurat_obj, name, wgcna_name)
   obs_df <- mod_pres$obs
@@ -1569,7 +1568,7 @@ PlotModulePreservation <- function(
   if(statistics == 'summary'){
     stat_list <- c("medianRank.pres", "Zsummary.pres")
   } else if(statistics == 'all'){
-    stat_list <- c(colnames(obs_df[,-1]), colnames(Z_df[,-1]))
+    stat_list <- c(colnames(obs_df[,-1])[grepl("Rank", colnames(obs_df[,-1]))], colnames(Z_df[,-1]))
   } else{
     stat_list <- statistics
   }

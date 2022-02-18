@@ -40,10 +40,16 @@
     <loc>https://smorabit.github.io/scWGCNA/articles/projecting_modules.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/articles/scWGCNA.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/authors.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/index.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/news/index.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/AvgModuleExpr.html</loc>

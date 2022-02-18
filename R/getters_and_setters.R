@@ -700,6 +700,9 @@ SetModulePreservation <- function(seurat_obj, mod_pres, mod_name, wgcna_name=NUL
 
 GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(is.null(seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]])){
+    stop("Invalid module preservation name.")
+  }
   seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]]
 }
 

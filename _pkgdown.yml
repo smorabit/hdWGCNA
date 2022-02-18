@@ -7,13 +7,24 @@ template:
 
 home:
   title: scWGCNA
+  sidebar:
+    structure: [license, citation, authors, dev]
 
 authors:
   Samuel Morabito:
     href: https://smorabit.github.io
 
 navbar:
- components:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [search, github]
+  components:
+   intro:
+     text: Get started
+     href: articles/scWGCNA.html
+   news:
+     text: News
+     href: news/index.html
    articles:
     text: Vignettes
     menu:
@@ -43,6 +54,7 @@ navbar:
     - text: -------
     - text: All vignettes
       href: articles/index.html
+
 
 reference:
 - title: Metacells

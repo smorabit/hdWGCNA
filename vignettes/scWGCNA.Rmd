@@ -1,0 +1,14 @@
+---
+title: "Vignettes overview"
+output: rmarkdown::html_vignette
+description: >
+  Document showing an overview of the different analysis vignettes.
+vignette: >
+  %\VignetteIndexEntry{Vignettes overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## scWGCNA core functionality
+
+Testing 1 2 3
