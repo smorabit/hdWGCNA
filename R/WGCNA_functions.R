@@ -881,12 +881,19 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 ModuleConnectivity <- function(
   seurat_obj,
   harmonized=TRUE,
-  wgcna_name=NULL,
+  assay = NULL,
+  slot = NULL,
+  use_metacells = FALSE,
+  wgcna_name = NULL,
   ...
 ){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  if(use_metacells){
+    warning('use_metacells option is not implemented yet.')
+  }
 
   # get module df, wgcna genes, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -894,11 +901,13 @@ ModuleConnectivity <- function(
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
-  # datExpr for full expression dataset
+  if(is.null(assay)){assay <- params$metacell_assay}
+  if(is.null(slot)){slot <- params$metacell_slot}
+
   datExpr <- t(GetAssayData(
     seurat_obj,
-    assay=params$metacell_assay,
-    slot=params$metacell_slot
+    assay=assay,
+    slot=slot
   ))[,genes_use]
 
   print('datExpr')
@@ -915,6 +924,7 @@ ModuleConnectivity <- function(
   )
 
   # add module color to the kMEs table
+  modules <- modules[,1:3]
   kMEs <- cbind(modules, kMEs)
   colnames(kMEs) <- c(colnames(modules), paste0("kME_", colnames(MEs)))
 
