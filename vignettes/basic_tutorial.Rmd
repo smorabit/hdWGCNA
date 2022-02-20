@@ -78,7 +78,7 @@ p <- DimPlot(seurat_obj, group.by='cell_type', label=FALSE) +
 p
 ```
 
-![](figures/basic_tutorial/umap_celltype.png)
+<img src="figures/basic_tutorial/umap_celltype.png" width="600" height="600">
 
 
 # Set up Seurat object for WGCNA
@@ -210,7 +210,7 @@ p1 | p2
 
 ```
 
-![](figures/basic_tutorial/umap_metacells.png)
+<img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600">
 
 
 # Co-expression network analysis
@@ -325,7 +325,8 @@ PlotDendrogram(seurat_obj, main='INH scWGCNA Dendrogram')
 
 ```
 
-![](figures/basic_tutorial/inh_dendro.png)
+<img src="figures/basic_tutorial/inh_dendro.png" width="600" height="600">
+
 
 # Module Eigengenes and Intramodular Connectivity
 
@@ -494,7 +495,8 @@ wrap_plots(plot_list, ncol=6)
 
 ```
 
-![](figures/basic_tutorial/ME_featureplot.png)
+<img src="figures/basic_tutorial/ME_featureplot.png" width="600" height="600">
+
 
 We can also plot the hub gene signature score using the same function:
 
@@ -512,8 +514,7 @@ wrap_plots(plot_list, ncol=6)
 
 ```
 
-![](figures/basic_tutorial/ME_featureplot_scores.png)
-
+<img src="figures/basic_tutorial/ME_featureplot_scores.png" width="600" height="600">
 
 ## Module Correlations
 
@@ -526,7 +527,8 @@ ModuleCorrelogram(seurat_obj)
 
 ```
 
-![](figures/basic_tutorial/ME_correlogram.png)
+<img src="figures/basic_tutorial/ME_correlogram.png" width="500" height="500">
+
 
 While scWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
 the relationship between different modules, and we encourage users to explore
@@ -541,7 +543,8 @@ GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
 
 ```
 
-![](figures/basic_tutorial/ME_correlation_GGally.png)
+<img src="figures/basic_tutorial/ME_correlation_GGally.png" width="500" height="500">
+
 
 ## Seurat plotting functions
 
@@ -585,7 +588,8 @@ p
 
 ```
 
-![](figures/basic_tutorial/ME_dotplot.png)
+<img src="figures/basic_tutorial/ME_dotplot.png" width="600" height="600">
+
 
 Here is another example where we use Seurat's `VlnPlot` function:
 
@@ -611,8 +615,7 @@ p
 
 ```
 
-![](figures/basic_tutorial/ME_vlnplot.png)
-
+<img src="figures/basic_tutorial/ME_vlnplot.png" width="600" height="600">
 
 # Next steps
 

@@ -1055,7 +1055,8 @@ ModuleUMAPPlot <- function(
     vertex.label.font = 3,
     vertex.label.color = V(g)$fontcolor,
     vertex.label.cex=0,
-    vertex.frame.color=V(g)$framecolor
+    vertex.frame.color=V(g)$framecolor,
+    margin=0
   )
 
 }

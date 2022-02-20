@@ -9,7 +9,111 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Intro paragraph.
+
+First we must load the data and the required libraries:
+```{r eval=FALSE}
+
+# single-cell analysis package
+library(Seurat)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(scWGCNA)
+
+# network analysis & visualization package:
+library(igraph)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# load the Zhou et al snRNA-seq dataset
+seurat_ref <- readRDS('data/Zhou_control.rds')
+
+# load the Morabito & Miyoshi 2021 snRNA-seq dataset
+seurat_query <- readRDS(file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
+
+```
+
+## Module preservation analysis
+
+Explanation of this analysis and link to the paper.
 
 ```{r eval=FALSE}
-print('hello world')
+
+
+# set dat expr for single-cell dataset:
+seurat_query <- SetDatExpr(
+  seurat_query,
+  group_name = "INH",
+  group.by = "cell_type",
+  use_metacells = FALSE
+)
+
+# run module preservation function
+seurat_query <- ModulePreservation(
+  seurat_query,
+  seurat_ref = seurat_ref,
+  name="Zhou-INH",
+  verbose=3
+)
+
+saveRDS(seurat_query, file=paste0(data_dir, 'Swarup2021_control_scWGCNA_modpres.rds'))
+
+
+mod_pres <- GetModulePreservation(seurat_query, "Zhou-INH")
+obs_df <- mod_pres$obs
+Z_df <- mod_pres$Z
+
 ```
+
+Explain the different columns
+
+
+## Visualize preservation stats
+
+Plot the main summary stats
+
+```{r eval=FALSE}
+
+plot_list <- PlotModulePreservation(
+  seurat_query,
+  name="Zhou-INH",
+  statistics = "summary"
+)
+
+png(paste0(fig_dir, 'module_preservation_summary.png'), width=10, height=5, res=400, units='in')
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+```
+
+<img src="figures/projection/module_preservation_summary.png" width="700" height="700">
+
+Plot all of the different stats:
+
+```{r eval=FALSE}
+
+plot_list <- PlotModulePreservation(
+  seurat_query,
+  name="Zhou-INH",
+  statistics = "all",
+  plot_labels=FALSE
+)
+
+png(paste0(fig_dir, 'module_preservation_all.png'), width=16, height=16, res=400, units='in')
+wrap_plots(plot_list, ncol=5)
+dev.off()
+
+
+```
+
+<img src="figures/projection/module_preservation_all.png" width="700" height="700">

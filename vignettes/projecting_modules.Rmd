@@ -50,7 +50,7 @@ seurat_query <- readRDS(file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds
 
 ```
 
-## Projecting modules
+## Projecting modules from reference to query
 
 In this section we project the modules from the Zhou et al inhibitory neuron
 scWGCNA experiment into the Morabito & Miyoshi et al control brain dataset. We
@@ -107,7 +107,6 @@ seurat_query <- ProjectModules(
 
 ```
 
-
 As you can see it only takes running one function to project co-expression modules
 from one dataset into another using scWGCNA. Optionally, we can also compute the
 hub gene expression scores and the intramodular connectivity for the projected modules.
@@ -116,7 +115,6 @@ the *kME* values in the module assignment table `GetModules(seurat_query)` are t
 *kME* values from the reference dataset.
 
 
-<details> <summary> Code </summary>
 ```{r eval=FALSE}
 # compute module hub gene expression scores for projected modules:
 seurat_query <- ModuleExprScore(
@@ -129,7 +127,12 @@ seurat_query <- ModuleExprScore(
 seurat_query <- ModuleConnectivity(seurat_query, assay="RNA", slot="data")
 
 ```
-</details>
+
+Save the query Seurat object after projecting modules.
+
+```{r eval=FALSE}
+saveRDS(seurat_obj, file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
+```
 
 We can extract the projected module eigengenes using the `GetMEs` function.
 
@@ -141,8 +144,75 @@ projected_hMEs <- GetModules(seurat_query)
 
 The projected modules can be used in most of the downstream scWGCNA analysis
 tasks and visualization functions, such as [module trait correlation](module_trait_correlation.html),
-or.
+however it is important to note that some of the functions cannot be run on the
+projected modules. In particular, we cannot make any of the network plots since
+we did not actually construct a co-expression network in the query dataset, so
+running functions such as `RunModuleUMAP` and `ModuleNetworks` will throw an error.
+
 
 ## Visualization
 
-Compare the hub gene UMAP between the projected and the query (use gganimate!!)
+In this section we demonstrate some of the visualization functions for the
+projected modules in the query dataset. First, we use the `ModuleFeaturePlot`
+function to visualizes the hMEs on the UMAP:
+
+```{r eval=FALSE}
+
+# make a featureplot of hMEs for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_query,
+  features='hMEs',
+  order=TRUE
+)
+
+# stitch together with patchwork
+wrap_plots(plot_list, ncol=6)
+
+```
+
+<img src="figures/projection/projected_featureplots.png" width="700" height="700">
+
+Next we will make a dot plot for each of the modules grouped by cell type identity.
+
+```{r eval=FALSE}
+
+# get the projected hMEs
+projected_hMEs <-  GetMEs(seurat_query, harmonized=TRUE)
+
+# add hMEs to Seurat meta-data:
+seurat_query@meta.data <- cbind(
+  seurat_query@meta.data,
+  projected_hMEs
+)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(
+    seurat_query,
+    features = colnames(projected_hMEs),
+    group.by = 'cell_type'
+)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  xlab('') + ylab('')
+
+p
+
+```
+
+<img src="figures/projection/projected_dotplot.png" width="700" height="700">
+
+## Next steps
+
+We encourage users to explore the projected modules using scWGCNA's various
+visualization and analysis functions. In the [next tutorial](module_preservation.html),
+we cover statistical methods to determine the preservation and reproducibility
+of co-expression modules between reference and query datasets. Additionally,
+we include [another tutorial](projecting_modules_cross.html) to projet modules
+in special cases where the two datasets come from different species, or from
+different -omic modalities such as scATAC-seq.
+
+* [Module preservation tutorial](module_preservation.html)
+* [Cross-species and cross-modality tutorial](projecting_modules_cross.html)
