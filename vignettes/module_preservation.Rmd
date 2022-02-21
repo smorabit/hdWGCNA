@@ -1,10 +1,10 @@
 ---
-title: "Module Preservation"
+title: "Module preservation and reproducibility"
 output: rmarkdown::html_vignette
 description: >
   Tutorial for performing module preservation tests in scWGCNA.
 vignette: >
-  %\VignetteIndexEntry{Module Preservation}
+  %\VignetteIndexEntry{Module preservation and reproducibility}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

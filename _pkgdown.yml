@@ -46,10 +46,10 @@ navbar:
     - text: Exploring modules in external datasets
     - text: Projecting modules to new datasets
       href: articles/projecting_modules.html
-    - text: Cross-species and cross-modality analysis
-      href: articles/projecting_modules_cross.html
     - text: Module preservation and reproducibility
       href: articles/module_preservation.html
+    - text: Cross-species and cross-modality analysis
+      href: articles/projecting_modules_cross.html
     - text: -------
     - text: Advanced topics
     - text: Consensus network analysis

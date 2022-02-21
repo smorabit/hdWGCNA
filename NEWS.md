@@ -1,9 +1,9 @@
 # scWGCNA 0.1.0 (2022-02-17)
 ## Added
-- A lot of stuff oh wow.
+- Placeholder.
 
 ## Changes
-- Nothing
+- Placeholder.
 
 # scWGCNA 0.0.0.9000 (2021-07-15)
 

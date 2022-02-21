@@ -53,13 +53,20 @@ of the co-expression modules.
 
 ### [Projecting modules to new datasets](projecting_modules.html)
 
+<img src="figures/projection/compare_umaps.png" width="500" height="500">
+
+
 ### [Cross-species and cross-modality analysis](projecting_modules_cross.html)
 
 ### [Module preservation and reproducibility](module_preservation.html)
 
+<img src="figures/projection/module_preservation_summary.png" width="500" height="500">
+
+
 ## Advanced topics
 
 ### [Consensus network analysis](consensus_wgcna.html)
+
 
 ### [Motif analysis](motif_analysis.html)
 
