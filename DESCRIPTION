@@ -3,7 +3,8 @@ Title: WGCNA
 Version: 0.0.0.9000
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-7768-4856"))
+           comment = c(ORCID = "0000-0002-7768-4856")),
+    person("Swarup Lab", role = "fnd")
   )
 Description: scWGCNA is an R package for performing weighted gene co-expression network analysis in single-cell RNA-seq data.
 License: MIT + file LICENSE

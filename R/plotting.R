@@ -1544,7 +1544,7 @@ DoHubGeneHeatmap <- function(
 PlotModulePreservation <- function(
   seurat_obj,
   name,
-  statistics = 'summary', # can be summary, all, or a custom list
+  statistics = 'summary', # can be summary, rank, all, or a custom list
   plot_labels = TRUE,
   label_size = 4,
   mod_point_size = 4,
@@ -1567,7 +1567,9 @@ PlotModulePreservation <- function(
 
   # what are we going to plot?
   if(statistics == 'summary'){
-    stat_list <- c("medianRank.pres", "Zsummary.pres")
+    stat_list <- c("Zsummary.qual", "Zsummary.pres")
+  } else if(statistics == 'rank'){
+    stat_list <- colnames(obs_df[,-1])[grepl("Rank", colnames(obs_df[,-1]))]
   } else if(statistics == 'all'){
     stat_list <- c(colnames(obs_df[,-1])[grepl("Rank", colnames(obs_df[,-1]))], colnames(Z_df[,-1]))
   } else{
@@ -1575,7 +1577,6 @@ PlotModulePreservation <- function(
   }
 
   stat_list <- stat_list[stat_list != 'moduleSize']
-
 
   plot_list <- list()
   for(statistic in stat_list){

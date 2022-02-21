@@ -137,13 +137,173 @@
 
     
     
+<p>In this tutorial, we discuss a few special cases for co-expression module projection.</p>
+<p>First we must load the data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">'hello world'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
+
+<span class="co"># plotting and data science packages</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
+
+<span class="co"># co-expression network analysis packages:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+
+<span class="co"># network analysis &amp; visualization package:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
+
+<span class="co"># using the cowplot theme for ggplot</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># set random seed for reproducibility</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
+
+<span class="co"># load the Zhou et al snRNA-seq dataset</span>
+<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
+<div class="section level2">
+<h2 id="project-modules-from-rna-seq-to-atac-seq">Project modules from RNA-seq to ATAC-seq<a class="anchor" aria-label="anchor" href="#project-modules-from-rna-seq-to-atac-seq"></a>
+</h2>
+<p>Load the snATAC-seq dataset:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># single-cell chromatin analysis package:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/timoast/signac" class="external-link">Signac</a></span><span class="op">)</span>
+
+<span class="co"># load dataset</span>
+<span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/atac_analysis/all_data/celltype-analysis/data/NucSeq_processed_activity_qc_batch_correct.rds'</span><span class="op">)</span>
+
+<span class="co"># plot the snATAC-seq clusters:</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_atac</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Morabito &amp; Miyoshi'</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p>Project modules from snRNA to snATAC</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set assay to RNA</span>
+<span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span>
+
+<span class="co"># project modules</span>
+<span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
+  seurat_obj <span class="op">=</span> <span class="va">seurat_atac</span>,
+  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
+  scale_genes <span class="op">=</span> <span class="cn">TRUE</span>,
+  wgcna_name <span class="op">=</span> <span class="st">"train"</span>,
+  wgcna_name_proj<span class="op">=</span><span class="st">"Zhou_projected"</span>
+<span class="op">)</span>
+
+<span class="co"># compute module hub scores for projected modules:</span>
+<span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleExprScore.html">ModuleExprScore</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  n_genes <span class="op">=</span> <span class="fl">25</span>,
+  method<span class="op">=</span><span class="st">'Seurat'</span>
+<span class="op">)</span></code></pre></div>
+<div class="section level3">
+<h3 id="visualize-modules-in-snatac-seq">Visualize modules in snATAC-seq<a class="anchor" aria-label="anchor" href="#visualize-modules-in-snatac-seq"></a>
+</h3>
+<p>Plot the hME featureplot</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  features<span class="op">=</span><span class="st">'hMEs'</span>,
+  order<span class="op">=</span><span class="st">"shuffle"</span>
+<span class="op">)</span>
+
+<span class="co"># stitch together with patchwork</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'atac_projected_featureplots_hMEs.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">24</span>, height<span class="op">=</span><span class="fl">16</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p>Plot the hME dot plot</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the projected hMEs</span>
+<span class="va">projected_hMEs</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_atac</span>, harmonized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">projected_hMEs</span> <span class="op">&lt;-</span> <span class="va">projected_hMEs</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">projected_hMEs</span><span class="op">)</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
+
+<span class="co"># add hMEs to Seurat meta-data:</span>
+<span class="va">seurat_atac</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span><span class="op">@</span><span class="va">meta.data</span>,
+  <span class="va">projected_hMEs</span>
+<span class="op">)</span>
+<span class="va">seurat_atac</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">seurat_atac</span><span class="op">@</span><span class="va">meta.data</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">@</span><span class="va">meta.data</span><span class="op">)</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">projected_hMEs</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>
+
+<span class="co"># plot with Seurat's DotPlot function</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span>
+    <span class="va">seurat_atac</span>,
+    features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">projected_hMEs</span><span class="op">)</span>,
+    group.by <span class="op">=</span> <span class="st">'monocle_clusters_umap_Cell.Type'</span>
+<span class="op">)</span>
+
+<span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient2</a></span><span class="op">(</span>high<span class="op">=</span><span class="st">'red'</span>, mid<span class="op">=</span><span class="st">'grey95'</span>, low<span class="op">=</span><span class="st">'blue'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'atac_projected_hMEs_dotplot.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">10</span>, height<span class="op">=</span><span class="fl">4</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span><span class="op">)</span>
+<span class="va">p</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p>Plot the module scores</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  features<span class="op">=</span><span class="st">'scores'</span>,
+  order<span class="op">=</span><span class="st">"shuffle"</span>
+<span class="op">)</span>
+
+<span class="co"># stitch together with patchwork</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'atac_projected_featureplots_scores.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">24</span>, height<span class="op">=</span><span class="fl">16</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="module-preservation-in-snatac-seq">Module preservation in snATAC-seq<a class="anchor" aria-label="anchor" href="#module-preservation-in-snatac-seq"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set dat expr for single-cell dataset:</span>
+<span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  group_name <span class="op">=</span> <span class="st">"INH"</span>,
+  group.by <span class="op">=</span> <span class="st">"monocle_clusters_umap_Cell.Type"</span>,
+  use_metacells <span class="op">=</span> <span class="cn">FALSE</span>
+<span class="op">)</span>
+
+<span class="co"># run module preservation function</span>
+<span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservation.html">ModulePreservation</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
+  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
+  verbose<span class="op">=</span><span class="fl">3</span>
+<span class="op">)</span></code></pre></div>
+<p>Plot module preservation results</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
+  <span class="va">seurat_atac</span>,
+  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
+  statistics <span class="op">=</span> <span class="st">"summary"</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="project-modules-from-hg38-to-mm10">Project modules from hg38 to mm10<a class="anchor" aria-label="anchor" href="#project-modules-from-hg38-to-mm10"></a>
+</h2>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load Zhou et al 5xFAD dataset:</span>
+<span class="va">seurat_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'/home/vivek/AD2019/5xFAD_snRNAseq_GSE140511/WT_5xFAD_Ctx/Analysis/ProcessedSeuratFinal.rds'</span><span class="op">)</span></code></pre></div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
@@ -151,7 +311,7 @@
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>.</p>
+<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
 </div>
 
 <div class="pkgdown">

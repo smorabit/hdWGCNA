@@ -9,6 +9,201 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+In this tutorial, we discuss a few special cases for co-expression module
+projection.
+
+
+First we must load the data and the required libraries:
 ```{r eval=FALSE}
-print('hello world')
+
+# single-cell analysis package
+library(Seurat)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(scWGCNA)
+
+# network analysis & visualization package:
+library(igraph)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# load the Zhou et al snRNA-seq dataset
+seurat_ref <- readRDS('data/Zhou_control.rds')
+
+```
+
+## Project modules from RNA-seq to ATAC-seq
+
+Load the snATAC-seq dataset:
+
+```{r eval=FALSE}
+
+# single-cell chromatin analysis package:
+library(Signac)
+
+# load dataset
+seurat_atac <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/atac_analysis/all_data/celltype-analysis/data/NucSeq_processed_activity_qc_batch_correct.rds')
+
+# plot the snATAC-seq clusters:
+p <- DimPlot(seurat_atac, group.by='cell_type', label=TRUE) +
+   umap_theme() +
+   ggtitle('Morabito & Miyoshi') +
+   NoLegend()
+
+p
+
+```
+
+Project modules from snRNA to snATAC
+
+```{r eval=FALSE}
+
+# set assay to RNA
+DefaultAssay(seurat_atac) <- 'RNA'
+
+# project modules
+seurat_atac <- ProjectModules(
+  seurat_obj = seurat_atac,
+  seurat_ref = seurat_ref,
+  scale_genes = TRUE,
+  wgcna_name = "train",
+  wgcna_name_proj="Zhou_projected"
+)
+
+# compute module hub scores for projected modules:
+seurat_atac <- ModuleExprScore(
+  seurat_atac,
+  n_genes = 25,
+  method='Seurat'
+)
+
+```
+
+### Visualize modules in snATAC-seq
+
+Plot the hME featureplot
+
+```{r eval=FALSE}
+
+# make a featureplot of hMEs for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_atac,
+  features='hMEs',
+  order="shuffle"
+)
+
+# stitch together with patchwork
+png(paste0(fig_dir, 'atac_projected_featureplots_hMEs.png'), width=24, height=16, units='in', res=400)
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+```
+
+Plot the hME dot plot
+
+```{r eval=FALSE}
+
+# get the projected hMEs
+projected_hMEs <-  GetMEs(seurat_atac, harmonized=TRUE)
+projected_hMEs <- projected_hMEs[,colnames(projected_hMEs) != 'grey']
+
+# add hMEs to Seurat meta-data:
+seurat_atac@meta.data <- cbind(
+  seurat_atac@meta.data,
+  projected_hMEs
+)
+seurat_atac@meta.data <- seurat_atac@meta.data[,1:(ncol(seurat_atac@meta.data)-ncol(projected_hMEs))]
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(
+    seurat_atac,
+    features = colnames(projected_hMEs),
+    group.by = 'monocle_clusters_umap_Cell.Type'
+)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  xlab('') + ylab('')
+
+png(paste0(fig_dir, 'atac_projected_hMEs_dotplot.png'), width=10, height=4, units='in', res=400)
+p
+dev.off()
+
+```
+
+Plot the module scores
+
+```{r eval=FALSE}
+
+# make a featureplot of hMEs for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_atac,
+  features='scores',
+  order="shuffle"
+)
+
+# stitch together with patchwork
+png(paste0(fig_dir, 'atac_projected_featureplots_scores.png'), width=24, height=16, units='in', res=400)
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+```
+
+### Module preservation in snATAC-seq
+
+```{r eval=FALSE}
+
+# set dat expr for single-cell dataset:
+seurat_atac <- SetDatExpr(
+  seurat_atac,
+  group_name = "INH",
+  group.by = "monocle_clusters_umap_Cell.Type",
+  use_metacells = FALSE
+)
+
+# run module preservation function
+seurat_atac <- ModulePreservation(
+  seurat_atac,
+  seurat_ref = seurat_ref,
+  name="Zhou-INH",
+  verbose=3
+)
+
+```
+
+Plot module preservation results
+
+```{r eval=FALSE}
+
+plot_list <- PlotModulePreservation(
+  seurat_atac,
+  name="Zhou-INH",
+  statistics = "summary"
+)
+
+wrap_plots(plot_list, ncol=2)
+
+```
+
+
+## Project modules from hg38 to mm10
+
+```{r eval=FALSE}
+
+# load Zhou et al 5xFAD dataset:
+seurat_mouse <- readRDS('/home/vivek/AD2019/5xFAD_snRNAseq_GSE140511/WT_5xFAD_Ctx/Analysis/ProcessedSeuratFinal.rds')
+
+
 ```

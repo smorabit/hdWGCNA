@@ -9,7 +9,20 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Intro paragraph.
+
+Data-driven models are thought to be useful when they are generalizable across
+different datasets. If we think about co-expression networks from this perspective,
+we need a way to statistically quantify the conservation of co-expression modules
+that were identified in one datasets across external datasets. This is a common theme
+in machine learning, where a model is learned on a training dataset but evaluated
+using an external validation dataset.
+
+In the [previous tutorial](projecting_modules.html), we projected the co-expression
+modules from a reference to a query dataset, but we did not quantify the degree
+to which these modules were preserved across datasets. In this tutorial, we perform statistical tests to estimate the conservation of
+projected modules, and we perform binary classification analysis to test
+if the expression of projected modules are similar across cell states between
+the reference and query datasets.
 
 First we must load the data and the required libraries:
 ```{r eval=FALSE}
@@ -45,10 +58,17 @@ seurat_query <- readRDS(file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds
 
 ## Module preservation analysis
 
-Explanation of this analysis and link to the paper.
+
+In their 2011 paper titled
+["Is My Network Module Preserved and Reproducible?"](https://doi.org/10.1371/journal.pcbi.1001057), Langfelder et al discuss statistical methods for
+module preservation analysis in co-expression network analysis.  Notably, module preservation analysis can be used
+to assess the reproducibility of co-expression networks, but it can also be used
+for specific biological analyses, for example to identify which modules are
+significantly preserved across different disease conditions, tissues, developmental
+stages, or even evolutionary time.
+
 
 ```{r eval=FALSE}
-
 
 # set dat expr for single-cell dataset:
 seurat_query <- SetDatExpr(
@@ -66,21 +86,29 @@ seurat_query <- ModulePreservation(
   verbose=3
 )
 
-saveRDS(seurat_query, file=paste0(data_dir, 'Swarup2021_control_scWGCNA_modpres.rds'))
+# getthe module preservation table
+mod_pres <- GetModulePreservation(seurat_query, "Zhou-INH")$Z
+obs_df <- GetModulePreservation(seurat_query, "Zhou-INH")$obs
 
-
-mod_pres <- GetModulePreservation(seurat_query, "Zhou-INH")
-obs_df <- mod_pres$obs
-Z_df <- mod_pres$Z
+grep('summary', colnames(mod_pres))
+grep('summary', colnames(obs))
 
 ```
 
-Explain the different columns
+Please consult [this tutorial](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/)
+for an explanation of the different stats. Currently working on writing up a
+description of the stats on this page. The visualizations are inspired by
+those included in the [original WGCNA module preservation tutorials](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf).
 
 
-## Visualize preservation stats
 
-Plot the main summary stats
+
+### Visualize preservation stats
+
+
+In this section, we use the function `PlotModulePreservation` to visualize the
+statistics we computed in the previous section. This function generates a scatter
+plot showing the module size versus the module preservation stats.
 
 ```{r eval=FALSE}
 
@@ -90,13 +118,33 @@ plot_list <- PlotModulePreservation(
   statistics = "summary"
 )
 
-png(paste0(fig_dir, 'module_preservation_summary.png'), width=10, height=5, res=400, units='in')
+wrap_plots(plot_list, ncol=2)
+
+
+```
+
+<img src="figures/projection/module_preservation_summary.png" width="700" height="700">
+
+Plot the ranking stats
+
+```{r eval=FALSE}
+
+# plot ranking stats
+plot_list <- PlotModulePreservation(
+  seurat_query,
+  name="Zhou-INH",
+  statistics = "rank"
+)
+
+
+png(paste0(fig_dir, 'module_preservation_rank.png'), width=10, height=10, res=400, units='in')
 wrap_plots(plot_list, ncol=2)
 dev.off()
 
 ```
 
-<img src="figures/projection/module_preservation_summary.png" width="700" height="700">
+<img src="figures/projection/module_preservation_rank.png" width="700" height="700">
+
 
 Plot all of the different stats:
 
@@ -109,11 +157,103 @@ plot_list <- PlotModulePreservation(
   plot_labels=FALSE
 )
 
-png(paste0(fig_dir, 'module_preservation_all.png'), width=16, height=16, res=400, units='in')
-wrap_plots(plot_list, ncol=5)
-dev.off()
-
+wrap_plots(plot_list, ncol=6)
 
 ```
 
 <img src="figures/projection/module_preservation_all.png" width="700" height="700">
+
+## Binary classification analysis
+
+Explain the binary classification analysis.
+
+### Transfer cell states from reference to query
+
+```{r eval=FALSE}
+
+# add SCANVI predicted labels from Zhou et al:
+predicted_labels <- read.csv(paste0('../data/Swarup_2021_predicted_obs.csv'))
+predicted_labels <- predicted_labels %>% subset(X %in% colnames(seurat_query))
+seurat_query$predictions <- predicted_labels$predictions
+
+# setup cell cluster labels for ROC computation
+seurat_ref$roc_group <- factor(
+  as.character(seurat_ref$annotation),
+  levels = levels(seurat_ref$annotation)
+)
+seurat_query$roc_group <- factor(
+  as.character(seurat_query$predictions),
+  levels = levels(seurat_ref$roc_group)
+)
+
+```
+
+Now we visualize the transferred cell states on the UMAP:
+
+<details> <summary> Code </summary>
+
+```{r eval=FALSE}
+
+p1 <- DimPlot(seurat_ref, group.by='roc_group', label=TRUE, repel=TRUE) +
+   umap_theme() +
+   ggtitle('Zhou') +
+   NoLegend()
+
+p2 <- DimPlot(seurat_query, group.by='roc_group', label=TRUE, repel=TRUE) +
+   umap_theme() +
+   ggtitle('Morabito & Miyoshi') +
+   NoLegend()
+
+p1 | p2
+
+```
+
+</details>
+
+<img src="figures/projection/umap_transfer_labels.png" width="600" height="600">
+
+
+### Compute ROC
+
+```{r eval=FALSE}
+
+# compute ROC
+seurat_ref <- ComputeROC(
+  seurat_ref,
+  seurat_test = seurat_query,
+  group.by = 'roc_group'
+)
+
+# head the ROC table:
+roc_data <- GetROCData(seurat_obj)
+head(roc_data$roc)
+
+```
+
+
+<details> <summary> Output </summary>
+```
+specificity sensitivity module   color       auc
+1   1.0000000           1 INH-M1 darkred 0.9948718
+2   0.9333333           1 INH-M1 darkred 0.9948718
+3   0.8666667           1 INH-M1 darkred 0.9948718
+4   0.8000000           1 INH-M1 darkred 0.9948718
+5   0.7333333           1 INH-M1 darkred 0.9948718
+
+6   0.6666667           1 INH-M1 darkred 0.9948718
+```
+</details>
+
+### Plot ROC curves
+
+```{r eval=FALSE}
+
+# plot the ROC Curves
+p <- ROCCurves(seurat_obj=seurat_obj)
+
+# plot the ROC curves faceted by module
+p + facet_wrap(~module, ncol=6) + NoLegend()
+
+```
+
+<img src="figures/projection/Zhou_ROC.png" width="700" height="700">

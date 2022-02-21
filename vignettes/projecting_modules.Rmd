@@ -101,6 +101,7 @@ seurat_query <- ProjectModules(
   seurat_ref = seurat_ref,
   scale_genes = TRUE,
   # vars.to.regress = c(), # optionally regress covariates when running ScaleData
+  group.by.vars = "Batch", # column in seurat_query to run harmony on
   wgcna_name_proj="Zhou_projected", # name of the new scWGCNA experiment in the query dataset
   wgcna_name = "tutorial" # name of the scWGCNA experiment in the ref dataset
 )
@@ -131,7 +132,9 @@ seurat_query <- ModuleConnectivity(seurat_query, assay="RNA", slot="data")
 Save the query Seurat object after projecting modules.
 
 ```{r eval=FALSE}
-saveRDS(seurat_obj, file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
+saveRDS(seurat_query, file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
+
+seurat_query <- readRDS(paste0(data_dir, 'Swarup2021_control_scWGCNA_modpres.rds'))
 ```
 
 We can extract the projected module eigengenes using the `GetMEs` function.

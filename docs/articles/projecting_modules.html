@@ -198,6 +198,7 @@ Code
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
   scale_genes <span class="op">=</span> <span class="cn">TRUE</span>,
   <span class="co"># vars.to.regress = c(), # optionally regress covariates when running ScaleData</span>
+  group.by.vars <span class="op">=</span> <span class="st">"Batch"</span>, <span class="co"># column in seurat_query to run harmony on</span>
   wgcna_name_proj<span class="op">=</span><span class="st">"Zhou_projected"</span>, <span class="co"># name of the new scWGCNA experiment in the query dataset</span>
   wgcna_name <span class="op">=</span> <span class="st">"tutorial"</span> <span class="co"># name of the scWGCNA experiment in the ref dataset</span>
 <span class="op">)</span></code></pre></div>
@@ -214,7 +215,9 @@ Code
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_query</span>, assay<span class="op">=</span><span class="st">"RNA"</span>, slot<span class="op">=</span><span class="st">"data"</span><span class="op">)</span></code></pre></div>
 <p>Save the query Seurat object after projecting modules.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Morabito_Miyoshi_2021_control.rds'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_query</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Morabito_Miyoshi_2021_control.rds'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Swarup2021_control_scWGCNA_modpres.rds'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>We can extract the projected module eigengenes using the <code>GetMEs</code> function.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">projected_hMEs</span> <span class="op">&lt;-</span> <span class="fu">GetModules</span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></code></pre></div>
@@ -285,7 +288,7 @@ Code
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>.</p>
+<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
 </div>
 
 <div class="pkgdown">
