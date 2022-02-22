@@ -43,7 +43,7 @@ to different experimental conditions or covariates.
 
 ### [Enrichment analysis](enrichment_analysis.html)
 
-Here we show how to use Enrichr to compare the gene members of each co-expression
+This tutorial shows how to use Enrichr to compare the gene members of each co-expression
 module to curated gene lists, thereby pointing towards the biological functions
 of the co-expression modules.
 
@@ -53,15 +53,26 @@ of the co-expression modules.
 
 ### [Projecting modules to new datasets](projecting_modules.html)
 
+This tutorial covers how to project co-expression modules from a reference
+to a query dataset.
+
 <img src="figures/projection/compare_umaps.png" width="500" height="500">
-
-
-### [Cross-species and cross-modality analysis](projecting_modules_cross.html)
 
 ### [Module preservation and reproducibility](module_preservation.html)
 
+This tutorial covers statistical methods for assessing the preservation and
+reproducibility of co-expression networks using external datasets.
+
+
 <img src="figures/projection/module_preservation_summary.png" width="500" height="500">
 
+### [Cross-species and cross-modality analysis](projecting_modules_cross.html)
+
+This tutorial covers how to project co-expression modules from a reference
+to a query dataset for special cases where the data modality or the species do
+not match between the reference and the query.
+
+<img src="figures/projection/atac_umap_covplot.png" width="700" height="700">
 
 ## Advanced topics
 

@@ -1,10 +1,10 @@
 ---
-title: "Projecting modules"
+title: "Projecting modules to new datasets"
 output: rmarkdown::html_vignette
 description: >
   Tutorial for applying the core functions of scWGCNA.
 vignette: >
-  %\VignetteIndexEntry{Projecting modules}
+  %\VignetteIndexEntry{Projecting modules to new datasets}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

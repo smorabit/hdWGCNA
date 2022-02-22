@@ -41,7 +41,6 @@ are all clarified in [this table](https://bmcbioinformatics.biomedcentral.com/ar
 First we will load the single-cell dataset and the required R libraries for this
 tutorial.
 
-
 ```{r eval=FALSE}
 
 # single-cell analysis package

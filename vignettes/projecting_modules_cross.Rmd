@@ -9,11 +9,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In this tutorial, we discuss a few special cases for co-expression module
-projection.
+In this tutorial, we demonstrate how to use scWGCNA to project co-expression modules
+from a reference to a query dataset in certain special cases. Specifically, we
+project modules from a human snRNA-seq dataset to a human snATAC-seq dataset, a
+mouse snRNA-seq dataset, and a mouse [Visium](https://www.10xgenomics.com/products/spatial-gene-expression)
+spatial transcriptomics dataset.
 
 
-First we must load the data and the required libraries:
+Load the snRNA-seq data and the required libraries:
 ```{r eval=FALSE}
 
 # single-cell analysis package
@@ -44,7 +47,28 @@ seurat_ref <- readRDS('data/Zhou_control.rds')
 
 ## Project modules from RNA-seq to ATAC-seq
 
-Load the snATAC-seq dataset:
+
+In this section, we project snRNA-seq co-expression modules onto the snATAC-seq
+dataset from our [Nature Genetics paper](https://doi.org/10.1038/s41588-021-00894-z).
+This analysis requires a fully processed snRNA-seq dataset that we have run scWGCNA
+on, and a fully processed snATAC-seq dataset. For snATAC-seq processing and
+data formatting, we suggest using [Signac](https://satijalab.org/signac/), an
+extension of Seurat for performing single-cell chromatin accessibility analysis.
+Signac offers several [tutorials](https://satijalab.org/signac/articles/mouse_brain_vignette.html)
+for processing snATAC-seq data from scratch, and before projecting co-expression modules into
+snATAC-seq data we need to do the following analysis steps:
+
+* [Quality control and filtering](https://satijalab.org/signac/articles/pbmc_vignette.html#computing-qc-metrics).
+* Term frequency inverse document frequency (TF-IDF) normalization ([RunTFIDF](https://satijalab.org/signac/reference/runtfidf)).
+* Feature Selection ([FindTopFeatures](https://satijalab.org/signac/reference/findtopfeatures)).
+* Linear dimensionality reduction ([RunSVD](https://satijalab.org/signac/reference/runsvd)).
+* Non-linear dimensionality reduction ([RunUMAP](https://satijalab.org/seurat/reference/runumap)) for visualizations.
+* Group cells into clusters ([FindNeighbors](https://satijalab.org/seurat/reference/findneighbors) and  [FindClusters](https://satijalab.org/seurat/reference/findclusters)).
+* Create a gene activity matrix ([GeneActivity](https://satijalab.org/signac/reference/geneactivity)).
+
+### Load snATAC-seq dataset
+
+This following code loads `Signac` and our snATAC-seq dataset into R.
 
 ```{r eval=FALSE}
 
@@ -54,29 +78,62 @@ library(Signac)
 # load dataset
 seurat_atac <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/atac_analysis/all_data/celltype-analysis/data/NucSeq_processed_activity_qc_batch_correct.rds')
 
-# plot the snATAC-seq clusters:
-p <- DimPlot(seurat_atac, group.by='cell_type', label=TRUE) +
-   umap_theme() +
-   ggtitle('Morabito & Miyoshi') +
-   NoLegend()
-
-p
-
 ```
 
-Project modules from snRNA to snATAC
+To ensure that we loaded the dataset, and that this is indeed a chromatin
+dataset, we plot the snATAC-seq UMAP and a chromatin accessibility coverage plot
+for *GAD2*, an inhibitory neuron marker gene.
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot the snATAC-seq clusters:
+p1 <- DimPlot(seurat_atac, group.by='cell_type', label=TRUE, raster=FALSE) +
+   umap_theme() +
+   ggtitle('') +
+   NoLegend()
+
+
+p2 <- CoveragePlot(
+  object = signac_atac,
+  group.by='cell_type',
+  region = "GAD2",
+  annotation = TRUE, peaks = FALSE, tile = FALSE, links = FALSE
+)
+
+
+png(paste0(fig_dir, 'atac_umap_covplot.png'), width=12, height=4, res=400, units='in')
+p1 + p2 +
+  plot_layout(widths=c(1,3))
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/atac_umap_covplot.png" width="700" height="700">
+
+
+### Project modules
+
+In previous examples, the reference and query datasets were both transcriptomics
+datasets, but here we are trying to investigate co-expression modules in
+the epigenome using chromatin accessibility data. Here we use the `ProjectModules`
+function as we have done before, but we have to ensure that we are using the
+Gene Activity matrix from the snATAC-seq dataset rather than the chromatin accessibility
+matrix.
 
 ```{r eval=FALSE}
 
-# set assay to RNA
+# set assay to RNA (Gene Activity matrix)
 DefaultAssay(seurat_atac) <- 'RNA'
 
 # project modules
 seurat_atac <- ProjectModules(
   seurat_obj = seurat_atac,
   seurat_ref = seurat_ref,
+  group.by.vars = 'Batch',
   scale_genes = TRUE,
-  wgcna_name = "train",
+  wgcna_name = "INH",
   wgcna_name_proj="Zhou_projected"
 )
 
@@ -87,81 +144,87 @@ seurat_atac <- ModuleExprScore(
   method='Seurat'
 )
 
+# save the results:
+saveRDS(seurat_atac, file='mm2021_atac_scWGCNA.rds')
+
 ```
+
+Using the gene activity matrix we computed module eigengenes in the snATAC-seq dataset,
+harmonizing based on the sequencing batch. Additionally, we computed module hub
+gene expression scores for the projected modules, and now we are ready for
+visualization and downstream analysis.
 
 ### Visualize modules in snATAC-seq
 
-Plot the hME featureplot
+Here we will visualize the hub gene expression scores of the projected modules
+in the snATAC-seq dataset using `ModuleFeaturePlot` and Seurat's `DotPlot` function.
 
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 
-# make a featureplot of hMEs for each module
+# only show a handful of selected modules
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# make a featureplot of hub scores for each module
 plot_list <- ModuleFeaturePlot(
   seurat_atac,
-  features='hMEs',
-  order="shuffle"
+  features='scores',
+  order="shuffle",
+  module_names = selected_mods
 )
 
 # stitch together with patchwork
-png(paste0(fig_dir, 'atac_projected_featureplots_hMEs.png'), width=24, height=16, units='in', res=400)
-wrap_plots(plot_list, ncol=6)
-dev.off()
+wrap_plots(plot_list, ncol=3)
 
 ```
+</details>
 
-Plot the hME dot plot
+<img src="figures/projection/atac_projected_featureplots_scores.png" width="700" height="700">
 
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 
 # get the projected hMEs
-projected_hMEs <-  GetMEs(seurat_atac, harmonized=TRUE)
-projected_hMEs <- projected_hMEs[,colnames(projected_hMEs) != 'grey']
+mod_scores <-  GetModuleScores(seurat_atac)
+mod_scores <- mod_scores[,colnames(mod_scores) != 'grey']
 
 # add hMEs to Seurat meta-data:
 seurat_atac@meta.data <- cbind(
   seurat_atac@meta.data,
-  projected_hMEs
+  mod_scores
 )
-seurat_atac@meta.data <- seurat_atac@meta.data[,1:(ncol(seurat_atac@meta.data)-ncol(projected_hMEs))]
 
 # plot with Seurat's DotPlot function
 p <- DotPlot(
     seurat_atac,
-    features = colnames(projected_hMEs),
-    group.by = 'monocle_clusters_umap_Cell.Type'
+    features = colnames(mod_scores),
+    group.by = 'cell_type'
 )
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +
   RotatedAxis() +
-  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  scale_color_gradient2(high='darkorchid4', mid='grey95', low='seagreen') +
   xlab('') + ylab('')
 
-png(paste0(fig_dir, 'atac_projected_hMEs_dotplot.png'), width=10, height=4, units='in', res=400)
+
 p
-dev.off()
 
 ```
+</details>
 
-Plot the module scores
+<img src="figures/projection/atac_projected_scores_dotplot.png" width="700" height="700">
 
-```{r eval=FALSE}
-
-# make a featureplot of hMEs for each module
-plot_list <- ModuleFeaturePlot(
-  seurat_atac,
-  features='scores',
-  order="shuffle"
-)
-
-# stitch together with patchwork
-png(paste0(fig_dir, 'atac_projected_featureplots_scores.png'), width=24, height=16, units='in', res=400)
-wrap_plots(plot_list, ncol=6)
-dev.off()
-
-```
 
 ### Module preservation in snATAC-seq
+
+In this section, we compute the module preservation statistics for the snATAC-seq
+dataset. This analysis will tell us which of the co-expression modules are conserved
+at the epigenome level, and specifically which network properties, such as density
+or connectiviy, are preserved across modalities. This code is very similar to our
+previous module preservation analysis, and we do not have to take any specific
+steps for snATAC-seq here. Note that this code can take a few hours to run
+on a large query dataset.
 
 ```{r eval=FALSE}
 
@@ -169,7 +232,7 @@ dev.off()
 seurat_atac <- SetDatExpr(
   seurat_atac,
   group_name = "INH",
-  group.by = "monocle_clusters_umap_Cell.Type",
+  group.by = "cell_type",
   use_metacells = FALSE
 )
 
@@ -181,12 +244,17 @@ seurat_atac <- ModulePreservation(
   verbose=3
 )
 
+# save the results again since this step takes a while to run:
+saveRDS(seurat_atac, file='mm2021_atac_scWGCNA.rds')
+
 ```
 
-Plot module preservation results
+Now we visualize the results using the `PlotModulePreservation` function.
 
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 
+# plot the summary stats
 plot_list <- PlotModulePreservation(
   seurat_atac,
   name="Zhou-INH",
@@ -196,7 +264,27 @@ plot_list <- PlotModulePreservation(
 wrap_plots(plot_list, ncol=2)
 
 ```
+</details>
 
+<img src="figures/projection/atac_module_preservation_summary.png" width="700" height="700">
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot all of the stats togehter
+plot_list <- PlotModulePreservation(
+  seurat_atac,
+  name="Zhou-INH",
+  statistics = "all",
+  plot_labels=FALSE
+)
+
+wrap_plots(plot_list, ncol=6)
+
+```
+</details>
+
+<img src="figures/projection/atac_module_preservation_all.png" width="700" height="700">
 
 ## Project modules from hg38 to mm10
 
@@ -204,6 +292,114 @@ wrap_plots(plot_list, ncol=2)
 
 # load Zhou et al 5xFAD dataset:
 seurat_mouse <- readRDS('/home/vivek/AD2019/5xFAD_snRNAseq_GSE140511/WT_5xFAD_Ctx/Analysis/ProcessedSeuratFinal.rds')
+
+
+```
+
+## Project modules to visium data
+
+### Download and process Visium brain dataset
+
+```{r eval=FALSE}
+
+# load 10X genomics visium dataset
+SeuratData::InstallData("stxBrain")
+seurat_vis <- SeuratData::LoadData("stxBrain", type = "anterior1")
+
+# process the Visium dataset with Seurat:
+seurat_vis <- seurat_vis %>%
+  NormalizeData() %>%
+  FindVariableFeatures() %>%
+  ScaleData() %>%
+  RunPCA() %>%
+  RunUMAP(dims=1:30) %>%
+  FindNeighbors(dims=1:30) %>%
+  FindClusters(res=0.75)
+
+
+p1 <- DimPlot(seurat_vis, reduction = "umap", label = TRUE) +
+  umap_theme() +
+  NoLegend()
+
+p2 <- SpatialDimPlot(seurat_vis, label = TRUE, label.size = 3) +
+  NoLegend()
+
+png(paste0(fig_dir, 'vis_umap.png'), units='in', res=400, width=10, height=5)
+p1 | p2
+dev.off()
+
+```
+
+<img src="figures/projection/vis_umap.png" width="700" height="700">
+
+
+### Project modules to visium dataset:
+
+
+Load the mouse to human gene table
+```{r eval=FALSE}
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs3b/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, mm10_name, hg38_id, mm10_id))
+
+```
+
+Project Modules
+
+```{r eval=FALSE}
+
+seurat_vis <- ProjectModules(
+  seurat_vis,
+  seurat_ref = seurat_ref,
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="mm10_name", # genome of query data
+  scale_genes=TRUE,
+  wgcna_name_proj = "Zhou-INH"
+)
+
+# compute module hub scores for projected modules:
+seurat_vis <- ModuleExprScore(
+  seurat_vis,
+  n_genes = 25,
+  method='Seurat'
+)
+
+```
+
+Spatial Feature Plot:
+
+```{r eval=FALSE}
+
+
+
+```
+
+Module Preservation:
+
+```{r eval=FALSE}
+
+# set dat expr for single-cell dataset:
+seurat_vis <- SetDatExpr(
+  seurat_vis,
+  use_metacells = FALSE
+)
+
+# run module preservation function
+seurat_vis <- ModulePreservation(
+  seurat_vis,
+  seurat_ref = seurat_ref,
+  name="Zhou-INH",
+  verbose=3
+)
+
+saveRDS(seurat_vis, file='../data/10x_visium_scWGCNA.rds')
 
 
 ```
