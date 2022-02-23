@@ -1192,19 +1192,12 @@ TransferModuleGenome <- function(
   # subset modules
   modules <- subset(modules, gene_name %in% gene_mapping[,genome1_col])
 
-  print('here')
-
   # match the order of the given gene list, and remove NA entries
   gene_match <- match(gene_list, gene_mapping[,genome1_col])
   gene_mapping <- na.omit(gene_mapping[gene_match,])
 
   # update modules table with the new gene names
   # modules <- na.omit(modules[gene_match,])
-
-  print('here')
-  print(dim(modules))
-  print(dim(gene_mapping))
-  print(length(gene_match))
 
   modules$gene_name <- gene_mapping[,genome2_col]
 
@@ -1899,6 +1892,9 @@ ModulePreservation <- function(
   n_permutations = 500,
   parallel = FALSE,
   seed = 12345,
+  gene_mapping = NULL,
+  genome1_col = NULL,
+  genome2_col = NULL,
   return_raw = FALSE,
   wgcna_name = NULL,
   wgcna_name_ref = NULL,
@@ -1913,6 +1909,16 @@ ModulePreservation <- function(
   # get datExpr for reference and query:
   datExpr_ref <- GetDatExpr(seurat_ref, wgcna_name_ref)
   datExpr_query <- GetDatExpr(seurat_obj, wgcna_name)
+
+  # change the gene names to match:
+  if(!is.null(gene_mapping)){
+    gene_match <- match(colnames(datExpr_query), gene_mapping[,genome2_col])
+    gene_mapping <- na.omit(gene_mapping[gene_match,])
+    colnames(datExpr_query)  <- gene_mapping[,genome1_col]
+
+    print(head(colnames(datExpr_query)))
+    print(head(GetModules(seurat_obj)$gene_name))
+  }
 
   # set up multiExpr:
   setLabels <- c("ref", "query")

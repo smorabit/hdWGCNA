@@ -60,7 +60,7 @@ ModuleNetworkPlot(seurat_obj)
 
 Here we can see what one of these network plots looks like:
 
-![](figures/network_vis/INH-M5.png)
+<img src="figures/network_vis/INH-M5.png" width="500" height="500">
 
 In this network, each node represents a gene, and each edge represents the co-expression
 relationship between two genes in the network. Each of these module network plots are
@@ -95,7 +95,8 @@ HubGeneNetworkPlot(
 
 ```
 
-![](figures/network_vis/hub_net.png)
+<img src="figures/network_vis/hub_net.png" width="600" height="600">
+
 
 As in the previous network plot, each node represents a gene and each edge represents a
 co-expression relationship. In this network, we color intramodular edges with the
@@ -158,7 +159,8 @@ ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
 
 ```
 
-![](figures/network_vis/hubgene_umap.png)
+<img src="figures/network_vis/hubgene_umap.png" width="600" height="600">
+
 
 In this plot, each point represents a single gene. The size of each dot is scaled
 by the gene's kME for it's assigned module. ggplot2 is sufficient to visualize the
@@ -178,7 +180,8 @@ ModuleUMAPPlot(
 
 ```
 
-![](figures/network_vis/hubgene_umap_igraph.png)
+<img src="figures/network_vis/hubgene_umap_igraph.png" width="600" height="600">
+
 
 This plot is similar to the one that we made with ggplot2, but we are showing
 the co-expression network, and labeling 2 hub genes in each module. For visual clarity,
@@ -317,7 +320,8 @@ ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
 
 ```
 
-![](figures/network_vis/hubgene_umap_supervised.png)
+<img src="figures/network_vis/hubgene_umap_supervised.png" width="600" height="600">
+
 
 Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we
 made previously. To demonstrate what the supervised UMAP looks like using different

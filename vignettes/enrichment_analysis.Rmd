@@ -156,7 +156,8 @@ EnrichrDotPlot(
 
 ```
 
-![](figures/enrichment/GO_dotplot.png)
+<img src="figures/enrichment/GO_dotplot.png" width="500" height="500">
+
 
 In this plot, each dot is colored by the module's unique color, and the size of
 each dot is scaled by the enrichment of the term.
@@ -221,7 +222,8 @@ wrap_plots(plot_list, ncol=3)
 
 ```
 
-![](figures/enrichment/overlap_barplot.png)
+<img src="figures/enrichment/overlap_barplot.png" width="500" height="500">
+
 
 Next we use `OverlapDotPlot` to visualize the overlap results in a single plot.
 
@@ -235,7 +237,8 @@ OverlapDotPlot(
 
 ```
 
-![](figures/enrichment/overlap_dotplot.png)
+<img src="figures/enrichment/overlap_dotplot.png" width="600" height="600">
+
 
 Each dot is colored by the scWGCNA module's unique color, and the size of the
 dot is scaled by the overlap statistic. We show FDR significance levels

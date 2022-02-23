@@ -98,7 +98,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 ###########################
 
 
-#' spr
+#' SetDatExpr
 #'
 #' This function sets up the expression matrix from the metacell object.
 #'
@@ -132,6 +132,7 @@ SetDatExpr <- function(
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  modules <- GetModules(seurat_(bj, wgcna_name))
   assay <- params$metacell_assay
 
   print('n_genes:')
@@ -178,8 +179,6 @@ SetDatExpr <- function(
 
   # transpose data
   datExpr <- as.data.frame(t(datExpr))
-
-  print(dim(datExpr))
 
   # only get good genes:
   if(is.null(multi.group.by)){

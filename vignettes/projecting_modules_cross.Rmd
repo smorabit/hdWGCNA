@@ -291,7 +291,148 @@ wrap_plots(plot_list, ncol=6)
 ```{r eval=FALSE}
 
 # load Zhou et al 5xFAD dataset:
-seurat_mouse <- readRDS('/home/vivek/AD2019/5xFAD_snRNAseq_GSE140511/WT_5xFAD_Ctx/Analysis/ProcessedSeuratFinal.rds')
+seurat_mouse <- readRDS('/dfs3b/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/mouse_integration/data/zhou_5xFAD_ProcessedSeuratFinal.rds')
+seurat_mouse <- subset(seurat_mouse, Cell.Types != 'OTHER')
+seurat_mouse$cell_type <- seurat_mouse$Cell.Types
+seurat_mouse$cell_type <- ifelse(as.character(seurat_mouse$seurat_clusters) == 13, 'OPC', as.character(seurat_mouse$cell_type))
+seurat_mouse$cell_type <- ifelse(as.character(seurat_mouse$seurat_clusters) %in% c(26,27), 'PER', as.character(seurat_mouse$cell_type))
+
+
+p <- DimPlot(seurat_mouse, group.by = 'cell_type', label = TRUE) +
+  umap_theme() +
+  NoLegend() + ggtitle('Zhou et al 5xFAD')
+
+png(paste0(fig_dir, 'mouse_umap.png'), units='in', res=400, width=5, height=5)
+p
+dev.off()
+
+```
+
+<img src="figures/projection/mouse_umap.png" width="500" height="500">
+
+### Project modules to 5xFAD data
+
+```{r eval=FALSE}
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs3b/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, mm10_name, hg38_id, mm10_id))
+
+
+seurat_mouse <- ProjectModules(
+  seurat_mouse,
+  seurat_ref = seurat_ref,
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="mm10_name", # genome of query data
+  scale_genes=TRUE,
+  wgcna_name_proj = "Zhou-INH"
+)
+
+# compute module hub scores for projected modules:
+seurat_mouse <- ModuleExprScore(
+  seurat_mouse,
+  n_genes = 25,
+  method='Seurat'
+)
+
+```
+
+### Visualize modules in 5xFAD snRNA-seq
+
+Visualize FeaturePlots
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# only show a handful of selected modules
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# make a featureplot of hub scores for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_mouse,
+  features='scores',
+  order="order",
+  module_names = selected_mods
+)
+
+# stitch together with patchwork
+png(paste0(fig_dir, 'mouse_featureplot.png'), width=12, height=6, units='in', res=400)
+wrap_plots(plot_list, ncol=3)
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/mouse_featureplot.png" width="700" height="700">
+
+
+Visualize DotPlots
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# get the projected hMEs
+mod_scores <-  GetModuleScores(seurat_mouse)
+mod_scores <- mod_scores[,colnames(mod_scores) != 'grey']
+
+# add hMEs to Seurat meta-data:
+seurat_mouse@meta.data <- cbind(
+  seurat_mouse@meta.data,
+  mod_scores
+)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(
+    seurat_mouse,
+    features = colnames(mod_scores),
+    group.by = 'cell_type'
+)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  xlab('') + ylab('')
+
+png(paste0(fig_dir, 'mouse_dotplot.png'), width=10, height=5, units='in', res=400)
+p
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/mouse_dotplot.png" width="700" height="700">
+
+### Module preservation
+
+```{r eval=FALSE}
+
+# set dat expr for single-cell dataset:
+seurat_mouse <- SetDatExpr(
+  seurat_mouse,
+  group_name = "INH",
+  group.by = "cell_type",
+  use_metacells = FALSE
+)
+
+# run module preservation function
+seurat_mouse <- ModulePreservation(
+  seurat_mouse,
+  seurat_ref = seurat_ref,
+  name="Zhou-INH",
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="mm10_name", # genome of query data
+  verbose=3
+)
+
+saveRDS(seurat_mouse, file='../data/5xFAD_zhou_scWGCNA.rds')
 
 
 ```
@@ -377,11 +518,69 @@ Spatial Feature Plot:
 
 ```{r eval=FALSE}
 
+# get all of the image coordinates for BayesSpace
+image_df <- do.call(rbind, lapply(names(seurat_vis@images), function(cur_image){seurat_vis@images[[cur_image]]@coordinates}))
+
+# re-order the rows of image_df to match the seurat_obj
+image_df <- image_df[colnames(seurat_vis),]
+all.equal(rownames(image_df), colnames(seurat_vis))
+
+# make a spatial "reduction"
+image_emb <- as.matrix(image_df[,c('col', 'row')])
+colnames(image_emb) <- c("Spatial_1", "Spatial_2")
+seurat_vis@reductions$spatial <- CreateDimReducObject(
+  image_emb,
+  key = 'Spatial'
+)
+
+
+
+# only show a handful of selected modules
+selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
+
+# make a featureplot of hub scores for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_vis,
+  features='scores',
+  order="order",
+  module_names = selected_mods,
+  reduction='spatial'
+)
+
+# stitch together with patchwork
+png(paste0(fig_dir, 'visium_featureplot.png'), width=12, height=6, units='in', res=400)
+wrap_plots(plot_list, ncol=3)
+dev.off()
+
+```
+
+<img src="figures/projection/visium_featureplot.png" width="700" height="700">
+
+
+```{r eval=FALSE}
+
+
+# make a featureplot of hub scores for each module
+plot_list <- ModuleFeaturePlot(
+  seurat_vis,
+  features='scores',
+  order="order",
+  module_names = selected_mods,
+  reduction='umap'
+)
+
+# stitch together with patchwork
+png(paste0(fig_dir, 'visium_featureplot_umap.png'), width=12, height=6, units='in', res=400)
+wrap_plots(plot_list, ncol=3)
+dev.off()
 
 
 ```
 
-Module Preservation:
+<img src="figures/projection/visium_featureplot_umap.png" width="700" height="700">
+
+
+### Module preservation in Visium:
 
 ```{r eval=FALSE}
 
@@ -399,7 +598,59 @@ seurat_vis <- ModulePreservation(
   verbose=3
 )
 
+seurat_vis <- ModulePreservation(
+  seurat_vis,
+  seurat_ref = seurat_ref,
+  name="Zhou-INH",
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="mm10_name", # genome of query data
+  verbose=3
+)
+
 saveRDS(seurat_vis, file='../data/10x_visium_scWGCNA.rds')
 
 
 ```
+
+
+Now we visualize the results using the `PlotModulePreservation` function.
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot the summary stats
+plot_list <- PlotModulePreservation(
+  seurat_vis,
+  name="Zhou-INH",
+  statistics = "summary"
+)
+
+png(paste0(fig_dir, 'visium_preservation_summary.png'), width=10, height=5, res=400, units='in')
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/visium_preservation_summary.png" width="700" height="700">
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot all of the stats togehter
+plot_list <- PlotModulePreservation(
+  seurat_vis,
+  name="Zhou-INH",
+  statistics = "all",
+  plot_labels=FALSE
+)
+
+png(paste0(fig_dir, 'visium_preservation_all.png'), width=20, height=20*(2/3), res=400, units='in')
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/visium_preservation_all.png" width="700" height="700">

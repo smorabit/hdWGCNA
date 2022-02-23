@@ -243,7 +243,7 @@
   database <span class="op">=</span> <span class="st">"GO_Biological_Process_2021"</span>, <span class="co"># this has to be one of the lists we used above!!!</span>
   n_terms<span class="op">=</span><span class="fl">1</span> <span class="co"># number of terms for each module</span>
 <span class="op">)</span></code></pre></div>
-<p><img src="figures/enrichment/GO_dotplot.png"></p>
+<p><img src="figures/enrichment/GO_dotplot.png" width="500" height="500"></p>
 <p>In this plot, each dot is colored by the module’s unique color, and the size of each dot is scaled by the enrichment of the term.</p>
 </div>
 </div>
@@ -299,7 +299,7 @@
 
 <span class="co"># stitch plots with patchwork</span>
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/enrichment/overlap_barplot.png"></p>
+<p><img src="figures/enrichment/overlap_barplot.png" width="500" height="500"></p>
 <p>Next we use <code>OverlapDotPlot</code> to visualize the overlap results in a single plot.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot odds ratio of the overlap as a dot plot</span>
@@ -307,7 +307,7 @@
   <span class="va">overlap_df</span>,
   plot_var <span class="op">=</span> <span class="st">'odds_ratio'</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Overlap of modules &amp; cell-type markers'</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/enrichment/overlap_dotplot.png"></p>
+<p><img src="figures/enrichment/overlap_dotplot.png" width="600" height="600"></p>
 <p>Each dot is colored by the scWGCNA module’s unique color, and the size of the dot is scaled by the overlap statistic. We show FDR significance levels as stars on top of the dots.</p>
 <ul>
 <li>’***’: 0 - 0.001</li>
