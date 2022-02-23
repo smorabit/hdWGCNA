@@ -127,13 +127,12 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">OverlapModulesDEGs</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, deg_df, fc_cutoff = 0.5, group_col = "cluster", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, deg_df, wgcna_name = NULL, fc_cutoff = 0.5, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     deg_df$group &lt;- deg_df[, group_col]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cell_groups &lt;- deg_df$group %&gt;% unique</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
@@ -178,7 +177,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         size_intersection))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff5068f0bb0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff236c742a0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

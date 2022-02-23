@@ -139,44 +139,7 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModulePreservation</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, seurat_ref, name, n_permutations = 500, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     parallel = FALSE, seed = 12345, return_raw = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name_ref = NULL, ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name_ref)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name_ref &lt;- seurat_ref@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("Setup datasets")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_ref &lt;- GetDatExpr(seurat_ref, wgcna_name_ref)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_query &lt;- GetDatExpr(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     setLabels &lt;- c("ref", "query")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     multiExpr &lt;- list(ref = list(data = datExpr_ref), query = list(data = datExpr_query))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- list(ref = GetModules(seurat_ref)$module)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("ref:")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(datExpr_ref))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("query:")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(datExpr_query))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("Run Module Preservation")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mp &lt;- WGCNA::modulePreservation(multiExpr, ref_modules, referenceNetworks = 1, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         nPermutations = n_permutations, randomSeed = seed, quickCor = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parallelCalculation = parallel, ...)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_raw) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         return(mp)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref &lt;- 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     test &lt;- 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     statsObs &lt;- cbind(mp$quality$observed[[ref]][[test]], mp$preservation$observed[[ref]][[test]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     statsZ &lt;- cbind(mp$quality$Z[[ref]][[test]], mp$preservation$Z[[ref]][[test]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mod_pres &lt;- list(obs = statsObs, Z = statsZ)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetModulePreservation(seurat_obj, mod_pres, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         name, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff50a6b84a8&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'ModulePreservation' not found</span>
 </code></pre></div>
     </div>
   </div>

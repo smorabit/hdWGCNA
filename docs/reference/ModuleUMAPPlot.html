@@ -137,8 +137,9 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModuleUMAPPlot</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, sample_edges = TRUE, edge_prop = 0.2, label_hubs = 5, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, return_graph = FALSE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, hub.vertex.size = 4, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     other.vertex.size = 1, return_graph = FALSE, wgcna_name = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -223,9 +224,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = V(g)$fontcolor, vertex.label.cex = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor, margin = 0)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff50b7dc1b0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff237799460&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -137,7 +137,100 @@
 
     
     
+<p>Load the snRNA-seq data and the required libraries:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
 
+<span class="co"># plotting and data science packages</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
+
+<span class="co"># co-expression network analysis packages:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+
+<span class="co"># network analysis &amp; visualization package:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
+
+<span class="co"># packages for TF motif analysis</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">JASPAR2020</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">motifmatchr</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TFBSTools</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnsDb.Hsapiens.v86</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GenomicRanges</span><span class="op">)</span>
+
+<span class="co"># using the cowplot theme for ggplot</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># set random seed for reproducibility</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
+
+<span class="co"># load the Zhou et al snRNA-seq dataset</span>
+<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
+<p>Run Motif scan:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the pfm from JASPAR2020 using TFBSTools</span>
+<span class="va">pfm_core</span> <span class="op">&lt;-</span> <span class="fu">TFBSTools</span><span class="fu">::</span><span class="fu">getMatrixSet</span><span class="op">(</span>
+  x <span class="op">=</span> <span class="va">JASPAR2020</span>,
+  opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"CORE"</span>, tax_group <span class="op">=</span> <span class="st">'vertebrates'</span>, all_versions <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="co"># run the motif scan with these settings for the mouse dataset</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MotifScan.html">MotifScan</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  species_genome <span class="op">=</span> <span class="st">'hg38'</span>,
+  pfm <span class="op">=</span> <span class="va">pfm_core</span>,
+  EnsDb <span class="op">=</span> <span class="va">EnsDb.Hsapeins.v86</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu">GetMotifMatrix</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+
+
+
+<span class="co"># TF target genes</span>
+<span class="va">target_genes</span> <span class="op">&lt;-</span> <span class="fu">GetMotifTargets</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<p>Overlap between TF target genes and co-expression modules</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># overlap between modules &amp; TF target genes:</span>
+<span class="va">seurat_obj</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/OverlapModulesMotifs.html">OverlapModulesMotifs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># plot the top TFs overlapping with</span>
+<span class="fu"><a href="../reference/MotifOverlapBarPlot.html">MotifOverlapBarPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  <span class="co">#motif_font = 'xkcd_regular',</span>
+  outdir <span class="op">=</span> <span class="st">'figures/MotifOverlaps/'</span>,
+  plot_size<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">6</span><span class="op">)</span>
+<span class="op">)</span></code></pre></div>
+<p>Compute motif target gene expression score:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MotifTargetScore.html">MotifTargetScore</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  method<span class="op">=</span><span class="st">'UCell'</span>
+<span class="op">)</span></code></pre></div>
+<p>Plot overlap between motif of interest and modules:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tf</span> <span class="op">==</span> <span class="st">'NR4A2'</span><span class="op">)</span>
+
+<span class="va">plot_var</span> <span class="op">&lt;-</span> <span class="st">'odds_ratio'</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">cur_df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">odds_ratio</span><span class="op">)</span>, x<span class="op">=</span><span class="va">odds_ratio</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_bar</a></span><span class="op">(</span>stat<span class="op">=</span><span class="st">'identity'</span>, fill<span class="op">=</span><span class="va">cur_df</span><span class="op">$</span><span class="va">color</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">1</span>, linetype<span class="op">=</span><span class="st">'dashed'</span>, color<span class="op">=</span><span class="st">'gray'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">Significance</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, size<span class="op">=</span><span class="fl">3.5</span>, hjust<span class="op">=</span><span class="st">'center'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Odds Ratio"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
+    plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">+</span>
+
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/pdf.html" class="external-link">pdf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'Nr4a2_motif_overlap_or.pdf'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">3</span>, height<span class="op">=</span><span class="fl">3</span>, useDingbats<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">p</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

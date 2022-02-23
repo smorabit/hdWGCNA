@@ -2,13 +2,84 @@
 title: "Consensus network analysis"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for applying the core functions of scWGCNA.
+  Tutorial for performing consensus co-expression network analysis.
 vignette: >
   %\VignetteIndexEntry{Consensus network analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
+Load the snRNA-seq data and the required libraries:
 ```{r eval=FALSE}
-print('hello world')
+
+# single-cell analysis package
+library(Seurat)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(scWGCNA)
+
+# network analysis & visualization package:
+library(igraph)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# load the Zhou et al snRNA-seq dataset
+seurat_ref <- readRDS('data/Zhou_control.rds')
+
+```
+
+
+Setup data:
+
+```{r eval=FALSE}
+
+# just run SetMultiExpr by itself
+seurat_obj <- SetMultiExpr(
+  seurat_obj,
+  group_name = "INH",
+  group.by = "cell_type",
+  multi.group.by = "Sex",
+  multi_groups = NULL
+)
+
+```
+
+Run the consensus network
+
+```{r eval=FALSE}
+
+
+seurat_obj <- ConstructNetwork(
+  seurat_obj,
+  soft_power=c(5,8), # soft power can be a single number of a vector with a value for each datExpr in multiExpr
+  consensus=TRUE
+)
+
+```
+
+MEs
+
+```{r eval=FALSE}
+
+# compute all MEs in the full single-cell 21  dataset
+seurat_obj <- ModuleEigengenes(
+  seurat_obj,
+  group.by.vars="Sample"
+)
+
+# compute module connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+
+
 ```

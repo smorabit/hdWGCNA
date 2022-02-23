@@ -148,7 +148,7 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
 
-<span class="co"># co-expression network analysis packages:</span>
+<span class="co"># co-expressi fron network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
 
@@ -473,6 +473,36 @@ Code
 <span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, file<span class="op">=</span><span class="st">'../data/5xFAD_zhou_scWGCNA.rds'</span><span class="op">)</span></code></pre></div>
+<p>Now we visualize the results using the <code>PlotModulePreservation</code> function.</p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># plot the summary stats</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
+  <span class="va">seurat_mouse</span>,
+  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
+  statistics <span class="op">=</span> <span class="st">"summary"</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'mouse_preservation_summary.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">10</span>, height<span class="op">=</span><span class="fl">5</span>, res<span class="op">=</span><span class="fl">400</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+</details><p><img src="figures/projection/mouse_preservation_summary.png" width="700" height="700"></p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># plot all of the stats togehter</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
+  <span class="va">seurat_mouse</span>,
+  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
+  statistics <span class="op">=</span> <span class="st">"all"</span>,
+  plot_labels<span class="op">=</span><span class="cn">FALSE</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'mouse_preservation_all.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">20</span>, height<span class="op">=</span><span class="fl">20</span><span class="op">*</span><span class="op">(</span><span class="fl">2</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span>, res<span class="op">=</span><span class="fl">400</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+</details><p><img src="figures/projection/visium_preservation_all.png" width="700" height="700"></p>
 </div>
 </div>
 <div class="section level2">
@@ -481,7 +511,7 @@ Code
 <div class="section level3">
 <h3 id="download-and-process-visium-brain-dataset">Download and process Visium brain dataset<a class="anchor" aria-label="anchor" href="#download-and-process-visium-brain-dataset"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load 10X genomics visium dataset</span>
 <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">InstallData</span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span>
 <span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">LoadData</span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span>
@@ -513,7 +543,7 @@ Code
 <h3 id="project-modules-to-visium-dataset">Project modules to visium dataset:<a class="anchor" aria-label="anchor" href="#project-modules-to-visium-dataset"></a>
 </h3>
 <p>Load the mouse to human gene table</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load mouse &lt;-&gt; human gene name table:</span>
 <span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span>
   <span class="st">"/dfs3b/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt"</span>,
@@ -523,7 +553,7 @@ Code
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span><span class="op">)</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'hg38_id'</span>, <span class="st">'mm10_id'</span>, <span class="st">'mm10_name'</span>, <span class="st">'hg38_name'</span><span class="op">)</span>
 <span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">hg38_name</span>, <span class="va">mm10_name</span>, <span class="va">hg38_id</span>, <span class="va">mm10_id</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Project Modules</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
   <span class="va">seurat_vis</span>,
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
@@ -541,7 +571,7 @@ Code
   method<span class="op">=</span><span class="st">'Seurat'</span>
 <span class="op">)</span></code></pre></div>
 <p>Spatial Feature Plot:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get all of the image coordinates for BayesSpace</span>
 <span class="va">image_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">seurat_vis</span><span class="op">@</span><span class="va">images</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">cur_image</span><span class="op">)</span><span class="op">{</span><span class="va">seurat_vis</span><span class="op">@</span><span class="va">images</span><span class="op">[[</span><span class="va">cur_image</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">coordinates</span><span class="op">}</span><span class="op">)</span><span class="op">)</span>
 
@@ -576,7 +606,7 @@ Code
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/visium_featureplot.png" width="700" height="700"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hub scores for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
   <span class="va">seurat_vis</span>,
@@ -595,7 +625,7 @@ Code
 <div class="section level3">
 <h3 id="module-preservation-in-visium">Module preservation in Visium:<a class="anchor" aria-label="anchor" href="#module-preservation-in-visium"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set dat expr for single-cell dataset:</span>
 <span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_vis</span>,
@@ -624,7 +654,7 @@ Code
 <p>Now we visualize the results using the <code>PlotModulePreservation</code> function.</p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot the summary stats</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_vis</span>,
@@ -638,7 +668,7 @@ Code
 </details><p><img src="figures/projection/visium_preservation_summary.png" width="700" height="700"></p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot all of the stats togehter</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_vis</span>,

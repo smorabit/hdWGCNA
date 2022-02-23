@@ -27,7 +27,7 @@ library(tidyverse)
 library(cowplot)
 library(patchwork)
 
-# co-expression network analysis packages:
+# co-expressi fron network analysis packages:
 library(WGCNA)
 library(scWGCNA)
 
@@ -436,6 +436,48 @@ saveRDS(seurat_mouse, file='../data/5xFAD_zhou_scWGCNA.rds')
 
 
 ```
+
+
+Now we visualize the results using the `PlotModulePreservation` function.
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot the summary stats
+plot_list <- PlotModulePreservation(
+  seurat_mouse,
+  name="Zhou-INH",
+  statistics = "summary"
+)
+
+png(paste0(fig_dir, 'mouse_preservation_summary.png'), width=10, height=5, res=400, units='in')
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/mouse_preservation_summary.png" width="700" height="700">
+
+<details> <summary> Code </summary>
+```{r eval=FALSE}
+
+# plot all of the stats togehter
+plot_list <- PlotModulePreservation(
+  seurat_mouse,
+  name="Zhou-INH",
+  statistics = "all",
+  plot_labels=FALSE
+)
+
+png(paste0(fig_dir, 'mouse_preservation_all.png'), width=20, height=20*(2/3), res=400, units='in')
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+```
+</details>
+
+<img src="figures/projection/visium_preservation_all.png" width="700" height="700">
 
 ## Project modules to visium data
 
