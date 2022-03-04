@@ -1821,10 +1821,30 @@ ModuleTraitCorrelation <- function(
     }
   }
 
-  # also correlate all cells:
-  cor_list <- list()
-  cor_list[['all_cells']] <- cor(as.matrix(trait_df), as.matrix(MEs), method=cor_method)
+  # correlate all cells:
+  cor_list <- list(); pval_list <- list(); fdr_list <- list()
 
+  # testing other correlation function:
+  temp <- Hmisc::rcorr(as.matrix(trait_df), as.matrix(MEs), type=cor_method)
+
+  cur_cor <- temp$r[traits,mods]
+  cur_p <- temp$P[traits,mods]
+
+  # compute FDR:
+  p_df <- cur_p %>%
+    reshape2::melt() %>%
+    dplyr::mutate(fdr=p.adjust(value, method='fdr')) %>%
+    dplyr::select(c(Var1, Var2, fdr))
+
+  # reshape to match cor & pval
+  cur_fdr <- reshape2::dcast(p_df, Var1 ~ Var2, value.var='fdr')
+  rownames(cur_fdr) <- cur_fdr$Var1
+  cur_fdr <- cur_fdr[,-1]
+
+  # add to list
+  cor_list[["all_cells"]] <- cur_cor
+  pval_list[["all_cells"]] <- cur_p
+  fdr_list[["all_cells"]] <- cur_fdr
 
   trait_df <- cbind(trait_df, seurat_obj@meta.data[,group.by])
   colnames(trait_df)[ncol(trait_df)] <- 'group'
@@ -1845,26 +1865,43 @@ ModuleTraitCorrelation <- function(
   names(ME_list) <- group_names
 
   for(i in names(trait_list)){
-    cor_list[[i]] <- cor(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]), method=cor_method)
+    # cor_list[[i]] <- cor(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]), method=cor_method)
+
+    # testing other correlation function:
+    temp <- Hmisc::rcorr(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]))
+
+    cur_cor <- temp$r[traits,mods]
+    cur_p <- temp$P[traits,mods]
+
+    # compute FDR:
+    p_df <- cur_p %>%
+      reshape2::melt() %>%
+      dplyr::mutate(fdr=p.adjust(value, method='fdr')) %>%
+      dplyr::select(c(Var1, Var2, fdr))
+
+    # reshape to match cor & pval
+    cur_fdr <- reshape2::dcast(p_df, Var1 ~ Var2, value.var='fdr')
+    rownames(cur_fdr) <- cur_fdr$Var1
+    cur_fdr <- cur_fdr[,-1]
+
+    # add to list
+    cor_list[[i]] <- cur_cor
+    pval_list[[i]] <- cur_p
+    fdr_list[[i]] <- as.matrix(cur_fdr)
+
   }
-
-
-  # compute the correlation matrix
-  #cor_mat <- cor(as.matrix(trait_df), as.matrix(MEs), method=cor_method)
-
-  # this is the wgcna way but I think t-test doesn't make sense for single-cell data right???
-  # cor_p  <- corPvalueStudent(cor_mat, ncol(seurat_obj))
 
   # add Module-trait correlations to the seruat object:
   mt_cor <- list(
-    'cor_mat' = cor_list,
-    'pval' = NA,
-    'fdr' = NA
+    'cor' = cor_list,
+    'pval' = pval_list,
+    'fdr' = fdr_list
   )
 
   seurat_obj <- SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name)
   seurat_obj
 }
+
 
 
 
