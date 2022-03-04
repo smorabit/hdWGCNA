@@ -1685,7 +1685,10 @@ PlotModuleTraitCorrelation <- function(
 
   # get module colors:
   modules <- GetModules(seurat_obj, wgcna_name)
-  module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct %>% subset(module != 'grey')
+  module_colors <- modules %>%
+    dplyr::select(c(module, color)) %>%
+    distinct %>% subset(module != 'grey') %>%
+    arrange(module)
   mod_colors <- module_colors$color
 
   # dummy variable
@@ -1772,12 +1775,13 @@ PlotModuleTraitCorrelation <- function(
         )
       ) +
       RotatedAxis() + ylab('') + xlab('') + ggtitle(i) +
+      # labs(fill = 'Correlation') +
       theme(
         plot.title=element_text(hjust=0.5),
-        legend.title=element_blank(),
         axis.line=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.text.y.left = element_blank()
+        axis.text.y.left = element_blank(),
+        legend.title = element_blank()
       )
 
     if(!is.null(label)){
@@ -1801,22 +1805,20 @@ PlotModuleTraitCorrelation <- function(
           plot.margin = margin(t = 0, r = 0, b = 0, l = 0),
           axis.title.x = element_blank(),
           plot.title = element_blank(),
-          legend.position='bottom'
+          legend.position='bottom',
+          axis.text.x = element_blank(),
+          axis.ticks=element_blank()
         )
-      #
-      # if(i != length(plot_list)){
-      #   plot_list[[i]] <- plot_list[[i]] +
-      #   theme(
-      #     axis.text.x = element_blank(),
-      #     axis.ticks=element_blank()
-      #   )
-      # }
     }
 
     # assemble with patchwork:
+    plot_list[['module']] <- module_colorbar
 
-    out <- wrap_plots(c(plot_list, module_colorbar), ncol=1) +
-      plot_layout(guides = 'collect') +
+    out <- wrap_plots(plot_list, ncol=1) +
+      plot_layout(
+        guides = 'collect',
+        heights = c(rep(1, length(plot_list)-1), 0.15)
+      ) +
       plot_annotation(
         title='Module Trait Correlation',
         theme=theme(
