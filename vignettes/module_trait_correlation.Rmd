@@ -25,21 +25,8 @@ library(patchwork)
 library(WGCNA)
 library(scWGCNA)
 
-# network analysis & visualization package:
-library(igraph)
-
-# packages for TF motif analysis
-library(JASPAR2020)
-library(motifmatchr)
-library(TFBSTools)
-library(EnsDb.Hsapiens.v86)
-library(GenomicRanges)
-
 # using the cowplot theme for ggplot
 theme_set(theme_cowplot())
-
-# set random seed for reproducibility
-set.seed(12345)
 
 # load the Zhou et al snRNA-seq dataset
 seurat_ref <- readRDS('data/Zhou_control.rds')
@@ -50,7 +37,6 @@ Compute module trait correlation split by cell type:
 
 ```{r eval=FALSE}
 
-
 seurat_obj$Sample <- factor(as.character(seurat_obj$Sample), levels=unique(seurat_obj$Sample))
 seurat_obj$msex <- as.factor(seurat_obj$msex)
 seurat_obj$age_death <- as.numeric(seurat_obj$age_death)
@@ -58,17 +44,14 @@ seurat_obj$age_death <- as.numeric(seurat_obj$age_death)
 cur_traits <- c('Sample', 'total_counts_mt', 'n_genes_by_counts', 'age_death', 'braaksc', 'msex')
 data_types <- sapply(cur_traits, function(x){class(seurat_obj@meta.data[,x])})
 
-cur_traits <- c('braaksc', 'pmi', 'msex')
+# list of traits
+cur_traits <- c('braaksc', 'pmi', 'msex', 'age_death', 'doublet_scores', 'nCount_RNA', 'nFeature_RNA', 'total_counts_mt')
 
 seurat_obj <- ModuleTraitCorrelation(
   seurat_obj,
   traits = cur_traits,
   group.by='cell_type'
 )
-
-temp <- GetModuleTraitCorrelation(seurat_obj)
-cor_list <- temp[[1]]
-names(cor_list)
 
 
 ```
@@ -77,20 +60,21 @@ Plot the results as a heatmap for each cell type:
 
 ```{r eval=FALSE}
 
+PlotModuleTraitCorrelation(
+  seurat_obj,
+  label = 'fdr',
+  label_symbol = 'stars',
+  text_size = 2,
+  text_digits = 2,
+  text_color = 'white',
+  high_color = 'yellow',
+  mid_color = 'black',
+  low_color = 'purple',
+  plot_max = 0.2,
+  combine=TRUE
+)
 
-plot_list <- list()
-for(i in names(cor_list)){
-  cor_mat <- cor_list[[i]]
-  print(i)
-
-  plot_df <- reshape2::melt(cor_mat)
-  colnames(plot_df) <- c("Trait", "Module", "cor")
-
-  plot_list[[i]] <- ggplot(plot_df, aes(x=Module, y=Trait, fill=cor)) +
-    geom_tile() +
-    scale_fill_gradient2(limits=c(-1,1)) +
-    RotatedAxis() + ylab('') + xlab('') + ggtitle(i)
-
-}
 
 ```
+
+<img src="figures/mt_correlation/ME_Trait_correlation_fdr.png" width="600" height="600">

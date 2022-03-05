@@ -151,21 +151,8 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
 
-<span class="co"># network analysis &amp; visualization package:</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
-
-<span class="co"># packages for TF motif analysis</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">JASPAR2020</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">motifmatchr</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TFBSTools</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnsDb.Hsapiens.v86</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GenomicRanges</span><span class="op">)</span>
-
 <span class="co"># using the cowplot theme for ggplot</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set random seed for reproducibility</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
 
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
@@ -178,33 +165,30 @@
 <span class="va">cur_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Sample'</span>, <span class="st">'total_counts_mt'</span>, <span class="st">'n_genes_by_counts'</span>, <span class="st">'age_death'</span>, <span class="st">'braaksc'</span>, <span class="st">'msex'</span><span class="op">)</span>
 <span class="va">data_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">cur_traits</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">[</span>,<span class="va">x</span><span class="op">]</span><span class="op">)</span><span class="op">}</span><span class="op">)</span>
 
-<span class="va">cur_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'braaksc'</span>, <span class="st">'pmi'</span>, <span class="st">'msex'</span><span class="op">)</span>
+<span class="co"># list of traits</span>
+<span class="va">cur_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'braaksc'</span>, <span class="st">'pmi'</span>, <span class="st">'msex'</span>, <span class="st">'age_death'</span>, <span class="st">'doublet_scores'</span>, <span class="st">'nCount_RNA'</span>, <span class="st">'nFeature_RNA'</span>, <span class="st">'total_counts_mt'</span><span class="op">)</span>
 
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTraitCorrelation.html">ModuleTraitCorrelation</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   traits <span class="op">=</span> <span class="va">cur_traits</span>,
   group.by<span class="op">=</span><span class="st">'cell_type'</span>
-<span class="op">)</span>
-
-<span class="va">temp</span> <span class="op">&lt;-</span> <span class="fu">GetModuleTraitCorrelation</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">cor_list</span> <span class="op">&lt;-</span> <span class="va">temp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cor_list</span><span class="op">)</span></code></pre></div>
+<span class="op">)</span></code></pre></div>
 <p>Plot the results as a heatmap for each cell type:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cor_list</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">cor_mat</span> <span class="op">&lt;-</span> <span class="va">cor_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span>
-
-  <span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="fu">reshape2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/melt.html" class="external-link">melt</a></span><span class="op">(</span><span class="va">cor_mat</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Trait"</span>, <span class="st">"Module"</span>, <span class="st">"cor"</span><span class="op">)</span>
-
-  <span class="va">plot_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">plot_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Module</span>, y<span class="op">=</span><span class="va">Trait</span>, fill<span class="op">=</span><span class="va">cor</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span>
-
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">PlotModuleTraitCorrelation</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  label <span class="op">=</span> <span class="st">'fdr'</span>,
+  label_symbol <span class="op">=</span> <span class="st">'stars'</span>,
+  text_size <span class="op">=</span> <span class="fl">2</span>,
+  text_digits <span class="op">=</span> <span class="fl">2</span>,
+  text_color <span class="op">=</span> <span class="st">'white'</span>,
+  high_color <span class="op">=</span> <span class="st">'yellow'</span>,
+  mid_color <span class="op">=</span> <span class="st">'black'</span>,
+  low_color <span class="op">=</span> <span class="st">'purple'</span>,
+  plot_max <span class="op">=</span> <span class="fl">0.2</span>,
+  combine<span class="op">=</span><span class="cn">TRUE</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/mt_correlation/ME_Trait_correlation_fdr.png" width="600" height="600"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

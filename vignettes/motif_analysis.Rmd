@@ -62,7 +62,7 @@ seurat_obj <- MotifScan(
   seurat_obj,
   species_genome = 'hg38',
   pfm = pfm_core,
-  EnsDb = EnsDb.Hsapeins.v86
+  EnsDb = EnsDb.Hsapiens.v86
 )
 dim(GetMotifMatrix(seurat_obj))
 
@@ -86,7 +86,7 @@ head(GetMotifOverlap(seurat_obj))
 MotifOverlapBarPlot(
   seurat_obj,
   #motif_font = 'xkcd_regular',
-  outdir = 'figures/MotifOverlaps/',
+  outdir = 'motifs/MotifOverlaps/',
   plot_size=c(5,6)
 )
 
@@ -97,6 +97,7 @@ Compute motif target gene expression score:
 
 ```{r eval=FALSE}
 
+library(UCell)
 seurat_obj <- MotifTargetScore(
   seurat_obj,
   method='UCell'

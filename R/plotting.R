@@ -1781,7 +1781,8 @@ PlotModuleTraitCorrelation <- function(
         axis.line=element_blank(),
         axis.ticks.y=element_blank(),
         axis.text.y.left = element_blank(),
-        legend.title = element_blank()
+        legend.title = element_blank(),
+        legend.position='bottom'
       )
 
     if(!is.null(label)){
@@ -1820,7 +1821,6 @@ PlotModuleTraitCorrelation <- function(
         heights = c(rep(1, length(plot_list)-1), 0.15)
       ) +
       plot_annotation(
-        title='Module Trait Correlation',
         theme=theme(
           plot.title=element_text(hjust=0.5),
           legend.position = 'bottom',

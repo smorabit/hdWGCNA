@@ -46,7 +46,7 @@ install.packages(c("Seurat", "WGCNA", "igraph", "devtools"))
 
 ```
 
-Now you can install the scWGCNA package using `devtools`. We are planning to add scWGCNA to CRAN and Bioconductor upon the 1.0 release in the next couple of months.
+Now you can install the scWGCNA package using `devtools`.
 
 ```r
 devtools::install_github('smorabit/scWGCNA', branch='dev')
