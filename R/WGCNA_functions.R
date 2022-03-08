@@ -1824,9 +1824,10 @@ ModuleTraitCorrelation <- function(
   # correlate all cells:
   cor_list <- list(); pval_list <- list(); fdr_list <- list()
 
-  # testing other correlation function:
+  # correlation:
   temp <- Hmisc::rcorr(as.matrix(trait_df), as.matrix(MEs), type=cor_method)
 
+  # get the coefficient & p-val
   cur_cor <- temp$r[traits,mods]
   cur_p <- temp$P[traits,mods]
 

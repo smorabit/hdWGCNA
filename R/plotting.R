@@ -956,7 +956,7 @@ ModuleUMAPPlot <- function(
   selected_modules$framecolor <- ifelse(selected_modules$gene_name %in% label_genes, 'black', selected_modules$color)
 
   # melt TOM into long format
-  edge_df <- subset_TOM %>% melt
+  edge_df <- subset_TOM %>% reshape2::melt()
   print(dim(edge_df))
 
   # set color of each edge based on value:
@@ -964,8 +964,8 @@ ModuleUMAPPlot <- function(
     gene1 = as.character(edge_df[i,'Var1'])
     gene2 = as.character(edge_df[i,'Var2'])
 
-    col1 <- modules %>% subset(gene_name == gene1) %>% .$color
-    col2 <- modules %>% subset(gene_name == gene2) %>% .$color
+    col1 <- selected_modules[selected_modules$gene_name == gene1, 'color']
+    col2 <- selected_modules[selected_modules$gene_name == gene2, 'color']
 
     if(col1 == col2){
       col = col1
@@ -1009,7 +1009,6 @@ ModuleUMAPPlot <- function(
     subset(edge_df, color == 'grey90'),
     subset(edge_df, color != 'grey90')
   )
-  head(edge_df)
 
   # set alpha of edges based on kME
   edge_df$color_alpha <- ifelse(
