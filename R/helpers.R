@@ -20,3 +20,8 @@ umap_theme <- function(){
     plot.title = element_text(hjust = 0.5)
   )
 }
+
+# helper function to shuffle points when plotting:
+shuffle_points <- function(df){
+  return(df[sample(1:dim(df)[1], dim(df)[1]),])
+}

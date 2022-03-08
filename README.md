@@ -5,6 +5,7 @@
 [![LICENSE](https://img.shields.io/github/license/smorabit/scWGCNA)](LICENSE.md)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/scWGCNA)](https://github.com/smorabit/scWGCNA/issues)
 
+
 scWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in single-cell
 RNA-seq data. scWGCNA constructs co-expression networks in a cell-type-specific manner,
 identifies robust modules of inerconnected genes, and provides biological

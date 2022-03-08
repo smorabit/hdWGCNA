@@ -132,7 +132,7 @@ SetDatExpr <- function(
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
-  modules <- GetModules(seurat_obj, wgcna_name))
+  modules <- GetModules(seurat_obj, wgcna_name)
   assay <- params$metacell_assay
 
   print('n_genes:')
