@@ -2,7 +2,7 @@
 % Please edit documentation in R/getters_and_setters.R
 \name{SetDatExpr}
 \alias{SetDatExpr}
-\title{spr}
+\title{SetDatExpr}
 \usage{
 SetDatExpr(
   seurat_obj,

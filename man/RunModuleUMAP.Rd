@@ -6,6 +6,7 @@
 \usage{
 RunModuleUMAP(
   seurat_obj,
+  features = "TOM",
   n_hubs = 10,
   exclude_grey = TRUE,
   wgcna_name = NULL,

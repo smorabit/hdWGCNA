@@ -189,7 +189,7 @@
 <span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_color_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>
 
 <span class="co"># using the "Signac" palette from metbrewer, selecting for the number of modules</span>
-<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span>
+<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MetBrewer/man/met.brewer.html" class="external-link">met.brewer</a></span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># reset the module colors</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></code></pre></div>

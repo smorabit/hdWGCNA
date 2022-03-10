@@ -133,9 +133,8 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">EnrichrDotPlot</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, database, mods = "all", outdir = "enrichr_plots", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     n_terms = 3, break_ties = TRUE, wgcna_name = NULL, logscale = TRUE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, database, mods = "all", n_terms = 3, break_ties = TRUE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     logscale = TRUE, wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -182,7 +181,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 fill = NA, size = 1))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9c67aa2af8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f88e8593070&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

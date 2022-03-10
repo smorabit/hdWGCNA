@@ -13,8 +13,3 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://smorabit.github.io/scWGCNA/
-Imports:
-  Seurat (>= 4.0),
-  WGCNA,
-  igraph,
-  dplyr

@@ -103,6 +103,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ConstructNetwork</span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   soft_power <span class="op">=</span> <span class="cn">NULL</span>,
+  tom_outdir <span class="op">=</span> <span class="st">"TOM"</span>,
   use_metacells <span class="op">=</span> <span class="cn">TRUE</span>,
   setDatExpr <span class="op">=</span> <span class="cn">TRUE</span>,
   group.by <span class="op">=</span> <span class="cn">NULL</span>,
@@ -110,7 +111,6 @@
   consensus <span class="op">=</span> <span class="cn">FALSE</span>,
   multi.group.by <span class="op">=</span> <span class="cn">NULL</span>,
   multi_groups <span class="op">=</span> <span class="cn">NULL</span>,
-  tom_outdir <span class="op">=</span> <span class="st">"TOM"</span>,
   blocks <span class="op">=</span> <span class="cn">NULL</span>,
   maxBlockSize <span class="op">=</span> <span class="fl">30000</span>,
   randomSeed <span class="op">=</span> <span class="fl">12345</span>,
@@ -139,6 +139,12 @@
     <h2>Arguments</h2>
     <dl><dt>seurat_obj</dt>
 <dd><p>A Seurat object</p></dd>
+<dt>soft_power</dt>
+<dd><p>the soft power used for network construction. Automatically selected by default.</p></dd>
+<dt>tom_outdir</dt>
+<dd><p>path to the directory where the TOM will be written</p></dd>
+<dt>...</dt>
+<dd><p>additional parameters passed to SetDatExpr and blockwiseConsensusModules</p></dd>
 </dl></div>
 
     <div id="ref-examples">

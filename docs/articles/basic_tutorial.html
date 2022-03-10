@@ -272,35 +272,52 @@
 <div class="section level3">
 <h3 id="select-soft-power-threshold">Select soft-power threshold<a class="anchor" aria-label="anchor" href="#select-soft-power-threshold"></a>
 </h3>
-<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the scWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA constructs a correlation adjacency matrix to beging inferring co-expression relationships. The correlations are raised to a power, which is assumed to reduce the amount of noise present in the correlation matrix. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
-<p>We include a function <code>TestSoftPowers</code>, to perform a parameter sweep for different soft power thresholds. Essentially <code>TestSoftPowers</code> is a wrapper to the WGCNA function <code>pickSoftThreshold</code>. This function helps us to guide our choice in a soft power threshold for constructing the co-expression network by comparing. For WGCNA, the network should ideally have a <a href="https://en.wikipedia.org/wiki/Scale-free_network" class="external-link">scale-free topology</a>, therefore the <code>TestSoftPowers</code> function models how closely resembles a scale-free graph at different soft power thresholds.</p>
+<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the scWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA constructs a correlation adjacency matrix to infer co-expression relationships between genes. The correlations are raised to a power to reduce the amount of noise present in the correlation matrix, thereby retaining the strong connections and removing the weak connections. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
+<p>We include a function <code>TestSoftPowers</code> to perform a parameter sweep for different soft power thresholds. This function helps us to guide our choice in a soft power threshold for constructing the co-expression network by inspecting the resulting network topology for different power values. The co-expression network should have a <a href="https://en.wikipedia.org/wiki/Scale-free_network" class="external-link">scale-free topology</a>, therefore the <code>TestSoftPowers</code> function models how closely the co-expression network resembles a scale-free graph at different soft power thresholds. Furthermore, we include a function <code>PlotSoftPowers</code> to visualize the results of the parameter sweep.</p>
 <p>The following code performs the parameter sweep and outputs a summary figure.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Test different soft powers:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   setDatExpr <span class="op">=</span> <span class="cn">FALSE</span>, <span class="co"># set this to FALSE since we did this above</span>
-  outfile<span class="op">=</span><span class="st">"INH_softpowers.pdf"</span> <span class="co"># output a figure to this file</span>
-<span class="op">)</span></code></pre></div>
-<p><img src="figures/basic_tutorial/softpower.png"></p>
-<p>The general guidance for WGCNA and scWGCNA is to pick the lowest soft power threshold that has a Scale Free Topology Model Fit greater than or equal to 0.8, so in this case we would select our soft power threshold as 9.</p>
-<p>Notably, the output table from the parameter sweep is stored in the scWGCNA experiment and can be accessed using the <code>GetPowerTable</code> function:</p>
+<span class="op">)</span>
+
+<span class="co"># plot the results:</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># assemble with patchwork</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/basic_tutorial/softpower_ggplot.png" width="800" height="800"></p>
+<p>The general guidance for WGCNA and scWGCNA is to pick the lowest soft power threshold that has a Scale Free Topology Model Fit greater than or equal to 0.8, so in this case we would select our soft power threshold as 9. Later on, the <code>ConstructNetwork</code> will automatically select the soft power threshold if the user does not provide one.</p>
+<p>Tthe output table from the parameter sweep is stored in the scWGCNA experiment and can be accessed using the <code>GetPowerTable</code> function for further inspection:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">power_table</span> <span class="op">&lt;-</span> <span class="fu">GetPowerTable</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">power_table</span> <span class="op">&lt;-</span> <span class="fu">GetPowerTable</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">power_table</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Output
+</summary><pre><code>Power    SFT.R.sq      slope truncated.R.sq   mean.k. median.k.    max.k.
+1     1 0.192964167 10.1742363      0.9508966 5887.9290 5901.7852 6501.0283
+2     2 0.001621749  0.4801145      0.9828730 3092.6379 3092.7878 3835.2202
+3     3 0.150812707 -3.2345892      0.9918393 1657.6198 1646.6169 2349.6967
+4     4 0.407513393 -4.5383131      0.9898440  905.8402  890.9431 1486.7695
+5     5 0.585949838 -4.8303680      0.9917528  504.4288  490.2683  968.1157
+6     6 0.677668481 -4.6749295      0.9935437  286.1585  274.3233  646.6741
+</code></pre>
+</details>
 </div>
 <div class="section level3">
 <h3 id="construct-co-expression-network">Construct co-expression network<a class="anchor" aria-label="anchor" href="#construct-co-expression-network"></a>
 </h3>
 <p>We now have everything that we need to construct our co-expression network. Here we use the scWGCNA function <code>ConstructNetwork</code>, which calls the WGCNA function <a href="https://www.rdocumentation.org/packages/WGCNA/versions/1.70-3/topics/blockwiseConsensusModules" class="external-link"><code>blockwiseConsensusModules</code></a> under the hood. This function has quite a few parameters to play with if you are an advanced user, but we have selected default parameters that work well with many single-cell datasets. The parameters for <code>blockwiseConsensusModules</code> can be passed directly to <code>ConstructNetwork</code> with the same parameter names.</p>
 <p>The following code construtcts the co-expression network using the soft power threshold selected above:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># construct co-expression network:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>, soft_power<span class="op">=</span><span class="fl">9</span>,
   setDatExpr<span class="op">=</span><span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
 <p>scWGCNA also includes a function <code>PlotDendrogram</code> to visualize the WGCNA dendrogram, a common visualization to show the different co-expression modules resulting from the network analysis. Each leaf on the dendrogram represents a single gene, and the color at the bottom indicates the co-expression module assignment.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'INH scWGCNA Dendrogram'</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/inh_dendro.png" width="600" height="600"></p>
 </div>
@@ -316,7 +333,7 @@
 <p>Dimensionality reduction techniques are a very hot topic in single-cell genomics. It is well known that technical artifacts can muddy the analysis of single-cell datasets, and over the years there have been many methods that aim to reduce the effects of these artifacts. Therefore it stands to reason that MEs would be subject to these technical artifacts as well, and scWGCNA seeks to alleviate these effects.</p>
 <p>scWGCNA includes a function <code>ModuleEigengenes</code> to compute MEs in the Seurat object using Seurat’s <code>RunPCA</code> function under the hood. Additionally, we allow the user to apply Harmony batch correction to the MEs, yielding <strong>harmonized module eigengenes (hMEs)</strong>.</p>
 <p>As in the <code>RunPCA</code> step of the Seurat workflow, the expression matrix must be scaled with <code>ScaleData</code> before we run <code>ModuleEigengenes</code>. At this stage, the user may also wish to regress out certain technical factors, which we demonstrate below. The following code scales the expression matrix for the WGCNA genes, and then performs the module eigengene computation harmonizing by the Sample of origin using the <code>group.by.vars</code> parameter.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># expression matrix for all the WGCNA genes:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span>
  <span class="va">seurat_obj</span>,
@@ -330,7 +347,7 @@
  group.by.vars<span class="op">=</span><span class="st">"Sample"</span>
 <span class="op">)</span></code></pre></div>
 <p>The ME matrices are stored as a matrix where each row is a cell and each column is a module. This matrix can be extracted from the Seurat object using the <code>GetMEs</code> function, which retrieves the <strong>hMEs by default</strong>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># harmonized module eigengenes:</span>
 <span class="va">hMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
@@ -341,11 +358,11 @@
 <h3 id="compute-module-connectivity">Compute module connectivity<a class="anchor" aria-label="anchor" href="#compute-module-connectivity"></a>
 </h3>
 <p>In co-expression network analysis, we often want to focus on the “hub genes”, those which are highly connected within each module. Therefore we wish to determine the <em>intramodular connectivity</em>, also known as <em>kME</em>, of each gene. scWGCNA includes the <code>ModuleConnectivity</code> to compute the <em>kME</em> values in the full single-cell dataset, rather than the metacell dataset.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compute intramodular connectivity:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>For convenience, we re-name the scWGCNA modules to indicate that they are from the inhibitory neuron group. More information about renaming modules can be found in the <a href="customization.html">module customization tutorial</a>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># rename the modules</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -356,17 +373,17 @@
 <h3 id="getting-the-module-assignment-table">Getting the module assignment table<a class="anchor" aria-label="anchor" href="#getting-the-module-assignment-table"></a>
 </h3>
 <p>scWGCNA allows for easy access of the module assignment table using the <code>GetModules</code> function. This table consists of three columns: <code>gene_name</code> stores the gene’s symbol or ID, <code>module</code> stores the gene’s module assignment, and <code>color</code> stores a color mapping for each module, which is used in many downstream plotting steps. If <code>ModuleConnectivity</code> has been called on this scWGCNA experiment, this table will have additional columns for the <em>kME</em> of each module.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the module assignment table:</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu">GetModules</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>This wraps up the critical analysis steps for scWGCNA, so remember to save your output.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'scWGCNA_object.rds'</span><span class="op">)</span></code></pre></div>
 <div class="section level4">
 <h4 id="compute-hub-gene-signature-scores">Compute hub gene signature scores<a class="anchor" aria-label="anchor" href="#compute-hub-gene-signature-scores"></a>
 </h4>
 <p>Gene scoring analysis is a popular method in single-cell transcriptomics for computing a score for the overall signature of a set of genes. Seurat implements their own gene scoring technique using the <code>AddModuleScore</code> function, but there are also alternative approaches such as <a href="https://github.com/carmonalab/UCell" class="external-link">UCell</a>. scWGCNA includes the function <code>ModuleExprScore</code> to compute gene scores for a give number of genes for each module, using either the Seurat or UCell algorithm.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compute gene scoring for the top 25 hub genes by kME for each module</span>
 <span class="co"># with Seurat method</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleExprScore.html">ModuleExprScore</a></span><span class="op">(</span>
@@ -394,7 +411,7 @@
 <h3 id="module-feature-plots">Module Feature Plots<a class="anchor" aria-label="anchor" href="#module-feature-plots"></a>
 </h3>
 <p><a href="https://www.rdocumentation.org/packages/Seurat/versions/4.1.0/topics/FeaturePlot" class="external-link">FeaturePlot</a> is a commonly used Seurat visualization to show a feature of interest directly on the dimensionality reduction. scWGCNA includes the <code>ModuleFeaturePlot</code> function to consruct FeaturePlots for each co-expression module colored by each module’s uniquely assigned color.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -406,7 +423,7 @@
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_featureplot.png" width="600" height="600"></p>
 <p>We can also plot the hub gene signature score using the same function:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hub scores for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -422,12 +439,12 @@
 <h3 id="module-correlations">Module Correlations<a class="anchor" aria-label="anchor" href="#module-correlations"></a>
 </h3>
 <p>scWGCNA includes the <code>ModuleCorrelogram</code> function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package <a href="https://rpubs.com/melike/corrplot" class="external-link">corrplot</a>.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot module correlagram</span>
 <span class="fu"><a href="../reference/ModuleCorrelogram.html">ModuleCorrelogram</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_correlogram.png" width="500" height="500"></p>
 <p>While scWGCNA includes the <code>ModuleCorrelogram</code> function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand the relationship between different modules, and we encourage users to explore their data beyond the functions that we provide here. Here is an example of inspecting the correlation structure of the hMEs using an alternative approach, <a href="rdocumentation.org/packages/GGally/versions/1.5.0">GGally</a>:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># use GGally to investigate 6 selected modules:</span>
 <span class="fu">GGally</span><span class="fu">::</span><span class="fu">ggpairs</span><span class="op">(</span><span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">12</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_correlation_GGally.png" width="500" height="500"></p>
@@ -436,14 +453,14 @@
 <h3 id="seurat-plotting-functions">Seurat plotting functions<a class="anchor" aria-label="anchor" href="#seurat-plotting-functions"></a>
 </h3>
 <p>The base Seurat plotting functions are also great for visualizing scWGCNA outputs. Here we demonstrate plotting hMEs using <code>DotPlot</code> and <code>VlnPlot</code>. The key to using Seurat’s plotting functions to visualize the scWGCNA data is to add it into the Seurat object’s <code>@meta.data</code> slot:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># add hMEs to Seurat meta-data:</span>
 <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>,
   <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span>, harmonized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
 <p>Now we can easily use Seurat’s <code>DotPlot</code> function:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># modules to plot:</span>
 <span class="va">selected_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'INH-M'</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">7</span>,<span class="fl">8</span>,<span class="fl">9</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>
 
@@ -464,7 +481,7 @@
 <span class="va">p</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_dotplot.png" width="600" height="600"></p>
 <p>Here is another example where we use Seurat’s <code>VlnPlot</code> function:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Plot INH-M4 hME using Seurat VlnPlot function</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html" class="external-link">VlnPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,

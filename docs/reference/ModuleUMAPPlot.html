@@ -137,9 +137,8 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModuleUMAPPlot</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, sample_edges = TRUE, edge_prop = 0.2, label_hubs = 5, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, hub.vertex.size = 4, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     other.vertex.size = 1, return_graph = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge.alpha = 0.25, vertex.label.cex = 0.5, return_graph = FALSE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -161,16 +160,16 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "black", "gray50", "black")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules$framecolor &lt;- ifelse(selected_modules$gene_name %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         label_genes, "black", selected_modules$color)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- subset_TOM %&gt;% melt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- subset_TOM %&gt;% reshape2::melt()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(edge_df))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df$color &lt;- future.apply::future_sapply(1:nrow(edge_df), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         function(i) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             gene1 = as.character(edge_df[i, "Var1"])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             gene2 = as.character(edge_df[i, "Var2"])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             col1 &lt;- modules %&gt;% subset(gene_name == gene1) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 .$color</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             col2 &lt;- modules %&gt;% subset(gene_name == gene2) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 .$color</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             col1 &lt;- selected_modules[selected_modules$gene_name == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 gene1, "color"]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             col2 &lt;- selected_modules[selected_modules$gene_name == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 gene2, "color"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             if (col1 == col2) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 col = col1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
@@ -204,7 +203,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- edge_df %&gt;% arrange(value)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- rbind(subset(edge_df, color == "grey90"), subset(edge_df, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         color != "grey90"))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     head(edge_df)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df$color_alpha &lt;- ifelse(edge_df$color == "grey90", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         alpha(edge_df$color, alpha = edge_df$value/2), alpha(edge_df$color, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             alpha = edge_df$value))</span>
@@ -224,9 +222,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = V(g)$fontcolor, vertex.label.cex = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor, margin = 0)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9c631e75a0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f88e5efd120&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -183,8 +183,12 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Haven't implemented this one yet &gt;.&lt;")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else (stop("Invalid feature selection. Valid choices: hMEs, MEs, scores."))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- as.data.frame(MEs) %&gt;% mutate(group = seurat_train@meta.data[[group.by]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs_p &lt;- as.data.frame(MEs_p) %&gt;% mutate(group = seurat_test@meta.data[[group.by]])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("here")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- as.data.frame(MEs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs$group &lt;- seurat_train@meta.data[[group.by]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs_p &lt;- as.data.frame(MEs_p)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs_p$group &lt;- seurat_test@meta.data[[group.by]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("here")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- subset(MEs, group %in% groups_common)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs_p &lt;- subset(MEs_p, group %in% groups_common)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     avg_MEs &lt;- MEs %&gt;% group_by(group) %&gt;% summarise(across(!!mods, </span>
@@ -232,7 +236,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9c66c92980&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f88e8823430&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

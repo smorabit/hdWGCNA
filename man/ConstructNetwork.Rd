@@ -7,6 +7,7 @@
 ConstructNetwork(
   seurat_obj,
   soft_power = NULL,
+  tom_outdir = "TOM",
   use_metacells = TRUE,
   setDatExpr = TRUE,
   group.by = NULL,
@@ -14,7 +15,6 @@ ConstructNetwork(
   consensus = FALSE,
   multi.group.by = NULL,
   multi_groups = NULL,
-  tom_outdir = "TOM",
   blocks = NULL,
   maxBlockSize = 30000,
   randomSeed = 12345,
@@ -40,6 +40,12 @@ ConstructNetwork(
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{soft_power}{the soft power used for network construction. Automatically selected by default.}
+
+\item{tom_outdir}{path to the directory where the TOM will be written}
+
+\item{...}{additional parameters passed to SetDatExpr and blockwiseConsensusModules}
 }
 \description{
 This function constructs a co-expression network from a Seurat object

@@ -141,23 +141,22 @@ SetupForWGCNA <- function(
 
 #' TestSoftPowers
 #'
-#' This function gets the expression matrix from the metacell object.
+#' Compute the scale-free topology model fit for different soft power thresholds
 #'
 #' @param seurat_obj A Seurat object
-#' @param powers
-#' @param outfile filepath for output pdf to be generated. Default is
-#' @param figsize numeric determining the height and width of the output figure. Default is c(7,7)
+#' @param powers numeric vector specifying soft powers to test
+#' @param setDatExpr logical flag indicating whether to run setDatExpr
+#' @param ... additional parameters passed to SetDatExpr
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' TestSoftPowers(pbmc)
 TestSoftPowers <- function(
   seurat_obj,
-  use_metacells = TRUE,
-  group.by=NULL, group_name=NULL,
-  setDatExpr = TRUE,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  make_plot=TRUE, outfile="softpower.pdf", figsize=c(7,7)
+  setDatExpr = TRUE,
+  use_metacells = TRUE,
+  group.by=NULL, group_name=NULL
 ){
 
   # add datExpr if not already added:
@@ -179,44 +178,6 @@ TestSoftPowers <- function(
     )[[2]]
   );
 
-  # Plot the results:
-  if(make_plot){
-    pdf(outfile, height=figsize[1], width=figsize[2], useDingbats=FALSE)
-
-        colors = c("blue", "red","black")
-        # Will plot these columns of the returned scale free analysis tables
-        plotCols = c(2,5,6,7)
-        colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Mean connectivity",
-        "Max connectivity");
-
-        # Get the minima and maxima of the plotted points
-        ylim = matrix(NA, nrow = 2, ncol = 4);
-        for (col in 1:length(plotCols)){
-          ylim[1, col] = min(ylim[1, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-          ylim[2, col] = max(ylim[2, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-        }
-
-        # Plot the quantities in the chosen columns vs. the soft thresholding power
-        par(mfcol = c(2,2));
-        par(mar = c(4.2, 4.2 , 2.2, 0.5))
-        cex1 = 0.7;
-
-        for (col in 1:length(plotCols)){
-          plot(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
-          xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
-          main = colNames[col]);
-          addGrid();
-
-          if (col==1){
-            text(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
-            labels=powers,cex=cex1,col=colors[1]);
-          } else
-          text(powerTable$data[,1], powerTable$data[,plotCols[col]],
-          labels=powers,cex=cex1,col=colors[1]);
-        }
-    dev.off()
-  }
-
   # set the power table in Seurat object:
   seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
 
@@ -225,15 +186,26 @@ TestSoftPowers <- function(
 
 
 
+#' TestSoftPowersConsensus
+#'
+#' Compute the scale-free topology model fit for different soft power thresholds separately for each input dataset
+#'
+#' @param seurat_obj A Seurat object
+#' @param powers numeric vector specifying soft powers to test
+#' @param setDatExpr logical flag indicating whether to run setDatExpr
+#' @param ... additional parameters passed to SetDatExpr
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' TestSoftPowers(pbmc)
 TestSoftPowersConsensus <- function(
   seurat_obj,
+  powers=c(seq(1,10,by=1), seq(12,30, by=2)),
+  setDatExpr = TRUE,
   use_metacells = TRUE,
   group.by=NULL, group_name=NULL,
   multi.group.by = NULL,
-  multi_groups = NULL,
-  setDatExpr = TRUE,
-  powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  make_plot=TRUE, outfile="softpower", figsize=c(7,7)
+  multi_groups = NULL
 ){
 
   # add multiExpr if not already added:
@@ -271,43 +243,6 @@ TestSoftPowersConsensus <- function(
     powerTable$data$group <- cur_group
     powerTables[[cur_group]] <- powerTable$data
 
-    # Plot the results:
-    if(make_plot){
-      pdf(paste0(outfile, '_', cur_group, '.pdf'), height=figsize[1], width=figsize[2], useDingbats=FALSE)
-
-          colors = c("blue", "red","black")
-          # Will plot these columns of the returned scale free analysis tables
-          plotCols = c(2,5,6,7)
-          colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Mean connectivity",
-          "Max connectivity");
-
-          # Get the minima and maxima of the plotted points
-          ylim = matrix(NA, nrow = 2, ncol = 4);
-          for (col in 1:length(plotCols)){
-            ylim[1, col] = min(ylim[1, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-            ylim[2, col] = max(ylim[2, col], powerTable$data[, plotCols[col]], na.rm = TRUE);
-          }
-
-          # Plot the quantities in the chosen columns vs. the soft thresholding power
-          par(mfcol = c(2,2));
-          par(mar = c(4.2, 4.2 , 2.2, 0.5))
-          cex1 = 0.7;
-
-          for (col in 1:length(plotCols)){
-            plot(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
-            xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
-            main = colNames[col]);
-            addGrid();
-
-            if (col==1){
-              text(powerTable$data[,1], -sign(powerTable$data[,3])*powerTable$data[,2],
-              labels=powers,cex=cex1,col=colors[1]);
-            } else
-            text(powerTable$data[,1], powerTable$data[,plotCols[col]],
-            labels=powers,cex=cex1,col=colors[1]);
-          }
-      dev.off()
-    }
   }
 
   # merge the power tables
@@ -325,26 +260,22 @@ TestSoftPowersConsensus <- function(
 #' This function constructs a co-expression network from a Seurat object
 #'
 #' @param seurat_obj A Seurat object
-#' @param soft_power
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
+#' @param soft_power the soft power used for network construction. Automatically selected by default.
+#' @param tom_outdir path to the directory where the TOM will be written
+#' @param ... additional parameters passed to SetDatExpr and blockwiseConsensusModules
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' ConstructNetwork(pbmc)
 ConstructNetwork <- function(
-  seurat_obj, soft_power=NULL, use_metacells=TRUE,
-  setDatExpr=TRUE, group.by=NULL, group_name=NULL,
+  seurat_obj, soft_power=NULL,
+  tom_outdir="TOM",
+  use_metacells=TRUE,
+  setDatExpr=TRUE, group.by=NULL,
+  group_name=NULL,
   consensus = FALSE,
   multi.group.by = NULL,
   multi_groups = NULL,
-  tom_outdir="TOM",
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,

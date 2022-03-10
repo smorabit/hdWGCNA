@@ -160,6 +160,12 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/PlotModulePreservation.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/PlotModuleTraitCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/PlotSoftPowers.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/ProjectModules.html</loc>
   </url>
   <url>
@@ -203,6 +209,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/TestSoftPowers.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/TestSoftPowersConsensus.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/TransferModuleGenome.html</loc>

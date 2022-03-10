@@ -4,7 +4,15 @@
 \alias{ModuleConnectivity}
 \title{ModuleConnectivity}
 \usage{
-ModuleConnectivity(seurat_obj, harmonized = TRUE, wgcna_name = NULL, ...)
+ModuleConnectivity(
+  seurat_obj,
+  harmonized = TRUE,
+  assay = NULL,
+  slot = NULL,
+  use_metacells = FALSE,
+  wgcna_name = NULL,
+  ...
+)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}

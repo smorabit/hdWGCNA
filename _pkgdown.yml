@@ -71,8 +71,15 @@ reference:
   contents:
   - '`ConstructMetacells`'
   - '`MetacellsByGroups`'
+- title: Network Analysis
+  desc: Functions for constructing the co-expression network
+  contents:
+    - '`TestSoftPowers`'
+    - '`TestSoftPowersConsensus`'
+    - '`PlotSoftPowers`'
+    - '`ConstructNetwork`'
 - title: Network Visualization
-  desc: Functions for visualizing the scWGCNA co-expression network
+  desc: Functions for visualizing the co-expression network
   contents:
     - '`ModuleNetworkPlot`'
     - '`HubGeneNetworkPlot`'
@@ -96,6 +103,11 @@ reference:
   contents:
   - '`ModulePreservation`'
   - '`PlotModulePreservation`'
+- title: Module Trait Correlation
+  desc: Functions for performing module trait correlation analysis
+  contents:
+  - '`ModuleTraitCorrelation`'
+  - '`PlotModuleTraitCorrelation`'
 - title: Seurat wrappers
   desc: Wrapper functions to run Seurat commands on the metacell data
   contents:

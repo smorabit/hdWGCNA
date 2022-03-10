@@ -251,18 +251,21 @@ seurat_obj <- SetDatExpr(
 
 Next we will select the **"soft power threshold"**. This is an extremely important
 step in the scWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA
-constructs a correlation adjacency matrix to beging inferring co-expression
-relationships. The correlations are raised to a power, which is assumed to
-reduce the amount of noise present in the correlation matrix. Therefore, it is
+constructs a correlation adjacency matrix to infer co-expression
+relationships between genes. The correlations are raised to a power to
+reduce the amount of noise present in the correlation matrix, thereby retaining the
+strong connections and removing the weak connections. Therefore, it is
 critical to determine a proper value for the soft power threshold.
 
-We include a function `TestSoftPowers`, to perform a parameter sweep for different
-soft power thresholds. Essentially `TestSoftPowers` is a wrapper to the WGCNA
-function `pickSoftThreshold`. This function helps us to guide our choice in a soft power
-threshold for constructing the co-expression network by comparing. For WGCNA,
-the network should ideally have a [scale-free topology](https://en.wikipedia.org/wiki/Scale-free_network),
-therefore the `TestSoftPowers` function models how closely resembles a scale-free
-graph at different soft power thresholds.
+We include a function `TestSoftPowers` to perform a parameter sweep for different
+soft power thresholds. This function helps us to guide our choice in a soft power
+threshold for constructing the co-expression network by inspecting the resulting network
+topology for different power values. The co-expression network should have a
+[scale-free topology](https://en.wikipedia.org/wiki/Scale-free_network),
+therefore the `TestSoftPowers` function models how closely the co-expression network
+resembles a scale-free graph at different soft power thresholds. Furthermore,
+we include a function `PlotSoftPowers` to visualize the results of the parameter
+sweep.
 
 The following code performs the parameter sweep and outputs a summary figure.
 
@@ -272,23 +275,43 @@ The following code performs the parameter sweep and outputs a summary figure.
 seurat_obj <- TestSoftPowers(
   seurat_obj,
   setDatExpr = FALSE, # set this to FALSE since we did this above
-  outfile="INH_softpowers.pdf" # output a figure to this file
 )
+
+# plot the results:
+plot_list <- PlotSoftPowers(seurat_obj)
+
+# assemble with patchwork
+wrap_plots(plot_list, ncol=2)
 
 ```
 
-![](figures/basic_tutorial/softpower.png)
+<img src="figures/basic_tutorial/softpower_ggplot.png" width="800" height="800">
 
 The general guidance for WGCNA and scWGCNA is to pick the lowest soft power threshold
 that has a Scale Free Topology Model Fit greater than or equal to 0.8, so in this case
-we would select our soft power threshold as 9.
+we would select our soft power threshold as 9. Later on, the `ConstructNetwork` will
+automatically select the soft power threshold if the user does not provide one.
 
-Notably, the output table from the parameter sweep is stored in the scWGCNA experiment
-and can be accessed using the `GetPowerTable` function:
+Tthe output table from the parameter sweep is stored in the scWGCNA experiment
+and can be accessed using the `GetPowerTable` function for further inspection:
 
 ```{r eval=FALSE}
 power_table <- GetPowerTable(seurat_obj)
+head(power_table)
 ```
+
+<details> <summary> Output </summary>
+```
+Power    SFT.R.sq      slope truncated.R.sq   mean.k. median.k.    max.k.
+1     1 0.192964167 10.1742363      0.9508966 5887.9290 5901.7852 6501.0283
+2     2 0.001621749  0.4801145      0.9828730 3092.6379 3092.7878 3835.2202
+3     3 0.150812707 -3.2345892      0.9918393 1657.6198 1646.6169 2349.6967
+4     4 0.407513393 -4.5383131      0.9898440  905.8402  890.9431 1486.7695
+5     5 0.585949838 -4.8303680      0.9917528  504.4288  490.2683  968.1157
+6     6 0.677668481 -4.6749295      0.9935437  286.1585  274.3233  646.6741
+
+```
+</details>
 
 ## Construct co-expression network
 

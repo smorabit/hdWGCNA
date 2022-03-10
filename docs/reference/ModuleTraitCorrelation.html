@@ -182,8 +182,20 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cor_list &lt;- list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cor_list[["all_cells"]] &lt;- cor(as.matrix(trait_df), as.matrix(MEs), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         method = cor_method)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pval_list &lt;- list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     fdr_list &lt;- list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     temp &lt;- Hmisc::rcorr(as.matrix(trait_df), as.matrix(MEs), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         type = cor_method)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_cor &lt;- temp$r[traits, mods]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_p &lt;- temp$P[traits, mods]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p_df &lt;- cur_p %&gt;% reshape2::melt() %&gt;% dplyr::mutate(fdr = p.adjust(value, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         method = "fdr")) %&gt;% dplyr::select(c(Var1, Var2, fdr))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_fdr &lt;- reshape2::dcast(p_df, Var1 ~ Var2, value.var = "fdr")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(cur_fdr) &lt;- cur_fdr$Var1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_fdr &lt;- cur_fdr[, -1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cor_list[["all_cells"]] &lt;- cur_cor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pval_list[["all_cells"]] &lt;- cur_p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     fdr_list[["all_cells"]] &lt;- cur_fdr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     trait_df &lt;- cbind(trait_df, seurat_obj@meta.data[, group.by])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(trait_df)[ncol(trait_df)] &lt;- "group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- cbind(as.data.frame(MEs), seurat_obj@meta.data[, group.by])</span>
@@ -200,15 +212,25 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(trait_list) &lt;- group_names</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(ME_list) &lt;- group_names</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in names(trait_list)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cor_list[[i]] &lt;- cor(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             method = cor_method)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         temp &lt;- Hmisc::rcorr(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_cor &lt;- temp$r[traits, mods]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_p &lt;- temp$P[traits, mods]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- cur_p %&gt;% reshape2::melt() %&gt;% dplyr::mutate(fdr = p.adjust(value, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             method = "fdr")) %&gt;% dplyr::select(c(Var1, Var2, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             fdr))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_fdr &lt;- reshape2::dcast(p_df, Var1 ~ Var2, value.var = "fdr")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         rownames(cur_fdr) &lt;- cur_fdr$Var1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_fdr &lt;- cur_fdr[, -1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cor_list[[i]] &lt;- cur_cor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pval_list[[i]] &lt;- cur_p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         fdr_list[[i]] &lt;- as.matrix(cur_fdr)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mt_cor &lt;- list(cor_mat = cor_list, pval = NA, fdr = NA)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mt_cor &lt;- list(cor = cor_list, pval = pval_list, fdr = fdr_list)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetModuleTraitCorrelation(seurat_obj, mt_cor, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9c67109bb0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f88e6886060&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

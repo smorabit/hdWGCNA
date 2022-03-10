@@ -191,7 +191,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- cur_plot_df %&gt;% ggplot(aes_string(x = x_name, y = y_name, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             color = "val")) + geom_point(size = point_size, alpha = alpha) + </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             ggtitle(cur_mod) + umap_theme + labs(color = "")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             ggtitle(cur_mod) + umap_theme() + labs(color = "")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (!ucell) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             p &lt;- p + scale_color_gradient2(low = "grey75", mid = "grey95", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 high = cur_color, breaks = plot_range, labels = c("-", </span>
@@ -213,7 +213,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9c67bba830&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f88e17f2d48&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>
