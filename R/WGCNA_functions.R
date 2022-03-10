@@ -268,7 +268,8 @@ TestSoftPowersConsensus <- function(
         corFnc="bicor"
       )[[2]]
     );
-    powerTables[[cur_group]] <- powerTable
+    powerTable$data$group <- cur_group
+    powerTables[[cur_group]] <- powerTable$data
 
     # Plot the results:
     if(make_plot){
@@ -309,10 +310,12 @@ TestSoftPowersConsensus <- function(
     }
   }
 
-  # set the power table in Seurat object:
-  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
-  seurat_obj
+  # merge the power tables
+  powerTable <- do.call(rbind, powerTables)
 
+  # set the power table in Seurat object:
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable)
+  seurat_obj
 }
 
 
@@ -375,7 +378,6 @@ ConstructNetwork <- function(
 
     # add datExpr if not already added:
     if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-      print('in here')
       seurat_obj <- SetDatExpr(
         seurat_obj,
         group_name = group_name,
@@ -383,7 +385,6 @@ ConstructNetwork <- function(
         use_metacells=use_metacells,
         return_seurat=TRUE
        )
-       print('out here')
 
     }
 
@@ -402,13 +403,23 @@ ConstructNetwork <- function(
     checkSets(multiExpr) # check data size
   }
 
-
   # make output dir for the TOM
   if(!dir.exists(tom_outdir)){
     dir.create(tom_outdir)
   }
 
+  if(is.null(soft_power) & !consensus){
+    soft_power <- GetPowerTable(seurat_obj) %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
+    cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ", soft_power, "\n"))
+  } else if(consensus){
+    power_tables <- GetPowerTable(seurat_obj) %>% dplyr::group_split(group)
+    soft_power <- sapply(power_tables, function(power_table){
+      power_table %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
+    })
+    cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(", paste0(soft_power, collapse=','), ")\n"))
+  }
 
+  # construct the network
   net <- WGCNA::blockwiseConsensusModules(
     multiExpr,
     power = soft_power,
@@ -1227,9 +1238,6 @@ ComputeROC <- function(
   wgcna_name=NULL, wgcna_name_test=NULL
 ){
 
-  #TODO:
-  # should be able to skip the ME computation if
-
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # get Modules
@@ -1308,6 +1316,7 @@ ComputeROC <- function(
     )
   }
 
+
   # get MEs from seurat object
   if(features == 'hMEs'){
     MEs <- GetMEs(seurat_train, TRUE, wgcna_name_train)
@@ -1323,9 +1332,15 @@ ComputeROC <- function(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores.')
   )
 
+  print('here')
+
   # add group column to MEs:
-  MEs <- as.data.frame(MEs) %>% mutate(group = seurat_train@meta.data[[group.by]])
-  MEs_p <- as.data.frame(MEs_p) %>% mutate(group = seurat_test@meta.data[[group.by]])
+  MEs <- as.data.frame(MEs)
+  MEs$group <- seurat_train@meta.data[[group.by]]
+  MEs_p <- as.data.frame(MEs_p)
+  MEs_p$group <- seurat_test@meta.data[[group.by]]
+
+  print('here')
 
   # only keep common groups:
   MEs <- subset(MEs, group %in% groups_common)

@@ -44,7 +44,9 @@ TestSoftPowersConsensus <- function(
         corFnc="bicor"
       )[[2]]
     );
-    powerTables[[cur_group]] <- powerTable
+    powerTable$data$group <- cur_group
+    powerTables[[cur_group]] <- powerTable$data
+
 
     # Plot the results:
     if(make_plot){
@@ -85,8 +87,11 @@ TestSoftPowersConsensus <- function(
     }
   }
 
+  # merge the power tables
+  powerTable <- do.call(rbind, powerTables)
+
   # set the power table in Seurat object:
-  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable)
   seurat_obj
 
 }

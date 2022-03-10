@@ -91,8 +91,6 @@ ModuleCorrelogram <- function(
     res <- Hmisc::rcorr(x=MEs)
   } else{
 
-    print('here')
-
     # add dataset indicator to cols/rows
     d1_names <- colnames(MEs); d2_names <- colnames(MEs2);
     colnames(MEs) <- paste0(d1_names, '_D1')
@@ -100,7 +98,6 @@ ModuleCorrelogram <- function(
 
     res <- Hmisc::rcorr(x=MEs, y=as.matrix(MEs2))
 
-    print('here')
     res$r <- res$r[!grepl('_D1', colnames(res$r)),grepl('_D1', colnames(res$r))]
     colnames(res$r) <- d1_names
     rownames(res$r) <- d2_names
