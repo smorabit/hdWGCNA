@@ -1102,6 +1102,7 @@ ModuleUMAPPlot <- function(
   label_hubs = 5, # how many hub genes to label?
   edge.alpha=0.25,
   vertex.label.cex=0.5,
+  label_genes = NULL,
   return_graph = FALSE, # this returns the igraph object instead of plotting
   wgcna_name=NULL,
   ...
@@ -1126,8 +1127,16 @@ ModuleUMAPPlot <- function(
   # subset the TOM:
   subset_TOM <- TOM[umap_df$gene, umap_df$gene[umap_df$hub == 'hub']]
 
-  # labels
-  label_genes <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
+  # genes to label:
+  hub_labels <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
+  if(is.null(label_genes)){
+    label_genes <- hub_labels
+  } else{
+    if(!any(label_genes %in% umap_df$gene)){
+      stop("Some genes in label_genes not found in the UMAP.")
+    }
+    label_genes <- unique(c(label_genes, hub_labels))
+  }
   selected_modules$label <- ifelse(selected_modules$gene_name %in% label_genes, selected_modules$gene_name, '')
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
@@ -1157,9 +1166,7 @@ ModuleUMAPPlot <- function(
 
   # subset edges:
   groups <- unique(edge_df$color)
-  print(groups)
   if(sample_edges){
-    print('here')
     # randomly sample
     temp <- do.call(rbind, lapply(groups, function(cur_group){
       cur_df <- edge_df %>% subset(color == cur_group)

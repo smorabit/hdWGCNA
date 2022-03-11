@@ -50,5 +50,5 @@ install.packages(c("Seurat", "WGCNA", "igraph", "devtools"))
 Now you can install the scWGCNA package using `devtools`.
 
 ```r
-devtools::install_github('smorabit/scWGCNA', branch='dev')
+devtools::install_github('smorabit/scWGCNA', ref='dev')
 ```
