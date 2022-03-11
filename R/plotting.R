@@ -2017,6 +2017,27 @@ PlotModuleTraitCorrelation <- function(
 
 
 
+#' ModuleTFNetwork
+#'
+#' Plotting the relationships between a TF and the co-expression modules
+#'
+#' @param seurat_obj A Seurat object
+#' @param tf_name the Motif name for the tf
+#' @param tf_gene_name the gene associated with this tf in the rownames(seurat_obj)
+#' @param edge.alpha scaling factor for edge opacity in the network
+#' @param cor_thresh threshold to plot correlation edges between modules
+#' @param high_color color for positive correlation
+#' @param mid_color color for zero correlation
+#' @param low_color color for negative correlation
+#' @param slot the slot in the seurat object to extract expression data for the tf_gene_name
+#' @param size.scale scaling factor for the size of each node
+#' @param tf_x x coordinate for the TF if the TF is not found in the UMAP
+#' @param tf_y y coordinate for the TF if the TF is not foudn in the UMAP
+#' @param wgcna_name the name of the WGCNA experiment in the seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' ModuleTFNetwork
 ModuleTFNetwork <- function(
   seurat_obj,
   tf_name,
@@ -2028,6 +2049,8 @@ ModuleTFNetwork <- function(
   low_color = 'blue',
   slot = 'data',
   size.scale = 30,
+  tf_x = 0,
+  tf_y = 0,
   wgcna_name = NULL
 
 ){
@@ -2098,9 +2121,20 @@ ModuleTFNetwork <- function(
   node_df$size <- as.numeric(node_df$size_intersection) / as.numeric(mod_sizes)
 
   # add info for tf to this table:
-  tf_df <- umap_df[umap_df$gene == tf_gene_name, ] %>%
-    dplyr::select(-c(hub, kME, module)) %>%
-    dplyr::rename(name=gene)
+  if(tf_gene_name %in% umap_df$gene){
+    tf_df <- umap_df[umap_df$gene == tf_gene_name, ] %>%
+      dplyr::select(-c(hub, kME, module)) %>%
+      dplyr::rename(name=gene)
+  } else{
+    tf_df <- data.frame(
+      name = tf_gene_name,
+      module = 'grey',
+      color = 'grey',
+      UMAP1 = tf_x,
+      UMAP2 = tf_y
+    )
+  }
+
   tf_df$size <- 0.25
 
   # set up edge df
@@ -2155,7 +2189,7 @@ ModuleTFNetwork <- function(
     vertex.label=V(g1)$name,
     vertex.label.dist=1.1,
     vertex.label.degree=-pi/4,
-    vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
+    vertex.label.family='Helvetica',
     vertex.label.font = 3,
     vertex.label.color = 'black',
     vertex.label.cex=0,

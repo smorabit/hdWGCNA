@@ -187,34 +187,59 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu">GetMotifMatrix</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 
 
-
 <span class="co"># TF target genes</span>
-<span class="va">target_genes</span> <span class="op">&lt;-</span> <span class="fu">GetMotifTargets</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
-<p>Overlap between TF target genes and co-expression modules</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<span class="va">target_genes</span> <span class="op">&lt;-</span> <span class="fu">GetMotifTargets</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># check target genes for one TF:</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">target_genes</span><span class="op">$</span><span class="va">SOX9</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Output
+</summary><pre><code>[1] "OR4F5"  "TTLL10" "SDF4"   "ATAD3C" "MIB2"   "CDK11B"</code></pre>
+</details><p>Overlap between TF target genes and co-expression modules</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># overlap between modules &amp; TF target genes:</span>
 <span class="va">seurat_obj</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/OverlapModulesMotifs.html">OverlapModulesMotifs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 
-<span class="co"># plot the top TFs overlapping with</span>
+<span class="co"># look at the overlap data</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Output
+</summary><pre><code>module           tf      color odds_ratio       pval        fdr
+Arnt         INH-M1         Arnt lightgreen  1.8100972 0.04229064 0.06409755
+Ahr::Arnt    INH-M1    Ahr::Arnt lightgreen  1.9306874 0.01521384 0.02637231
+Ddit3::Cebpa INH-M1 Ddit3::Cebpa lightgreen  1.4769054 0.17180719 0.21395236
+Mecom        INH-M1        Mecom lightgreen  1.1494048 0.39598290 0.43952275
+FOXF2        INH-M1        FOXF2 lightgreen  1.7265993 0.06967679 0.09851950
+FOXD1        INH-M1        FOXD1 lightgreen  0.8656827 0.68554365 0.71222835
+      Significance     Jaccard size_intersection
+Arnt                      0.002775575                14
+Ahr::Arnt               * 0.002818573                19
+Ddit3::Cebpa              0.002379819                10
+Mecom                     0.001917546                10
+
+FOXF2                     0.002699663                12
+FOXD1                     0.001482800                 5</code></pre>
+</details><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># plot the top TFs overlapping with</span>
 <span class="fu"><a href="../reference/MotifOverlapBarPlot.html">MotifOverlapBarPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   <span class="co">#motif_font = 'xkcd_regular',</span>
   outdir <span class="op">=</span> <span class="st">'motifs/MotifOverlaps/'</span>,
   plot_size<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">6</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
+<p><img src="figures/motif_analysis/motif_barplot.png" width="500" height="500"></p>
 <p>Compute motif target gene expression score:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">UCell</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MotifTargetScore.html">MotifTargetScore</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   method<span class="op">=</span><span class="st">'UCell'</span>
 <span class="op">)</span></code></pre></div>
 <p>Plot overlap between motif of interest and modules:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
-<span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tf</span> <span class="op">==</span> <span class="st">'NR4A2'</span><span class="op">)</span>
+<span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tf</span> <span class="op">==</span> <span class="st">'SOX9'</span><span class="op">)</span>
 
 <span class="va">plot_var</span> <span class="op">&lt;-</span> <span class="st">'odds_ratio'</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">cur_df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span>
@@ -224,14 +249,28 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">Significance</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, size<span class="op">=</span><span class="fl">3.5</span>, hjust<span class="op">=</span><span class="st">'center'</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Odds Ratio"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"SOX9 overlap"</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
     plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>
-  <span class="op">)</span> <span class="op">+</span>
+  <span class="op">)</span>
 
 
-<span class="fu"><a href="https://rdrr.io/r/grDevices/pdf.html" class="external-link">pdf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'Nr4a2_motif_overlap_or.pdf'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">3</span>, height<span class="op">=</span><span class="fl">3</span>, useDingbats<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'Sox9_motif_overlap_or.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">3</span>, height<span class="op">=</span><span class="fl">4</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span><span class="op">)</span>
 <span class="va">p</span>
 <span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/motif_analysis/Sox9_motif_overlap_or.png" width="500" height="500"></p>
+<p>Motif overlap network</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">ModuleTFNetwork</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.75</span>,
+  cor_thresh <span class="op">=</span> <span class="fl">0.75</span>,
+  tf_name <span class="op">=</span> <span class="st">"OLIG1"</span>,
+  tf_gene_name <span class="op">=</span> <span class="st">"OLIG1"</span>,
+  tf_x <span class="op">=</span> <span class="op">-</span><span class="fl">7</span>,
+  tf_y <span class="op">=</span> <span class="op">-</span><span class="fl">7</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/motif_analysis/sox9_overlap_net.png" width="500" height="500"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
