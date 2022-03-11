@@ -36,6 +36,15 @@ the [Seurat Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pb
 Additionally, there are a lot of WGCNA-specific terminology and acronyms, which
 are all clarified in [this table](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559/tables/1).
 
+## Download the tutorial data
+
+For the purpose of this tutorial, we provide a processed Seurat object of the
+control human brains from the [Zhou et al 2020 study](https://www.nature.com/articles/s41591-019-0695-9).
+
+```{bash eval=FALSE}
+wget https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds
+```
+
 ## Load the dataset and required libraries
 
 First we will load the single-cell dataset and the required R libraries for this
@@ -62,11 +71,11 @@ theme_set(theme_cowplot())
 set.seed(12345)
 
 # load the Zhou et al snRNA-seq dataset
-seurat_obj <- readRDS('data/Zhou_control.rds')
+seurat_obj <- readRDS('Zhou_2020.rds')
 
 ```
 
-Here we will plot the non-linear dimensionality reduction (UMAP) colored by cell
+Here we will plot the UMAP colored by cell
 type just to check that we have loaded the data correctly, and to make sure that
 we have grouped cells into clusters and cell types.
 

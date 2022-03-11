@@ -41,6 +41,8 @@ This tutorial covers how to correlate continuous and categorical variables with
 module eigengenes or module expression scores, revealing which modules are related
 to different experimental conditions or covariates.
 
+<img src="figures/mt_correlation/ME_Trait_correlation_fdr.png" width="400" height="400" href="module_trait_correlation.html">
+
 ### [Enrichment analysis](enrichment_analysis.html)
 
 This tutorial shows how to use Enrichr to compare the gene members of each co-expression
