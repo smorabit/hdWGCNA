@@ -839,6 +839,11 @@ ModuleConnectivity <- function(
   if(is.null(assay)){assay <- params$metacell_assay}
   if(is.null(slot)){slot <- params$metacell_slot}
 
+  print(assay)
+  print(slot)
+  print(head(genes_use))
+  print(class(GetAssayData(seurat_obj, assay=assay, slot=slot)))
+
   datExpr <- t(GetAssayData(
     seurat_obj,
     assay=assay,
