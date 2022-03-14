@@ -36,9 +36,6 @@ SelectNetworkGenes <- function(
       cur
     }))
 
-    print('size')
-    print(dim(expr_mat))
-
     group_gene_list <- list()
     if(!is.null(group.by)){
       # identify genes that are expressed
@@ -50,19 +47,14 @@ SelectNetworkGenes <- function(
         cur_expr <- expr_mat[,seurat_obj@meta.data[[group.by]] == cur_group]
         print(dim(cur_expr))
 
-        gene_filter <- rowSums(cur_expr) >= round(fraction*ncol(cur_expr));
+        gene_filter <- rowSums(as.matrix(cur_expr)) >= round(fraction*ncol(cur_expr));
         group_gene_list[[cur_group]] <- rownames(seurat_obj)[gene_filter]
       }
       gene_list <- unique(unlist(group_gene_list))
 
     } else{
       # identify genes that are expressed in at least some fraction of cells
-      print('before size')
-      print(class(expr_mat))
-      print(dim(expr_mat))
-      # gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
       gene_filter <- rowSums(as.matrix(expr_mat)) >= round(fraction*ncol(seurat_obj));
-      print('after')
       gene_list <- rownames(seurat_obj)[gene_filter]
     }
 
