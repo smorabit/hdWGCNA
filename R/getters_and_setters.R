@@ -3,6 +3,13 @@
 # Active WGCNA
 ###########################
 
+#' SetActiveWGCNA
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples SetActiveWGCNA
 SetActiveWGCNA <- function(seurat_obj, wgcna_name){
 
   # set the active_wgcna variable
@@ -15,6 +22,12 @@ SetActiveWGCNA <- function(seurat_obj, wgcna_name){
   seurat_obj
 }
 
+#' GetActiveWGCNA
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples GetActiveWGCNA
 GetActiveWGCNA <- function(seurat_obj){
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]
 }
@@ -34,6 +47,14 @@ GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 # WGCNA Group
 ###########################
 
+#' SetWGCNAGroup
+#'
+#' @param seurat_obj A Seurat object
+#' @param group group name
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples SetWGCNAGroup
 SetWGCNAGroup <- function(seurat_obj, group, wgcna_name){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -43,6 +64,13 @@ SetWGCNAGroup <- function(seurat_obj, group, wgcna_name){
   seurat_obj
 }
 
+#' GetWGCNAGroup
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples GetWGCNAGroup
 GetWGCNAGroup <- function(seurat_obj, wgcna_name){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   seurat_obj@misc[[wgcna_name]]$wgcna_group
@@ -353,6 +381,7 @@ SetPowerTable <- function(seurat_obj, power_table, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$wgcna_powerTable <- power_table
   seurat_obj
 }
+
 
 GetPowerTable <- function(seurat_obj, wgcna_name=NULL){
   # get data from active assay if wgcna_name is not given
