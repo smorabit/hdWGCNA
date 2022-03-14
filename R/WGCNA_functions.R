@@ -818,17 +818,14 @@ ModuleConnectivity <- function(
   harmonized=TRUE,
   assay = NULL,
   slot = NULL,
-  use_metacells = FALSE,
+  group.by = NULL,
+  group_name = NULL,
   wgcna_name = NULL,
   ...
 ){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
-  if(use_metacells){
-    warning('use_metacells option is not implemented yet.')
-  }
 
   # get module df, wgcna genes, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -844,11 +841,20 @@ ModuleConnectivity <- function(
   print(head(genes_use))
   print(class(GetAssayData(seurat_obj, assay=assay, slot=slot)))
 
-  datExpr <- t(GetAssayData(
+  if(!is.null(group.by)){
+    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% colnames
+  } else{
+    cells.use <- colnames(seurat_obj)
+  }
+
+  # get expression data:
+  exp_mat <- GetAssayData(
     seurat_obj,
     assay=assay,
     slot=slot
-  ))[,genes_use]
+  )[genes_use,cells.use]
+
+  datExpr <- t(as.matrix(exp_mat))
 
   print('datExpr')
   print(dim(datExpr))
