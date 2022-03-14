@@ -843,6 +843,7 @@ ModuleConnectivity <- function(
 
   if(!is.null(group.by)){
     cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% rownames
+    MEs <- MEs[cells.use,]
   } else{
     cells.use <- colnames(seurat_obj)
   }
