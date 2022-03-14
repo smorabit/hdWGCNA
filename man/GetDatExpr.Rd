@@ -10,9 +10,9 @@ GetDatExpr(seurat_obj, wgcna_name = NULL)
 \item{seurat_obj}{A Seurat object}
 }
 \description{
-This function gets the expression matrix from the metacell object.
+This function gets the WGCNA expression matrix.
 }
 \examples{
-GetDatExpr(pbmc)
+GetDatExpr
 }
 \keyword{scRNA-seq}

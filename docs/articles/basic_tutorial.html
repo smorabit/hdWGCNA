@@ -187,7 +187,7 @@
 <p>Here we will plot the UMAP colored by cell type just to check that we have loaded the data correctly, and to make sure that we have grouped cells into clusters and cell types.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Cell Type'</span><span class="op">)</span>
+   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Cell Type'</span><span class="op">)</span>
 
 <span class="va">p</span></code></pre></div>
 <p><img src="figures/basic_tutorial/umap_celltype.png" width="600" height="600"></p>
@@ -239,7 +239,7 @@
 </h3>
 <p>Since we store the Metacell expression information as its own Seurat object, we can run Seurat functions on the metacell data. We can get the metacell object from the scWGCNA experiment using <code>GetMetacellObject</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu">GetMetacellObject</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>Additionally, we have included a few wrapper functions to apply the Seurat workflow to the metacell object within the scWGCNA experiment. Here we apply these wrapper functions to process the metacell object and visualize the aggregated expression profiles in two dimensions with UMAP.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
@@ -297,7 +297,7 @@
 <p>The general guidance for WGCNA and scWGCNA is to pick the lowest soft power threshold that has a Scale Free Topology Model Fit greater than or equal to 0.8, so in this case we would select our soft power threshold as 9. Later on, the <code>ConstructNetwork</code> will automatically select the soft power threshold if the user does not provide one.</p>
 <p>Tthe output table from the parameter sweep is stored in the scWGCNA experiment and can be accessed using the <code>GetPowerTable</code> function for further inspection:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">power_table</span> <span class="op">&lt;-</span> <span class="fu">GetPowerTable</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">power_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetPowerTable.html">GetPowerTable</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">power_table</span><span class="op">)</span></code></pre></div>
 <details><summary>
 Output
@@ -343,7 +343,7 @@ Output
 <code class="sourceCode R"><span class="co"># expression matrix for all the WGCNA genes:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span>
  <span class="va">seurat_obj</span>,
- features <span class="op">=</span> <span class="fu">GetWGCNAGenes</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>,
+ features <span class="op">=</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>,
  vars.to.regress <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'n_genes_by_counts'</span>, <span class="st">'pct_counts_mt'</span><span class="op">)</span>
 <span class="op">)</span>
 
@@ -381,7 +381,7 @@ Output
 <p>scWGCNA allows for easy access of the module assignment table using the <code>GetModules</code> function. This table consists of three columns: <code>gene_name</code> stores the gene’s symbol or ID, <code>module</code> stores the gene’s module assignment, and <code>color</code> stores a color mapping for each module, which is used in many downstream plotting steps. If <code>ModuleConnectivity</code> has been called on this scWGCNA experiment, this table will have additional columns for the <em>kME</em> of each module.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the module assignment table:</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu">GetModules</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>This wraps up the critical analysis steps for scWGCNA, so remember to save your output.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'scWGCNA_object.rds'</span><span class="op">)</span></code></pre></div>

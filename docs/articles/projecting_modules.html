@@ -174,12 +174,12 @@
 Code
 </summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_ref</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Zhou'</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_query</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Morabito &amp; Miyoshi'</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
 
@@ -220,7 +220,7 @@ Code
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Swarup2021_control_scWGCNA_modpres.rds'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>We can extract the projected module eigengenes using the <code>GetMEs</code> function.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">projected_hMEs</span> <span class="op">&lt;-</span> <span class="fu">GetModules</span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">projected_hMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></code></pre></div>
 <p>The projected modules can be used in most of the downstream scWGCNA analysis tasks and visualization functions, such as <a href="module_trait_correlation.html">module trait correlation</a>, however it is important to note that some of the functions cannot be run on the projected modules. In particular, we cannot make any of the network plots since we did not actually construct a co-expression network in the query dataset, so running functions such as <code>RunModuleUMAP</code> and <code>ModuleNetworks</code> will throw an error.</p>
 </div>
 <div class="section level2">

@@ -184,11 +184,11 @@
   pfm <span class="op">=</span> <span class="va">pfm_core</span>,
   EnsDb <span class="op">=</span> <span class="va">EnsDb.Hsapiens.v86</span>
 <span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu">GetMotifMatrix</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetMotifMatrix.html">GetMotifMatrix</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 
 
 <span class="co"># TF target genes</span>
-<span class="va">target_genes</span> <span class="op">&lt;-</span> <span class="fu">GetMotifTargets</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">target_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMotifTargets.html">GetMotifTargets</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="co"># check target genes for one TF:</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">target_genes</span><span class="op">$</span><span class="va">SOX9</span><span class="op">)</span></code></pre></div>
@@ -201,7 +201,7 @@ Output
 <span class="va">seurat_obj</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/OverlapModulesMotifs.html">OverlapModulesMotifs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="co"># look at the overlap data</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetMotifOverlap.html">GetMotifOverlap</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <details><summary>
 Output
 </summary><pre><code>module           tf      color odds_ratio       pval        fdr
@@ -237,7 +237,7 @@ FOXD1                     0.001482800                 5</code></pre>
 <span class="op">)</span></code></pre></div>
 <p>Plot overlap between motif of interest and modules:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">GetMotifOverlap</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMotifOverlap.html">GetMotifOverlap</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tf</span> <span class="op">==</span> <span class="st">'SOX9'</span><span class="op">)</span>
 
@@ -261,7 +261,7 @@ FOXD1                     0.001482800                 5</code></pre>
 <p><img src="figures/motif_analysis/Sox9_motif_overlap_or.png" width="500" height="500"></p>
 <p>Motif overlap network</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ModuleTFNetwork</span><span class="op">(</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleTFNetwork.html">ModuleTFNetwork</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   edge.alpha<span class="op">=</span><span class="fl">0.75</span>,
   cor_thresh <span class="op">=</span> <span class="fl">0.75</span>,

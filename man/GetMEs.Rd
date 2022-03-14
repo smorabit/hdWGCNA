@@ -8,11 +8,15 @@ GetMEs(seurat_obj, harmonized = TRUE, wgcna_name = NULL)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{harmonized}{logical indicating whether MEs have been harmonized}
+
+\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Function to retrieve module eigengens from Seurat object.
 }
 \examples{
- ModuleEigengenes(pbmc)
+GetMEs
 }
 \keyword{scRNA-seq}

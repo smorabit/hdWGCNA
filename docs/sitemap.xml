@@ -85,13 +85,79 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/EnrichrDotPlot.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetActiveWGCNA.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetAvgModuleExpr.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/GetDatExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetEnrichrTable.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/GetMEs.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMetacellObject.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetModulePreservation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetModuleScores.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetModuleTraitCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetModuleUMAP.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetModules.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMotifMatrix.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMotifOverlap.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMotifScores.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMotifTargets.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMotifs.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/GetMultiExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetNetworkData.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetPFMList.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetPowerTable.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetROCData.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetTOM.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetWGCNAGenes.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetWGCNAGroup.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetWGCNAParams.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/HubGeneNetworkPlot.html</loc>
@@ -122,6 +188,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/ModulePreservation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/ModuleTFNetwork.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/ModuleTraitCorrelation.html</loc>
@@ -199,10 +268,76 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/SelectNetworkGenes.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetActiveWGCNA.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetAvgModuleExpr.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetDatExpr.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetEnrichrTable.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMEs.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMetacellObject.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetModulePreservation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetModuleScores.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetModuleTraitCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetModuleUMAP.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetModules.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMotifMatrix.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMotifOverlap.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMotifScores.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMotifTargets.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMotifs.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetMultiExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetNetworkData.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetPFMList.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetPowerTable.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetROCData.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetWGCNAGenes.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetWGCNAGroup.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetWGCNAParams.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetupForWGCNA.html</loc>
@@ -224,5 +359,14 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/metacells_by_groups.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/scale01.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/shuffle_points.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/umap_theme.html</loc>
   </url>
 </urlset>

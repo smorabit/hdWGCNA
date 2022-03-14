@@ -35,6 +35,6 @@ This function sets up the expression matrix input for consensus WGCNA based on
 the metacell expression matrix, or from the full expression matrix.
 }
 \examples{
-SetDatExpr(pbmc)
+SetDatExpr
 }
 \keyword{scRNA-seq}

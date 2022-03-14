@@ -193,7 +193,7 @@ Code
 </summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot the snATAC-seq clusters:</span>
 <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_atac</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">TRUE</span>, raster<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span>
    <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
 
@@ -266,7 +266,7 @@ Code
 Code
 </summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the projected hMEs</span>
-<span class="va">mod_scores</span> <span class="op">&lt;-</span>  <span class="fu">GetModuleScores</span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span>
+<span class="va">mod_scores</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/GetModuleScores.html">GetModuleScores</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span>
 <span class="va">mod_scores</span> <span class="op">&lt;-</span> <span class="va">mod_scores</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mod_scores</span><span class="op">)</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
 
 <span class="co"># add hMEs to Seurat meta-data:</span>
@@ -356,7 +356,7 @@ Code
 
 
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Zhou et al 5xFAD'</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'mouse_umap.png'</span><span class="op">)</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">400</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5</span><span class="op">)</span>
@@ -422,7 +422,7 @@ Code
 Code
 </summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the projected hMEs</span>
-<span class="va">mod_scores</span> <span class="op">&lt;-</span>  <span class="fu">GetModuleScores</span><span class="op">(</span><span class="va">seurat_mouse</span><span class="op">)</span>
+<span class="va">mod_scores</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/GetModuleScores.html">GetModuleScores</a></span><span class="op">(</span><span class="va">seurat_mouse</span><span class="op">)</span>
 <span class="va">mod_scores</span> <span class="op">&lt;-</span> <span class="va">mod_scores</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mod_scores</span><span class="op">)</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
 
 <span class="co"># add hMEs to Seurat meta-data:</span>
@@ -528,7 +528,7 @@ Code
 
 
 <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_vis</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_vis</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span>

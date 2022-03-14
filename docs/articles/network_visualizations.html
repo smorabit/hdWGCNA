@@ -223,7 +223,7 @@
 <p>Next we will make a simple visualization of the UMAP using ggplot2:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the hub gene UMAP table from the seurat object</span>
-<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="co"># plot with ggplot</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -231,7 +231,7 @@
    color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, <span class="co"># color each point by WGCNA module</span>
    size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="co"># size of each point based on intramodular connectivity</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap.png" width="600" height="600"></p>
 <p>In this plot, each point represents a single gene. The size of each dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is sufficient to visualize the genes in the module UMAP, but here we are not visualizing the underlying network. We can use the function <code>ModuleUMAPPlot</code> to plot the genes and their co-expression relationships.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -270,7 +270,7 @@ Code
   <span class="op">)</span>
 
   <span class="co"># add to ongoing dataframe</span>
-  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
   <span class="va">cur_df</span><span class="op">$</span><span class="va">n_hubs</span> <span class="op">&lt;-</span> <span class="va">cur_hubs</span>
   <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cur_df</span><span class="op">)</span>
 <span class="op">}</span>
@@ -290,7 +290,7 @@ Code
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://gganimate.com/reference/view_follow.html" class="external-link">view_follow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://gganimate.com/reference/enter_exit.html" class="external-link">enter_fade</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
 </details><p><img src="figures/network_vis/hub_umap.gif"></p>
@@ -313,7 +313,7 @@ Code
 <span class="op">)</span>
 
 <span class="co"># get the hub gene UMAP table from the seurat object</span>
-<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="co"># plot with ggplot</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -321,7 +321,7 @@ Code
    color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, <span class="co"># color each point by WGCNA module</span>
    size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="co"># size of each point based on intramodular connectivity</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_supervised.png" width="600" height="600"></p>
 <p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we made previously. To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
 <details><summary>
@@ -346,7 +346,7 @@ Code
   <span class="op">)</span>
 
   <span class="co"># add to ongoing dataframe</span>
-  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu">GetModuleUMAP</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
   <span class="va">cur_df</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="va">cur_weight</span>
   <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cur_df</span><span class="op">)</span>
 <span class="op">}</span>
@@ -366,7 +366,7 @@ Code
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://gganimate.com/reference/view_follow.html" class="external-link">view_follow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://gganimate.com/reference/enter_exit.html" class="external-link">enter_fade</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">umap_theme</span><span class="op">(</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
 </details><p><img src="figures/network_vis/umap_animation.gif"></p>
