@@ -11,6 +11,7 @@ ModuleUMAPPlot(
   label_hubs = 5,
   edge.alpha = 0.25,
   vertex.label.cex = 0.5,
+  label_genes = NULL,
   return_graph = FALSE,
   wgcna_name = NULL,
   ...
