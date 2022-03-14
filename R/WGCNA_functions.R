@@ -58,8 +58,10 @@ SelectNetworkGenes <- function(
     } else{
       # identify genes that are expressed in at least some fraction of cells
       print('before size')
+      print(class(expr_mat))
       print(dim(expr_mat))
-      gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
+      # gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
+      gene_filter <- rowSums(as.matrix(expr_mat)) >= round(fraction*ncol(seurat_obj));
       print('after')
       gene_list <- rownames(seurat_obj)[gene_filter]
     }
