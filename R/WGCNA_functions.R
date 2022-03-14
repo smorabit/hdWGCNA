@@ -36,8 +36,8 @@ SelectNetworkGenes <- function(
       cur
     }))
 
-  #  print('size')
-    #print(dim(expr_mat))
+    print('size')
+    print(dim(expr_mat))
 
     group_gene_list <- list()
     if(!is.null(group.by)){
@@ -57,7 +57,9 @@ SelectNetworkGenes <- function(
 
     } else{
       # identify genes that are expressed in at least some fraction of cells
+      print('before')
       gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
+      print('after')
       gene_list <- rownames(seurat_obj)[gene_filter]
     }
 
