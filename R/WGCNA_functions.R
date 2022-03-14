@@ -836,11 +836,6 @@ ModuleConnectivity <- function(
   if(is.null(assay)){assay <- params$metacell_assay}
   if(is.null(slot)){slot <- params$metacell_slot}
 
-  print(assay)
-  print(slot)
-  print(head(genes_use))
-  print(class(GetAssayData(seurat_obj, assay=assay, slot=slot)))
-
   if(!is.null(group.by)){
     cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% rownames
     MEs <- MEs[cells.use,]
@@ -856,9 +851,6 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   datExpr <- t(as.matrix(exp_mat))
-
-  print('datExpr')
-  print(dim(datExpr))
 
   print('running signedKME:')
 
