@@ -24,22 +24,20 @@ SelectNetworkGenes <- function(
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
 
-
   # handle different selection strategies
   if(gene_select == "fraction"){
-
-    print('here1')
 
     # binarize counts matrix in chunks to save memory
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
     chunks <- cut(1:nrow(expr_mat), n_chunks)
     expr_mat <- do.call(rbind, lapply(levels(chunks), function(x){
-      print(x)
       cur <- expr_mat[chunks == x,]
       cur[cur > 0] <- 1
       cur
     }))
-    print('here')
+
+  #  print('size')
+    #print(dim(expr_mat))
 
     group_gene_list <- list()
     if(!is.null(group.by)){
@@ -61,7 +59,6 @@ SelectNetworkGenes <- function(
       # identify genes that are expressed in at least some fraction of cells
       gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
       gene_list <- rownames(seurat_obj)[gene_filter]
-      print('here')
     }
 
   } else if(gene_select == "variable"){
@@ -122,7 +119,6 @@ SetupForWGCNA <- function(
 
   # set the active WGCNA group, this is used for actually
   # making the co-expression network
-  # TODO: I never actually use WGCNAGroup anywhere??
   if(is.null(group)){
     seurat_obj <- SetWGCNAGroup(seurat_obj, group='all', wgcna_name)
   } else{
