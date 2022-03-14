@@ -842,7 +842,7 @@ ModuleConnectivity <- function(
   print(class(GetAssayData(seurat_obj, assay=assay, slot=slot)))
 
   if(!is.null(group.by)){
-    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% colnames
+    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% rownames
   } else{
     cells.use <- colnames(seurat_obj)
   }
