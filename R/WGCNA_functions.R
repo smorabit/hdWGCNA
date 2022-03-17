@@ -48,14 +48,14 @@ SelectNetworkGenes <- function(
         cur_expr <- expr_mat[,seurat_obj@meta.data[[group.by]] == cur_group]
         print(dim(cur_expr))
 
-        gene_filter <- rowSums(as.matrix(cur_expr)) >= round(fraction*ncol(cur_expr));
+        gene_filter <- Matrix::rowSums(cur_expr) >= round(fraction*ncol(cur_expr));
         group_gene_list[[cur_group]] <- rownames(seurat_obj)[gene_filter]
       }
       gene_list <- unique(unlist(group_gene_list))
 
     } else{
       # identify genes that are expressed in at least some fraction of cells
-      gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
+      gene_filter <- Matrix::rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
       gene_list <- rownames(seurat_obj)[gene_filter]
     }
 
