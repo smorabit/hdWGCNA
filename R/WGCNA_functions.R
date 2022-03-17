@@ -14,7 +14,6 @@
 SelectNetworkGenes <- function(
   seurat_obj,
   gene_select="variable", fraction=0.05,
-  n_chunks = 5, # for binarizing the exp matrix. This can be increased to save memory
   group.by=NULL, # should be a column in the Seurat object, eg clusters
   gene_list=NULL, wgcna_name=NULL
  ){
@@ -29,9 +28,9 @@ SelectNetworkGenes <- function(
 
     # binarize counts matrix in chunks to save memory
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
+    n_chunks <- ceiling(ncol(expr_mat) / 10000)
     chunks <- cut(1:nrow(expr_mat), n_chunks)
     expr_mat <- do.call(rbind, lapply(levels(chunks), function(x){
-      print(x)
       cur <- expr_mat[chunks == x,]
       cur[cur > 0] <- 1
       cur
@@ -40,7 +39,6 @@ SelectNetworkGenes <- function(
     group_gene_list <- list()
     if(!is.null(group.by)){
       # identify genes that are expressed
-      print(group.by)
       groups <- unique(seurat_obj@meta.data[[group.by]])
       for(cur_group in groups){
 
