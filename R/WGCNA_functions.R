@@ -31,6 +31,7 @@ SelectNetworkGenes <- function(
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
     chunks <- cut(1:nrow(expr_mat), n_chunks)
     expr_mat <- do.call(rbind, lapply(levels(chunks), function(x){
+      print(x)
       cur <- expr_mat[chunks == x,]
       cur[cur > 0] <- 1
       cur
@@ -54,7 +55,7 @@ SelectNetworkGenes <- function(
 
     } else{
       # identify genes that are expressed in at least some fraction of cells
-      gene_filter <- rowSums(as.matrix(expr_mat)) >= round(fraction*ncol(seurat_obj));
+      gene_filter <- rowSums(expr_mat) >= round(fraction*ncol(seurat_obj));
       gene_list <- rownames(seurat_obj)[gene_filter]
     }
 
