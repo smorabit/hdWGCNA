@@ -64,13 +64,64 @@ see that the module names have been updated.
 ## Re-coloring scWGCNA modules
 
 Here we demonstrate how to assign new colors to the scWGCNA modules using the
-`ResetModuleColors` function. This function simply takes a list of new colors to
-replace the old colors. The ordering of the colors depends on the factor level
+`ResetModuleColors` function. This function takes a list of new colors to
+replace the old colors, or a named list in order to change the colors selected modules.
+The ordering of the colors depends on the factor level
 of the scWGCNA modules themselves. Additionally, this function ensures that the
 "grey moddule", which contains genes that did not get assigned to a co-expression
-module, remains grey. In this example, we use the
+module, remains grey.
+
+### Change the colors of all modules
+
+In this example, we use the
 [`MetBrewer`](https://github.com/BlakeRMills/MetBrewer) package to select a
-new color scheme for our modules.
+new color scheme for our modules. First, we can make a table to show the
+original module-color pairings.
+
+```{r eval=FALSE}
+
+# get the module table
+modules <- GetModules(seurat_obj)
+mods <- unique(modules$module)
+
+# make a table of the module-color pairings
+mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
+  distinct %>% arrange(module)
+rownames(mod_colors_df) <- mod_colors_df$module
+
+# print the dataframe
+mod_colors_df
+
+```
+
+<details> <summary> Output </summary>
+```
+module        color
+INH-M1   INH-M1   lightgreen
+INH-M2   INH-M2  lightyellow
+INH-M3   INH-M3         blue
+INH-M4   INH-M4         cyan
+INH-M5   INH-M5        black
+INH-M6   INH-M6        green
+INH-M7   INH-M7        brown
+INH-M8   INH-M8       purple
+INH-M9   INH-M9       salmon
+INH-M10 INH-M10    turquoise
+INH-M11 INH-M11  greenyellow
+INH-M12 INH-M12       yellow
+INH-M13 INH-M13          tan
+INH-M14 INH-M14    lightcyan
+INH-M15 INH-M15       grey60
+INH-M16 INH-M16 midnightblue
+INH-M17 INH-M17          red
+grey       grey         grey
+INH-M18 INH-M18      magenta
+INH-M19 INH-M19         pink
+INH-M20 INH-M20    royalblue
+```
+</details>
+
+Next, we will use `ResetModuleColors` to change all of the module-color pairings.
 
 ```{r eval=FALSE}
 
@@ -93,17 +144,18 @@ seurat_obj <- ResetModuleColors(seurat_obj, new_colors)
 
 ```
 
-Now we will test two of the different visualization functions to see if the colors
+Now we will test some of the different visualization functions to check that the colors
 were successfully modified.
 
-
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 PlotDendrogram(seurat_obj, main='Recolored Dendrogram')
 ```
+</details>
 
-![](figures/customization/dendro.png)
+<img src="figures/customization/dendro.png" width="700" height="700">
 
-
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
 
 # make a featureplot of hMEs for each module
@@ -113,11 +165,12 @@ plot_list <- ModuleFeaturePlot(seurat_obj)
 wrap_plots(plot_list, ncol=6)
 
 ```
+</details>
 
-![](figures/customization/featureplot.png)
+<img src="figures/customization/featureplot.png" width="700" height="700">
 
+<details> <summary> Code </summary>
 ```{r eval=FALSE}
-
 ModuleUMAPPlot(
   seurat_obj,
   edge.alpha=0.15,
@@ -125,7 +178,37 @@ ModuleUMAPPlot(
   edge_prop=0.2,
   label_hubs=2
 )
+```
+</details>
+
+<img src="figures/customization/module_umap.png" width="700" height="700">
+
+### Change the colors of selected modules
+
+In this example, we will change the colors of only two modules rather than all of them.
+We need to supply  `ResetModuleColors` with a named list detailing which modules
+we want to change, and which color to change them to. We will make a FeaturePlot
+before and after changing the colors to test if they were properly changed.
+
+```{r eval=FALSE}
+
+
+# make a featureplot before changing colors
+pl1 <- ModuleFeaturePlot(seurat_obj, module_names = c('INH-M5', 'INH-M12', 'INH-M16'))
+
+# set new colors
+new_colors <- list('INH-M12' = 'darksalmon', 'INH-M5' = 'deeppink')
+seurat_obj <- ResetModuleColors(seurat_obj, new_colors)
+
+# make a featureplot after changing colors
+pl2 <- ModuleFeaturePlot(seurat_obj, module_names = c('INH-M5', 'INH-M12', 'INH-M16'))
+
+# stitch together with patchwork
+wrap_plots(c(pl1, pl2), ncol=3)
 
 ```
 
-![](figures/customization/module_umap.png)
+<img src="figures/customization/selected_featureplot.png" width="700" height="700">
+
+We successfully changed the color of modules INH-M5 and INH-M12, while leaving all
+of the other module colors as they were.

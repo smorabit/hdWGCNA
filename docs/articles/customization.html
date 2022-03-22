@@ -175,8 +175,49 @@
 <div class="section level2">
 <h2 id="re-coloring-scwgcna-modules">Re-coloring scWGCNA modules<a class="anchor" aria-label="anchor" href="#re-coloring-scwgcna-modules"></a>
 </h2>
-<p>Here we demonstrate how to assign new colors to the scWGCNA modules using the <code>ResetModuleColors</code> function. This function simply takes a list of new colors to replace the old colors. The ordering of the colors depends on the factor level of the scWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey. In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules.</p>
+<p>Here we demonstrate how to assign new colors to the scWGCNA modules using the <code>ResetModuleColors</code> function. This function takes a list of new colors to replace the old colors, or a named list in order to change the colors selected modules. The ordering of the colors depends on the factor level of the scWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey.</p>
+<div class="section level3">
+<h3 id="change-the-colors-of-all-modules">Change the colors of all modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-all-modules"></a>
+</h3>
+<p>In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules. First, we can make a table to show the original module-color pairings.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the module table</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
+
+<span class="co"># make a table of the module-color pairings</span>
+<span class="va">mod_colors_df</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">modules</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mod_colors_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">mod_colors_df</span><span class="op">$</span><span class="va">module</span>
+
+<span class="co"># print the dataframe</span>
+<span class="va">mod_colors_df</span></code></pre></div>
+<details><summary>
+Output
+</summary><pre><code>module        color
+INH-M1   INH-M1   lightgreen
+INH-M2   INH-M2  lightyellow
+INH-M3   INH-M3         blue
+INH-M4   INH-M4         cyan
+INH-M5   INH-M5        black
+INH-M6   INH-M6        green
+INH-M7   INH-M7        brown
+INH-M8   INH-M8       purple
+INH-M9   INH-M9       salmon
+INH-M10 INH-M10    turquoise
+INH-M11 INH-M11  greenyellow
+INH-M12 INH-M12       yellow
+INH-M13 INH-M13          tan
+INH-M14 INH-M14    lightcyan
+INH-M15 INH-M15       grey60
+INH-M16 INH-M16 midnightblue
+INH-M17 INH-M17          red
+grey       grey         grey
+INH-M18 INH-M18      magenta
+INH-M19 INH-M19         pink
+INH-M20 INH-M20    royalblue</code></pre>
+</details><p>Next, we will use <code>ResetModuleColors</code> to change all of the module-color pairings.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load MetBrewer color scheme pakckage</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span>
 
@@ -193,18 +234,24 @@
 
 <span class="co"># reset the module colors</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></code></pre></div>
-<p>Now we will test two of the different visualization functions to see if the colors were successfully modified.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Now we will test some of the different visualization functions to check that the colors were successfully modified.</p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Recolored Dendrogram'</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/customization/dendro.png"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+</details><p><img src="figures/customization/dendro.png" width="700" height="700"></p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
 <span class="co"># stitch together with patchwork</span>
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/customization/featureplot.png"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+</details><p><img src="figures/customization/featureplot.png" width="700" height="700"></p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
@@ -212,7 +259,28 @@
   edge_prop<span class="op">=</span><span class="fl">0.2</span>,
   label_hubs<span class="op">=</span><span class="fl">2</span>
 <span class="op">)</span></code></pre></div>
-<p><img src="figures/customization/module_umap.png"></p>
+</details><p><img src="figures/customization/module_umap.png" width="700" height="700"></p>
+</div>
+<div class="section level3">
+<h3 id="change-the-colors-of-selected-modules">Change the colors of selected modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-selected-modules"></a>
+</h3>
+<p>In this example, we will change the colors of only two modules rather than all of them. We need to supply <code>ResetModuleColors</code> with a named list detailing which modules we want to change, and which color to change them to. We will make a FeaturePlot before and after changing the colors to test if they were properly changed.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># make a featureplot before changing colors</span>
+<span class="va">pl1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># set new colors</span>
+<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'INH-M12'</span> <span class="op">=</span> <span class="st">'darksalmon'</span>, <span class="st">'INH-M5'</span> <span class="op">=</span> <span class="st">'deeppink'</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span>
+
+<span class="co"># make a featureplot after changing colors</span>
+<span class="va">pl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># stitch together with patchwork</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pl1</span>, <span class="va">pl2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/customization/selected_featureplot.png" width="700" height="700"></p>
+<p>We successfully changed the color of modules INH-M5 and INH-M12, while leaving all of the other module colors as they were.</p>
+</div>
 </div>
   </div>
 

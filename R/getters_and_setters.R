@@ -1209,18 +1209,26 @@ ResetModuleColors <- function(
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
-  mod_colors <- dplyr::select(modules, c(module, color)) %>%
-    distinct %>% arrange(module) %>% .$color
+  mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
+    distinct %>% arrange(module)
+  mod_colors <- mod_colors_df$color
   grey_ind <- which(mod_colors == 'grey')
 
-  if(grey_ind == 1){
-    new_colors <- c('grey', new_colors)
-  } else if(grey_ind == length(mod_colors)){
-    new_colors <- c(new_colors, 'grey')
+  # case where we give a named list:
+  if(class(new_colors) == 'list'){
+    print('named list')
+    ix <- match(names(new_colors), mod_colors_df$module)
+    mod_colors_df[ix, 'color'] <- as.character(new_colors)
+    new_colors <- mod_colors_df$color
   } else{
-    new_colors <- c(new_colors[1:(grey_ind-1)], 'grey', new_colors[grey_ind:length(new_colors)])
+    if(grey_ind == 1){
+      new_colors <- c('grey', new_colors)
+    } else if(grey_ind == length(mod_colors)){
+      new_colors <- c(new_colors, 'grey')
+    } else{
+      new_colors <- c(new_colors[1:(grey_ind-1)], 'grey', new_colors[grey_ind:length(new_colors)])
+    }
   }
-  new_colors
 
   new_color_df <- data.frame(
     old = mod_colors,
