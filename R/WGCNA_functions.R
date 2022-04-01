@@ -29,7 +29,12 @@ SelectNetworkGenes <- function(
     # binarize counts matrix in chunks to save memory
     expr_mat <- GetAssayData(seurat_obj, slot='counts')
     n_chunks <- ceiling(ncol(expr_mat) / 10000)
-    chunks <- cut(1:nrow(expr_mat), n_chunks)
+
+    if(n_chunks == 1){
+      chunks <- factor(rep(1), levels=1)
+    } else{
+      chunks <- cut(1:nrow(expr_mat), n_chunks)
+    }
     expr_mat <- do.call(rbind, lapply(levels(chunks), function(x){
       cur <- expr_mat[chunks == x,]
       cur[cur > 0] <- 1
@@ -1569,8 +1574,8 @@ MotifTargetScore <- function(
  }
 
 
- #' RunModuleUMAP
- #'
+#' RunModuleUMAP
+#'
 #' Run UMAP on co-expression matrix using hub genes as features.
 #'
 #' @param seurat_obj A Seurat object
