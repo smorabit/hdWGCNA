@@ -829,6 +829,9 @@ ModuleNetworkPlot <- function(
   # create output folder
   if(!dir.exists(outdir)){dir.create(outdir)}
 
+  # tell the user that the output is going to the output dir
+  cat(paste0("Writing output files to ", outdir))
+
   # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
 
@@ -842,8 +845,6 @@ ModuleNetworkPlot <- function(
     cur %>% arrange(desc(var)) %>% .$gene_name
   })
   names(hub_list) <- mods
-
-  print('here')
 
   # loop over modules
   for(cur_mod in mods){
@@ -860,12 +861,6 @@ ModuleNetworkPlot <- function(
     cur_kME <- paste0('kME_', cur_mod)
 
     cur_genes <- hub_list[[cur_mod]]
-    print(cur_genes)
-
-    # if (length(cur_genes) < n_genes) {
-    #   n_genes <-  length(cur_genes);
-    #   n_conns <- n_genes * (n_genes - 1);
-    # }
 
     # Identify the columns in the TOM that correspond to these hub genes
     matchind <- match(cur_genes, colnames(TOM))
@@ -877,9 +872,9 @@ ModuleNetworkPlot <- function(
     reducedTOM <- matrix(0,nrow(reducedTOM),ncol(reducedTOM));
     reducedTOM[connections2keep] <- 1;
 
-    print('here')
-    print(dim(reducedTOM))
-    print(n_genes)
+    # print('here')
+    # print(dim(reducedTOM))
+    # print(n_genes)
 
     # only label the top 10 genes?
     if(label_center){cur_genes[11:25] <- ''}

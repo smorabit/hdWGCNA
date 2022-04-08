@@ -246,14 +246,31 @@ for the INH cells in our Seurat object:
 
 seurat_obj <- SetDatExpr(
   seurat_obj,
-  group.by='cell_type', # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
   group_name = "INH", # the name of the group of interest in the group.by column
-  use_metacells=TRUE,
-  slot = 'data'
+  group.by='cell_type' # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
 )
 
 
 ```
+
+<details> <summary> Selecting more than one group </summary>
+
+Suppose that you want to perform co-expression network analysis on more than one
+cell type or cluster simultaneously. `SetDatExpr` can be run with slighly
+different settings to achieve the desired result by passing a character vector
+to the `group_name` parameter.
+
+```{r eval=FALSE}
+
+seurat_obj <- SetDatExpr(
+  seurat_obj,
+  group_name = c("INH", "EX"),
+  group.by='cell_type'
+)
+
+```
+
+</details>
 
 
 ## Select soft-power threshold

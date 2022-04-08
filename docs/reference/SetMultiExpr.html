@@ -146,31 +146,30 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     genes_use &lt;- GetWGCNAGenes(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     assay &lt;- params$metacell_assay</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("n_genes:")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(length(genes_use))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(genes_use))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (use_metacells) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- GetMetacellObject(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(group.by %in% colnames(s_obj@meta.data))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         m_cell_message &lt;- ""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (use_metacells) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             m_cell_message &lt;- "metacell"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0(group.by, " not found in the meta data of the ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             m_cell_message, " Seurat object"))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_meta &lt;- s_obj@meta.data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(seurat_meta))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(group.by)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_meta &lt;- seurat_meta %&gt;% subset(get(group.by) == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_meta &lt;- seurat_meta %&gt;% subset(get(group.by) %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             group_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(seurat_meta))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(multi.group.by)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_meta &lt;- seurat_meta %&gt;% subset(get(multi.group.by) == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_meta &lt;- seurat_meta %&gt;% subset(get(multi.group.by) %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             multi_group_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(seurat_meta))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cells &lt;- rownames(seurat_meta)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("cells:")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(cells))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(length(cells))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr &lt;- as.data.frame(Seurat::GetAssayData(s_obj, assay = assay, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         slot = slot)[genes_use, cells])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr &lt;- as.data.frame(t(datExpr))</span>
@@ -178,7 +177,6 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         gene_list = genes_use[WGCNA::goodGenes(datExpr, ...)]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         datExpr &lt;- datExpr[, gene_list]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(datExpr))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_seurat) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- SetWGCNAGenes(seurat_obj, gene_list, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj@misc[[wgcna_name]]$datExpr &lt;- datExpr</span>
@@ -189,7 +187,7 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fa2af178250&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe879dd4a28&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

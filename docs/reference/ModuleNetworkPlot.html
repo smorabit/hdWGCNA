@@ -148,6 +148,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!dir.exists(outdir)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dir.create(outdir)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cat(paste0("Writing output files to ", outdir))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     TOM &lt;- GetTOM(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     n_hubs &lt;- 25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     hub_list &lt;- lapply(mods, function(cur_mod) {</span>
@@ -158,7 +159,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur %&gt;% arrange(desc(var)) %&gt;% .$gene_name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(hub_list) &lt;- mods</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("here")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (cur_mod in mods) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         print(cur_mod)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_color &lt;- modules %&gt;% subset(module == cur_mod) %&gt;% </span>
@@ -167,16 +167,12 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         n_conns = 500</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_kME &lt;- paste0("kME_", cur_mod)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_genes &lt;- hub_list[[cur_mod]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print(cur_genes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         matchind &lt;- match(cur_genes, colnames(TOM))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         reducedTOM = TOM[matchind, matchind]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         orderind &lt;- order(reducedTOM, decreasing = TRUE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         connections2keep &lt;- orderind[1:n_conns]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         reducedTOM &lt;- matrix(0, nrow(reducedTOM), ncol(reducedTOM))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         reducedTOM[connections2keep] &lt;- 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print("here")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print(dim(reducedTOM))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print(n_genes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (label_center) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             cur_genes[11:25] &lt;- ""</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
@@ -201,7 +197,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dev.off()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fa2ac8c4b48&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe87401b698&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:scWGCNA&gt;</span>
 </code></pre></div>
     </div>

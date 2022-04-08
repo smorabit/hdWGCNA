@@ -155,10 +155,10 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 
 #' SetDatExpr
 #'
-#' This function sets up the expression matrix from the metacell object.
+#' This function sets up the gene expression matrix for co-expression network analysis.
 #'
 #' @param seurat_obj A Seurat object
-#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents.
+#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
 #' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
 #' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
@@ -190,10 +190,6 @@ SetDatExpr <- function(
   modules <- GetModules(seurat_obj, wgcna_name)
   assay <- params$metacell_assay
 
-  print('n_genes:')
-  print(length(genes_use))
-  print(head(genes_use))
-
   # use metacells or whole seurat object?
   if(use_metacells){
     s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
@@ -201,27 +197,31 @@ SetDatExpr <- function(
     s_obj <- seurat_obj
   }
 
+  # check that group.by is in the Seurat object & in the metacell object:
+  if(!(group.by %in% colnames(s_obj@meta.data))){
+    m_cell_message <- ""
+    if(use_metacells){m_cell_message <- "metacell"}
+    stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+  }
+
   # get the metadata from the seurat object:
   seurat_meta <- s_obj@meta.data
-  print(dim(seurat_meta))
 
   # columns to group by for cluster/celltype
   if(!is.null(group.by)){
-    seurat_meta <- seurat_meta %>% subset(get(group.by) == group_name)
+    seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
   }
-  print(dim(seurat_meta))
+
+  # check that the group names are actually in the group.by column:
+
 
   # subset further if multiExpr:
   if(!is.null(multi.group.by)){
-    seurat_meta <- seurat_meta %>% subset(get(multi.group.by) == multi_group_name)
+    seurat_meta <- seurat_meta %>% subset(get(multi.group.by) %in% multi_group_name)
   }
-  print(dim(seurat_meta))
 
   # get list of cells to use
   cells <- rownames(seurat_meta)
-  print('cells:')
-  print(head(cells))
-  print(length(cells))
 
   # get expression data from seurat obj
   datExpr <- as.data.frame(
@@ -241,7 +241,6 @@ SetDatExpr <- function(
     datExpr <- datExpr[,gene_list]
   }
 
-  print(dim(datExpr))
 
   if(return_seurat){
 

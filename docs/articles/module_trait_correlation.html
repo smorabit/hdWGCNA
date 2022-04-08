@@ -137,7 +137,8 @@
 
     
     
-<p>Load the snRNA-seq data and the required libraries:</p>
+<p>In this tutorial, we cover how to relate co-expression modules to biological and technical variables. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">scWGCNA basics</a>.</p>
+<p>First Load the snRNA-seq data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
@@ -156,16 +157,28 @@
 
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
-<p>Compute module trait correlation split by cell type:</p>
+<div class="section level2">
+<h2 id="compute-correlations">Compute correlations<a class="anchor" aria-label="anchor" href="#compute-correlations"></a>
+</h2>
+<p>Here we use the function <code>ModuleTraitCorrelation</code> to correlate selected variables with module eigengenes. This function computes correlations for specified groupings of cells, since we can expect that some variables may be correlated with certain modules in certain cell groups but not in others. There are certain types of variables that can be used for this analysis while others should not be used.</p>
+<p><strong>Variables that can be used</strong></p>
+<ul>
+<li>Numeric variables</li>
+<li>Categorical variables with only 2 categories, such as “control” and “condition”.</li>
+<li>Categorical variables with a sequential relationship. For example, you may have a “disease stage” category ordered by “healthy”, “stage 1”, “stage 2”, “stage 3”, etc. In this case, you must ensure that the variable is stored as a factor and that the levels are set appropriately.</li>
+</ul>
+<p><strong>Variables that can not be used</strong></p>
+<ul>
+<li>Categorical variables with more than two categories that are not sequentially linked. For example, suppose you have a dataset consiting of three strains of transgenic mice and one control. Categorical variables must be converted to numeric before running the correlation, so you will end up with a correlation that is not at all biologically meaningful since there’s not a way to order the three different strains in a way that makes sense as a numeric variable. In this case, you should just set up a pairwise correlation between control and each strain separately. We often have a “Sample ID” variable indicating which cell came from which sample, and this is a variable that does not necessarily make sense to order in any particular way, so a variable like this would not be suitable for module-trait correlation analysis.</li>
+</ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span><span class="op">$</span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">Sample</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">Sample</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="co"># convert sex to factor</span>
 <span class="va">seurat_obj</span><span class="op">$</span><span class="va">msex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">msex</span><span class="op">)</span>
+
+<span class="co"># convert age_death to numeric</span>
 <span class="va">seurat_obj</span><span class="op">$</span><span class="va">age_death</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">age_death</span><span class="op">)</span>
 
-<span class="va">cur_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Sample'</span>, <span class="st">'total_counts_mt'</span>, <span class="st">'n_genes_by_counts'</span>, <span class="st">'age_death'</span>, <span class="st">'braaksc'</span>, <span class="st">'msex'</span><span class="op">)</span>
-<span class="va">data_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">cur_traits</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">[</span>,<span class="va">x</span><span class="op">]</span><span class="op">)</span><span class="op">}</span><span class="op">)</span>
-
-<span class="co"># list of traits</span>
+<span class="co"># list of traits to correlate</span>
 <span class="va">cur_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'braaksc'</span>, <span class="st">'pmi'</span>, <span class="st">'msex'</span>, <span class="st">'age_death'</span>, <span class="st">'doublet_scores'</span>, <span class="st">'nCount_RNA'</span>, <span class="st">'nFeature_RNA'</span>, <span class="st">'total_counts_mt'</span><span class="op">)</span>
 
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTraitCorrelation.html">ModuleTraitCorrelation</a></span><span class="op">(</span>
@@ -173,8 +186,44 @@
   traits <span class="op">=</span> <span class="va">cur_traits</span>,
   group.by<span class="op">=</span><span class="st">'cell_type'</span>
 <span class="op">)</span></code></pre></div>
-<p>Plot the results as a heatmap for each cell type:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>For any categorical variables used, this function prints out a warning message to tell the user what order the categories are listed in, just to make sure that it makes sense.</p>
+<details><summary>
+See warning message
+</summary><pre><code>Warning message:
+In ModuleTraitCorrelation(seurat_obj, traits = cur_traits, group.by = "cell_type") :
+  Trait msex is a factor with levels 0, 1. Levels will be converted to numeric IN THIS ORDER for the correlation, is this the expected order?</code></pre>
+</details><div class="section level3">
+<h3 id="inspecting-the-output">Inspecting the output<a class="anchor" aria-label="anchor" href="#inspecting-the-output"></a>
+</h3>
+<p>We can run the function <code>GetModuleTraitCorrelation</code> to retrieve the output of this function.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the mt-correlation results</span>
+<span class="va">mt_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleTraitCorrelation.html">GetModuleTraitCorrelation</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mt_cor</span><span class="op">)</span></code></pre></div>
+<pre><code>[1] "cor"  "pval" "fdr"</code></pre>
+<p><code>mt_cor</code> is a list containing three items; <code>cor</code> which holds the correlation results, <code>pval</code> which holds the correlation p-values, and <code>fdr</code> which holds the FDR-corrected p-values.</p>
+<p>Each of these items is a list where each element is a dataframe for each of the correlation tests that were performed.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mt_cor</span><span class="op">$</span><span class="va">cor</span><span class="op">)</span></code></pre></div>
+<pre><code>[1] "all_cells" "INH"       "EX"        "OPC"       "ODC"       "ASC"
+[7] "MG"</code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mt_cor</span><span class="op">$</span><span class="va">cor</span><span class="op">$</span><span class="va">INH</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<pre><code>INH-M1       INH-M2       INH-M3      INH-M4        INH-M5
+braaksc         0.040786737  0.090483529 -0.032898347  0.07570061 -0.0156434561
+pmi             0.018372836 -0.030364143  0.035579410 -0.01642725  0.0004368311
+msex           -0.032901606  0.009628401  0.014598909  0.00144740 -0.0126589860
+age_death      -0.106830840 -0.154190736  0.000779827 -0.14647123  0.0080354876
+doublet_scores  0.005359932  0.004313248 -0.282622533 -0.20010529 -0.2921721048
+nCount_RNA     -0.192697871 -0.176522750 -0.427046078 -0.41516830 -0.1119312303</code></pre>
+</div>
+</div>
+<div class="section level2">
+<h2 id="plot-correlation-heatmap">Plot Correlation Heatmap<a class="anchor" aria-label="anchor" href="#plot-correlation-heatmap"></a>
+</h2>
+<p>We can plot the results of our correlation analysis using the <code>PlotModuleTraitCorrelation</code> function. This function creates a separate heatmap for each of the correlation matrices, and then assembles them into one plot using patchwork.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotModuleTraitCorrelation.html">PlotModuleTraitCorrelation</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   label <span class="op">=</span> <span class="st">'fdr'</span>,
@@ -189,11 +238,14 @@
   combine<span class="op">=</span><span class="cn">TRUE</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/mt_correlation/ME_Trait_correlation_fdr.png" width="600" height="600"></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
