@@ -1,4 +1,4 @@
-# scWGCNA 0.1.0 (2022-02-17)
+# scWGCNA 0.0.1 (2022-02-17)
 ## Added
 - Placeholder.
 

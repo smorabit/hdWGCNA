@@ -6,14 +6,14 @@ articles:
   consensus_wgcna: consensus_wgcna.html
   customization: customization.html
   enrichment_analysis: enrichment_analysis.html
+  hdWGCNA: hdWGCNA.html
   module_preservation: module_preservation.html
   module_trait_correlation: module_trait_correlation.html
   motif_analysis: motif_analysis.html
   network_visualizations: network_visualizations.html
   projecting_modules: projecting_modules.html
   projecting_modules_cross: projecting_modules_cross.html
-  scWGCNA: scWGCNA.html
-last_built: 2022-05-06T04:11Z
+last_built: 2022-05-06T04:33Z
 urls:
   reference: https://smorabit.github.io/scWGCNA/reference
   article: https://smorabit.github.io/scWGCNA/articles
