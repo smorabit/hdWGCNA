@@ -2,7 +2,6 @@
 # high dimensional WGCNA <img src="man/figures/logo.png" align="right" height="20%" width="20%" />
 
 [![R](https://img.shields.io/github/r-package/v/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/tree/dev)
-[![LICENSE](https://img.shields.io/github/license/smorabit/hdWGCNA)](LICENSE.md)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/issues)
 
 
