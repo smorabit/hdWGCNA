@@ -15,7 +15,9 @@ ModuleFeaturePlot(
   point_size = 0.5,
   alpha = 1,
   label_legend = FALSE,
-  ucell = FALSE
+  ucell = FALSE,
+  raster = FALSE,
+  raster_dpi = 500
 )
 }
 \arguments{

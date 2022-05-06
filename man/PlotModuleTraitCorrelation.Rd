@@ -22,7 +22,7 @@ PlotModuleTraitCorrelation(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{plot_labels}{logical determining whether to plot the module labels#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{plot_labels}{logical determining whether to plot the module labels#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Plotting function for Module Preservation statistics

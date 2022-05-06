@@ -1,18 +1,18 @@
 ---
-title: "scWGCNA Basics"
+title: "hdWGCNA Basics"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for applying the core functions of scWGCNA.
+  Tutorial for applying the core functions of hdWGCNA.
 vignette: >
-  %\VignetteIndexEntry{scWGCNA Basics}
+  %\VignetteIndexEntry{hdWGCNA Basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Overview and prerequisites
 
-This tutorial covers the basics of using scWGCNA to perform co-expression network
-analysis on single-cell data. Here, we demonstrate scWGCNA using a processed
+This tutorial covers the basics of using hdWGCNA to perform co-expression network
+analysis on single-cell data. Here, we demonstrate hdWGCNA using a processed
 single-nucleus RNA-seq (snRNA-seq) dataset of human cortical samples from
 [this publication](https://www.nature.com/articles/s41591-019-0695-9). This
 dataset has already been fully processed using a standard single-cell
@@ -62,7 +62,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # using the cowplot theme for ggplot
 theme_set(theme_cowplot())
@@ -80,8 +80,8 @@ type just to check that we have loaded the data correctly, and to make sure that
 we have grouped cells into clusters and cell types.
 
 ```{r eval=FALSE}
-p <- DimPlot(seurat_obj, group.by='cell_type', label=FALSE) +
-   umap_theme() + ggtitle('Cell Type')
+p <- DimPlot(seurat_obj, group.by='cell_type', label=TRUE) +
+   umap_theme() + ggtitle('Zhou et al Control Cortex') + NoLegend()
 
 p
 ```
@@ -91,11 +91,11 @@ p
 
 # Set up Seurat object for WGCNA
 
-Before running scWGCNA, we first have to set up the Seurat object. Most of the
-information computed by scWGCNA is stored in the Seurat object's `@misc` slot.
-A single Seurat object can hold multiple scWGCNA experiments, for example representing
+Before running hdWGCNA, we first have to set up the Seurat object. Most of the
+information computed by hdWGCNA is stored in the Seurat object's `@misc` slot.
+A single Seurat object can hold multiple hdWGCNA experiments, for example representing
 different cell types in the same single-cell dataset. Notably, since we consider
-scWGCNA to be a downstream data analysis step, ***we do not support subsetting
+hdWGCNA to be a downstream data analysis step, ***we do not support subsetting
 the Seurat object*** after `SetupForWGCNA` has been run.
 
 Here we will set up the Seurat object using the `SetupForWGCNA` function, specifying
@@ -109,7 +109,7 @@ the `gene_select` parameter:
 * `custom`: use genes that are specified in a custom list.
 
 In this example, we will select genes that are expressed in at least 5% of cells
-in this dataset, and we will name our scWGCNA experiment "tutorial".
+in this dataset, and we will name our hdWGCNA experiment "tutorial".
 
 
 ```{r eval=FALSE}
@@ -118,15 +118,15 @@ seurat_obj <- SetupForWGCNA(
   seurat_obj,
   gene_select = "fraction", # the gene selection approach
   fraction = 0.05, # fraction of cells that a gene needs to be expressed in order to be included
-  wgcna_name = "tutorial" # the name of the scWGCNA experiment
+  wgcna_name = "tutorial" # the name of the hdWGCNA experiment
 )
 
 ```
 
 # Construct metacells
 
-After we have set up our Seurat object, the first step in the scWGCNA pipeine is
-to construct metacells from the single-cell
+After we have set up our Seurat object, the first step in running the scWGCNA pipeine
+in hdWGCNA is to construct metacells from the single-cell
 dataset. Briefly, metacells are aggregates of small groups of similar cells originating
 from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to
 identify groups of similar cells to aggregate, and then the average expression
@@ -138,12 +138,12 @@ approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cel
 epigenomic approaches, such as [Cicero](https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1), employ a similar metacell aggregation approach prior to constructing co-accessibility
 networks.
 
-scWGCNA includes a function `MetacellsByGroups` to construct metacell expression
+hdWGCNA includes a function `MetacellsByGroups` to construct metacell expression
 matrices given a single-cell dataset. This function constructs a new Seurat object
-which is stored internally in the scWGCNA experiment. The `group.by` parameter determines which
+which is stored internally in the hdWGCNA experiment. The `group.by` parameter determines which
 groups metacells will be constructed in. We only want to construct metacells from
 cells that came from the same biological sample of origin, so it is critical to
-pass that information to scWGCNA via the `group.by` parameter. Additionally, we usually
+pass that information to hdWGCNA via the `group.by` parameter. Additionally, we usually
 construct metacells for each cell type separately. Thus, in this example, we are grouping
 by `Sample` and `cell_type` to achieve the desired result.
 
@@ -179,33 +179,22 @@ seurat_obj <- NormalizeMetacells(seurat_obj)
 
 Since we store the Metacell expression information as its own Seurat object,
 we can run Seurat functions on the metacell data. We can get the metacell object
-from the scWGCNA experiment using `GetMetacellObject`.
+from the hdWGCNA experiment using `GetMetacellObject`.
 
 ```{r eval=FALSE}
 metacell_obj <- GetMetacellObject(seurat_obj)
 ```
 
 Additionally, we have included a few wrapper functions to apply the Seurat workflow
-to the metacell object within the scWGCNA experiment. Here we apply these wrapper
+to the metacell object within the hdWGCNA experiment. Here we apply these wrapper
 functions to process the metacell object and visualize the aggregated expression
 profiles in two dimensions with UMAP.
-
-```{r eval=FALSE, echo=FALSE}
-
-# process metacell seurat object with wrapper functions
-seurat_obj <- NormalizeMetacells(seurat_obj) # already run above
-seurat_obj <- ScaleMetacells(seurat_obj)
-seurat_obj <- RunPCAMetacells(seurat_obj, features=VariableFeatures(seurat_obj))
-seurat_obj <- RunHarmonyMetacells(seurat_obj, group.by.vars='Sample')
-seurat_obj <- RunUMAPMetacells(seurat_obj, reduction='harmony', dims=1:15)
-
-```
 
 ```{r eval=FALSE}
 
 seurat_obj <- seurat_obj %>%
   NormalizeMetacells() %>%
-  ScaleMetacells() %>%
+  ScaleMetacells(features=VariableFeatures(seurat_obj)) %>%
   RunPCAMetacells(features=VariableFeatures(seurat_obj)) %>%
   RunHarmonyMetacells(group.by.vars='Sample') %>%
   RunUMAPMetacells(reduction='harmony', dims=1:15)
@@ -232,7 +221,7 @@ Seurat objects stores gene expression matrices such that each row is a gene and
 each column is a cell. However, WGCNA expects each column to be a gene, thus we
 have to transpose our expression matrix. Furthermore, for this analysis, we only
 want to include the inhibitory neurons, so we have to subset our expression data
-prior to constructing the network. scWGCNA includes the `SetDatExpr` function to store the
+prior to constructing the network. hdWGCNA includes the `SetDatExpr` function to store the
 transposed expression matrix for a given group of cells that will be used for downstream
 network analysis. The metacell expression matrix
 or the single-cell expression matrix can be used for WGCNA, by default `use_metacells=TRUE`.
@@ -313,12 +302,12 @@ wrap_plots(plot_list, ncol=2)
 
 <img src="figures/basic_tutorial/softpower_ggplot.png" width="800" height="800">
 
-The general guidance for WGCNA and scWGCNA is to pick the lowest soft power threshold
+The general guidance for WGCNA and hdWGCNA is to pick the lowest soft power threshold
 that has a Scale Free Topology Model Fit greater than or equal to 0.8, so in this case
 we would select our soft power threshold as 9. Later on, the `ConstructNetwork` will
 automatically select the soft power threshold if the user does not provide one.
 
-Tthe output table from the parameter sweep is stored in the scWGCNA experiment
+Tthe output table from the parameter sweep is stored in the hdWGCNA experiment
 and can be accessed using the `GetPowerTable` function for further inspection:
 
 ```{r eval=FALSE}
@@ -342,7 +331,7 @@ Power    SFT.R.sq      slope truncated.R.sq   mean.k. median.k.    max.k.
 ## Construct co-expression network
 
 We now have everything that we need to
-construct our co-expression network. Here we use the scWGCNA function `ConstructNetwork`,
+construct our co-expression network. Here we use the hdWGCNA function `ConstructNetwork`,
 which calls the WGCNA function [`blockwiseConsensusModules`](https://www.rdocumentation.org/packages/WGCNA/versions/1.70-3/topics/blockwiseConsensusModules) under the hood. This function has
 quite a few parameters to play with if you are an advanced user, but we have selected
 default parameters that work well with many single-cell datasets. The parameters for
@@ -362,24 +351,24 @@ seurat_obj <- ConstructNetwork(
 
 ```
 
-scWGCNA also includes a function `PlotDendrogram` to visualize the WGCNA dendrogram, a common visualization
+hdWGCNA also includes a function `PlotDendrogram` to visualize the WGCNA dendrogram, a common visualization
 to show the different co-expression modules resulting from the network analysis.
 Each leaf on the dendrogram represents a single gene, and the color at the bottom
 indicates the co-expression module assignment.
 
 ```{r eval=FALSE}
 
-PlotDendrogram(seurat_obj, main='INH scWGCNA Dendrogram')
+PlotDendrogram(seurat_obj, main='INH hdWGCNA Dendrogram')
 
 ```
 
 <img src="figures/basic_tutorial/inh_dendro.png" width="600" height="600">
 
 
-# Module Eigengenes and Intramodular Connectivity
+# Module Eigengenes and Connectivity
 
 In this section we will cover how to compute module eigengenes in single cells,
-and how to compute the intramodular connectivity for each gene.
+and how to compute the eigengene-based connectivity for each gene.
 
 ## Compute harmonized module eigengenes
 
@@ -392,26 +381,16 @@ Dimensionality reduction techniques are a very hot topic in single-cell genomics
 It is well known that technical artifacts can muddy the analysis of single-cell
 datasets, and over the years there have been many methods that aim to reduce the
 effects of these artifacts. Therefore it stands to reason that MEs would be subject to
-these technical artifacts as well, and scWGCNA seeks to alleviate these effects.
+these technical artifacts as well, and hdWGCNA seeks to alleviate these effects.
 
-scWGCNA includes a function `ModuleEigengenes` to compute MEs in the Seurat object
+hdWGCNA includes a function `ModuleEigengenes` to compute MEs in the Seurat object
 using Seurat's `RunPCA` function under the hood. Additionally, we allow the user
 to apply Harmony batch correction to the MEs, yielding **harmonized module eigengenes (hMEs)**.
 
-As in the `RunPCA` step of the Seurat workflow, the expression matrix must be scaled with `ScaleData`
-before we run `ModuleEigengenes`. At this stage, the user may also wish to regress
-out certain technical factors, which we demonstrate below. The following code scales the expression matrix
-for the WGCNA genes, and then performs the module eigengene computation harmonizing
+out certain technical factors, which we demonstrate below. The following code performs the module eigengene computation harmonizing
 by the Sample of origin using the `group.by.vars` parameter.
 
 ```{r eval=FALSE}
-
-# expression matrix for all the WGCNA genes:
-seurat_obj <- Seurat::ScaleData(
- seurat_obj,
- features = GetWGCNAGenes(seurat_obj),
- vars.to.regress = c('n_genes_by_counts', 'pct_counts_mt')
-)
 
 # compute all MEs in the full single-cell dataset
 seurat_obj <- ModuleEigengenes(
@@ -439,18 +418,24 @@ MEs <- GetMEs(seurat_obj, harmonized=FALSE)
 
 In co-expression network analysis, we often want to focus on the "hub genes", those
 which are highly connected within each module. Therefore we wish to determine the
-*intramodular connectivity*, also known as *kME*, of each gene. scWGCNA includes
+*eigengene-based connectivity*, also known as *kME*, of each gene. hdWGCNA includes
 the `ModuleConnectivity` to compute the *kME* values in the full single-cell dataset,
-rather than the metacell dataset.
+rather than the metacell dataset. This function essentially computes pairwise
+correlations between genes and module eigengenes. kME can be computed for
+all cells in the dataset, but we recommend computing kME in the cell type or
+group that was previously used to run `ConstructNetwork`.
 
 ```{r eval=FALSE}
 
-# compute intramodular connectivity:
-seurat_obj <- ModuleConnectivity(seurat_obj)
+# compute eigengene-based connectivity (kME):
+seurat_obj <- ModuleConnectivity(
+  seurat_obj,
+  group.by = 'cell_type', group_name = 'INH'
+)
 
 ```
 
-For convenience, we re-name the scWGCNA modules to indicate that they are from
+For convenience, we re-name the hdWGCNA modules to indicate that they are from
 the inhibitory neuron group. More information about renaming modules can be
 found in the [module customization tutorial](customization.html).
 
@@ -464,11 +449,25 @@ seurat_obj <- ResetModuleNames(
 
 ```
 
+We can visualize the genes in each module ranked by kME using the `PlotKMEs` function.
+
+```{r eval=FALSE}
+
+# plot genes ranked by kME for each module
+p <- PlotKMEs(seurat_obj, ncol=5)
+
+p
+
+```
+
+<img src="figures/basic_tutorial/kME_distributions.png" width="800" height="800">
+
+
 ## Getting the module assignment table
 
-scWGCNA allows for easy access of the module assignment table using the `GetModules`
+hdWGCNA allows for easy access of the module assignment table using the `GetModules`
 function. This table consists of three columns: `gene_name` stores the gene's symbol or ID, `module` stores the gene's module assignment, and `color` stores a color mapping
-for each module, which is used in many downstream plotting steps. If `ModuleConnectivity` has been called on this scWGCNA experiment, this table will
+for each module, which is used in many downstream plotting steps. If `ModuleConnectivity` has been called on this hdWGCNA experiment, this table will
 have additional columns for the *kME* of each module.
 
 ```{r eval=FALSE}
@@ -476,13 +475,29 @@ have additional columns for the *kME* of each module.
 # get the module assignment table:
 modules <- GetModules(seurat_obj)
 
+# show the first 6 columns:
+head(modules[,1:6])
+
 ```
 
-This wraps up the critical analysis steps for scWGCNA, so remember to save your
+<details> <summary> Output</summary>
+```
+gene_name  module color   kME_INH-M1   kME_INH-M2    kME_INH-M3
+AL627309.1 AL627309.1    grey  grey -0.032349090  0.029917426  0.0379323320
+LINC01409   LINC01409 INH-M19 brown -0.045140924 -0.013473381  0.0102194168
+LINC01128   LINC01128    grey  grey  0.050793988  0.109578251  0.1153173093
+NOC2L           NOC2L    grey  grey  0.032490535  0.164524557  0.1699131451
+AGRN             AGRN INH-M19 brown -0.008488577  0.035558532  0.0379326966
+C1orf159     C1orf159    grey  grey -0.015618737  0.002235229 -0.0003824554
+
+```
+</details>
+
+This wraps up the critical analysis steps for hdWGCNA, so remember to save your
 output.
 
 ```{r eval=FALSE}
-saveRDS(seurat_obj, file='scWGCNA_object.rds')
+saveRDS(seurat_obj, file='hdWGCNA_object.rds')
 ```
 
 
@@ -492,7 +507,7 @@ Gene scoring analysis is a popular method in single-cell transcriptomics for com
 a score for the overall signature of a set of genes. Seurat implements their own
 gene scoring technique using the `AddModuleScore` function, but there are also
 alternative approaches such as [UCell](https://github.com/carmonalab/UCell).
-scWGCNA includes the function `ModuleExprScore` to compute gene scores for
+hdWGCNA includes the function `ModuleExprScore` to compute gene scores for
 a give number of genes for each module, using either the Seurat or UCell algorithm.
 
 ```{r eval=FALSE}
@@ -518,14 +533,14 @@ seurat_obj <- ModuleExprScore(
 
 # Basic Visualization
 
-Here we showcase some of the basic visualization capabilities of scWGCNA,
+Here we showcase some of the basic visualization capabilities of hdWGCNA,
 and we demonstrate how to use some of Seurat's built-in plotting tools to
-visualize our scWGCNA results. Note that we have a separate tutorial for visualization of the scWGCNA networks.
+visualize our hdWGCNA results. Note that we have a separate tutorial for visualization of the hdWGCNA networks.
 
 ## Module Feature Plots
 
 [FeaturePlot](https://www.rdocumentation.org/packages/Seurat/versions/4.1.0/topics/FeaturePlot) is a commonly used Seurat visualization to show a feature of interest
-directly on the dimensionality reduction. scWGCNA includes the `ModuleFeaturePlot`
+directly on the dimensionality reduction. hdWGCNA includes the `ModuleFeaturePlot`
 function to consruct FeaturePlots for each co-expression module colored by each
 module's uniquely assigned color.
 
@@ -543,7 +558,7 @@ wrap_plots(plot_list, ncol=6)
 
 ```
 
-<img src="figures/basic_tutorial/ME_featureplot.png" width="600" height="600">
+<img src="figures/basic_tutorial/ME_featureplot.png" width="800" height="800">
 
 
 We can also plot the hub gene signature score using the same function:
@@ -555,6 +570,7 @@ plot_list <- ModuleFeaturePlot(
   seurat_obj,
   features='scores', # plot the hub gene scores
   order='shuffle' # order so cells are shuffled
+  ucell = TRUE # depending on Seurat vs UCell for gene scoring
 )
 
 # stitch together with patchwork
@@ -562,11 +578,11 @@ wrap_plots(plot_list, ncol=6)
 
 ```
 
-<img src="figures/basic_tutorial/ME_featureplot_scores.png" width="600" height="600">
+<img src="figures/basic_tutorial/ME_featureplot_scores.png" width="800" height="800">
 
 ## Module Correlations
 
-scWGCNA includes the `ModuleCorrelogram` function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package [corrplot](https://rpubs.com/melike/corrplot).
+hdWGCNA includes the `ModuleCorrelogram` function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package [corrplot](https://rpubs.com/melike/corrplot).
 
 ```{r eval=FALSE}
 
@@ -575,10 +591,10 @@ ModuleCorrelogram(seurat_obj)
 
 ```
 
-<img src="figures/basic_tutorial/ME_correlogram.png" width="500" height="500">
+<img src="figures/basic_tutorial/ME_correlogram.png" width="800" height="800">
 
 
-While scWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
+While hdWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
 the relationship between different modules, and we encourage users to explore
 their data beyond the functions that we provide here. Here is an example of
 inspecting the correlation structure of the hMEs using an alternative approach,
@@ -591,14 +607,14 @@ GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
 
 ```
 
-<img src="figures/basic_tutorial/ME_correlation_GGally.png" width="500" height="500">
+<img src="figures/basic_tutorial/ME_correlation_GGally.png" width="800" height="800">
 
 
 ## Seurat plotting functions
 
-The base Seurat plotting functions are also great for visualizing scWGCNA outputs.
+The base Seurat plotting functions are also great for visualizing hdWGCNA outputs.
 Here we demonstrate plotting hMEs using `DotPlot` and `VlnPlot`. The key to using
-Seurat's plotting functions to visualize the scWGCNA data is to add it into the
+Seurat's plotting functions to visualize the hdWGCNA data is to add it into the
 Seurat object's `@meta.data` slot:
 
 ```{r eval=FALSE}
@@ -615,13 +631,10 @@ Now we can easily use Seurat's `DotPlot` function:
 
 ```{r eval=FALSE}
 
-# modules to plot:
-selected_mods <- paste0('INH-M', c(4,5,7,8,9,10))
 
 # plot with Seurat's DotPlot function
 p <- DotPlot(
     seurat_obj,
-    features = selected_mods,
     group.by = 'cell_type'
 )
 
@@ -636,7 +649,7 @@ p
 
 ```
 
-<img src="figures/basic_tutorial/ME_dotplot.png" width="600" height="600">
+<img src="figures/basic_tutorial/ME_dotplot.png" width="800" height="800">
 
 
 Here is another example where we use Seurat's `VlnPlot` function:
@@ -646,7 +659,7 @@ Here is another example where we use Seurat's `VlnPlot` function:
 # Plot INH-M4 hME using Seurat VlnPlot function
 p <- VlnPlot(
   seurat_obj,
-  features = 'INH-M4',
+  features = 'INH-M3',
   group.by = 'cell_type',
   pt.size = 0 # don't show actual data points
 )
@@ -669,4 +682,4 @@ p
 
 In this tutorial we went over the core functions for performing co-expression
 network analysis in single-cell transcriptomics data. We encourage you to explore
-our other tutorials for downstream analysis of these scWGCNA results.
+our other tutorials for downstream analysis of these hdWGCNA results.

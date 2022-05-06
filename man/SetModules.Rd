@@ -9,7 +9,7 @@ SetModules(seurat_obj, mod_df, wgcna_name = NULL)
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{modules}{dataframe containing gene module assignments}
 }

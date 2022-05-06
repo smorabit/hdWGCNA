@@ -485,7 +485,7 @@ ModuleFeaturePlot<- function(
   seurat_obj, module_names=NULL, wgcna_name = NULL,
   reduction='umap', features = 'hMEs',
   order_points=TRUE, restrict_range=TRUE, point_size = 0.5, alpha=1,
-  label_legend = FALSE, ucell = FALSE
+  label_legend = FALSE, ucell = FALSE, raster=FALSE, raster_dpi=500
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -554,11 +554,17 @@ ModuleFeaturePlot<- function(
 
     # plot with ggplot
     p <- cur_plot_df %>%
-      ggplot(aes_string(x=x_name, y=y_name, color="val")) +
-      # ggplot(aes(x=umap1, y=umap2, color=val))
-      geom_point(size=point_size, alpha=alpha) +
-      ggtitle(cur_mod) + umap_theme() +
-      labs(color="")
+      ggplot(aes_string(x=x_name, y=y_name, color="val"))
+
+    # rasterise?
+    if(raster){
+      p <- p + ggrastr::rasterise(geom_point(size=point_size, alpha=alpha), dpi=raster_dpi)
+    } else{
+      p <- p + geom_point(size=point_size, alpha=alpha)
+    }
+
+    # add title and theme:
+    p <- p + ggtitle(cur_mod) + umap_theme() + labs(color="")
 
     # UCell?
     if(!ucell){
@@ -601,7 +607,7 @@ ModuleFeaturePlot<- function(
 #' @param n_terms the number of terms to plot in each barplot
 #' @param plot_size the size of the output .pdf files (width, height)
 #' @param logscale logical controlling whether to plot the enrichment on a log scale
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -700,7 +706,7 @@ EnrichrBarPlot <- function(
 #' @param n_terms number of enriched terms to plot for each module
 #' @param break_ties logical controlling whether or not to randomly select terms with equal enrichments to precisely enforce n_terms.
 #' @param logscale logical controlling whether to plot the enrichment on a log scale.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -796,7 +802,7 @@ EnrichrDotPlot <- function(
 #' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
 #' @param outdir The directory where the plots will be stored.
 #' @param plot_size A vector containing the width and height of the network plots.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -925,7 +931,7 @@ ModuleNetworkPlot <- function(
 #' @param vertex.label.cex The font size of the gene labels
 #' @param hub.vertex.size The size of the hub gene nodes
 #' @param other.vertex.size The size of the other gene nodes
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1085,7 +1091,8 @@ HubGeneNetworkPlot <- function(
 #' @param edge.alpha scaling factor for edge opacity
 #' @param vertex.label.cex font size for labeled genes
 #' @param return_graph logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param keep_grey_edges logical determining whether to show edges between genes in different modules (grey edges)
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1099,6 +1106,7 @@ ModuleUMAPPlot <- function(
   vertex.label.cex=0.5,
   label_genes = NULL,
   return_graph = FALSE, # this returns the igraph object instead of plotting
+  keep_grey_edges = TRUE,
   wgcna_name=NULL,
   ...
 ){
@@ -1158,6 +1166,11 @@ ModuleUMAPPlot <- function(
     }
     col
   })
+
+  # keep grey edges?
+  if(!keep_grey_edges){
+    edge_df <- edge_df %>% subset(color != 'grey90')
+  }
 
   # subset edges:
   groups <- unique(edge_df$color)
@@ -1383,7 +1396,7 @@ OverlapBarPlot <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1454,7 +1467,7 @@ ROCCurves <- function(
 #' Displays the top n TFs in a set of modules as a bar plot
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1559,7 +1572,7 @@ MotifOverlapBarPlot <- function(
 #'
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1717,7 +1730,7 @@ DoHubGeneHeatmap <- function(
 #' @param plot_labels logical determining whether to plot the module labels
 #' @param label_size the size of the module labels
 #' @param mod_point_size the size of the points in each plot
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1835,7 +1848,7 @@ PlotModulePreservation <- function(
 #' @param
 #' @param
 #' @param
-#' @param plot_labels logical determining whether to plot the module labels#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param plot_labels logical determining whether to plot the module labels#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -2201,5 +2214,69 @@ ModuleTFNetwork <- function(
     add=TRUE
   )
 
+
+}
+
+PlotKMEs <- function(
+  seurat_obj,
+  n_hubs=10,
+  text_size=2,
+  ncol = 5,
+  plot_widths = c(3,2),
+  wgcna_name = NULL
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
+  mods <- levels(modules$module); mods <- mods[mods != 'grey']
+  mod_colors <- modules %>% subset(module %in% mods) %>%
+    select(c(module, color)) %>%
+    distinct
+
+
+  #get hub genes:
+  hub_df <- do.call(rbind, lapply(mods, function(cur_mod){
+    print(cur_mod)
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[,c('gene_name', 'module', paste0('kME_', cur_mod))]
+    names(cur)[3] <- 'kME'
+    cur <- dplyr::arrange(cur, kME)
+    top_genes <- cur %>% dplyr::top_n(n_hubs, wt=kME) %>% .$gene_name
+    cur$lab <- ifelse(cur$gene_name %in% top_genes, cur$gene_name, "")
+    cur
+  }))
+  head(hub_df)
+
+  plot_list <- lapply(mods, function(x){
+    print(x)
+    cur_color <- subset(mod_colors, module == x) %>% .$color
+    cur_df <- subset(hub_df, module == x)
+    top_genes <- cur_df %>% dplyr::top_n(n_hubs, wt=kME) %>% .$gene_name
+    p <- cur_df %>% ggplot(aes(x = reorder(gene_name, kME), y = kME)) +
+      geom_bar(stat='identity', width=1, color = cur_color, fill=cur_color) +
+      ggtitle(x) +
+      #xlab(paste0('kME_', x)) +
+      theme(
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        plot.title = element_text(hjust=0.5),
+        axis.title.x = element_blank(),
+        axis.line.x = element_blank()
+      )
+    p_anno <- ggplot() + annotate(
+      "label",
+      x = 0,
+      y = 0,
+      label = paste0(top_genes, collapse="\n"),
+      size=text_size,
+      fontface = 'italic',
+      label.size=0
+    ) + theme_void()
+    patch <- p + p_anno + plot_layout(widths=plot_widths)
+    patch
+  })
+
+  wrap_plots(plot_list, ncol=ncol)
 
 }

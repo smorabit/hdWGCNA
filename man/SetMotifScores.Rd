@@ -11,7 +11,7 @@ SetMotifScores(seurat_obj, tf_scores, wgcna_name = NULL)
 
 \item{tf_scores}{dataframe of tf motif target scores}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetMotifScores

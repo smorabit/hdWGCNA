@@ -13,12 +13,12 @@ SetMEs(seurat_obj, MEs, harmonized = TRUE, wgcna_name = NULL)
 
 \item{harmonized}{logical indicating whether MEs have been harmonized}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetMEs
 }
 \examples{
-SetModules
+SetMEs
 }
 \keyword{scRNA-seq}

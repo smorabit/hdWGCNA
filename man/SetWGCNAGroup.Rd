@@ -11,7 +11,7 @@ SetWGCNAGroup(seurat_obj, group, wgcna_name)
 
 \item{group}{group name}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetWGCNAGroup

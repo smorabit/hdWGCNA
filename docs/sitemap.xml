@@ -97,6 +97,9 @@
     <loc>https://smorabit.github.io/scWGCNA/reference/GetEnrichrTable.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/GetMELoadings.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/GetMEs.html</loc>
   </url>
   <url>
@@ -278,6 +281,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetEnrichrTable.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/scWGCNA/reference/SetMELoadings.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/scWGCNA/reference/SetMEs.html</loc>

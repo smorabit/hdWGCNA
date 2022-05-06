@@ -6,7 +6,7 @@
 #' SetActiveWGCNA
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetActiveWGCNA
@@ -51,7 +51,7 @@ GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param group group name
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetWGCNAGroup
@@ -67,7 +67,7 @@ SetWGCNAGroup <- function(seurat_obj, group, wgcna_name){
 #' GetWGCNAGroup
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetWGCNAGroup
@@ -85,7 +85,7 @@ GetWGCNAGroup <- function(seurat_obj, wgcna_name){
 #'
 #' @param seurat_obj A Seurat object
 #' @param metacell_obj metacell Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetMetacellObject
@@ -101,7 +101,7 @@ SetMetacellObject <- function(seurat_obj, metacell_obj, wgcna_name=NULL){
 #' GetMetacellObject
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetMetacellObject
@@ -120,7 +120,7 @@ GetMetacellObject <- function(seurat_obj,  wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param gene_list vector of genes to be used for WGCNA
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetWGCNAGenes
@@ -138,7 +138,7 @@ SetWGCNAGenes <- function(seurat_obj, gene_list, wgcna_name=NULL){
 #' GetWGCNAGenes
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetWGCNAGenes
@@ -160,7 +160,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
 #' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
-#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.
+#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_group_name A string containing the name of a group present in the multi.group.by column.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
@@ -283,7 +283,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents.
 #' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
-#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.
+#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_groups A character vecrtor containing the names of
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
@@ -379,7 +379,7 @@ GetMultiExpr <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param params list of WGCNA parameters
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetWGCNAParams
@@ -398,7 +398,7 @@ SetWGCNAParams <- function(seurat_obj, params, wgcna_name=NULL){
 #' GetWGCNAParams
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetWGCNAParams
@@ -418,7 +418,7 @@ GetWGCNAParams <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param power_table a dataframe containing the results of the soft power test
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetPowerTable
@@ -434,7 +434,7 @@ SetPowerTable <- function(seurat_obj, power_table, wgcna_name=NULL){
 #' GetPowerTable
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetPowerTable
@@ -453,7 +453,7 @@ GetPowerTable <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param net list of network data from WGCNA
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetNetworkData
@@ -470,7 +470,7 @@ SetNetworkData <- function(seurat_obj, net, wgcna_name=NULL){
 #' GetNetworkData
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetNetworkData
@@ -490,7 +490,7 @@ GetNetworkData <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param modules dataframe containing gene module assignments
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetModules
@@ -507,7 +507,7 @@ SetModules <- function(seurat_obj, mod_df, wgcna_name=NULL){
 #' GetModules
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetModules
@@ -528,10 +528,10 @@ GetModules <- function(seurat_obj, wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param MEs dataframe or matrix containing module eigengenes
 #' @param harmonized logical indicating whether MEs have been harmonized
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples SetModules
+#' @examples SetMEs
 SetMEs <- function(seurat_obj, MEs, harmonized=TRUE, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
@@ -552,7 +552,7 @@ SetMEs <- function(seurat_obj, MEs, harmonized=TRUE, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param harmonized logical indicating whether MEs have been harmonized
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -571,6 +571,56 @@ GetMEs <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
   MEs
 }
 
+
+#' SetMELoadings
+#'
+#' @param seurat_obj A Seurat object
+#' @param loadings named numeric vector with eigengene loadings
+#' @param harmonized logical indicating whether MEs have been harmonized
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples SetMELoadings
+SetMELoadings <- function(seurat_obj, loadings, harmonized=TRUE, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # harmonized MEs?
+  if(harmonized){
+    seurat_obj@misc[[wgcna_name]]$hME_loadings <- c(seurat_obj@misc[[wgcna_name]]$hME_loadings, loadings)
+  } else{
+    seurat_obj@misc[[wgcna_name]]$ME_loadings <- c(seurat_obj@misc[[wgcna_name]]$ME_loadings, loadings)
+  }
+  seurat_obj
+}
+
+#' GetMELoadings
+#'
+#' Function to retrieve module eigengens from Seurat object.
+#'
+#' @param seurat_obj A Seurat object
+#' @param harmonized logical indicating whether MEs have been harmonized
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' GetMELoadings
+GetMELoadings <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get harmonized MEs?
+  if(harmonized == TRUE && !is.null(seurat_obj@misc[[wgcna_name]]$hME_loadings)){
+    MEs <- seurat_obj@misc[[wgcna_name]]$hME_loadings
+  } else{
+    MEs <- seurat_obj@misc[[wgcna_name]]$ME_loadings
+  }
+  MEs
+}
+
+
 ############################
 # GO term table
 ###########################
@@ -579,7 +629,7 @@ GetMEs <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param enrichr_table dataframe storing the results of running enrichr
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetEnrichrTable
@@ -598,7 +648,7 @@ SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name=NULL){
 #' GetEnrichrTable
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetEnrichrTable
@@ -617,7 +667,7 @@ GetEnrichrTable <- function(seurat_obj,  wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param mod_scores dataframe storing the module expression scores
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetModuleScores
@@ -632,7 +682,7 @@ SetModuleScores <- function(seurat_obj, mod_scores, wgcna_name=NULL){
 #' GetModuleScores
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetModuleScores
@@ -649,7 +699,7 @@ GetModuleScores <- function(seurat_obj,  wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param avg_mods dataframe storing the average expression of all genes in the same module
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetAvgModuleExpr
@@ -664,7 +714,7 @@ SetAvgModuleExpr <- function(seurat_obj, avg_mods, wgcna_name=NULL){
 #' GetAvgModuleExpr
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetAvgModuleExpr
@@ -680,7 +730,7 @@ GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
 #' GetTOM
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetTOM
@@ -708,7 +758,7 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param roc_info dataframe storing the ROC results
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetROCData
@@ -724,7 +774,7 @@ SetROCData <- function(seurat_obj, roc_info, wgcna_name=NULL){
 #' GetROCData
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetROCData
@@ -876,7 +926,7 @@ GetMotifTargets <- function(seurat_obj){
 #'
 #' @param seurat_obj A Seurat object
 #' @param overlap_df dataframe containing motif-module overlap info
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetMotifOverlap
@@ -891,7 +941,7 @@ SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name=NULL){
 #' GetMotifOverlap
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetMotifOverlap
@@ -910,7 +960,7 @@ GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param tf_scores dataframe of tf motif target scores
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetMotifScores
@@ -924,7 +974,7 @@ SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name=NULL){
 #' GetMotifScores
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetMotifScores
@@ -941,7 +991,7 @@ GetMotifScores <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param umap_df dataframe of UMAP coordinates
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetModuleUMAP
@@ -955,7 +1005,7 @@ SetModuleUMAP <- function(seurat_obj, umap_df, wgcna_name=NULL){
 #' GetModuleUMAP
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetModuleUMAP
@@ -973,7 +1023,7 @@ GetModuleUMAP <- function(seurat_obj, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param mt_cor matrix of module-trait correlation results
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetModuleTraitCorrelation
@@ -986,7 +1036,7 @@ SetModuleTraitCorrelation <- function(seurat_obj, mt_cor, wgcna_name=NULL){
 #' GetModuleTraitCorrelation
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetModuleTraitCorrelation
@@ -1005,7 +1055,7 @@ GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param mt_cor matrix of module-trait correlation results
 #' @param mod_name name of the module preservation test to store
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples SetModulePreservation
@@ -1027,7 +1077,7 @@ SetModulePreservation <- function(seurat_obj, mod_pres, mod_name, wgcna_name=NUL
 #'
 #' @param seurat_obj A Seurat object
 #' @param mod_name name of the module preservation test to store
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples GetModulePreservation
@@ -1047,11 +1097,11 @@ GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
 
 #' ResetModuleNames
 #'
-#' Reset the uname of each scWGCNA module
+#' Reset the uname of each hdWGCNA module
 #'
 #' @param seurat_obj A Seurat object
 #' @param new_name string containing the base name to re-name the modules
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1190,11 +1240,11 @@ ResetModuleNames <- function(
 
 #' ResetModuleColors
 #'
-#' Reset the unique color for each scWGCNA module
+#' Reset the unique color for each hdWGCNA module
 #'
 #' @param seurat_obj A Seurat object
 #' @param new_colors a character vector containing the new colors
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1253,7 +1303,7 @@ ResetModuleColors <- function(
     seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
   }
 
-  # update scWGCNA dendrogram:
+  # update hdWGCNA dendrogram:
   net <- GetNetworkData(seurat_obj, wgcna_name)
   net$colors <- new_color_df[match(net$colors, new_color_df$old),'new']
   seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)

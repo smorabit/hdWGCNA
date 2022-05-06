@@ -11,7 +11,7 @@ SetMetacellObject(seurat_obj, metacell_obj, wgcna_name = NULL)
 
 \item{metacell_obj}{metacell Seurat object}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetMetacellObject

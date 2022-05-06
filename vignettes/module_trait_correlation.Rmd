@@ -2,7 +2,7 @@
 title: "Module Trait Correlation"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for identifying relationships between scWGCNA modules with biological and technical variables.
+  Tutorial for identifying relationships between hdWGCNA modules with biological and technical variables.
 vignette: >
   %\VignetteIndexEntry{Module Trait Correlation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,7 +11,7 @@ vignette: >
 
 In this tutorial, we cover how to relate co-expression modules to biological and
 technical variables. Before starting this tutorial, make sure that you
-have constructed the co-expression network as in the [scWGCNA basics](articles/basics_tutorial.html).
+have constructed the co-expression network as in the [hdWGCNA basics](articles/basics_tutorial.html).
 
 First Load the snRNA-seq data and the required libraries:
 ```{r eval=FALSE}
@@ -26,7 +26,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # using the cowplot theme for ggplot
 theme_set(theme_cowplot())
@@ -151,7 +151,7 @@ nCount_RNA     -0.192697871 -0.176522750 -0.427046078 -0.41516830 -0.1119312303
 We can plot the results of our correlation analysis using the
 `PlotModuleTraitCorrelation` function. This function creates a separate heatmap
 for each of the correlation matrices, and then assembles them into one plot
-using patchwork. 
+using patchwork.
 
 ```{r eval=FALSE}
 

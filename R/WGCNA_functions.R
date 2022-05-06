@@ -274,7 +274,7 @@ ConstructNetwork <- function(
   multi.group.by = NULL,
   multi_groups = NULL,
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
-  consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
+  consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
   sampleForScaling = TRUE, sampleForScalingFactor = 1000,
   useDiskCache = TRUE, chunkSize = NULL,
@@ -417,128 +417,6 @@ ConstructNetwork <- function(
 
 }
 
-#
-# #' ConstructNetwork
-# #'
-# #' This function constructs a co-expression network from a Seurat object
-# #'
-# #' @param seurat_obj A Seurat object
-# #' @param soft_power
-# #' @keywords scRNA-seq
-# #' @export
-# #' @examples
-# #' ConstructNetwork(pbmc)
-# ConstructNetwork <- function(
-#   seurat_obj, soft_power=NULL, use_metacells=TRUE,
-#   setDatExpr=TRUE, group.by=NULL, group_name=NULL,
-#   tom_outdir="TOM",
-#   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
-#   consensusQuantile=0.3, networkType = "signed", TOMType = "unsigned",
-#   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
-#   sampleForScaling = TRUE, sampleForScalingFactor = 1000,
-#   useDiskCache = TRUE, chunkSize = NULL,
-#   deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
-#   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
-# ){
-#
-#   # add datExpr if not already added:
-#   if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-#     seurat_obj <- SetDatExpr(
-#       seurat_obj,
-#       group_name = group_name,
-#       group.by=group.by,
-#       use_metacells=use_metacells,
-#       return_seurat=TRUE
-#      )
-#   }
-#
-#   # get datExpr
-#   datExpr <- GetDatExpr(seurat_obj)
-#
-#   if(is.null(group_name)){
-#     group_name <- 'all'
-#   }
-#
-#   nSets = 1
-#   setLabels = gsub(' ', '_', group_name)
-#   shortLabels = setLabels
-#   multiExpr <- list()
-#   multiExpr[[group_name]] <- list(data=datExpr)
-#   checkSets(multiExpr) # check data size
-#
-#   if(!dir.exists(tom_outdir)){
-#     dir.create(tom_outdir)
-#   }
-#
-#
-#   net <- WGCNA::blockwiseConsensusModules(
-#     multiExpr,
-#     power = soft_power,
-#     blocks = blocks,
-#     maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
-#     randomSeed = randomSeed,
-#     corType = corType,
-#     consensusQuantile = consensusQuantile,
-#     networkType = networkType,
-#     TOMType = TOMType,
-#     TOMDenom = TOMDenom,
-#     scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
-#     sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
-#     useDiskCache = useDiskCache, chunkSize = chunkSize,
-#     deepSplit = deepSplit,
-#     pamStage=pamStage,
-#     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
-#     mergeCutHeight = mergeCutHeight,
-#     saveConsensusTOMs = saveConsensusTOMs,
-#     consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
-#
-#   # rename consensusTOM file:
-#   file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',group_name), '_ConsensusTOM-block.1.rda'))
-#
-#   # add network parameters to the Seurat object:
-#
-#   params <- list(
-#     power = soft_power,
-#     blocks = blocks,
-#     maxBlockSize = maxBlockSize, ## This should be set to a smaller size if the user has limited RAM
-#     randomSeed = randomSeed,
-#     corType = corType,
-#     consensusQuantile = consensusQuantile,
-#     networkType = networkType,
-#     TOMType = TOMType,
-#     TOMDenom = TOMDenom,
-#     scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
-#     sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
-#     useDiskCache = useDiskCache, chunkSize = chunkSize,
-#     deepSplit = deepSplit,
-#     pamStage=pamStage,
-#     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
-#     mergeCutHeight = mergeCutHeight,
-#     saveConsensusTOMs = saveConsensusTOMs
-#   )
-#
-#   # add parameters:
-#   seurat_obj <- SetWGCNAParams(seurat_obj, params)
-#
-#   # append working directory to the TOM file so it has the full path:
-#   net$TOMFiles <- paste0(getwd(), '/TOM/', group_name, '_', net$TOMFiles)
-#
-#   # add network to seurat obj
-#   seurat_obj <- SetNetworkData(seurat_obj, net)
-#
-#   # set the modules df in the Seurat object
-#   mods <- GetNetworkData(seurat_obj)$colors
-#   seurat_obj <- SetModules(
-#     seurat_obj, mod_df = data.frame(
-#       "gene_name" = names(mods),
-#       "module" = factor(mods, levels=unique(mods)),
-#       "color" = mods
-#     )
-#   )
-#
-#   seurat_obj
-#
-# }
 
 #' ComputeModuleEigengene
 #'
@@ -546,13 +424,24 @@ ConstructNetwork <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param cur_mod name of a module found in seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors
+#' @param modules table containing module / gene assignments, as in GetModules(seurat_obj).
+#' @param group.by.vars groups to harmonize by
+#' @param verbose logical indicating whether to print messages
+#' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
+#' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
+#' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' ConstructNetwork(pbmc)
+#' ComputeModuleEigengene(pbmc)
 ComputeModuleEigengene <- function(
-  seurat_obj, cur_mod, modules,
-  group.by.vars=NULL, verbose=TRUE,
+  seurat_obj,
+  cur_mod,
+  modules,
+  group.by.vars=NULL,
+  verbose=TRUE,
+  vars.to.regress = NULL,
+  scale.model.use = 'linear',
   wgcna_name=NULL, ...
 ){
 
@@ -562,34 +451,90 @@ ComputeModuleEigengene <- function(
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
 
+  # subset seurat object by these genes only:
+  cur_seurat <- seurat_obj[cur_genes,]
+
+  # scale the subsetted expression dataset:
+  if(is.null(vars.to.regress)){
+    cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use)
+  } else if(all(vars.to.regress %in% colnames(seurat_obj@meta.data))){
+    cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use, vars.to.regress=vars.to.regress)
+  } else{
+    stop(paste0("Some variables specified in vars.to.regress are not found in seurat_obj@meta.data"))
+  }
+
+  # compute average expression of each gene
+  cur_expr <- GetAssayData(cur_seurat, slot='data')
+  expr <- t(as.matrix(cur_expr))
+  averExpr <- rowSums(expr) / ncol(expr)
+
   # run PCA with Seurat function
   cur_pca <- Seurat::RunPCA(
-    seurat_obj,
+    cur_seurat,
     features = cur_genes,
     reduction.key=paste0('pca', cur_mod),
     verbose=verbose, ...
-  )@reductions$pca@cell.embeddings
+  )@reductions$pca
+  pc <- cur_pca@cell.embeddings[,1]
+  pc_loadings <- cur_pca@feature.loadings[,1]
 
-  # add this PCA as its own reduction in the seurat object
-  seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
-    embeddings = cur_pca,
-    assay = Seurat::DefaultAssay(seurat_obj)
-  )
+  # correlate average expression with eigengene
+  pca_cor <- cor(averExpr, pc)
 
   # run harmony
   if(!is.null(group.by.vars)){
+
+    # add this PCA as its own reduction in the seurat object
+    seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
+      embeddings = cur_pca@cell.embeddings,
+      assay = Seurat::DefaultAssay(cur_seurat)
+    )
+
     cur_harmony <- harmony::RunHarmony(
       seurat_obj,
       group.by.vars=group.by.vars,
       reduction="ME", verbose=verbose, ...
-    )@reductions$harmony@cell.embeddings
+    )@reductions$harmony
+    ha <- cur_harmony@cell.embeddings[,1]
+    ha_loadings <- cur_pca@feature.loadings[,1]
+
+    if(pca_cor < 0){
+      cur_harmony@cell.embeddings[,1] <- -ha
+      ha_loadings <- -ha_loadings
+    }
 
     # add harmonized PCA as its own reduction in the seurat object
     seurat_obj@reductions$ME_harmony <- Seurat::CreateDimReducObject(
-      embeddings = cur_harmony,
+      embeddings = cur_harmony@cell.embeddings,
       assay = Seurat::DefaultAssay(seurat_obj)
     )
+
+    seurat_obj <- SetMELoadings(
+      seurat_obj,
+      loadings=ha_loadings,
+      harmonized=TRUE,
+      wgcna_name=wgcna_name
+    )
+
   }
+
+  if(pca_cor < 0){
+    cur_pca@cell.embeddings[,1] <- -pc
+    pc_loadings <- -pc_loadings
+  }
+
+  # add this PCA as its own reduction in the seurat object
+  seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
+    embeddings = cur_pca@cell.embeddings,
+    assay = Seurat::DefaultAssay(cur_seurat)
+  )
+
+  seurat_obj <- SetMELoadings(
+    seurat_obj,
+    loadings=pc_loadings,
+    harmonized=FALSE,
+    wgcna_name=wgcna_name
+  )
 
   # return seurat object
   seurat_obj
@@ -601,13 +546,23 @@ ComputeModuleEigengene <- function(
 #' Computes module eigengenes for all WGCNA co-expression modules
 #'
 #' @param seurat_obj A Seurat object
+#' @param modules table containing module / gene assignments, as in GetModules(seurat_obj).
+#' @param group.by.vars groups to harmonize by
+#' @param verbose logical indicating whether to print messages
+#' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
+#' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
+#' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #'  ModuleEigengenes(pbmc)
 ModuleEigengenes <- function(
-  seurat_obj, group.by.vars=NULL,
-  modules=NULL, verbose=TRUE,
+  seurat_obj,
+  group.by.vars=NULL,
+  modules=NULL,
+  vars.to.regress = NULL,
+  scale.model.use = 'linear',
+  verbose=TRUE,
   wgcna_name=NULL, ...
 ){
 
@@ -619,6 +574,22 @@ ModuleEigengenes <- function(
 
   me_list <- list()
   harmonized_me_list <- list()
+
+  # re-set feature loadings:
+  seurat_obj <- SetMELoadings(
+    seurat_obj,
+    loadings=c(""),
+    harmonized=FALSE,
+    wgcna_name=wgcna_name
+  )
+  if(harmonized){
+    seurat_obj <- SetMELoadings(
+      seurat_obj,
+      loadings=c(""),
+      harmonized=TRUE,
+      wgcna_name=wgcna_name
+    )
+  }
 
   # get modules from Seurat object, else use provided modules
   if(is.null(modules)){
@@ -638,9 +609,15 @@ ModuleEigengenes <- function(
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
-      seurat_obj = seurat_obj, cur_mod = cur_mod,
-      modules=modules, group.by.vars=group.by.vars, verbose=verbose,
-      wgcna_name=wgcna_name, ...
+      seurat_obj = seurat_obj,
+      cur_mod = cur_mod,
+      modules=modules,
+      group.by.vars=group.by.vars,
+      vars.to.regress = vars.to.regress,
+      scale.model.use = scale.model.use,
+      verbose=verbose,
+      wgcna_name=wgcna_name,
+      ...
     )
 
     # add module eigengene to ongoing list
@@ -669,7 +646,6 @@ ModuleEigengenes <- function(
 
   # set module factor levels based on order
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
-  print(colnames(MEs))
   modules$module <- factor(
     as.character(modules$module),
     levels=colnames(MEs)
@@ -821,7 +797,7 @@ ModuleConnectivity <- function(
   seurat_obj,
   harmonized=TRUE,
   assay = NULL,
-  slot = NULL,
+  slot = 'data',
   group.by = NULL,
   group_name = NULL,
   wgcna_name = NULL,
@@ -837,11 +813,10 @@ ModuleConnectivity <- function(
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
-  if(is.null(assay)){assay <- params$metacell_assay}
-  if(is.null(slot)){slot <- params$metacell_slot}
+  if(is.null(assay)){assay <- seurat_obj@active.assay}
 
   if(!is.null(group.by)){
-    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) == group_name) %>% rownames
+    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) %in% group_name) %>% rownames
     MEs <- MEs[cells.use,]
   } else{
     cells.use <- colnames(seurat_obj)
@@ -855,8 +830,6 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   datExpr <- t(as.matrix(exp_mat))
-
-  print('running signedKME:')
 
   kMEs <- WGCNA::signedKME(
     datExpr,
@@ -880,12 +853,12 @@ ModuleConnectivity <- function(
 
 #' RunEnrichr
 #'
-#' Run Enrichr gene set enrichment tests on scWGCNA modules
+#' Run Enrichr gene set enrichment tests on hdWGCNA modules
 #'
 #' @param seurat_obj A Seurat object
 #' @param dbs character vector of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -936,13 +909,13 @@ RunEnrichr <- function(
 
 #' OverlapModulesDEGs
 #'
-#' Performs Fisher's Exact Test for overlap between DEGs and scWGCNA modules.
+#' Performs Fisher's Exact Test for overlap between DEGs and hdWGCNA modules.
 #'
 #' @param seurat_obj A Seurat object
 #' @param deg_df DEG table formatted like the output from Seurat's FindMarkers
 #' @param fc_cutoff log fold change cutoff for DEGs to be included in the overlap test
 #' @param group_col the name of the column in deg_df containing the cell grouping information
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -983,10 +956,8 @@ OverlapModulesDEGs <- function(
 
   # run overlaps between module gene lists and DEG lists:
   overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
-    #print(cur_mod)
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
     cur_overlap_df <- do.call(rbind, lapply(cell_groups, function(cur_group){
-      #print(cur_group)
       cur_DEGs <- deg_df %>% subset(group == cur_group & p_val_adj <= 0.05 & avg_log2FC > fc_cutoff) %>% .$gene
       cur_overlap <- testGeneOverlap(newGeneOverlap(
           cur_module_genes,
@@ -1032,7 +1003,7 @@ OverlapModulesDEGs <- function(
 #' @param seurat_obj A Seurat object
 #' @param dbs List of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1077,15 +1048,16 @@ ProjectModules <- function(
     )
   }
 
-  # scale the dataset if needed:
-  if(!scale_genes & sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
-    print("Scaling already done.")
-  } else if(scale_genes){
-    print("Scaling dataset...")
-    seurat_obj <- Seurat::ScaleData(
-      seurat_obj, features = genes_use, ...
-    )
-  }
+  #
+  # # scale the dataset if needed:
+  # if(!scale_genes & sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
+  #   print("Scaling already done.")
+  # } else if(scale_genes){
+  #   print("Scaling dataset...")
+  #   seurat_obj <- Seurat::ScaleData(
+  #     seurat_obj, features = genes_use, ...
+  #   )
+  # }
 
 
   # project modules:
@@ -1093,6 +1065,8 @@ ProjectModules <- function(
     seurat_obj,
     group.by.vars=group.by.vars,
     modules = modules,
+    vars.to.regress = vars.to.regress,
+    scale.model.use = scale.model.use,
     wgcna_name = wgcna_name_proj,
     ...
   )
@@ -1264,7 +1238,6 @@ ComputeROC <- function(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores.')
   )
 
-  print('here')
 
   # add group column to MEs:
   MEs <- as.data.frame(MEs)
@@ -1272,7 +1245,6 @@ ComputeROC <- function(
   MEs_p <- as.data.frame(MEs_p)
   MEs_p$group <- seurat_test@meta.data[[group.by]]
 
-  print('here')
 
   # only keep common groups:
   MEs <- subset(MEs, group %in% groups_common)
@@ -1445,7 +1417,7 @@ MotifScan <- function(
 #' Overlap modules with TF target genes
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1581,7 +1553,7 @@ MotifTargetScore <- function(
 #' @param seurat_obj A Seurat object
 #' @param n_hubs number of hub genes to use in the UMAP computation
 #' @param exclude_grey logical indicating whether to include grey module
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param ... Additional parameters supplied to uwot::umap
 #' @keywords scRNA-seq
 #' @export
@@ -1696,7 +1668,7 @@ RunModuleUMAP <- function(
 #' Traits must be a categorical variable (not a character vector), or a numeric variable.
 #' @param features Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores
 #' @param cor_meth Which method to use for correlation? Valid choices are pearson, spearman, kendall.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1863,9 +1835,9 @@ ModuleTraitCorrelation <- function(
 #' @param n_permutations Number of permutations for the module preservation test.
 #' @param parallel logical determining whether to run preservation analysis in parallel
 #' @param seed random seed for the permutation analysis.
-#' @param return_raw if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the scWGCNA experiment.
-#' @param wgcna_name The name of the scWGCNA experiment in the seurat_obj@misc slot
-#' @param wgcna_name_ref The name of the scWGCNA experiment in the seurat_ref@misc slot
+#' @param return_raw if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name_ref The name of the hdWGCNA experiment in the seurat_ref@misc slot
 #' @keywords scRNA-seq
 #' @export
 #' @examples

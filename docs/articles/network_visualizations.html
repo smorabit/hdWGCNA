@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Network Visualization • scWGCNA</title>
+<title>Network Visualization • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Network Visualization">
-<meta property="og:description" content="Tutorial for visualizing the scWGCNA networks using igraph.
+<meta property="og:description" content="Tutorial for visualizing the hdWGCNA networks using igraph.
 ">
 <meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -40,7 +40,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">scWGCNA</a>
+        <a class="navbar-link" href="../index.html">hdWGCNA</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
       </span>
     </div>
@@ -48,7 +48,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../articles/scWGCNA.html">Get started</a>
+  <a href="../articles/hdWGCNA.html">Get started</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -59,7 +59,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="../articles/basic_tutorial.html">scWGCNA basics</a>
+      <a href="../articles/basic_tutorial.html">hdWGCNA basics</a>
     </li>
     <li>
       <a href="../articles/network_visualizations.html">Network visualization</a>
@@ -137,7 +137,7 @@
 
     
     
-<p>In this tutorial, we demonstrate several ways of visualizing the co-expression networks made with scWGCNA. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">scWGCNA basics</a>. This tutorial covers the three main network visualizations within scWGCNA:</p>
+<p>In this tutorial, we demonstrate several ways of visualizing the co-expression networks made with hdWGCNA. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">hdWGCNA basics</a>. This tutorial covers the three main network visualizations within hdWGCNA:</p>
 <ul>
 <li>
 <code>ModuleNetworkPlot</code>, visualizes a separate network plot for each module, showing the top 25 genes by kME.</li>
@@ -158,7 +158,7 @@
 
 <span class="co"># co-expression network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hdWGCNA</span><span class="op">)</span>
 
 <span class="co"># network analysis &amp; visualization package:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
@@ -178,8 +178,8 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>Here we can see what one of these network plots looks like:</p>
-<p><img src="figures/network_vis/INH-M5.png" width="500" height="500"></p>
-<p>In this network, each node represents a gene, and each edge represents the co-expression relationship between two genes in the network. Each of these module network plots are colored based on the <code>color</code> column in the scWGCNA module assignment table <code>GetModules(seurat_obj)</code>. The top 10 hub genes by kME are placed in the center of the plot, while the remaining 15 genes are placed in the outer circle.</p>
+<p><img src="figures/network_vis/INH-M12.png" width="500" height="500"></p>
+<p>In this network, each node represents a gene, and each edge represents the co-expression relationship between two genes in the network. Each of these module network plots are colored based on the <code>color</code> column in the hdWGCNA module assignment table <code>GetModules(seurat_obj)</code>. The top 10 hub genes by kME are placed in the center of the plot, while the remaining 15 genes are placed in the outer circle.</p>
 <p>Optionally, certain visualization parameters can be changed in this plot:</p>
 <ul>
 <li>
@@ -210,8 +210,8 @@
 <div class="section level2">
 <h2 id="applying-umap-to-co-expression-networks">Applying UMAP to co-expression networks<a class="anchor" aria-label="anchor" href="#applying-umap-to-co-expression-networks"></a>
 </h2>
-<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the scWGCNA network in a low-dimensional manifold.</p>
-<p>scWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the scWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R package, so additional UMAP parameters for the <code><a href="https://rdrr.io/pkg/uwot/man/umap.html" class="external-link">uwot::umap</a></code> function such as <code>min_dist</code> or <code>spread</code> can be included in <code>RunModuleUMAP</code>.</p>
+<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the hdWGCNA network in a low-dimensional manifold.</p>
+<p>hdWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the hdWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R package, so additional UMAP parameters for the <code><a href="https://rdrr.io/pkg/uwot/man/umap.html" class="external-link">uwot::umap</a></code> function such as <code>min_dist</code> or <code>spread</code> can be included in <code>RunModuleUMAP</code>.</p>
 <p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
@@ -237,10 +237,12 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
-  edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.25</span>,
   sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
-  edge_prop<span class="op">=</span><span class="fl">0.2</span>, <span class="co"># proportion of edges to sample (20% here)</span>
-  label_hubs<span class="op">=</span><span class="fl">2</span> <span class="co"># how many hub genes to plot per module?</span>
+  edge_prop<span class="op">=</span><span class="fl">0.1</span>, <span class="co"># proportion of edges to sample (20% here)</span>
+  label_hubs<span class="op">=</span><span class="fl">2</span> ,<span class="co"># how many hub genes to plot per module?</span>
+  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>
+
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_igraph.png" width="600" height="600"></p>
 <p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 20% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
@@ -323,7 +325,7 @@ Code
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_supervised.png" width="600" height="600"></p>
-<p>Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we made previously. To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
+<p>To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -340,7 +342,7 @@ Code
     n_hubs <span class="op">=</span> <span class="fl">10</span>,
     n_neighbors<span class="op">=</span><span class="fl">15</span>,
     exclude_grey <span class="op">=</span> <span class="cn">TRUE</span>,
-    min_dist<span class="op">=</span><span class="fl">0.1</span>,
+    min_dist<span class="op">=</span><span class="fl">0.3</span>,
     supervised<span class="op">=</span><span class="cn">TRUE</span>,
     target_weight <span class="op">=</span> <span class="va">cur_weight</span>
   <span class="op">)</span>
@@ -370,7 +372,6 @@ Code
 
 <span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
 </details><p><img src="figures/network_vis/umap_animation.gif"></p>
-<p>Here we can clearly see the influence that the label weight has on the final UMAP, and it looks like we should avoid using <code>target_weight=1</code>.</p>
 </div>
 </div>
   </div>

@@ -2,7 +2,7 @@
 title: "Network Visualization"
 output:  rmarkdown::html_vignette
 description: >
-  Tutorial for visualizing the scWGCNA networks using igraph.
+  Tutorial for visualizing the hdWGCNA networks using igraph.
 vignette: >
   %\VignetteIndexEntry{Network Visualization}
   %\VignetteEngine{knitr::rmarkdown}
@@ -10,9 +10,9 @@ vignette: >
 ---
 
 In this tutorial, we demonstrate several ways of visualizing the co-expression
-networks made with scWGCNA. Before starting this tutorial, make sure that you
-have constructed the co-expression network as in the [scWGCNA basics](articles/basics_tutorial.html).
-This tutorial covers the three main network visualizations within scWGCNA:
+networks made with hdWGCNA. Before starting this tutorial, make sure that you
+have constructed the co-expression network as in the [hdWGCNA basics](articles/basics_tutorial.html).
+This tutorial covers the three main network visualizations within hdWGCNA:
 
 * `ModuleNetworkPlot`, visualizes a separate network plot for each module, showing the top 25 genes by kME.
 * `HubGeneNetworkPlot`, visualizes the network comprisng all modules with a given number of hub genes per module.
@@ -32,7 +32,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # network analysis & visualization package:
 library(igraph)
@@ -60,11 +60,11 @@ ModuleNetworkPlot(seurat_obj)
 
 Here we can see what one of these network plots looks like:
 
-<img src="figures/network_vis/INH-M5.png" width="500" height="500">
+<img src="figures/network_vis/INH-M12.png" width="500" height="500">
 
 In this network, each node represents a gene, and each edge represents the co-expression
 relationship between two genes in the network. Each of these module network plots are
-colored based on the `color` column in the scWGCNA module assignment table
+colored based on the `color` column in the hdWGCNA module assignment table
 `GetModules(seurat_obj)`. The top 10 hub genes by kME are placed in the center of
 the plot, while the remaining 15 genes are placed in the outer circle.
 
@@ -116,10 +116,10 @@ Previously we visualized a subset of the co-expression network with an emphasis
 on the hub genes. Here, we use an alternative approach to visualize all genes
 in the co-expression network simultaneously. [UMAP](https://arxiv.org/abs/1802.03426)
 is a suitable method for visualizing high-dimensional data in two dimensions,
-and here we apply UMAP to embed the scWGCNA network in a low-dimensional manifold.
+and here we apply UMAP to embed the hdWGCNA network in a low-dimensional manifold.
 
-scWGCNA includes the function `RunModuleUMAP` to run the UMAP algorithm on the
-scWGCNA [topological overlap matrix (TOM)](https://doi.org/10.1186/1471-2105-8-22).
+hdWGCNA includes the function `RunModuleUMAP` to run the UMAP algorithm on the
+hdWGCNA [topological overlap matrix (TOM)](https://doi.org/10.1186/1471-2105-8-22).
 For the UMAP analysis, we subset the columns in the TOM to only contain the top
 *n* hub genes by kME for each module, as specified by the user. Therefore, the
 organization of each gene in UMAP space is dependent on that gene's connectivity
@@ -172,10 +172,12 @@ relationships.
 
 ModuleUMAPPlot(
   seurat_obj,
-  edge.alpha=0.15,
+  edge.alpha=0.25,
   sample_edges=TRUE,
-  edge_prop=0.2, # proportion of edges to sample (20% here)
-  label_hubs=2 # how many hub genes to plot per module?
+  edge_prop=0.1, # proportion of edges to sample (20% here)
+  label_hubs=2 ,# how many hub genes to plot per module?
+  keep_grey_edges=FALSE
+
 )
 
 ```
@@ -254,7 +256,25 @@ animate(p, fps=30, duration=25)
 library(tidyverse)
 library(gganimate)
 
-df <- read.csv("~/Desktop/animate_hub_umap.csv")
+umap_theme <- function(){
+  theme(
+    axis.line=element_blank(),
+    axis.text.x=element_blank(),
+    axis.text.y=element_blank(),
+    axis.ticks=element_blank(),
+    axis.title.x=element_blank(),
+    axis.title.y=element_blank(),
+    panel.background=element_blank(),
+    panel.border=element_blank(),
+    panel.grid.major=element_blank(),
+    panel.grid.minor=element_blank(),
+    plot.background=element_blank(),
+    plot.title = element_text(hjust = 0.5)
+  )
+}
+
+#df <- read.csv("~/Desktop/animate_hub_umap.csv")
+load("~/Desktop/umap_animate1.rda")
 
 # plot with ggplot + gganimate
 p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
@@ -323,8 +343,7 @@ ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
 <img src="figures/network_vis/hubgene_umap_supervised.png" width="600" height="600">
 
 
-Qualitatively, this supervised UMAP looks similar to the unsupervised UMAP that we
-made previously. To demonstrate what the supervised UMAP looks like using different
+To demonstrate what the supervised UMAP looks like using different
 weights for the labels, we can make a different UMAP for several values of `target_weight`
 and compare the outputs using [`gganimate`](https://gganimate.com/).
 
@@ -344,7 +363,7 @@ for(cur_weight in weights){
     n_hubs = 10,
     n_neighbors=15,
     exclude_grey = TRUE,
-    min_dist=0.1,
+    min_dist=0.3,
     supervised=TRUE,
     target_weight = cur_weight
   )
@@ -378,9 +397,28 @@ animate(p, fps=30, duration=25)
 </details>
 
 
+```{r eval=FALSE, echo=FALSE}
+
+# for both gganimates, we run the animation locally on the laptop
+load("~/Desktop/umap_animate2.rda")
+
+# plot with ggplot + gganimate
+p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(color=df$color, size=df$kME*2 ) +
+  ggtitle("Supervised weight: {closest_state}") +
+  transition_states(
+    n_hubs,
+    transition_length = 2,
+    state_length = 2,
+    wrap = TRUE
+  ) +
+  view_follow() +
+  enter_fade() +
+  umap_theme()
+
+animate(p, fps=30, duration=25)
+anim_save("~/Desktop/umap_animation.gif")
+
+```
 
 ![](figures/network_vis/umap_animation.gif)
-
-
-Here we can clearly see the influence that the label weight has on the final UMAP,
-and it looks like we should avoid using `target_weight=1`.

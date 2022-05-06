@@ -11,7 +11,7 @@ SetModuleScores(seurat_obj, mod_scores, wgcna_name = NULL)
 
 \item{mod_scores}{dataframe storing the module expression scores}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetModuleScores

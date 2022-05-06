@@ -27,7 +27,7 @@ PlotModulePreservation(
 
 \item{mod_point_size}{the size of the points in each plot}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Plotting function for Module Preservation statistics

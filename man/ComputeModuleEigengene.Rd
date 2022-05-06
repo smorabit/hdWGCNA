@@ -10,6 +10,8 @@ ComputeModuleEigengene(
   modules,
   group.by.vars = NULL,
   verbose = TRUE,
+  vars.to.regress = NULL,
+  scale.model.use = "linear",
   wgcna_name = NULL,
   ...
 )
@@ -18,11 +20,23 @@ ComputeModuleEigengene(
 \item{seurat_obj}{A Seurat object}
 
 \item{cur_mod}{name of a module found in seurat_obj@misc[\link{seurat_obj@misc$active_wgcna}]$wgcna_net$colors}
+
+\item{modules}{table containing module / gene assignments, as in GetModules(seurat_obj).}
+
+\item{group.by.vars}{groups to harmonize by}
+
+\item{verbose}{logical indicating whether to print messages}
+
+\item{vars.to.regress}{character vector of variables in seurat_obj@meta.data to regress when running ScaleData}
+
+\item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
+
+\item{wgcna_name}{name of the WGCNA experiment}
 }
 \description{
 Internal helper function that computes module eigengene for a single module.
 }
 \examples{
-ConstructNetwork(pbmc)
+ComputeModuleEigengene(pbmc)
 }
 \keyword{scRNA-seq}

@@ -13,6 +13,7 @@ ModuleUMAPPlot(
   vertex.label.cex = 0.5,
   label_genes = NULL,
   return_graph = FALSE,
+  keep_grey_edges = TRUE,
   wgcna_name = NULL,
   ...
 )
@@ -32,7 +33,9 @@ ModuleUMAPPlot(
 
 \item{return_graph}{logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{keep_grey_edges}{logical determining whether to show edges between genes in different modules (grey edges)}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Makes a igraph network plot using the module UMAP

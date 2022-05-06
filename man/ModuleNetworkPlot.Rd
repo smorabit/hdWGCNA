@@ -26,7 +26,7 @@ ModuleNetworkPlot(
 
 \item{plot_size}{A vector containing the width and height of the network plots.}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Visualizes the top hub genes for selected modules as a circular network plot

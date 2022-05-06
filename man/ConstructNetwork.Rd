@@ -21,7 +21,7 @@ ConstructNetwork(
   corType = "pearson",
   consensusQuantile = 0.3,
   networkType = "signed",
-  TOMType = "unsigned",
+  TOMType = "signed",
   TOMDenom = "min",
   scaleTOMs = TRUE,
   scaleQuantile = 0.8,

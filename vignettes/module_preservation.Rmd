@@ -2,7 +2,7 @@
 title: "Module preservation and reproducibility"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for performing module preservation tests in scWGCNA.
+  Tutorial for performing module preservation tests in hdWGCNA.
 vignette: >
   %\VignetteIndexEntry{Module preservation and reproducibility}
   %\VignetteEngine{knitr::rmarkdown}
@@ -37,7 +37,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # network analysis & visualization package:
 library(igraph)

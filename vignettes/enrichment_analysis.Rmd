@@ -2,18 +2,18 @@
 title: "Enrichment analysis"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for performing enrichment analysis with scWGCNA.
+  Tutorial for performing enrichment analysis with hdWGCNA.
 vignette: >
   %\VignetteIndexEntry{Enrichment analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-In this tutorial, we will perform enrichment tests on our scWGCNA modules.
+In this tutorial, we will perform enrichment tests on our hdWGCNA modules.
 We leverage the R pacakge [`enrichR`](https://maayanlab.cloud/Enrichr/) to perform enrichment tests on a wide
 range of curated gene lists. This analysis should point us towards biological
-processes that our scWGCNA modules are involved in. Additionally, we perform a
-gene set overlap analysis to compare the genes in scWGCNA modules with the marker
+processes that our hdWGCNA modules are involved in. Additionally, we perform a
+gene set overlap analysis to compare the genes in hdWGCNA modules with the marker
 genes identified using Seurat's [FindAllMarkers](https://satijalab.org/seurat/reference/findallmarkers)
 function.
 
@@ -31,7 +31,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # gene enrichment packages
 library(enrichR)
@@ -51,11 +51,11 @@ seurat_obj <- readRDS('data/Zhou_control.rds')
 ## EnrichR
 
 In this section we discuss how to perform Enrichr enrichment tests and how
-to visualize the results using scWGCNA. scWGCNA includes the function `RunEnrichr`
+to visualize the results using hdWGCNA. hdWGCNA includes the function `RunEnrichr`
 to compare the set of genes in each
 module with any of the gene lists hosted by Enrichr. You can take a look at the
 list of different Enrichr gene lists [here](https://maayanlab.cloud/Enrichr/#libraries).
-We store the results of the enrichment tests in the scWGCNA experiment, so can
+We store the results of the enrichment tests in the hdWGCNA experiment, so can
 be easily retrieved for downstream analysis or exporting to external applicaitons like Excel.
 In the following example, we perform the enrichment test with three Gene Ontology
 datbases:
@@ -92,7 +92,7 @@ explanation below for the different columns in `enrich_df`:
 * `Combined.Score`: natural log of the p-value multiplied by the z-score, where the z-score is the deviation from the expected rank.
 * `Genes`: semicolon delimited list of gene symbols for the overlapping genes.
 * `db`: the name of the Enrichr gene list.
-* `module`: the name of the scWGCNA module.
+* `module`: the name of the hdWGCNA module.
 
 ### Visualize enrichments
 
@@ -101,7 +101,7 @@ about visualizing the results.
 
 #### `EnrichrBarPlot`
 
-scWGCNA includes the function `EnrichrBarPlot` to summarize the results of every
+hdWGCNA includes the function `EnrichrBarPlot` to summarize the results of every
 Enrichr database and every module. This function outputs a .pdf figure for each
 module, containing a barplot showing the top *N* enriched terms. The following
 example will plot the top 10 terms in each module and will output the results
@@ -140,7 +140,7 @@ results like this.
 
 #### `EnrichrDotPlot`
 
-scWGCNA includes an additional visualization function for enrichment results,
+hdWGCNA includes an additional visualization function for enrichment results,
 `EnrichrDotPlot`, which shows the top results for one Enrichr database in each module.
 In the following example, we plot the top term in the `GO_Biological_Process_2021` database.
 
@@ -164,9 +164,9 @@ each dot is scaled by the enrichment of the term.
 
 ## Marker gene overlap analysis
 
-In this section we discuss how to compare scWGCNA modules with cluster or cell-type
+In this section we discuss how to compare hdWGCNA modules with cluster or cell-type
 marker genes. First we use the Seurat function `FindAllMarkers` to identify the
-marker genes in each cell type, and then we use the scWGCNA function `OverlapModulesDEGs`
+marker genes in each cell type, and then we use the hdWGCNA function `OverlapModulesDEGs`
 to overlap the modules and the DEGs.
 
 ```{r eval=FALSE}
@@ -189,11 +189,11 @@ overlap_df <- OverlapModulesDEGs(
 ```
 
 Notably, the results from `OverlapModulesDEGs` are currently not stored in the
-scWGCNA experiment. This is partially because this test is extremely fast to run,
+hdWGCNA experiment. This is partially because this test is extremely fast to run,
 and partially because there are many different sets of DEGs that one could compare
 their modules to. The `overlap_df` contains the following columns:
 
-* `module`: the name of the scWGCNA module.
+* `module`: the name of the hdWGCNA module.
 * `group`: the name of the RNA-seq cluster / cell-type / etc.
 * `color`: the module's unique color.
 * `odds_ratio`: statistic to quantify the association between the gene list in the current module and the gene list for the marker genes.
@@ -205,7 +205,7 @@ their modules to. The `overlap_df` contains the following columns:
 
 ### Visualize overlaps
 
-scWGCNA includes two functions to visualize the results from `OverlapModulesDEGs`,
+hdWGCNA includes two functions to visualize the results from `OverlapModulesDEGs`,
 `OverlapDotPlot` and `OverlapBarPlot`.
 
 Here we demonstrate using `OverlapBarPlot` to visualize the results of
@@ -240,7 +240,7 @@ OverlapDotPlot(
 <img src="figures/enrichment/overlap_dotplot.png" width="600" height="600">
 
 
-Each dot is colored by the scWGCNA module's unique color, and the size of the
+Each dot is colored by the hdWGCNA module's unique color, and the size of the
 dot is scaled by the overlap statistic. We show FDR significance levels
 as stars on top of the dots.
 

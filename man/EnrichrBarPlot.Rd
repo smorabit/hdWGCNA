@@ -25,7 +25,7 @@ EnrichrBarPlot(
 
 \item{logscale}{logical controlling whether to plot the enrichment on a log scale}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Makes barplots from RunEnrhcr output.

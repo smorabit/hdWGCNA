@@ -11,9 +11,9 @@ ResetModuleNames(seurat_obj, new_name = "M", wgcna_name = NULL)
 
 \item{new_name}{string containing the base name to re-name the modules}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Reset the uname of each scWGCNA module
+Reset the uname of each hdWGCNA module
 }
 \keyword{scRNA-seq}

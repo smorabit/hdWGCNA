@@ -8,6 +8,8 @@ ModuleEigengenes(
   seurat_obj,
   group.by.vars = NULL,
   modules = NULL,
+  vars.to.regress = NULL,
+  scale.model.use = "linear",
   verbose = TRUE,
   wgcna_name = NULL,
   ...
@@ -15,6 +17,18 @@ ModuleEigengenes(
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{group.by.vars}{groups to harmonize by}
+
+\item{modules}{table containing module / gene assignments, as in GetModules(seurat_obj).}
+
+\item{vars.to.regress}{character vector of variables in seurat_obj@meta.data to regress when running ScaleData}
+
+\item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
+
+\item{verbose}{logical indicating whether to print messages}
+
+\item{wgcna_name}{name of the WGCNA experiment}
 }
 \description{
 Computes module eigengenes for all WGCNA co-expression modules

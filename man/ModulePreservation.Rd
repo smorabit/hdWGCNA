@@ -33,11 +33,11 @@ ModulePreservation(
 
 \item{seed}{random seed for the permutation analysis.}
 
-\item{return_raw}{if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the scWGCNA experiment.}
+\item{return_raw}{if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
-\item{wgcna_name_ref}{The name of the scWGCNA experiment in the seurat_ref@misc slot}
+\item{wgcna_name_ref}{The name of the hdWGCNA experiment in the seurat_ref@misc slot}
 }
 \description{
 Computes module preservation statistics in a query dataset for a given reference dataset

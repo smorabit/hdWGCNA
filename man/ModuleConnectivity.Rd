@@ -8,8 +8,9 @@ ModuleConnectivity(
   seurat_obj,
   harmonized = TRUE,
   assay = NULL,
-  slot = NULL,
-  use_metacells = FALSE,
+  slot = "data",
+  group.by = NULL,
+  group_name = NULL,
   wgcna_name = NULL,
   ...
 )

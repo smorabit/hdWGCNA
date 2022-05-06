@@ -11,7 +11,7 @@ SetWGCNAGenes(seurat_obj, gene_list, wgcna_name = NULL)
 
 \item{gene_list}{vector of genes to be used for WGCNA}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetWGCNAGenes

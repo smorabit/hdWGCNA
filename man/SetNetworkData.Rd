@@ -11,7 +11,7 @@ SetNetworkData(seurat_obj, net, wgcna_name = NULL)
 
 \item{net}{list of network data from WGCNA}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetNetworkData

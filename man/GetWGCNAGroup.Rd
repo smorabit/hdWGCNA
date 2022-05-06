@@ -9,7 +9,7 @@ GetWGCNAGroup(seurat_obj, wgcna_name)
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 GetWGCNAGroup

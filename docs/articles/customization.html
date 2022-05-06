@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module customization • scWGCNA</title>
+<title>Module customization • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Module customization">
-<meta property="og:description" content="Tutorial for customizing module colors and module names in scWGCNA.
+<meta property="og:description" content="Tutorial for customizing module colors and module names in hdWGCNA.
 ">
 <meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -40,7 +40,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">scWGCNA</a>
+        <a class="navbar-link" href="../index.html">hdWGCNA</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
       </span>
     </div>
@@ -48,7 +48,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../articles/scWGCNA.html">Get started</a>
+  <a href="../articles/hdWGCNA.html">Get started</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -59,7 +59,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="../articles/basic_tutorial.html">scWGCNA basics</a>
+      <a href="../articles/basic_tutorial.html">hdWGCNA basics</a>
     </li>
     <li>
       <a href="../articles/network_visualizations.html">Network visualization</a>
@@ -137,7 +137,7 @@
 
     
     
-<p>By default, scWGCNA (and WGCNA) assign each module a unique color, and often modules are referred to by this color. In this tutorial, we show how we can rename the scWGCNA modules, and assign a new color to the scWGCNA modules.</p>
+<p>By default, hdWGCNA (and WGCNA) assign each module a unique color, and often modules are referred to by this color. In this tutorial, we show how we can rename the hdWGCNA modules, and assign a new color to the hdWGCNA modules.</p>
 <p>First, we load the required libraries and the dataset.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -150,7 +150,7 @@
 
 <span class="co"># co-expression network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hdWGCNA</span><span class="op">)</span>
 
 <span class="co"># using the cowplot theme for ggplot</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
@@ -161,21 +161,21 @@
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
 <div class="section level2">
-<h2 id="renaming-scwgcna-modules">Renaming scWGCNA modules<a class="anchor" aria-label="anchor" href="#renaming-scwgcna-modules"></a>
+<h2 id="renaming-hdwgcna-modules">Renaming hdWGCNA modules<a class="anchor" aria-label="anchor" href="#renaming-hdwgcna-modules"></a>
 </h2>
-<p>scWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire scWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the scWGCNA modules.</p>
+<p>hdWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire hdWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the hdWGCNA modules.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run RenameModules</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   new_name <span class="op">=</span> <span class="st">"Renamed-M"</span> <span class="co"># the base name for the new modules</span>
 <span class="op">)</span></code></pre></div>
-<p>In the next section, we will re-make some of the scWGCNA visualizations so we can see that the module names have been updated.</p>
+<p>In the next section, we will re-make some of the hdWGCNA visualizations so we can see that the module names have been updated.</p>
 </div>
 <div class="section level2">
-<h2 id="re-coloring-scwgcna-modules">Re-coloring scWGCNA modules<a class="anchor" aria-label="anchor" href="#re-coloring-scwgcna-modules"></a>
+<h2 id="re-coloring-hdwgcna-modules">Re-coloring hdWGCNA modules<a class="anchor" aria-label="anchor" href="#re-coloring-hdwgcna-modules"></a>
 </h2>
-<p>Here we demonstrate how to assign new colors to the scWGCNA modules using the <code>ResetModuleColors</code> function. This function takes a list of new colors to replace the old colors, or a named list in order to change the colors selected modules. The ordering of the colors depends on the factor level of the scWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey.</p>
+<p>Here we demonstrate how to assign new colors to the hdWGCNA modules using the <code>ResetModuleColors</code> function. This function takes a list of new colors to replace the old colors, or a named list in order to change the colors selected modules. The ordering of the colors depends on the factor level of the hdWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey.</p>
 <div class="section level3">
 <h3 id="change-the-colors-of-all-modules">Change the colors of all modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-all-modules"></a>
 </h3>

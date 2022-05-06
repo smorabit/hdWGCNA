@@ -11,7 +11,7 @@ SetMotifOverlap(seurat_obj, overlap_df, wgcna_name = NULL)
 
 \item{overlap_df}{dataframe containing motif-module overlap info}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetMotifOverlap

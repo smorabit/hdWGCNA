@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cross-species and cross-modality analysis • scWGCNA</title>
+<title>Cross-species and cross-modality analysis • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Cross-species and cross-modality analysis">
-<meta property="og:description" content="Projecting scWGCNA co-expression modules across species and -omics modalities.
+<meta property="og:description" content="Projecting hdWGCNA co-expression modules across species and -omics modalities.
 ">
 <meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -40,7 +40,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">scWGCNA</a>
+        <a class="navbar-link" href="../index.html">hdWGCNA</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
       </span>
     </div>
@@ -48,7 +48,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../articles/scWGCNA.html">Get started</a>
+  <a href="../articles/hdWGCNA.html">Get started</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -59,7 +59,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="../articles/basic_tutorial.html">scWGCNA basics</a>
+      <a href="../articles/basic_tutorial.html">hdWGCNA basics</a>
     </li>
     <li>
       <a href="../articles/network_visualizations.html">Network visualization</a>
@@ -138,7 +138,7 @@
     
     
 <p><strong><em>Tutorial Under Construction</em></strong></p>
-<p>In this tutorial, we demonstrate how to use scWGCNA to project co-expression modules from a reference to a query dataset in certain special cases. Specifically, we project modules from a human snRNA-seq dataset to a human snATAC-seq dataset, a mouse snRNA-seq dataset, and a mouse <a href="https://www.10xgenomics.com/products/spatial-gene-expression" class="external-link">Visium</a> spatial transcriptomics dataset.</p>
+<p>In this tutorial, we demonstrate how to use hdWGCNA to project co-expression modules from a reference to a query dataset in certain special cases. Specifically, we project modules from a human snRNA-seq dataset to a human snATAC-seq dataset, a mouse snRNA-seq dataset, and a mouse <a href="https://www.10xgenomics.com/products/spatial-gene-expression" class="external-link">Visium</a> spatial transcriptomics dataset.</p>
 <p>Load the snRNA-seq data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -151,7 +151,7 @@
 
 <span class="co"># co-expressi fron network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/scWGCNA/">scWGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hdWGCNA</span><span class="op">)</span>
 
 <span class="co"># network analysis &amp; visualization package:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
@@ -167,7 +167,7 @@
 <div class="section level2">
 <h2 id="project-modules-from-rna-seq-to-atac-seq">Project modules from RNA-seq to ATAC-seq<a class="anchor" aria-label="anchor" href="#project-modules-from-rna-seq-to-atac-seq"></a>
 </h2>
-<p>In this section, we project snRNA-seq co-expression modules onto the snATAC-seq dataset from our <a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Nature Genetics paper</a>. This analysis requires a fully processed snRNA-seq dataset that we have run scWGCNA on, and a fully processed snATAC-seq dataset. For snATAC-seq processing and data formatting, we suggest using <a href="https://satijalab.org/signac/" class="external-link">Signac</a>, an extension of Seurat for performing single-cell chromatin accessibility analysis. Signac offers several <a href="https://satijalab.org/signac/articles/mouse_brain_vignette.html" class="external-link">tutorials</a> for processing snATAC-seq data from scratch, and before projecting co-expression modules into snATAC-seq data we need to do the following analysis steps:</p>
+<p>In this section, we project snRNA-seq co-expression modules onto the snATAC-seq dataset from our <a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Nature Genetics paper</a>. This analysis requires a fully processed snRNA-seq dataset that we have run hdWGCNA on, and a fully processed snATAC-seq dataset. For snATAC-seq processing and data formatting, we suggest using <a href="https://satijalab.org/signac/" class="external-link">Signac</a>, an extension of Seurat for performing single-cell chromatin accessibility analysis. Signac offers several <a href="https://satijalab.org/signac/articles/mouse_brain_vignette.html" class="external-link">tutorials</a> for processing snATAC-seq data from scratch, and before projecting co-expression modules into snATAC-seq data we need to do the following analysis steps:</p>
 <ul>
 <li>
 <a href="https://satijalab.org/signac/articles/pbmc_vignette.html#computing-qc-metrics" class="external-link">Quality control and filtering</a>.</li>
@@ -239,7 +239,7 @@ Code
 <span class="op">)</span>
 
 <span class="co"># save the results:</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_atac</span>, file<span class="op">=</span><span class="st">'mm2021_atac_scWGCNA.rds'</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_atac</span>, file<span class="op">=</span><span class="st">'mm2021_atac_hdWGCNA.rds'</span><span class="op">)</span></code></pre></div>
 <p>Using the gene activity matrix we computed module eigengenes in the snATAC-seq dataset, harmonizing based on the sequencing batch. Additionally, we computed module hub gene expression scores for the projected modules, and now we are ready for visualization and downstream analysis.</p>
 </div>
 <div class="section level3">
@@ -315,7 +315,7 @@ Code
 <span class="op">)</span>
 
 <span class="co"># save the results again since this step takes a while to run:</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_atac</span>, file<span class="op">=</span><span class="st">'mm2021_atac_scWGCNA.rds'</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_atac</span>, file<span class="op">=</span><span class="st">'mm2021_atac_hdWGCNA.rds'</span><span class="op">)</span></code></pre></div>
 <p>Now we visualize the results using the <code>PlotModulePreservation</code> function.</p>
 <details><summary>
 Code
@@ -473,7 +473,7 @@ Code
   verbose<span class="op">=</span><span class="fl">3</span>
 <span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, file<span class="op">=</span><span class="st">'../data/5xFAD_zhou_scWGCNA.rds'</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, file<span class="op">=</span><span class="st">'../data/5xFAD_zhou_hdWGCNA.rds'</span><span class="op">)</span></code></pre></div>
 <p>Now we visualize the results using the <code>PlotModulePreservation</code> function.</p>
 <details><summary>
 Code
@@ -651,7 +651,7 @@ Code
   verbose<span class="op">=</span><span class="fl">3</span>
 <span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_vis</span>, file<span class="op">=</span><span class="st">'../data/10x_visium_scWGCNA.rds'</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_vis</span>, file<span class="op">=</span><span class="st">'../data/10x_visium_hdWGCNA.rds'</span><span class="op">)</span></code></pre></div>
 <p>Now we visualize the results using the <code>PlotModulePreservation</code> function.</p>
 <details><summary>
 Code

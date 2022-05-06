@@ -20,7 +20,7 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 
 \item{features}{Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{cor_meth}{Which method to use for correlation? Valid choices are pearson, spearman, kendall.}
 }

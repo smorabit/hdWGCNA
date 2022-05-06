@@ -11,7 +11,7 @@ SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name = NULL)
 
 \item{mt_cor}{matrix of module-trait correlation results}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetModuleTraitCorrelation

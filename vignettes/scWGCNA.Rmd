@@ -14,9 +14,9 @@ vignette: >
 These tutorials cover the essentials of performing co-expression network
 analysis in single-cell transcriptomics data, and visualizing the key results.
 
-### [scWGCNA basics](basic_tutorial.html)
+### [hdWGCNA basics](basic_tutorial.html)
 This tutorial covers the essential functions to construct a co-expression network
-in single-cell transcriptomics data with scWGCNA.
+in single-cell transcriptomics data with hdWGCNA.
 
 
 <img src="figures/basic_tutorial/Zhou_featureplot_hMEs_selected_wide.png" width="500" height="500">
@@ -24,7 +24,7 @@ in single-cell transcriptomics data with scWGCNA.
 
 ### [Network visualization](network_visualizations.html)
 
-This tutorial highlights several approaches for visualizing the scWGCNA co-expression
+This tutorial highlights several approaches for visualizing the hdWGCNA co-expression
 networks.
 
 <img src="figures/network_vis/hubgene_umap_igraph.png" width="400" height="400">
@@ -87,6 +87,6 @@ not match between the reference and the query.
 
 ### [Module customization](customization.html)
 
-This tutorial covers how to change the default names and colors for scWGCNA modules.
+This tutorial covers how to change the default names and colors for hdWGCNA modules.
 
 <img src="figures/customization/featureplot.png" width="400" height="400">

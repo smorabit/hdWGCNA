@@ -11,7 +11,7 @@ SetPowerTable(seurat_obj, power_table, wgcna_name = NULL)
 
 \item{power_table}{a dataframe containing the results of the soft power test}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetPowerTable

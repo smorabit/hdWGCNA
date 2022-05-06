@@ -20,10 +20,10 @@ RunEnrichr(
 
 \item{max_genes}{Max number of genes to include per module, ranked by kME.}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Run Enrichr gene set enrichment tests on scWGCNA modules
+Run Enrichr gene set enrichment tests on hdWGCNA modules
 }
 \examples{
 RunEnrichr

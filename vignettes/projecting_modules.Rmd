@@ -2,7 +2,7 @@
 title: "Projecting modules to new datasets"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for applying the core functions of scWGCNA.
+  Tutorial for applying the core functions of hdWGCNA.
 vignette: >
   %\VignetteIndexEntry{Projecting modules to new datasets}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,7 +13,7 @@ In this tutorial, we begin to analyze the co-expresion modules detected in one
 dataset in external datasets. Rather than building a new co-expression network
 from scratch in a new dataset, we can take the modules from one dataset and project
 them into the new dataset. Before starting this tutorial, make sure that you
-have constructed the co-expression network as in the [scWGCNA basics](articles/basics_tutorial.html). The main scWGCNA tutorials have been using the control
+have constructed the co-expression network as in the [hdWGCNA basics](articles/basics_tutorial.html). The main hdWGCNA tutorials have been using the control
 brain samples from [this publication](https://www.nature.com/articles/s41591-019-0695-9),
 and now we will project the inhibitory neruon modules from Zhou et al into the
 control brain samples from [Morabito and Miyoshi 2021](https://doi.org/10.1038/s41588-021-00894-z).
@@ -31,7 +31,7 @@ library(patchwork)
 
 # co-expression network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # network analysis & visualization package:
 library(igraph)
@@ -53,7 +53,7 @@ seurat_query <- readRDS(file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds
 ## Projecting modules from reference to query
 
 In this section we project the modules from the Zhou et al inhibitory neuron
-scWGCNA experiment into the Morabito & Miyoshi et al control brain dataset. We
+hdWGCNA experiment into the Morabito & Miyoshi et al control brain dataset. We
 refer to the Zhou et al dataset as the "reference" dataset, and the Morabito & Miyoshi
 et al dataset as the "query" dataset. Just [as we had done before](basic_tutorial.html) when building the co-expression network from scratch, the basic single-cell pipeline
 has to be 0done on the query dataset (normalization, scaling, variable features, PCA, batch correction, UMAP, clustering).
@@ -102,14 +102,14 @@ seurat_query <- ProjectModules(
   scale_genes = TRUE,
   # vars.to.regress = c(), # optionally regress covariates when running ScaleData
   group.by.vars = "Batch", # column in seurat_query to run harmony on
-  wgcna_name_proj="Zhou_projected", # name of the new scWGCNA experiment in the query dataset
-  wgcna_name = "tutorial" # name of the scWGCNA experiment in the ref dataset
+  wgcna_name_proj="Zhou_projected", # name of the new hdWGCNA experiment in the query dataset
+  wgcna_name = "tutorial" # name of the hdWGCNA experiment in the ref dataset
 )
 
 ```
 
 As you can see it only takes running one function to project co-expression modules
-from one dataset into another using scWGCNA. Optionally, we can also compute the
+from one dataset into another using hdWGCNA. Optionally, we can also compute the
 hub gene expression scores and the intramodular connectivity for the projected modules.
 Note that if we do not run the `ModuleConnectivity` function on the query dataset,
 the *kME* values in the module assignment table `GetModules(seurat_query)` are the
@@ -134,7 +134,7 @@ Save the query Seurat object after projecting modules.
 ```{r eval=FALSE}
 saveRDS(seurat_query, file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
 
-seurat_query <- readRDS(paste0(data_dir, 'Swarup2021_control_scWGCNA_modpres.rds'))
+seurat_query <- readRDS(paste0(data_dir, 'Swarup2021_control_hdWGCNA_modpres.rds'))
 ```
 
 We can extract the projected module eigengenes using the `GetMEs` function.
@@ -145,7 +145,7 @@ projected_hMEs <- GetModules(seurat_query)
 
 ```
 
-The projected modules can be used in most of the downstream scWGCNA analysis
+The projected modules can be used in most of the downstream hdWGCNA analysis
 tasks and visualization functions, such as [module trait correlation](module_trait_correlation.html),
 however it is important to note that some of the functions cannot be run on the
 projected modules. In particular, we cannot make any of the network plots since
@@ -209,7 +209,7 @@ p
 
 ## Next steps
 
-We encourage users to explore the projected modules using scWGCNA's various
+We encourage users to explore the projected modules using hdWGCNA's various
 visualization and analysis functions. In the [next tutorial](module_preservation.html),
 we cover statistical methods to determine the preservation and reproducibility
 of co-expression modules between reference and query datasets. Additionally,

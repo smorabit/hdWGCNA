@@ -22,7 +22,7 @@ SetMultiExpr(
 
 \item{use_metacells}{A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)}
 
-\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.}
+\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.}
 
 \item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
 

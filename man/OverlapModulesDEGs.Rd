@@ -22,10 +22,10 @@ OverlapModulesDEGs(
 
 \item{group_col}{the name of the column in deg_df containing the cell grouping information}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Performs Fisher's Exact Test for overlap between DEGs and scWGCNA modules.
+Performs Fisher's Exact Test for overlap between DEGs and hdWGCNA modules.
 }
 \examples{
 OverlapModulesDEGs

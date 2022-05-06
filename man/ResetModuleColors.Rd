@@ -11,9 +11,9 @@ ResetModuleColors(seurat_obj, new_colors, wgcna_name = NULL)
 
 \item{new_colors}{a character vector containing the new colors}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Reset the unique color for each scWGCNA module
+Reset the unique color for each hdWGCNA module
 }
 \keyword{scRNA-seq}

@@ -25,7 +25,7 @@ RunModuleUMAP(
 
 \item{exclude_grey}{logical indicating whether to include grey module}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{...}{Additional parameters supplied to uwot::umap}
 }

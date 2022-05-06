@@ -11,7 +11,7 @@ SetModulePreservation(seurat_obj, mod_pres, mod_name, wgcna_name = NULL)
 
 \item{mod_name}{name of the module preservation test to store}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{mt_cor}{matrix of module-trait correlation results}
 }

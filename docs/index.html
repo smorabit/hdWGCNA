@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>scWGCNA • scWGCNA</title>
+<title>hdWGCNA • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="scWGCNA">
+<script src="pkgdown.js"></script><meta property="og:title" content="hdWGCNA">
 <meta property="og:description" content="scWGCNA is an R package for performing weighted gene co-expression network analysis in single-cell RNA-seq data.">
 <meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -39,15 +39,15 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">scWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <a class="navbar-link" href="index.html">hdWGCNA</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="articles/scWGCNA.html">Get started</a>
+  <a href="articles/hdWGCNA.html">Get started</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -58,7 +58,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="articles/basic_tutorial.html">scWGCNA basics</a>
+      <a href="articles/basic_tutorial.html">hdWGCNA basics</a>
     </li>
     <li>
       <a href="articles/network_visualizations.html">Network visualization</a>
@@ -126,20 +126,20 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="single-cell-co-expression-network-analysis-">single-cell co-expression network analysis <img src="reference/figures/logo.png" align="right" height="20%" width="20%"><a class="anchor" aria-label="anchor" href="#single-cell-co-expression-network-analysis-"></a>
+<div class="page-header"><h1 id="high-dimensional-wgcna-">high dimensional WGCNA <img src="reference/figures/logo.png" align="right" height="20%" width="20%"><a class="anchor" aria-label="anchor" href="#high-dimensional-wgcna-"></a>
 </h1></div>
 
-<p><strong>Note:</strong> scWGCNA is under active development, so you will likely run into errors if you choose to use scWGCNA before its first stable release.</p>
-<p>scWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in single-cell RNA-seq data. scWGCNA constructs co-expression networks in a cell-type-specific manner, identifies robust modules of inerconnected genes, and provides biological context for these modules. scWGCNA is directly compatible with <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="articles/basic_tutorial.html">scWGCNA basics tutorial</a> to get started.</p>
+<p><strong>Note:</strong> hdWGCNA is under active development, so you will likely run into errors if you choose to use hdWGCNA before its first stable release.</p>
+<p>hdWGCNA, formerly known as scWGCNA, is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in high dimensional data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA constructs co-expression networks in a cell-type-specific manner, identifies robust modules of inerconnected genes, and provides biological context for these modules. hdWGCNA is directly compatible with <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="articles/basic_tutorial.html">hdWGCNA basics tutorial</a> to get started.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>We recommend creating an R <a href="https://docs.conda.io/en/latest/" class="external-link">conda environment</a> environment for scWGCNA.</p>
+<p>We recommend creating an R <a href="https://docs.conda.io/en/latest/" class="external-link">conda environment</a> environment for hdWGCNA.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create new conda environment for R</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create -n scWGCNA -c conda-forge r-base r-essentials</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create -n hdWGCNA -c conda-forge r-base r-essentials</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># activate conda environment</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate scWGCNA</span></code></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate hdWGCNA</span></code></pre></div>
 <p>Next, open up R and install the required dependencies:</p>
 <ul>
 <li>
@@ -162,9 +162,9 @@
 
 <span class="co"># install additional packages:</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Seurat"</span>, <span class="st">"WGCNA"</span>, <span class="st">"igraph"</span>, <span class="st">"devtools"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Now you can install the scWGCNA package using <code>devtools</code>.</p>
+<p>Now you can install the hdWGCNA package using <code>devtools</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'smorabit/scWGCNA'</span>, ref<span class="op">=</span><span class="st">'dev'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'smorabit/hdWGCNA'</span>, ref<span class="op">=</span><span class="st">'dev'</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
   </div>
@@ -181,7 +181,7 @@
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing scWGCNA</a></li>
+<li><a href="authors.html#citation">Citing hdWGCNA</a></li>
 </ul>
 </div>
 
@@ -198,9 +198,9 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/smorabit/scWGCNA/tree/dev" class="external-link"><img src="https://img.shields.io/github/r-package/v/smorabit/scWGCNA" alt="R"></a></li>
-<li><a href="LICENSE.html"><img src="https://img.shields.io/github/license/smorabit/scWGCNA" alt="LICENSE"></a></li>
-<li><a href="https://github.com/smorabit/scWGCNA/issues" class="external-link"><img src="https://img.shields.io/github/issues/smorabit/scWGCNA" alt="ISSUES"></a></li>
+<li><a href="https://github.com/smorabit/hdWGCNA/tree/dev" class="external-link"><img src="https://img.shields.io/github/r-package/v/smorabit/hdWGCNA" alt="R"></a></li>
+<li><a href="LICENSE.html"><img src="https://img.shields.io/github/license/smorabit/hdWGCNA" alt="LICENSE"></a></li>
+<li><a href="https://github.com/smorabit/hdWGCNA/issues" class="external-link"><img src="https://img.shields.io/github/issues/smorabit/hdWGCNA" alt="ISSUES"></a></li>
 </ul>
 </div>
 

@@ -2,7 +2,7 @@
 title: "Cross-species and cross-modality analysis"
 output: rmarkdown::html_vignette
 description: >
-  Projecting scWGCNA co-expression modules across species and -omics modalities.
+  Projecting hdWGCNA co-expression modules across species and -omics modalities.
 vignette: >
   %\VignetteIndexEntry{Cross-species and cross-modality analysis}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,7 +11,7 @@ vignette: >
 
 ***Tutorial Under Construction***
 
-In this tutorial, we demonstrate how to use scWGCNA to project co-expression modules
+In this tutorial, we demonstrate how to use hdWGCNA to project co-expression modules
 from a reference to a query dataset in certain special cases. Specifically, we
 project modules from a human snRNA-seq dataset to a human snATAC-seq dataset, a
 mouse snRNA-seq dataset, and a mouse [Visium](https://www.10xgenomics.com/products/spatial-gene-expression)
@@ -31,7 +31,7 @@ library(patchwork)
 
 # co-expressi fron network analysis packages:
 library(WGCNA)
-library(scWGCNA)
+library(hdWGCNA)
 
 # network analysis & visualization package:
 library(igraph)
@@ -52,7 +52,7 @@ seurat_ref <- readRDS('data/Zhou_control.rds')
 
 In this section, we project snRNA-seq co-expression modules onto the snATAC-seq
 dataset from our [Nature Genetics paper](https://doi.org/10.1038/s41588-021-00894-z).
-This analysis requires a fully processed snRNA-seq dataset that we have run scWGCNA
+This analysis requires a fully processed snRNA-seq dataset that we have run hdWGCNA
 on, and a fully processed snATAC-seq dataset. For snATAC-seq processing and
 data formatting, we suggest using [Signac](https://satijalab.org/signac/), an
 extension of Seurat for performing single-cell chromatin accessibility analysis.
@@ -147,7 +147,7 @@ seurat_atac <- ModuleExprScore(
 )
 
 # save the results:
-saveRDS(seurat_atac, file='mm2021_atac_scWGCNA.rds')
+saveRDS(seurat_atac, file='mm2021_atac_hdWGCNA.rds')
 
 ```
 
@@ -247,7 +247,7 @@ seurat_atac <- ModulePreservation(
 )
 
 # save the results again since this step takes a while to run:
-saveRDS(seurat_atac, file='mm2021_atac_scWGCNA.rds')
+saveRDS(seurat_atac, file='mm2021_atac_hdWGCNA.rds')
 
 ```
 
@@ -434,7 +434,7 @@ seurat_mouse <- ModulePreservation(
   verbose=3
 )
 
-saveRDS(seurat_mouse, file='../data/5xFAD_zhou_scWGCNA.rds')
+saveRDS(seurat_mouse, file='../data/5xFAD_zhou_hdWGCNA.rds')
 
 
 ```
@@ -652,7 +652,7 @@ seurat_vis <- ModulePreservation(
   verbose=3
 )
 
-saveRDS(seurat_vis, file='../data/10x_visium_scWGCNA.rds')
+saveRDS(seurat_vis, file='../data/10x_visium_hdWGCNA.rds')
 
 
 ```

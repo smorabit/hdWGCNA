@@ -41,7 +41,7 @@ HubGeneNetworkPlot(
 
 \item{other.vertex.size}{The size of the other gene nodes}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Construct a unified network plot comprising hub genes for multiple modules.

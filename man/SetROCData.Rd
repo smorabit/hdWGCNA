@@ -11,7 +11,7 @@ SetROCData(seurat_obj, roc_info, wgcna_name = NULL)
 
 \item{roc_info}{dataframe storing the ROC results}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetROCData

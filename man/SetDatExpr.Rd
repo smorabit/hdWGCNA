@@ -20,11 +20,11 @@ SetDatExpr(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{group_name}{A string containing a group present in the provided group.by column or in the Seurat Idents.}
+\item{group_name}{A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.}
 
 \item{use_metacells}{A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)}
 
-\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), scWGCNA uses the Seurat Idents as the group.}
+\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.}
 
 \item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
 
@@ -33,7 +33,7 @@ SetDatExpr(
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }
 \description{
-This function sets up the expression matrix from the metacell object.
+This function sets up the gene expression matrix for co-expression network analysis.
 }
 \examples{
 SetDatExpr(pbmc)

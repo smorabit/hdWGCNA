@@ -11,7 +11,7 @@ SetWGCNAParams(seurat_obj, params, wgcna_name = NULL)
 
 \item{params}{list of WGCNA parameters}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 SetWGCNAParams

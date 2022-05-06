@@ -8,7 +8,6 @@ SelectNetworkGenes(
   seurat_obj,
   gene_select = "variable",
   fraction = 0.05,
-  n_chunks = 5,
   group.by = NULL,
   gene_list = NULL,
   wgcna_name = NULL

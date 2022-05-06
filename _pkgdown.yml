@@ -1,4 +1,4 @@
-title: scWGCNA
+title: hdWGCNA
 
 url: https://smorabit.github.io/scWGCNA/
 
@@ -7,7 +7,7 @@ template:
     bootswatch: flatly
 
 home:
-  title: scWGCNA
+  title: hdWGCNA
   sidebar:
     structure: [license, citation, authors, dev]
 
@@ -24,7 +24,7 @@ navbar:
   components:
    intro:
      text: Get started
-     href: articles/scWGCNA.html
+     href: articles/hdWGCNA.html
    news:
      text: News
      href: news/index.html
@@ -32,7 +32,7 @@ navbar:
     text: Vignettes
     menu:
     - text: Core functionality
-    - text: scWGCNA basics
+    - text: hdWGCNA basics
       href: articles/basic_tutorial.html
     - text: Network visualization
       href: articles/network_visualizations.html

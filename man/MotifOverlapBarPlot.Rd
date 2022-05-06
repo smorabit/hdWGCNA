@@ -17,7 +17,7 @@ MotifOverlapBarPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{wgcna_name}{The name of the scWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Displays the top n TFs in a set of modules as a bar plot
