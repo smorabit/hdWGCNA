@@ -1157,7 +1157,7 @@ ModuleUMAPPlot <- function(
     gene2 = as.character(edge_df[i,'Var2'])
 
     col1 <- selected_modules[selected_modules$gene_name == gene1, 'color']
-    col2 <- selected_modules[selected_modules$gene_name == gene2, 'color']
+    col2 <- selected_modules[sfelected_modules$gene_name == gene2, 'color']
 
     if(col1 == col2){
       col = col1
@@ -1844,11 +1844,16 @@ PlotModulePreservation <- function(
 #' Plotting function for Module Preservation statistics
 #'
 #' @param seurat_obj A Seurat object
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param plot_labels logical determining whether to plot the module labels#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param high_color color for positive correlation
+#' @param mid_color color for zero correlation
+#' @param low_color color for negative correlation
+#' @param label logical determining whether to add p-val label in each cell of the heatmap
+#' @param label_symbol show the labels as 'stars' or as 'numeric'
+#' @param plot_max maximum value of correlation to show on the colorbar
+#' @param text_size size of the labels
+#' @param text_color color of the text labels
+#' @param text_digits how many digits to show in the text labels
+#' @param combine logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -2217,6 +2222,20 @@ ModuleTFNetwork <- function(
 
 }
 
+#' PlotKMEs
+#'
+#' Plotting function to show genes by kME value in each module
+#'
+#' @param seurat_obj A Seurat object
+#' @param n_hubs number of hub genes to display
+#' @param text_size controls the size of the hub gene text
+#' @param ncol number of columns to display individual plots
+#' @param plot_widths the relative width between the kME rank plot and the hub gene text
+#' @param wgcna_name the name of the WGCNA experiment in the seurat object
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+#' PlotKMEs
 PlotKMEs <- function(
   seurat_obj,
   n_hubs=10,

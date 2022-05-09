@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9001 (2022-05-09)
+## Added
+- Wrote docstring for `PlotKMEs` so it would actually be included in the package.
+
+## Changes
+- None
+
 # hdWGCNA 0.1.1.9000 (2022-05-05)
 ## Added
 - `PlotKMEs` function to visualize the genes in a module ranked by kME.

@@ -22,7 +22,25 @@ PlotModuleTraitCorrelation(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{plot_labels}{logical determining whether to plot the module labels#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{high_color}{color for positive correlation}
+
+\item{mid_color}{color for zero correlation}
+
+\item{low_color}{color for negative correlation}
+
+\item{label}{logical determining whether to add p-val label in each cell of the heatmap}
+
+\item{label_symbol}{show the labels as 'stars' or as 'numeric'}
+
+\item{plot_max}{maximum value of correlation to show on the colorbar}
+
+\item{text_size}{size of the labels}
+
+\item{text_color}{color of the text labels}
+
+\item{text_digits}{how many digits to show in the text labels}
+
+\item{combine}{logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)}
 }
 \description{
 Plotting function for Module Preservation statistics

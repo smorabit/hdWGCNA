@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9001</span>
       </span>
     </div>
 
@@ -120,8 +120,26 @@
     <h2>Arguments</h2>
     <dl><dt>seurat_obj</dt>
 <dd><p>A Seurat object</p></dd>
-<dt>plot_labels</dt>
-<dd><p>logical determining whether to plot the module labels#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
+<dt>high_color</dt>
+<dd><p>color for positive correlation</p></dd>
+<dt>mid_color</dt>
+<dd><p>color for zero correlation</p></dd>
+<dt>low_color</dt>
+<dd><p>color for negative correlation</p></dd>
+<dt>label</dt>
+<dd><p>logical determining whether to add p-val label in each cell of the heatmap</p></dd>
+<dt>label_symbol</dt>
+<dd><p>show the labels as 'stars' or as 'numeric'</p></dd>
+<dt>plot_max</dt>
+<dd><p>maximum value of correlation to show on the colorbar</p></dd>
+<dt>text_size</dt>
+<dd><p>size of the labels</p></dd>
+<dt>text_color</dt>
+<dd><p>color of the text labels</p></dd>
+<dt>text_digits</dt>
+<dd><p>how many digits to show in the text labels</p></dd>
+<dt>combine</dt>
+<dd><p>logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)</p></dd>
 </dl></div>
 
     <div id="ref-examples">
@@ -202,7 +220,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_list</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe0758d3428&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fb6952e5928&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
