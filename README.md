@@ -16,7 +16,7 @@ hdWGCNA constructs co-expression networks in a cell-type-specific manner,
 identifies robust modules of inerconnected genes, and provides biological
 context for these modules. hdWGCNA is directly compatible with
 [Seurat](https://satijalab.org/seurat/index.html) objects, one of the most ubiquitous
-formats for single-cell data. Check out the [hdWGCNA basics tutorial](articles/basic_tutorial.html) to get started.
+formats for single-cell data. Check out the [hdWGCNA basics tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) to get started.
 
 
 ## Installation
