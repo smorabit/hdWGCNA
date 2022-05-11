@@ -1157,7 +1157,7 @@ ModuleUMAPPlot <- function(
     gene2 = as.character(edge_df[i,'Var2'])
 
     col1 <- selected_modules[selected_modules$gene_name == gene1, 'color']
-    col2 <- selected_modules[sfelected_modules$gene_name == gene2, 'color']
+    col2 <- selected_modules[selected_modules$gene_name == gene2, 'color']
 
     if(col1 == col2){
       col = col1

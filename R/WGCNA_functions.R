@@ -813,6 +813,10 @@ ModuleConnectivity <- function(
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
+  # exclude the grey module:
+  #modules <- subset(modules, module != 'grey')
+  #MEs <- MEs[,colnames(MEs) != 'grey']
+
   if(is.null(assay)){assay <- seurat_obj@active.assay}
 
   if(!is.null(group.by)){
@@ -830,6 +834,8 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   datExpr <- t(as.matrix(exp_mat))
+  print(dim(datExpr))
+  print('running signedKME...')
 
   kMEs <- WGCNA::signedKME(
     datExpr,
