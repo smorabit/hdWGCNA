@@ -300,6 +300,7 @@ ConstructNetwork <- function(
 
     multiExpr <- GetMultiExpr(seurat_obj)
     checkSets(multiExpr) # check data size
+    print('here')
 
   # constructing network on a single dataset
   } else{
@@ -335,17 +336,20 @@ ConstructNetwork <- function(
   if(!dir.exists(tom_outdir)){
     dir.create(tom_outdir)
   }
+  print('here')
 
   if(is.null(soft_power) & !consensus){
     soft_power <- GetPowerTable(seurat_obj) %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
     cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ", soft_power, "\n"))
-  } else if(consensus){
+  } else if(is.null(soft_power)){
     power_tables <- GetPowerTable(seurat_obj) %>% dplyr::group_split(group)
     soft_power <- sapply(power_tables, function(power_table){
       power_table %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
     })
     cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(", paste0(soft_power, collapse=','), ")\n"))
   }
+  print('here')
+
 
   # construct the network
   net <- WGCNA::blockwiseConsensusModules(
@@ -571,6 +575,10 @@ ModuleEigengenes <- function(
 
   # are we going to run Harmony?
   harmonized = !is.null(group.by.vars)
+
+  if(harmonized & !any(grepl("ScaleData", seurat_obj@commands))){
+      stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
+  }
 
   me_list <- list()
   harmonized_me_list <- list()
@@ -1019,7 +1027,8 @@ ProjectModules <- function(
   group.by.vars=NULL,
   gene_mapping=NULL, # table mapping genes from species 1 to species 2
   genome1_col=NULL, genome2_col=NULL,
-  scale_genes = FALSE,
+  vars.to.regress = NULL,
+  scale.model.use = 'linear',
   wgcna_name=NULL, wgcna_name_proj=NULL,
   ...
 ){

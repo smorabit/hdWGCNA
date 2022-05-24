@@ -103,7 +103,6 @@ ConstructMetacells <- function(
     counts = new_exprs
   )
 
-  print('here')
   print(meta)
   print(names(meta))
 
@@ -176,6 +175,10 @@ MetacellsByGroups <- function(
     stop('Invalid character # found in group.by, please re-name the group.')
   }
 
+  if(!(ident.group %in% group.by)){
+    stop('ident.group must be in group.by')
+  }
+
   # subset seurat object by seleted cells:
   if(!is.null(cells.use)){
     seurat_full <- seurat_obj
@@ -226,12 +229,14 @@ MetacellsByGroups <- function(
     MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE, wgcna_name=wgcna_name)
   )
   names(metacell_list) <- groupings
-
+  print('done making metacells')
   # combine metacell objects
   metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+  print('done merging seurat objc')
 
   # set idents for metacell object:
   Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]
+  print('set idents')
 
   # revert to full seurat object if we subsetted earlier
   if(!is.null(cells.use)){
@@ -240,6 +245,7 @@ MetacellsByGroups <- function(
 
   # add seurat metacell object to the main seurat object:
   seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
+  print('update seurat')
 
   # add other info
   seurat_obj <- SetWGCNAParams(
@@ -251,5 +257,7 @@ MetacellsByGroups <- function(
     ),
     wgcna_name
   )
+  print('set params')
+
   seurat_obj
 }

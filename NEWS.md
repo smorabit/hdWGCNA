@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9002 (2022-5-24)
+## Added
+- `ModuleEigengenes` checks to make sure the data has been scaled.
+
+## Changes
+- None
+
 # hdWGCNA 0.1.1.9001 (2022-05-09)
 ## Added
 - Wrote docstring for `PlotKMEs` so it would actually be included in the package.

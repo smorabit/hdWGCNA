@@ -383,14 +383,15 @@ datasets, and over the years there have been many methods that aim to reduce the
 effects of these artifacts. Therefore it stands to reason that MEs would be subject to
 these technical artifacts as well, and hdWGCNA seeks to alleviate these effects.
 
-hdWGCNA includes a function `ModuleEigengenes` to compute MEs in the Seurat object
-using Seurat's `RunPCA` function under the hood. Additionally, we allow the user
+hdWGCNA includes a function `ModuleEigengenes` to compute module eigengenes in single cells. Additionally, we allow the user
 to apply Harmony batch correction to the MEs, yielding **harmonized module eigengenes (hMEs)**.
-
-out certain technical factors, which we demonstrate below. The following code performs the module eigengene computation harmonizing
+The following code performs the module eigengene computation harmonizing
 by the Sample of origin using the `group.by.vars` parameter.
 
 ```{r eval=FALSE}
+
+# need to run ScaleData first or else harmony throws an error:
+seurat_obj <- ScaleData(seurat_obj, features=VariableFeatures(seurat_obj))
 
 # compute all MEs in the full single-cell dataset
 seurat_obj <- ModuleEigengenes(
@@ -649,7 +650,7 @@ p
 
 ```
 
-<img src="figures/basic_tutorial/ME_dotplot.png" width="800" height="800">
+<img src="figures/basic_tutorial/ME_dootploot.png" width="700" height="700">
 
 
 Here is another example where we use Seurat's `VlnPlot` function:
