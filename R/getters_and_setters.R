@@ -109,7 +109,14 @@ GetMetacellObject <- function(seurat_obj,  wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj
+
+  if(class(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj) == "Seurat"){
+    return(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj)
+  } else{
+    metacell_location <- seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj
+    return(seurat_obj@misc[[metacell_location]]$wgcna_metacell_obj)
+  }
+
 }
 
 ############################

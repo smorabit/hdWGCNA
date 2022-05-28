@@ -111,7 +111,9 @@ SelectNetworkGenes <- function(
 #' SetupForWGCNA(pbmc)
 SetupForWGCNA <- function(
   seurat_obj, wgcna_name,
-  group=NULL, features = NULL,
+  group=NULL,
+  features = NULL,
+  metacell_location = NULL,
   ...
 ){
 
@@ -131,6 +133,13 @@ SetupForWGCNA <- function(
     seurat_obj <- SelectNetworkGenes(seurat_obj, wgcna_name=wgcna_name, ...)
   } else{
     seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list=features, wgcna_name=wgcna_name)
+  }
+
+  if(!is.null(metacell_location)){
+    if(!(metacell_location %in% names(seurat_obj@misc))){
+      stop('metacell_location not found in seurat_obj@misc')
+    }
+    seurat_obj <- SetMetacellObject(seurat_obj, metacell_location, wgcna_name)
   }
 
   seurat_obj

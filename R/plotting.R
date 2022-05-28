@@ -485,7 +485,8 @@ ModuleFeaturePlot<- function(
   seurat_obj, module_names=NULL, wgcna_name = NULL,
   reduction='umap', features = 'hMEs',
   order_points=TRUE, restrict_range=TRUE, point_size = 0.5, alpha=1,
-  label_legend = FALSE, ucell = FALSE, raster=FALSE, raster_dpi=500
+  label_legend = FALSE, ucell = FALSE, raster=FALSE, raster_dpi=500,
+  plot_ratio = 1, title=TRUE
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -564,7 +565,14 @@ ModuleFeaturePlot<- function(
     }
 
     # add title and theme:
-    p <- p + ggtitle(cur_mod) + umap_theme() + labs(color="")
+    p <- p + umap_theme() + labs(color="")
+
+    if(title){
+      p <- p + ggtitle(cur_mod)
+    }
+
+    # aspect ratio:
+    p <- p + coord_fixed(ratio = plot_ratio)
 
     # UCell?
     if(!ucell){
@@ -600,7 +608,7 @@ ModuleFeaturePlot<- function(
 
 #' EnrichrBarPlot
 #'
-#' Makes barplots from RunEnrhcr output.
+#' Makes barplots from RunEnrichr output.
 #'
 #' @param seurat_obj A Seurat object
 #' @param outdir directory to place output .pdf files
@@ -1042,6 +1050,7 @@ HubGeneNetworkPlot <- function(
   edge_df <- temp
   print(dim(edge_df))
 
+
   # scale edge values between 0 and 1 for each module
   edge_df <- edge_df %>% group_by(color) %>% mutate(value=scale01(value))
 
@@ -1050,6 +1059,8 @@ HubGeneNetworkPlot <- function(
     #if(edge_df$value[i] < 0.05){a=0.05}
     alpha(edge_df$color[i], alpha=a)
   })
+
+
 
   g <- igraph::graph_from_data_frame(
     edge_df,
@@ -1121,17 +1132,24 @@ ModuleUMAPPlot <- function(
 
   # get the UMAP df:
   umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
-  mods <- levels(umap_df$modules)
-
-  # subset module df by genes in the UMAP df:
-  selected_modules <- modules[umap_df$gene,]
-  selected_modules <- cbind(selected_modules, umap_df[,c('UMAP1', 'UMAP2', 'hub', 'kME')])
+  mods <- levels(umap_df$module)
+  mods <- mods[mods != 'grey']
 
   # subset the TOM:
   subset_TOM <- TOM[umap_df$gene, umap_df$gene[umap_df$hub == 'hub']]
 
   # genes to label:
-  hub_labels <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
+  # hub_labels <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(label_hubs) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+  hub_labels <- as.character(unlist(hub_list))
+  print('hub labels')
+  print(hub_labels)
+  print(label_genes)
   if(is.null(label_genes)){
     label_genes <- hub_labels
   } else{
@@ -1140,6 +1158,12 @@ ModuleUMAPPlot <- function(
     }
     label_genes <- unique(c(label_genes, hub_labels))
   }
+  print(label_genes)
+
+  # subset module df by genes in the UMAP df:
+  selected_modules <- modules[umap_df$gene,]
+  selected_modules <- cbind(selected_modules, umap_df[,c('UMAP1', 'UMAP2', 'hub', 'kME')])
+
   selected_modules$label <- ifelse(selected_modules$gene_name %in% label_genes, selected_modules$gene_name, '')
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
@@ -1230,6 +1254,10 @@ ModuleUMAPPlot <- function(
     directed=FALSE,
     vertices=selected_modules
   )
+
+  print('making net')
+  print(head(edge_df))
+  print(head(selected_modules))
 
   if(return_graph){return(g)}
 
@@ -1870,7 +1898,8 @@ PlotModuleTraitCorrelation <- function(
   text_color = 'black',
   text_digits = 3,
   combine = TRUE,
-  wgcna_name = NULL
+  wgcna_name = NULL,
+  flip_coords = FALSE
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
