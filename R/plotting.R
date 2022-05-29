@@ -486,7 +486,7 @@ ModuleFeaturePlot<- function(
   reduction='umap', features = 'hMEs',
   order_points=TRUE, restrict_range=TRUE, point_size = 0.5, alpha=1,
   label_legend = FALSE, ucell = FALSE, raster=FALSE, raster_dpi=500,
-  plot_ratio = 1, title=TRUE
+  raster_scale=1, plot_ratio = 1, title=TRUE
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -559,7 +559,7 @@ ModuleFeaturePlot<- function(
 
     # rasterise?
     if(raster){
-      p <- p + ggrastr::rasterise(geom_point(size=point_size, alpha=alpha), dpi=raster_dpi)
+      p <- p + ggrastr::rasterise(geom_point(size=point_size, alpha=alpha), dpi=raster_dpi, scale=raster_scale)
     } else{
       p <- p + geom_point(size=point_size, alpha=alpha)
     }
@@ -1899,7 +1899,7 @@ PlotModuleTraitCorrelation <- function(
   text_digits = 3,
   combine = TRUE,
   wgcna_name = NULL,
-  flip_coords = FALSE
+  flip_coords =
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}

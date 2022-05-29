@@ -274,7 +274,7 @@ TestSoftPowersConsensus <- function(
 #' @examples
 #' ConstructNetwork(pbmc)
 ConstructNetwork <- function(
-  seurat_obj, soft_power=NULL,
+  seurat_obj, soft_power=NULL, min_power=3,
   tom_outdir="TOM",
   use_metacells=TRUE,
   setDatExpr=TRUE, group.by=NULL,
@@ -309,7 +309,6 @@ ConstructNetwork <- function(
 
     multiExpr <- GetMultiExpr(seurat_obj)
     checkSets(multiExpr) # check data size
-    print('here')
 
   # constructing network on a single dataset
   } else{
@@ -345,20 +344,17 @@ ConstructNetwork <- function(
   if(!dir.exists(tom_outdir)){
     dir.create(tom_outdir)
   }
-  print('here')
 
   if(is.null(soft_power) & !consensus){
-    soft_power <- GetPowerTable(seurat_obj) %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
+    soft_power <- GetPowerTable(seurat_obj) %>% subset(SFT.R.sq >= 0.8 & Power > min_power) %>% .$Power %>% min
     cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ", soft_power, "\n"))
   } else if(is.null(soft_power)){
     power_tables <- GetPowerTable(seurat_obj) %>% dplyr::group_split(group)
     soft_power <- sapply(power_tables, function(power_table){
-      power_table %>% subset(SFT.R.sq >= 0.8) %>% .$Power %>% min
+      power_table %>% subset(SFT.R.sq >= 0.8 & Power > min_power) %>% .$Power %>% min
     })
     cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(", paste0(soft_power, collapse=','), ")\n"))
   }
-  print('here')
-
 
   # construct the network
   net <- WGCNA::blockwiseConsensusModules(
@@ -1033,6 +1029,7 @@ OverlapModulesDEGs <- function(
 #' ProjectModules
 ProjectModules <- function(
   seurat_obj, seurat_ref,
+  modules=NULL,
   group.by.vars=NULL,
   gene_mapping=NULL, # table mapping genes from species 1 to species 2
   genome1_col=NULL, genome2_col=NULL,
@@ -1046,7 +1043,13 @@ ProjectModules <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
 
   # get modules to be projected:
-  modules <- GetModules(seurat_ref, wgcna_name)
+  if(is.null(modules)){
+    modules <- GetModules(seurat_ref, wgcna_name)
+  } else{
+    if(!all(c("gene_name", "module", "color") %in% colnames(modules))){
+      stop('Missing columns in modules table. Required columns are gene_name, module, color')
+    }
+  }
 
   # are we mapping gene names?
   if(!is.null(gene_mapping)){
@@ -1071,18 +1074,6 @@ ProjectModules <- function(
       features = genes_use
     )
   }
-
-  #
-  # # scale the dataset if needed:
-  # if(!scale_genes & sum(genes_use %in% rownames(GetAssayData(seurat_obj, slot='scale.data'))) == length(genes_use)){
-  #   print("Scaling already done.")
-  # } else if(scale_genes){
-  #   print("Scaling dataset...")
-  #   seurat_obj <- Seurat::ScaleData(
-  #     seurat_obj, features = genes_use, ...
-  #   )
-  # }
-
 
   # project modules:
   seurat_obj <- ModuleEigengenes(
@@ -1703,6 +1694,8 @@ ModuleTraitCorrelation <- function(
   group.by = NULL,
   features = 'hMEs',
   cor_method = 'pearson',
+  subset_by = NULL,
+  subset_groups = NULL,
   wgcna_name = NULL,
   ...
 ){
@@ -1718,6 +1711,14 @@ ModuleTraitCorrelation <- function(
     MEs <- GetModuleScores(seurat_obj, wgcna_name)
   } else{
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  }
+
+  # subset?
+  if(!is.null(subset_by)){
+    print('subsetting')
+    seurat_full <- seurat_obj
+    MEs <- MEs[seurat_obj@meta.data[[subset_by]] %in% subset_groups,]
+    seurat_obj <- seurat_obj[,seurat_obj@meta.data[[subset_by]] %in% subset_groups]
   }
 
   # check if traits are in the seurat object:
@@ -1842,7 +1843,13 @@ ModuleTraitCorrelation <- function(
     'fdr' = fdr_list
   )
 
-  seurat_obj <- SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name)
+  if(!is.null(subset_by)){
+    seurat_full <- SetModuleTraitCorrelation(seurat_full, mt_cor, wgcna_name)
+    seurat_obj <- seurat_full
+  } else{
+    seurat_obj <- SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name)
+  }
+
   seurat_obj
 }
 

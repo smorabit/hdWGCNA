@@ -212,6 +212,7 @@ SetDatExpr <- function(
   }
 
   # get the metadata from the seurat object:
+  print('here')
   seurat_meta <- s_obj@meta.data
 
   # columns to group by for cluster/celltype
