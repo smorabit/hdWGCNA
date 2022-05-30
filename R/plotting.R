@@ -1898,8 +1898,7 @@ PlotModuleTraitCorrelation <- function(
   text_color = 'black',
   text_digits = 3,
   combine = TRUE,
-  wgcna_name = NULL,
-  flip_coords =
+  wgcna_name = NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
