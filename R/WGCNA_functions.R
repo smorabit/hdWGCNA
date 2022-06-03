@@ -473,16 +473,8 @@ ComputeModuleEigengene <- function(
   # subset seurat object by these genes only:
   X <- GetAssayData(seurat_obj, slot='counts')[cur_genes,]
   X_dat <- GetAssayData(seurat_obj, slot='data')[cur_genes,]
-  X_scaled <- GetAssayData(seurat_obj, slot='scale.data')[cur_genes,]
   cur_seurat <- CreateSeuratObject(X, assay = ass, meta.data = seurat_obj@meta.data)
   cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=ass)
-  cur_seurat <- SetAssayData(cur_seurat, slot='scale.data', new.data=X_scaled, assay=ass)
-
-  print(ass)
-  print(head(cur_genes))
-  # cur_seurat <- seurat_obj
-  # cur_seurat[[ass]] <- cur_seurat[[ass]][cur_genes,]
-  print('subset success')
 
   # scale the subsetted expression dataset:
   if(is.null(vars.to.regress)){
@@ -641,7 +633,6 @@ ModuleEigengenes <- function(
   for(cur_mod in mods){
 
     print(cur_mod)
-    print('here')
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
