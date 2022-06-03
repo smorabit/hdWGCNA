@@ -15,13 +15,22 @@ SelectNetworkGenes <- function(
   seurat_obj,
   gene_select="variable", fraction=0.05,
   group.by=NULL, # should be a column in the Seurat object, eg clusters
-  gene_list=NULL, wgcna_name=NULL
+  gene_list=NULL,
+  wgcna_name=NULL
  ){
 
   # validate inputs:
   if(!(gene_select %in% c("variable", "fraction", "all", "custom"))){
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
+
+  # get assay
+  assay <- DefaultAssay(seurat_obj)
+  tryCatch(
+   tmp <- dim(seurat_obj[[assay]]@counts),
+   error = function(e){
+     print("Assay must contain counts slot.")
+   })
 
   # handle different selection strategies
   if(gene_select == "fraction"){
@@ -456,12 +465,24 @@ ComputeModuleEigengene <- function(
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  ass <- DefaultAssay(seurat_obj)
 
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
 
   # subset seurat object by these genes only:
-  cur_seurat <- seurat_obj[cur_genes,]
+  X <- GetAssayData(seurat_obj, slot='counts')[cur_genes,]
+  X_dat <- GetAssayData(seurat_obj, slot='data')[cur_genes,]
+  X_scaled <- GetAssayData(seurat_obj, slot='scale.data')[cur_genes,]
+  cur_seurat <- CreateSeuratObject(X, assay = ass, meta.data = seurat_obj@meta.data)
+  cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=ass)
+  cur_seurat <- SetAssayData(cur_seurat, slot='scale.data', new.data=X_scaled, assay=ass)
+
+  print(ass)
+  print(head(cur_genes))
+  # cur_seurat <- seurat_obj
+  # cur_seurat[[ass]] <- cur_seurat[[ass]][cur_genes,]
+  print('subset success')
 
   # scale the subsetted expression dataset:
   if(is.null(vars.to.regress)){
@@ -471,6 +492,7 @@ ComputeModuleEigengene <- function(
   } else{
     stop(paste0("Some variables specified in vars.to.regress are not found in seurat_obj@meta.data"))
   }
+
 
   # compute average expression of each gene
   cur_expr <- GetAssayData(cur_seurat, slot='data')
@@ -619,6 +641,7 @@ ModuleEigengenes <- function(
   for(cur_mod in mods){
 
     print(cur_mod)
+    print('here')
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(

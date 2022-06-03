@@ -128,7 +128,8 @@ Traits must be a categorical variable (not a character vector), or a numeric var
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModuleTraitCorrelation</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, traits, group.by = NULL, features = "hMEs", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cor_method = "pearson", wgcna_name = NULL, ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cor_method = "pearson", subset_by = NULL, subset_groups = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -144,6 +145,14 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Invalid feature selection. Valid choices: hMEs, MEs, scores, average")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(subset_by)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         print("subsetting")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         MEs &lt;- MEs[seurat_obj@meta.data[[subset_by]] %in% subset_groups, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, seurat_obj@meta.data[[subset_by]] %in% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             subset_groups]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (sum(traits %in% colnames(seurat_obj@meta.data)) != length(traits)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste("Some of the provided traits were not found in the Seurat obj:", </span>
@@ -226,11 +235,18 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         fdr_list[[i]] &lt;- as.matrix(cur_fdr)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mt_cor &lt;- list(cor = cor_list, pval = pval_list, fdr = fdr_list)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetModuleTraitCorrelation(seurat_obj, mt_cor, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(subset_by)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- SetModuleTraitCorrelation(seurat_full, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             mt_cor, wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_full</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- SetModuleTraitCorrelation(seurat_obj, mt_cor, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7faaef00f6d0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc306458e40&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

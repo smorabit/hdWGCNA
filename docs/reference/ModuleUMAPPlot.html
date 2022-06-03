@@ -151,14 +151,20 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     TOM &lt;- GetTOM(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     umap_df &lt;- GetModuleUMAP(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(umap_df$modules)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules &lt;- modules[umap_df$gene, ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules &lt;- cbind(selected_modules, umap_df[, c("UMAP1", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         "UMAP2", "hub", "kME")])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(umap_df$module)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     subset_TOM &lt;- TOM[umap_df$gene, umap_df$gene[umap_df$hub == </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "hub"]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     hub_labels &lt;- selected_modules %&gt;% group_by(module) %&gt;% top_n(label_hubs, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wt = kME) %&gt;% .$gene_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     hub_list &lt;- lapply(mods, function(cur_mod) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur &lt;- subset(modules, module == cur_mod)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur[, c("gene_name", paste0("kME_", cur_mod))] %&gt;% top_n(label_hubs) %&gt;% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             .$gene_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     names(hub_list) &lt;- mods</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     hub_labels &lt;- as.character(unlist(hub_list))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("hub labels")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(hub_labels)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(label_genes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(label_genes)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         label_genes &lt;- hub_labels</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -168,6 +174,10 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         label_genes &lt;- unique(c(label_genes, hub_labels))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(label_genes)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules &lt;- modules[umap_df$gene, ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules &lt;- cbind(selected_modules, umap_df[, c("UMAP1", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         "UMAP2", "hub", "kME")])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules$label &lt;- ifelse(selected_modules$gene_name %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         label_genes, selected_modules$gene_name, "")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules$fontcolor &lt;- ifelse(selected_modules$color == </span>
@@ -227,6 +237,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         ""), subset(selected_modules, label != ""))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     g &lt;- igraph::graph_from_data_frame(edge_df, directed = FALSE, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertices = selected_modules)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("making net")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(edge_df))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(selected_modules))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_graph) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         return(g)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -239,7 +252,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = V(g)$fontcolor, vertex.label.cex = 0, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor, margin = 0)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7faaeed9fb70&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc3086df1d0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

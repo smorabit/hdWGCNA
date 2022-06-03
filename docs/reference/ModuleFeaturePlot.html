@@ -133,7 +133,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, module_names = NULL, wgcna_name = NULL, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reduction = "umap", features = "hMEs", order_points = TRUE, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     restrict_range = TRUE, point_size = 0.5, alpha = 1, label_legend = FALSE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ucell = FALSE, raster = FALSE, raster_dpi = 500) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ucell = FALSE, raster = FALSE, raster_dpi = 500, raster_scale = 1, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_ratio = 1, title = TRUE) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -195,12 +196,16 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>             color = "val"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (raster) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             p &lt;- p + ggrastr::rasterise(geom_point(size = point_size, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 alpha = alpha), dpi = raster_dpi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 alpha = alpha), dpi = raster_dpi, scale = raster_scale)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             p &lt;- p + geom_point(size = point_size, alpha = alpha)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- p + ggtitle(cur_mod) + umap_theme() + labs(color = "")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- p + umap_theme() + labs(color = "")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (title) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p &lt;- p + ggtitle(cur_mod)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- p + coord_fixed(ratio = plot_ratio)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (!ucell) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             p &lt;- p + scale_color_gradient2(low = "grey75", mid = "grey95", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 high = cur_color, breaks = plot_range, labels = c("-", </span>
@@ -222,7 +227,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7faaef08c668&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc3064d0658&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
