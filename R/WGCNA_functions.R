@@ -114,15 +114,20 @@ SelectNetworkGenes <- function(
 #' This function gets the expression matrix from the metacell object.
 #'
 #' @param seurat_obj A Seurat object
+#' @param wgcna_name name of the WGCNA experiment
+#' @param features list of features to use for WGCNA
+#' @param metacell_location name of the WGCNA experiment to copy the metacell object from
+#' @param ... additional parameters to pass to SelectNetworkGenes
+#' @param group (parameter not used anymore, can ignore)
 #' @keywords scRNA-seq
 #' @export
 #' @examples
 #' SetupForWGCNA(pbmc)
 SetupForWGCNA <- function(
   seurat_obj, wgcna_name,
-  group=NULL,
   features = NULL,
   metacell_location = NULL,
+  group=NULL,
   ...
 ){
 

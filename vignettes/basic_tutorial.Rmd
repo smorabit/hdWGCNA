@@ -620,11 +620,12 @@ Seurat object's `@meta.data` slot:
 
 ```{r eval=FALSE}
 
+# get hMEs from seurat object
+MEs <- GetMEs(seurat_obj, harmonized=TRUE)
+mods <- colnames(MEs); mods <- mods[mods != 'grey']
+
 # add hMEs to Seurat meta-data:
-seurat_obj@meta.data <- cbind(
-  seurat_obj@meta.data,
-  GetMEs(seurat_obj, harmonized=TRUE)
-)
+seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
 
 ```
 
@@ -634,16 +635,13 @@ Now we can easily use Seurat's `DotPlot` function:
 
 
 # plot with Seurat's DotPlot function
-p <- DotPlot(
-    seurat_obj,
-    group.by = 'cell_type'
-)
+p <- DotPlot(seurat_obj, mods, group.by = 'cell_type')
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +
   coord_flip() +
   RotatedAxis() +
-  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  scale_color_gradient2(high='red', mid='grey95', low='blue')
 
 # plot output
 p
@@ -660,7 +658,7 @@ Here is another example where we use Seurat's `VlnPlot` function:
 # Plot INH-M4 hME using Seurat VlnPlot function
 p <- VlnPlot(
   seurat_obj,
-  features = 'INH-M3',
+  features = 'INH-M12',
   group.by = 'cell_type',
   pt.size = 0 # don't show actual data points
 )

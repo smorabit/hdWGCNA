@@ -232,9 +232,9 @@ library(gganimate)
 # plot with ggplot + gganimate
 p <- ggplot(df, aes(x=UMAP1, y=UMAP2)) +
   geom_point(color=df$color, size=df$kME*2 ) +
-  ggtitle("Supervised weight: {closest_state}") +
+  ggtitle("N hubs: {closest_state}") +
   transition_states(
-    weight,
+    n_hubs,
     transition_length = 2,
     state_length = 2,
     wrap = TRUE

@@ -2188,13 +2188,14 @@ ModuleTFNetwork <- function(
   # set up edge df
   edge_df <- data.frame(
     Var1 = tf_gene_name,
-    Var2 = node_df$name,
+    Var2 = as.character(node_df$name),
     value = node_df$odds_ratio,
     color = exp_cor$color
   )
 
   # set the edge color to grey if the overlap isn't significant:
-  edge_df$color <- ifelse(cur_overlap$fdr <= 0.05, edge_df$color, 'grey')
+  edge_df$color <- ifelse(node_df$fdr <= 0.05, edge_df$color, 'grey')
+  edge_df <- subset(edge_df, color != 'grey')
 
   # set up node df
   node_df <- dplyr::bind_rows(node_df, tf_df) %>% as.data.frame()
@@ -2229,7 +2230,7 @@ ModuleTFNetwork <- function(
   plot(
     g1,
     layout = as.matrix(node_df[,c('UMAP1', 'UMAP2')]),
-    edge.color=adjustcolor(E(g1)$color, alpha.f=edge.alpha),
+    edge.color=adjustcolor(E(g1)$color),
     vertex.size=V(g1)$size * size.scale,
     edge.curved=0,
     edge.width=edge_df$value*2,

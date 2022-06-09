@@ -7,7 +7,7 @@
 
 
 
-**Note:** hdWGCNA is under active development, so you will likely run into errors
+**Note:** hdWGCNA is under active development, so you will likely run into errors and small typos
 if you choose to use hdWGCNA before its first stable release.
 
 hdWGCNA, formerly known as scWGCNA, is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in high dimensional
