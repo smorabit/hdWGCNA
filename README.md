@@ -18,7 +18,6 @@ context for these modules. hdWGCNA is directly compatible with
 [Seurat](https://satijalab.org/seurat/index.html) objects, one of the most ubiquitous
 formats for single-cell data. Check out the [hdWGCNA basics tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) to get started.
 
-
 ## Installation
 
 We recommend creating an R [conda environment](https://docs.conda.io/en/latest/)
@@ -57,3 +56,21 @@ Now you can install the hdWGCNA package using `devtools`.
 ```r
 devtools::install_github('smorabit/hdWGCNA', ref='dev')
 ```
+
+## Suggested Reading
+
+If you are unfamiliar with WGCNA, we suggest reading the original WGCNA publication:
+
+* [WGCNA: an R package for weighted correlation network analysis](https://doi.org/10.1186/1471-2105-9-559)
+
+There are a number of additional relevant publications for WGCNA and related algorithms
+like Dynamic Tree Cut and Module Preservation analysis:
+
+* [Defining clusters from a hierarchical cluster tree: the Dynamic Tree Cut package for R](https://doi.org/10.1093/bioinformatics/btm563)
+* [Eigengene networks for studying the relationships between co-expression modules](https://doi.org/10.1186/1752-0509-1-54)
+* [Geometric Interpretation of Gene Coexpression Network Analysis](https://doi.org/10.1371/journal.pcbi.1000117)
+* [Is My Network Module Preserved and Reproducible?](https://doi.org/10.1371/journal.pcbi.1001057)
+
+Our original description of applying WGCNA to single-nucleus RNA-seq data:
+
+* [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z)
