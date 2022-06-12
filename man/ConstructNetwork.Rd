@@ -7,6 +7,7 @@
 ConstructNetwork(
   seurat_obj,
   soft_power = NULL,
+  min_power = 3,
   tom_outdir = "TOM",
   use_metacells = TRUE,
   setDatExpr = TRUE,

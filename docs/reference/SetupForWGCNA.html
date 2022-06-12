@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9003</span>
       </span>
     </div>
 
@@ -100,13 +100,30 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SetupForWGCNA</span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">wgcna_name</span>, group <span class="op">=</span> <span class="cn">NULL</span>, features <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SetupForWGCNA</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  <span class="va">wgcna_name</span>,
+  features <span class="op">=</span> <span class="cn">NULL</span>,
+  metacell_location <span class="op">=</span> <span class="cn">NULL</span>,
+  group <span class="op">=</span> <span class="cn">NULL</span>,
+  <span class="va">...</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>seurat_obj</dt>
 <dd><p>A Seurat object</p></dd>
+<dt>wgcna_name</dt>
+<dd><p>name of the WGCNA experiment</p></dd>
+<dt>features</dt>
+<dd><p>list of features to use for WGCNA</p></dd>
+<dt>metacell_location</dt>
+<dd><p>name of the WGCNA experiment to copy the metacell object from</p></dd>
+<dt>group</dt>
+<dd><p>(parameter not used anymore, can ignore)</p></dd>
+<dt>...</dt>
+<dd><p>additional parameters to pass to SelectNetworkGenes</p></dd>
 </dl></div>
 
     <div id="ref-examples">

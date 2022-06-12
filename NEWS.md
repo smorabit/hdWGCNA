@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9003 (2022-6-11)
+## Added
+- `GetHubGenes` function to extract the top hub genes from the module assignment table.
+
+## Changes
+- `ConstructMetacells` stores run statistics as a table, and has a new option to exclude metacells that overlap with each other.
+
 # hdWGCNA 0.1.1.9002 (2022-5-24)
 ## Added
 - `ModuleEigengenes` checks to make sure the data has been scaled.

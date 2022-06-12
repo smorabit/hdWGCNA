@@ -4,10 +4,27 @@
 \alias{SetupForWGCNA}
 \title{SetupForWGCNA}
 \usage{
-SetupForWGCNA(seurat_obj, wgcna_name, group = NULL, features = NULL, ...)
+SetupForWGCNA(
+  seurat_obj,
+  wgcna_name,
+  features = NULL,
+  metacell_location = NULL,
+  group = NULL,
+  ...
+)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{wgcna_name}{name of the WGCNA experiment}
+
+\item{features}{list of features to use for WGCNA}
+
+\item{metacell_location}{name of the WGCNA experiment to copy the metacell object from}
+
+\item{group}{(parameter not used anymore, can ignore)}
+
+\item{...}{additional parameters to pass to SelectNetworkGenes}
 }
 \description{
 This function gets the expression matrix from the metacell object.

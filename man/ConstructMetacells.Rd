@@ -15,6 +15,9 @@ ConstructMetacells(
   slot = "counts",
   meta = NULL,
   return_metacell = FALSE,
+  mode = "average",
+  max_shared = 10,
+  verbose = FALSE,
   wgcna_name = NULL
 )
 }
@@ -32,12 +35,20 @@ ConstructMetacells(
 \item{slot}{Slot to extract data for aggregation. Default = 'data'}
 
 \item{return_metacell}{Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.}
+
+\item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+
+\item{max_shared}{the maximum number of cells to be shared across two metacells}
+
+\item{verbose}{logical indicating whether to print additional information}
+
+\item{wgcna_name}{name of the WGCNA experiment}
 }
 \description{
 This function takes a Seurat object and constructs averaged 'metacells' based
 on neighboring cells.
 }
 \examples{
-ConstructMetacells(pbmc)
+ConstructMetacells
 }
 \keyword{scRNA-seq}

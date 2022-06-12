@@ -18,7 +18,7 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9003</span>
       </span>
     </div>
 
@@ -113,6 +113,9 @@ on neighboring cells.</p>
   slot <span class="op">=</span> <span class="st">"counts"</span>,
   meta <span class="op">=</span> <span class="cn">NULL</span>,
   return_metacell <span class="op">=</span> <span class="cn">FALSE</span>,
+  mode <span class="op">=</span> <span class="st">"average"</span>,
+  max_shared <span class="op">=</span> <span class="fl">10</span>,
+  verbose <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -133,12 +136,135 @@ on neighboring cells.</p>
 <dd><p>Slot to extract data for aggregation. Default = 'data'</p></dd>
 <dt>return_metacell</dt>
 <dd><p>Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.</p></dd>
+<dt>mode</dt>
+<dd><p>determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".</p></dd>
+<dt>max_shared</dt>
+<dd><p>the maximum number of cells to be shared across two metacells</p></dd>
+<dt>verbose</dt>
+<dd><p>logical indicating whether to print additional information</p></dd>
+<dt>wgcna_name</dt>
+<dd><p>name of the WGCNA experiment</p></dd>
 </dl></div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu">ConstructMetacells</span><span class="op">(</span><span class="va">pbmc</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ConstructMetacells(pbmc):</span> object 'pbmc' not found</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ConstructMetacells</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, name = "agg", ident.group = "seurat_clusters", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 50, reduction = "umap", assay = "RNA", cells.use = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     slot = "counts", meta = NULL, return_metacell = FALSE, mode = "average", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared = 10, verbose = FALSE, wgcna_name = NULL) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(reduction %in% names(seurat_obj@reductions))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid reduction (", reduction, "). Reductions in Seurat object: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             paste(names(seurat_obj@reductions), collapse = ", ")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(assay %in% names(seurat_obj@assays))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid assay (", assay, "). Assays in Seurat object: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             paste(names(seurat_obj@assays), collapse = ", ")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(slot %in% c("counts", "data", "scale.data"))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid slot (", slot, "). Valid options for slot: counts, data, scale.data "))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(cells.use)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, cells.use]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     reduced_coordinates &lt;- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     nn_map &lt;- FNN::knn.index(reduced_coordinates, k = (k - 1))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     row.names(nn_map) &lt;- row.names(reduced_coordinates)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     nn_map &lt;- cbind(nn_map, seq_len(nrow(nn_map)))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     good_choices &lt;- seq_len(nrow(nn_map))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     choice &lt;- sample(seq_len(length(good_choices)), size = 1, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         replace = FALSE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     chosen &lt;- good_choices[choice]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     good_choices &lt;- good_choices[good_choices != good_choices[choice]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     it &lt;- 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     k2 &lt;- k * 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     get_shared &lt;- function(other, this_choice) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         k2 - length(union(cell_sample[other, ], this_choice))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     while (length(good_choices) &gt; 0 &amp; it &lt; 5000) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         it &lt;- it + 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         choice &lt;- sample(seq_len(length(good_choices)), size = 1, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             replace = FALSE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         new_chosen &lt;- c(chosen, good_choices[choice])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         good_choices &lt;- good_choices[good_choices != good_choices[choice]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cell_sample &lt;- nn_map[new_chosen, ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         others &lt;- seq_len(nrow(cell_sample) - 1)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         this_choice &lt;- cell_sample[nrow(cell_sample), ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         shared &lt;- sapply(others, get_shared, this_choice = this_choice)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (max(shared) &lt; 0.9 * k) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             chosen &lt;- new_chosen</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     shared_old &lt;- shared</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cell_sample &lt;- nn_map[chosen, ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     combs &lt;- combn(nrow(cell_sample), 2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     shared &lt;- apply(combs, 2, function(x) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         k2 - length(unique(as.vector(cell_sample[x, ])))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (verbose) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         message(paste0("Overlap QC metrics:\nCells per bin: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             k, "\nMaximum shared cells bin-bin: ", max(shared), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             "\nMean shared cells bin-bin: ", mean(shared), "\nMedian shared cells bin-bin: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             median(shared)))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (mean(shared)/k &gt; 0.1) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             warning("On average, more than 10% of cells are shared between paired bins.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     exprs_old &lt;- GetAssayData(seurat_obj, assay = assay, slot = slot)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mask &lt;- sapply(seq_len(nrow(cell_sample)), function(x) seq_len(ncol(exprs_old)) %in% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cell_sample[x, , drop = FALSE])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mask &lt;- mask[, which(shared_old &lt;= max_shared)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cell_sample &lt;- cell_sample[which(shared_old &lt;= max_shared), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mask &lt;- Matrix::Matrix(mask)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     new_exprs &lt;- (exprs_old %*% mask)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (mode == "average") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         new_exprs &lt;- new_exprs/k</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(new_exprs) &lt;- paste0(name, "_", 1:ncol(new_exprs))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(cell_sample) &lt;- paste0(name, "_", 1:ncol(new_exprs))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(cell_sample) &lt;- paste0("knn_", 1:ncol(cell_sample))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj &lt;- CreateSeuratObject(counts = new_exprs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     shared &lt;- shared[shared &lt;= max_shared]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared &lt;- max(shared)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     median_shared &lt;- median(shared)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mean_shared &lt;- mean(shared)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     new_exprs[new_exprs &gt; 0] &lt;- 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     density &lt;- sum(Matrix::colSums(new_exprs)/(nrow(new_exprs) * </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ncol(new_exprs)))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     run_stats &lt;- data.frame(name = name, max_shared = max_shared, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         mean_shared = mean_shared, median_shared = median_shared, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         n = ncol(new_exprs))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj@misc$run_stats &lt;- run_stats</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(meta)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         meta_names &lt;- names(meta)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         for (x in meta_names) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             metacell_obj@meta.data[[x]] &lt;- meta[[x]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else (warning("meta not found"))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_metacell) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         out &lt;- metacell_obj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!is.null(cells.use)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             seurat_obj &lt;- seurat_full</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- SetMetacellObject(seurat_obj, metacell_obj, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- SetWGCNAParams(seurat_obj, params = list(metacell_k = k, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             metacell_reduction = reduction, metacell_slot = slot, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             metacell_assay = assay), wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         out &lt;- seurat_obj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe58fa11580&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
   </div>

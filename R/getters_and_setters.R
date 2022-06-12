@@ -526,6 +526,52 @@ GetModules <- function(seurat_obj, wgcna_name=NULL){
 }
 
 
+#' GetHubGenes
+#'
+#' Extract the top N hub genes for a given set of modules. This function outputs
+#' a table with the gene name, the module, and the kME for that module for the
+#' top N hub genes.
+#'
+#' @param seurat_obj A Seurat object
+#' @param n_hubs the number of hub genes to select for each module
+#' @param mods list of modules, selects all modules by default
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @examples GetHubGenes
+GetHubGenes <- function(
+  seurat_obj,
+  n_hubs = 10,
+  mods = NULL,
+  wgcna_name=NULL
+){
+
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
+
+  if(is.null(mods)){
+    mods <- levels(modules$module); mods <- mods[mods != 'grey']
+  } else{
+    if(!all(mods %in% modules$module)){
+      stop("Invalid selection for mods.")
+    }
+  }
+
+  #get hub genes:
+  hub_df <- do.call(rbind, lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[,c('gene_name', 'module', paste0('kME_', cur_mod))]
+    names(cur)[3] <- 'kME'
+    cur <- dplyr::arrange(cur, kME)
+    cur %>% dplyr::top_n(n_hubs, wt=kME)
+  }))
+  rownames(hub_df) <- 1:nrow(hub_df)
+  hub_df
+
+}
+
+
 ############################
 # Module Eigengenes
 ###########################

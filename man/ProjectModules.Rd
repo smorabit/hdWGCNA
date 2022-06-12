@@ -7,11 +7,13 @@
 ProjectModules(
   seurat_obj,
   seurat_ref,
+  modules = NULL,
   group.by.vars = NULL,
   gene_mapping = NULL,
   genome1_col = NULL,
   genome2_col = NULL,
-  scale_genes = FALSE,
+  vars.to.regress = NULL,
+  scale.model.use = "linear",
   wgcna_name = NULL,
   wgcna_name_proj = NULL,
   ...

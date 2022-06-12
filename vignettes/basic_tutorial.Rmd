@@ -494,6 +494,30 @@ C1orf159     C1orf159    grey  grey -0.015618737  0.002235229 -0.0003824554
 ```
 </details>
 
+A table of the top N hub genes sorted by kME can be extracted using the `GetHubGenes` function.
+
+```{r eval=FALSE}
+
+# get hub genes
+hub_df <- GetHubGenes(seurat_obj, n_hubs = 10)
+
+head(hub_df)
+
+```
+
+<details> <summary> Output</summary>
+```
+gene_name module       kME
+1   SEPTIN2 INH-M1 0.3019739
+2     MICU2 INH-M1 0.3140922
+3     WDR37 INH-M1 0.3204428
+4   UBE2Q2L INH-M1 0.3297472
+5   HSD17B4 INH-M1 0.3399253
+6      ASB3 INH-M1 0.3417400
+
+```
+</details>
+
 This wraps up the critical analysis steps for hdWGCNA, so remember to save your
 output.
 

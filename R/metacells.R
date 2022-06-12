@@ -9,15 +9,20 @@
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param slot Slot to extract data for aggregation. Default = 'data'
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
+#' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
+#' @param max_shared the maximum number of cells to be shared across two metacells
+#' @param verbose logical indicating whether to print additional information
+#' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' ConstructMetacells(pbmc)
+#' ConstructMetacells
 ConstructMetacells <- function(
   seurat_obj, name='agg', ident.group='seurat_clusters', k=50,
   reduction='umap', assay='RNA',
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
-  slot='counts',  meta=NULL, return_metacell=FALSE, wgcna_name=NULL
+  slot='counts',  meta=NULL, return_metacell=FALSE,
+  mode = 'average', max_shared=10, verbose=FALSE, wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -42,8 +47,6 @@ ConstructMetacells <- function(
     seurat_full <- seurat_obj
     seurat_obj <- seurat_obj[,cells.use]
   }
-
-  print(dim(seurat_obj))
 
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
@@ -75,25 +78,37 @@ ConstructMetacells <- function(
       }
   }
 
+  shared_old <- shared
   cell_sample <- nn_map[chosen, ]
   combs <- combn(nrow(cell_sample), 2)
   shared <- apply(combs, 2, function(x) {
       k2 - length(unique(as.vector(cell_sample[x, ])))
   })
 
-  message(paste0("Overlap QC metrics:\nCells per bin: ",
-      k, "\nMaximum shared cells bin-bin: ", max(shared),
-      "\nMean shared cells bin-bin: ", mean(shared), "\nMedian shared cells bin-bin: ",
-      median(shared)))
-  if (mean(shared)/k > 0.1)
-      warning("On average, more than 10% of cells are shared between paired bins.")
+  if(verbose){
+    message(paste0("Overlap QC metrics:\nCells per bin: ",
+        k, "\nMaximum shared cells bin-bin: ", max(shared),
+        "\nMean shared cells bin-bin: ", mean(shared), "\nMedian shared cells bin-bin: ",
+        median(shared)))
+    if (mean(shared)/k > 0.1)
+        warning("On average, more than 10% of cells are shared between paired bins.")
+  }
 
+  # get original expression matrix
   exprs_old <- GetAssayData(seurat_obj, assay=assay, slot=slot)
 
+  # groups of cells to combine
   mask <- sapply(seq_len(nrow(cell_sample)), function(x) seq_len(ncol(exprs_old)) %in%
       cell_sample[x, , drop = FALSE])
+  mask <- mask[,which(shared_old <= max_shared)]
+  cell_sample <- cell_sample[which(shared_old <= max_shared),]
   mask <- Matrix::Matrix(mask)
-  new_exprs <- (exprs_old %*% mask) / k
+
+  # average or sum expression?
+  new_exprs <- (exprs_old %*% mask)
+  if(mode == 'average'){
+    new_exprs <- new_exprs / k
+  }
   colnames(new_exprs) <- paste0(name, '_', 1:ncol(new_exprs))
   rownames(cell_sample) <- paste0(name, '_', 1:ncol(new_exprs))
   colnames(cell_sample) <- paste0('knn_', 1:ncol(cell_sample))
@@ -103,8 +118,25 @@ ConstructMetacells <- function(
     counts = new_exprs
   )
 
-  print(meta)
-  print(names(meta))
+  # calculate stats:
+  shared <- shared[shared <= max_shared]
+  max_shared <- max(shared)
+  median_shared <- median(shared)
+  mean_shared <- mean(shared)
+
+  # calculate matrix density:
+  new_exprs[new_exprs > 0] <- 1
+  density <- sum(Matrix::colSums(new_exprs) / (nrow(new_exprs)*ncol(new_exprs)))
+  run_stats <- data.frame(
+    name = name,
+    max_shared = max_shared,
+    mean_shared = mean_shared,
+    median_shared = median_shared,
+    n = ncol(new_exprs)
+  )
+
+  # add to metacell seurat obj
+  metacell_obj@misc$run_stats <- run_stats
 
   # add meta-data:
   if(!is.null(meta)){
@@ -157,15 +189,19 @@ ConstructMetacells <- function(
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
+#' @param max_shared the maximum number of cells to be shared across two metacells
+#' @param verbose logical indicating whether to print additional information
+#' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' MetacellsByGroups(pbmc)
+#' MetacellsByGroups
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'), ident.group='seurat_clusters',
   k=50, reduction='umap', assay='RNA',
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
-  slot='counts', wgcna_name=NULL
+  slot='counts', mode = 'average', max_shared=10, verbose=FALSE, wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -177,6 +213,10 @@ MetacellsByGroups <- function(
 
   if(!(ident.group %in% group.by)){
     stop('ident.group must be in group.by')
+  }
+
+  if(!(mode %in% c('sum', 'average'))){
+    stop('Invalid choice for mode. Mode can be either sum or average.')
   }
 
   # subset seurat object by seleted cells:
@@ -226,17 +266,22 @@ MetacellsByGroups <- function(
     seurat_obj = seurat_list,
     name = groupings,
     meta = meta_list,
-    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE, wgcna_name=wgcna_name)
+    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE, mode=mode, max_shared=max_shared, verbose=verbose, wgcna_name=wgcna_name)
   )
   names(metacell_list) <- groupings
-  print('done making metacells')
+
+  # get the run stats:
+  run_stats <- as.data.frame(do.call(rbind, lapply(metacell_list, function(x){x@misc$run_stats})))
+  rownames(run_stats) <- 1:nrow(run_stats)
+  for(i in 1:length(group.by)){
+    run_stats[[group.by[i]]] <- do.call(rbind, strsplit(run_stats$name, '#'))[,i]
+  }
+
   # combine metacell objects
   metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
-  print('done merging seurat objc')
 
   # set idents for metacell object:
   Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]
-  print('set idents')
 
   # revert to full seurat object if we subsetted earlier
   if(!is.null(cells.use)){
@@ -245,7 +290,6 @@ MetacellsByGroups <- function(
 
   # add seurat metacell object to the main seurat object:
   seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
-  print('update seurat')
 
   # add other info
   seurat_obj <- SetWGCNAParams(
@@ -253,11 +297,11 @@ MetacellsByGroups <- function(
       'metacell_k' = k,
       'metacell_reduction' = reduction,
       'metacell_slot' = slot,
-      'metacell_assay' = assay
+      'metacell_assay' = assay,
+      'metacell_stats' = run_stats
     ),
     wgcna_name
   )
-  print('set params')
 
   seurat_obj
 }

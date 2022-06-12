@@ -10,6 +10,8 @@ ModuleTraitCorrelation(
   group.by = NULL,
   features = "hMEs",
   cor_method = "pearson",
+  subset_by = NULL,
+  subset_groups = NULL,
   wgcna_name = NULL,
   ...
 )

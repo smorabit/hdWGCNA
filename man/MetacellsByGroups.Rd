@@ -13,6 +13,9 @@ MetacellsByGroups(
   assay = "RNA",
   cells.use = NULL,
   slot = "counts",
+  mode = "average",
+  max_shared = 10,
+  verbose = FALSE,
   wgcna_name = NULL
 )
 }
@@ -29,6 +32,14 @@ MetacellsByGroups(
 
 \item{slot}{Slot to extract data for aggregation. Default = 'data'}
 
+\item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+
+\item{max_shared}{the maximum number of cells to be shared across two metacells}
+
+\item{verbose}{logical indicating whether to print additional information}
+
+\item{wgcna_name}{name of the WGCNA experiment}
+
 \item{name}{A string appended to resulting metalcells. Default = 'agg'}
 }
 \description{
@@ -36,6 +47,6 @@ This function takes a Seurat object and constructs averaged 'metacells' based
 on neighboring cells in provided groupings, such as cluster or cell type.
 }
 \examples{
-MetacellsByGroups(pbmc)
+MetacellsByGroups
 }
 \keyword{scRNA-seq}

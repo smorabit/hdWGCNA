@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9003</span>
       </span>
     </div>
 
@@ -103,11 +103,13 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ProjectModules</span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   <span class="va">seurat_ref</span>,
+  modules <span class="op">=</span> <span class="cn">NULL</span>,
   group.by.vars <span class="op">=</span> <span class="cn">NULL</span>,
   gene_mapping <span class="op">=</span> <span class="cn">NULL</span>,
   genome1_col <span class="op">=</span> <span class="cn">NULL</span>,
   genome2_col <span class="op">=</span> <span class="cn">NULL</span>,
-  scale_genes <span class="op">=</span> <span class="cn">FALSE</span>,
+  vars.to.regress <span class="op">=</span> <span class="cn">NULL</span>,
+  scale.model.use <span class="op">=</span> <span class="st">"linear"</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name_proj <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -164,7 +166,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         ...)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc30ae10d48&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe58ce86478&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

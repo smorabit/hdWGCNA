@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9003</span>
       </span>
     </div>
 
@@ -209,10 +209,11 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>             color = "grey", UMAP1 = tf_x, UMAP2 = tf_y)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     tf_df$size &lt;- 0.25</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- data.frame(Var1 = tf_gene_name, Var2 = node_df$name, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- data.frame(Var1 = tf_gene_name, Var2 = as.character(node_df$name), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         value = node_df$odds_ratio, color = exp_cor$color)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df$color &lt;- ifelse(cur_overlap$fdr &lt;= 0.05, edge_df$color, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df$color &lt;- ifelse(node_df$fdr &lt;= 0.05, edge_df$color, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "grey")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- subset(edge_df, color != "grey")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     node_df &lt;- dplyr::bind_rows(node_df, tf_df) %&gt;% as.data.frame()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(node_df) &lt;- as.character(node_df$name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     g1 &lt;- igraph::graph_from_data_frame(edge_df, directed = TRUE, </span>
@@ -224,15 +225,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = "", edge.color = adjustcolor(E(g2)$color, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             alpha.f = edge.alpha), )</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g1, layout = as.matrix(node_df[, c("UMAP1", "UMAP2")]), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.color = adjustcolor(E(g1)$color, alpha.f = edge.alpha), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.size = V(g1)$size * size.scale, edge.curved = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.width = edge_df$value * 2, vertex.color = V(g1)$color, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = V(g1)$name, vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.color = adjustcolor(E(g1)$color), vertex.size = V(g1)$size * </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             size.scale, edge.curved = 0, edge.width = edge_df$value * </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             2, vertex.color = V(g1)$color, vertex.label = V(g1)$name, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = "black", vertex.label.cex = 0, vertex.frame.color = "black", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         margin = 0, edge.arrow.size = edge_df$value/2, add = TRUE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc30aa81330&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe58f8dc070&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

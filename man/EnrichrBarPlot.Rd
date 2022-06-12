@@ -28,7 +28,7 @@ EnrichrBarPlot(
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Makes barplots from RunEnrhcr output.
+Makes barplots from RunEnrichr output.
 }
 \examples{
 EnrichrBarPlot

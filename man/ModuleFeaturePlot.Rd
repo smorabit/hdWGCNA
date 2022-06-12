@@ -17,7 +17,10 @@ ModuleFeaturePlot(
   label_legend = FALSE,
   ucell = FALSE,
   raster = FALSE,
-  raster_dpi = 500
+  raster_dpi = 500,
+  raster_scale = 1,
+  plot_ratio = 1,
+  title = TRUE
 )
 }
 \arguments{
