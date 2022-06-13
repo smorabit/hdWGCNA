@@ -1903,12 +1903,15 @@ PlotModuleTraitCorrelation <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
-
   # get the module trait correlation results:
-  temp <- GetModuleTraitCorrelation(seurat_obj)
+  temp <- GetModuleTraitCorrelation(seurat_obj, wgcna_name)
   cor_list <- temp$cor
   pval_list <- temp$pval
   fdr_list <- temp$fdr
+
+  if(is.null(dim(cor_list[[1]]))){
+    stop('ModuleTraitCorrelation was run only for one trait. Heatmaps are not suggested for visualizing only one variable!')
+  }
 
   # get module colors:
   modules <- GetModules(seurat_obj, wgcna_name)

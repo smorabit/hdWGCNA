@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9004 (2022-6-13)
+## Added
+- None
+
+## Changes
+- Bug fix so `ModuleTraitCorrelation` can be run with a single trait.
+
 # hdWGCNA 0.1.1.9003 (2022-6-11)
 ## Added
 - `GetHubGenes` function to extract the top hub genes from the module assignment table.

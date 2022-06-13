@@ -1776,6 +1776,12 @@ ModuleTraitCorrelation <- function(
   # get trait table:
   trait_df <- seurat_obj@meta.data[,traits]
 
+  # cast vector to data frame if there's only one trait
+  if(length(traits == 1)){
+    trait_df <- data.frame(x = trait_df)
+    colnames(trait_df) <- traits
+  }
+
   # convert factors to numeric
   if(any(data_types == 'factor')){
     factor_traits <- traits[data_types == 'factor']
@@ -1796,9 +1802,23 @@ ModuleTraitCorrelation <- function(
 
   # compute FDR:
   p_df <- cur_p %>%
-    reshape2::melt() %>%
-    dplyr::mutate(fdr=p.adjust(value, method='fdr')) %>%
-    dplyr::select(c(Var1, Var2, fdr))
+    reshape2::melt()
+
+    if(length(traits) == 1){
+
+      tmp <- rep(mods, length(traits))
+      tmp <- factor(tmp, levels = mods)
+      tmp <- tmp[order(tmp)]
+
+      p_df$Var1 <- traits
+      p_df$Var2 <- tmp
+      rownames(p_df) <- 1:nrow(p_df)
+      p_df <- dplyr::select(p_df, c(Var1, Var2, value))
+    }
+
+  p_df <- p_df %>%
+  dplyr::mutate(fdr=p.adjust(value, method='fdr')) %>%
+  dplyr::select(c(Var1, Var2, fdr))
 
   # reshape to match cor & pval
   cur_fdr <- reshape2::dcast(p_df, Var1 ~ Var2, value.var='fdr')
@@ -1839,7 +1859,22 @@ ModuleTraitCorrelation <- function(
 
     # compute FDR:
     p_df <- cur_p %>%
-      reshape2::melt() %>%
+      reshape2::melt()
+
+
+    if(length(traits) == 1){
+
+      tmp <- rep(mods, length(traits))
+      tmp <- factor(tmp, levels = mods)
+      tmp <- tmp[order(tmp)]
+
+      p_df$Var1 <- traits
+      p_df$Var2 <- tmp
+      rownames(p_df) <- 1:nrow(p_df)
+      p_df <- dplyr::select(p_df, c(Var1, Var2, value))
+    }
+
+    p_df <- p_df %>%
       dplyr::mutate(fdr=p.adjust(value, method='fdr')) %>%
       dplyr::select(c(Var1, Var2, fdr))
 

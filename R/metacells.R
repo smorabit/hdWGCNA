@@ -48,6 +48,7 @@ ConstructMetacells <- function(
     seurat_obj <- seurat_obj[,cells.use]
   }
 
+
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
   row.names(nn_map) <- row.names(reduced_coordinates)
@@ -132,6 +133,7 @@ ConstructMetacells <- function(
     max_shared = max_shared,
     mean_shared = mean_shared,
     median_shared = median_shared,
+    density = density,
     n = ncol(new_exprs)
   )
 
