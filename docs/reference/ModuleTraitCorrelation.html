@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9004</span>
       </span>
     </div>
 
@@ -186,6 +186,10 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     trait_df &lt;- seurat_obj@meta.data[, traits]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(traits == 1)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         trait_df &lt;- data.frame(x = trait_df)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         colnames(trait_df) &lt;- traits</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (any(data_types == "factor")) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         factor_traits &lt;- traits[data_types == "factor"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         for (tr in factor_traits) {</span>
@@ -199,8 +203,18 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         type = cor_method)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cur_cor &lt;- temp$r[traits, mods]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cur_p &lt;- temp$P[traits, mods]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     p_df &lt;- cur_p %&gt;% reshape2::melt() %&gt;% dplyr::mutate(fdr = p.adjust(value, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         method = "fdr")) %&gt;% dplyr::select(c(Var1, Var2, fdr))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p_df &lt;- cur_p %&gt;% reshape2::melt()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(traits) == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         tmp &lt;- rep(mods, length(traits))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         tmp &lt;- factor(tmp, levels = mods)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         tmp &lt;- tmp[order(tmp)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df$Var1 &lt;- traits</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df$Var2 &lt;- tmp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         rownames(p_df) &lt;- 1:nrow(p_df)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- dplyr::select(p_df, c(Var1, Var2, value))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p_df &lt;- p_df %&gt;% dplyr::mutate(fdr = p.adjust(value, method = "fdr")) %&gt;% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         dplyr::select(c(Var1, Var2, fdr))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cur_fdr &lt;- reshape2::dcast(p_df, Var1 ~ Var2, value.var = "fdr")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(cur_fdr) &lt;- cur_fdr$Var1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cur_fdr &lt;- cur_fdr[, -1]</span>
@@ -226,7 +240,17 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         temp &lt;- Hmisc::rcorr(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_cor &lt;- temp$r[traits, mods]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_p &lt;- temp$P[traits, mods]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- cur_p %&gt;% reshape2::melt() %&gt;% dplyr::mutate(fdr = p.adjust(value, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- cur_p %&gt;% reshape2::melt()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (length(traits) == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             tmp &lt;- rep(mods, length(traits))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             tmp &lt;- factor(tmp, levels = mods)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             tmp &lt;- tmp[order(tmp)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p_df$Var1 &lt;- traits</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p_df$Var2 &lt;- tmp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             rownames(p_df) &lt;- 1:nrow(p_df)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p_df &lt;- dplyr::select(p_df, c(Var1, Var2, value))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- p_df %&gt;% dplyr::mutate(fdr = p.adjust(value, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             method = "fdr")) %&gt;% dplyr::select(c(Var1, Var2, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             fdr))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_fdr &lt;- reshape2::dcast(p_df, Var1 ~ Var2, value.var = "fdr")</span>
@@ -248,7 +272,7 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe592b8c978&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f90193df010&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
