@@ -331,6 +331,7 @@ Output
   setDatExpr<span class="op">=</span><span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
 <p>hdWGCNA also includes a function <code>PlotDendrogram</code> to visualize the WGCNA dendrogram, a common visualization to show the different co-expression modules resulting from the network analysis. Each leaf on the dendrogram represents a single gene, and the color at the bottom indicates the co-expression module assignment.</p>
+<p><strong>Importantly, the “grey” module consists of genes that were not grouped into any co-expression module. The grey module should be ignored for all downstream analysis and interpretation.</strong></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'INH hdWGCNA Dendrogram'</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/inh_dendro.png" width="600" height="600"></p>

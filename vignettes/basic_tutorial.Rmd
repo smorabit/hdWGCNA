@@ -356,6 +356,8 @@ to show the different co-expression modules resulting from the network analysis.
 Each leaf on the dendrogram represents a single gene, and the color at the bottom
 indicates the co-expression module assignment.
 
+**Importantly, the "grey" module consists of genes that were not grouped into any co-expression module. The grey module should be ignored for all downstream analysis and interpretation.**
+
 ```{r eval=FALSE}
 
 PlotDendrogram(seurat_obj, main='INH hdWGCNA Dendrogram')

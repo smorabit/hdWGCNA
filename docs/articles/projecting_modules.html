@@ -244,7 +244,7 @@ Code
 <span class="va">projected_hMEs</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_query</span>, harmonized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 
 <span class="co"># add hMEs to Seurat meta-data:</span>
-<span class="va">seurat_query</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>
+<span class="va">seurat_query</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>
   <span class="va">seurat_query</span><span class="op">@</span><span class="va">meta.data</span>,
   <span class="va">projected_hMEs</span>
 <span class="op">)</span>
@@ -252,7 +252,7 @@ Code
 <span class="co"># plot with Seurat's DotPlot function</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span>
     <span class="va">seurat_query</span>,
-    features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">projected_hMEs</span><span class="op">)</span>,
+    features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">projected_hMEs</span><span class="op">)</span>,
     group.by <span class="op">=</span> <span class="st">'cell_type'</span>
 <span class="op">)</span>
 
