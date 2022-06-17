@@ -184,6 +184,7 @@ SetDatExpr <- function(
   multi_group_name = NULL,
   return_seurat = TRUE,
   wgcna_name=NULL,
+  assay=NULL,
   slot = 'data',
   ...
 ){
@@ -195,13 +196,21 @@ SetDatExpr <- function(
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
-  assay <- params$metacell_assay
+
+  if(is.null(assay)){
+    assay <- params$metacell_assay
+  }
 
   # use metacells or whole seurat object?
   if(use_metacells){
     s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
   } else{
     s_obj <- seurat_obj
+  }
+
+  # check the assay:
+  if(!(assay %in% names(s_obj@assays))){
+    stop("Assay not found. Check names(seurat_obj@assays) or names(GetMetacellObject(seurat_obj)@assays)")
   }
 
   # check that group.by is in the Seurat object & in the metacell object:
@@ -220,7 +229,6 @@ SetDatExpr <- function(
   }
 
   # check that the group names are actually in the group.by column:
-
 
   # subset further if multiExpr:
   if(!is.null(multi.group.by)){

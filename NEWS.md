@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9005 (2022-06-17)
+## Added
+- None
+
+## Changes
+- Added new arguments to `MetacellsByGroups` and `ConstructMetacells` to exclude very small groups (`min_cells`), to reach a target number of metacells (`target_metacells`), and to exclude metacells with too much overlap (`max_shared`).
+
 # hdWGCNA 0.1.1.9004 (2022-6-13)
 ## Added
 - None

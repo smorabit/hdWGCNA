@@ -18,7 +18,7 @@ on neighboring cells in provided groupings, such as cluster or cell type."><meta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9004</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9005</span>
       </span>
     </div>
 
@@ -148,8 +148,9 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">MetacellsByGroups</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, group.by = c("seurat_clusters"), ident.group = "seurat_clusters", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 50, reduction = "umap", assay = "RNA", cells.use = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     slot = "counts", mode = "average", max_shared = 10, verbose = FALSE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 25, reduction = "pca", assay = "RNA", cells.use = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     slot = "counts", mode = "average", min_cells = 100, max_shared = 15, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     target_metacells = 1000, max_iter = 5000, verbose = FALSE, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
@@ -163,6 +164,10 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(mode %in% c("sum", "average"))) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Invalid choice for mode. Mode can be either sum or average.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(reduction %in% names(seurat_obj@reductions))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid reduction (", reduction, "). Reductions in Seurat object: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             paste(names(seurat_obj@reductions), collapse = ", ")))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(cells.use)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
@@ -182,8 +187,11 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- unique(seurat_obj$metacell_grouping)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[order(groupings)]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[table(seurat_obj$metacell_grouping) &gt;= </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         2 * k]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         min_cells]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print(groupings)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(groupings) == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop("No groups met the min_cells requirement.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     meta_df &lt;- as.data.frame(do.call(rbind, strsplit(groupings, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "#")))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(meta_df) &lt;- group.by</span>
@@ -201,6 +209,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         name = groupings, meta = meta_list, MoreArgs = list(k = k, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             reduction = reduction, assay = assay, slot = slot, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             return_metacell = TRUE, mode = mode, max_shared = max_shared, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             max_iter = max_iter, target_metacells = target_metacells, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             verbose = verbose, wgcna_name = wgcna_name))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(metacell_list) &lt;- groupings</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     run_stats &lt;- as.data.frame(do.call(rbind, lapply(metacell_list, </span>
@@ -225,7 +234,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f90afb586f0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc8a7d1ffc8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

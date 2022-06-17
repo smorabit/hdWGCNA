@@ -129,7 +129,7 @@ After we have set up our Seurat object, the first step in running the scWGCNA pi
 in hdWGCNA is to construct metacells from the single-cell
 dataset. Briefly, metacells are aggregates of small groups of similar cells originating
 from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to
-identify groups of similar cells to aggregate, and then the average expression
+identify groups of similar cells to aggregate, and then the average or summed expression of these cells
 is computed, thus yielding a metacell gene expression matrix. The sparsity of the
 metacell expression matrix is considerably reduced when compared to the original
 expression matrix, and therefore it is preferable to use. We were originally motivated
@@ -139,7 +139,7 @@ epigenomic approaches, such as [Cicero](https://www.cell.com/molecular-cell/pdfE
 networks.
 
 hdWGCNA includes a function `MetacellsByGroups` to construct metacell expression
-matrices given a single-cell dataset. This function constructs a new Seurat object
+matrices given a single-cell dataset. This function constructs a new Seurat object for the metacell dataset
 which is stored internally in the hdWGCNA experiment. The `group.by` parameter determines which
 groups metacells will be constructed in. We only want to construct metacells from
 cells that came from the same biological sample of origin, so it is critical to
@@ -150,12 +150,12 @@ by `Sample` and `cell_type` to achieve the desired result.
 The number of cells to be aggregated `k` should be tuned based on the size of the input
 dataset, in general a lower number for `k` can be used for small datasets. We generally use `k` values
 between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from
-890 to 8,188 in each biological sample, and here we used `k=25`.
+890 to 8,188 in each biological sample, and here we used `k=25`. The amount of allowable overlap between metacells can be tuned using the `max_shared` argument.
 
-***Warning:*** we have found that the metacell aggregation approach does not yield good results for
+***Note:*** we have found that the metacell aggregation approach does not yield good results for
 extremely underrepresented cell types. For example, in this dataset, the brain vascular
 cells (pericytes and endothelial cells) were the least represented, and we have
-excluded them from this analysis.
+excluded them from this analysis. `MetacellsByGroups` has a parameter `min_cells` to exclude groups that are smaller than a specified number of cells.
 
 Here we construct metacells and normalize the resulting expression matrix
 using the following code:
@@ -167,6 +167,7 @@ seurat_obj <- MetacellsByGroups(
   seurat_obj = seurat_obj,
   group.by = c("cell_type", "Sample"), # specify the columns in seurat_obj@meta.data to group by
   k = 25, # nearest-neighbors parameter
+  max_shared = 10, # maximum number of shared cells between two metacells
   ident.group = 'cell_type' # set the Idents of the metacell seurat object
 )
 
