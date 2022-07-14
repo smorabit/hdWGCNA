@@ -13,6 +13,7 @@ SetDatExpr(
   multi_group_name = NULL,
   return_seurat = TRUE,
   wgcna_name = NULL,
+  assay = NULL,
   slot = "data",
   ...
 )

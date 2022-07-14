@@ -11,6 +11,7 @@ ModuleEigengenes(
   vars.to.regress = NULL,
   scale.model.use = "linear",
   verbose = TRUE,
+  pc_dim = 1,
   wgcna_name = NULL,
   ...
 )

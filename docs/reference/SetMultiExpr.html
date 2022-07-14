@@ -18,7 +18,7 @@ the metacell expression matrix, or from the full expression matrix."><meta prope
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9005</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9006</span>
       </span>
     </div>
 
@@ -147,6 +147,8 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(assay)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         assay &lt;- params$metacell_assay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         warning(paste0("assay not specified, trying to use assay ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             assay))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (use_metacells) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- GetMetacellObject(seurat_obj, wgcna_name)</span>
@@ -192,7 +194,7 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc8a90105f8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc122f4f938&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

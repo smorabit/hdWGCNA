@@ -199,6 +199,7 @@ SetDatExpr <- function(
 
   if(is.null(assay)){
     assay <- params$metacell_assay
+    warning(paste0('assay not specified, trying to use assay ', assay))
   }
 
   # use metacells or whole seurat object?

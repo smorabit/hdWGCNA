@@ -18,7 +18,7 @@ on neighboring cells in provided groupings, such as cluster or cell type."><meta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9005</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9006</span>
       </span>
     </div>
 
@@ -106,13 +106,16 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
   <span class="va">seurat_obj</span>,
   group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"seurat_clusters"</span><span class="op">)</span>,
   ident.group <span class="op">=</span> <span class="st">"seurat_clusters"</span>,
-  k <span class="op">=</span> <span class="fl">50</span>,
-  reduction <span class="op">=</span> <span class="st">"umap"</span>,
+  k <span class="op">=</span> <span class="fl">25</span>,
+  reduction <span class="op">=</span> <span class="st">"pca"</span>,
   assay <span class="op">=</span> <span class="st">"RNA"</span>,
   cells.use <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"counts"</span>,
   mode <span class="op">=</span> <span class="st">"average"</span>,
-  max_shared <span class="op">=</span> <span class="fl">10</span>,
+  min_cells <span class="op">=</span> <span class="fl">100</span>,
+  max_shared <span class="op">=</span> <span class="fl">15</span>,
+  target_metacells <span class="op">=</span> <span class="fl">1000</span>,
+  max_iter <span class="op">=</span> <span class="fl">5000</span>,
   verbose <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
@@ -127,15 +130,21 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <dt>k</dt>
 <dd><p>Number of nearest neighbors to aggregate. Default = 50</p></dd>
 <dt>reduction</dt>
-<dd><p>A dimensionality reduction stored in the Seurat object. Default = 'umap'</p></dd>
+<dd><p>A dimensionality reduction stored in the Seurat object. Default = 'pca'</p></dd>
 <dt>assay</dt>
 <dd><p>Assay to extract data for aggregation. Default = 'RNA'</p></dd>
 <dt>slot</dt>
 <dd><p>Slot to extract data for aggregation. Default = 'data'</p></dd>
 <dt>mode</dt>
 <dd><p>determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".</p></dd>
+<dt>min_cells</dt>
+<dd><p>the minimum number of cells in a particular grouping to construct metacells</p></dd>
 <dt>max_shared</dt>
 <dd><p>the maximum number of cells to be shared across two metacells</p></dd>
+<dt>target_metacells</dt>
+<dd><p>the maximum target number of metacells to construct</p></dd>
+<dt>max_iter</dt>
+<dd><p>the maximum number of iterations in the metacells bootstrapping loop</p></dd>
 <dt>verbose</dt>
 <dd><p>logical indicating whether to print additional information</p></dd>
 <dt>wgcna_name</dt>
@@ -234,7 +243,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc8a7d1ffc8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc1217b95b0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -1,3 +1,10 @@
+# hdWGCNA 0.1.1.9006 (2022-07-14)
+## Added
+- None
+
+## Changes
+- `ConstructNetwork` now checks if the TOM file already exists, and whether the user wants to overwrite the existing TOM.
+
 # hdWGCNA 0.1.1.9005 (2022-06-17)
 ## Added
 - None

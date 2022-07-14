@@ -18,7 +18,7 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9005</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9006</span>
       </span>
     </div>
 
@@ -106,7 +106,7 @@ on neighboring cells.</p>
   <span class="va">seurat_obj</span>,
   name <span class="op">=</span> <span class="st">"agg"</span>,
   ident.group <span class="op">=</span> <span class="st">"seurat_clusters"</span>,
-  k <span class="op">=</span> <span class="fl">50</span>,
+  k <span class="op">=</span> <span class="fl">25</span>,
   reduction <span class="op">=</span> <span class="st">"umap"</span>,
   assay <span class="op">=</span> <span class="st">"RNA"</span>,
   cells.use <span class="op">=</span> <span class="cn">NULL</span>,
@@ -114,7 +114,9 @@ on neighboring cells.</p>
   meta <span class="op">=</span> <span class="cn">NULL</span>,
   return_metacell <span class="op">=</span> <span class="cn">FALSE</span>,
   mode <span class="op">=</span> <span class="st">"average"</span>,
-  max_shared <span class="op">=</span> <span class="fl">10</span>,
+  max_shared <span class="op">=</span> <span class="fl">15</span>,
+  target_metacells <span class="op">=</span> <span class="fl">1000</span>,
+  max_iter <span class="op">=</span> <span class="fl">5000</span>,
   verbose <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
@@ -140,6 +142,10 @@ on neighboring cells.</p>
 <dd><p>determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".</p></dd>
 <dt>max_shared</dt>
 <dd><p>the maximum number of cells to be shared across two metacells</p></dd>
+<dt>target_metacells</dt>
+<dd><p>the maximum target number of metacells to construct</p></dd>
+<dt>max_iter</dt>
+<dd><p>the maximum number of iterations in the metacells bootstrapping loop</p></dd>
 <dt>verbose</dt>
 <dd><p>logical indicating whether to print additional information</p></dd>
 <dt>wgcna_name</dt>
@@ -261,7 +267,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc8a71546a0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc1194dd3d0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

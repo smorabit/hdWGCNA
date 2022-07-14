@@ -293,9 +293,11 @@ ConstructNetwork <- function(
   use_metacells=TRUE,
   setDatExpr=TRUE, group.by=NULL,
   group_name=NULL,
+  tom_name = NULL,
   consensus = FALSE,
   multi.group.by = NULL,
   multi_groups = NULL,
+  overwrite_tom = FALSE,
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
   TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
@@ -304,6 +306,8 @@ ConstructNetwork <- function(
   deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
 ){
+
+  wgcna_name <- seurat_obj@misc$active_wgcna
 
   # constructing network on multiple datasets (consensus WGCNA)
   if(consensus){
@@ -344,6 +348,21 @@ ConstructNetwork <- function(
 
     if(is.null(group_name)){
       group_name <- 'all'
+    }
+
+    # suffix for the tom
+    if(is.null(tom_name)){
+      tom_name <- gsub(' ', '_', group_name)
+    }
+
+    # tom file name
+    renamed <- paste0(tom_outdir, '/', tom_name, '_TOM.rda')
+    if(file.exists(renamed)){
+      if(overwrite_tom){
+        warning(paste0('Overwriting TOM ', renamed))
+      } else{
+        stop(paste0("TOM ", renamed, " already exists. Set overwrite_tom = TRUE or change tom_name to proceed."))
+      }
     }
 
     nSets = 1
@@ -393,7 +412,7 @@ ConstructNetwork <- function(
     consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
 
   # rename consensusTOM file:
-  file.rename('ConsensusTOM-block.1.rda', paste0('TOM/', gsub(' ', '_',group_name), '_ConsensusTOM-block.1.rda'))
+  file.rename('ConsensusTOM-block.1.rda', renamed)
 
   # add network parameters to the Seurat object:
 
@@ -421,10 +440,10 @@ ConstructNetwork <- function(
   seurat_obj <- SetWGCNAParams(seurat_obj, params)
 
   # append working directory to the TOM file so it has the full path:
-  net$TOMFiles <- paste0(getwd(), '/TOM/', group_name, '_', net$TOMFiles)
+  net$TOMFiles <- paste0(getwd(), '/', renamed)
 
   # add network to seurat obj
-  seurat_obj <- SetNetworkData(seurat_obj, net)
+  seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
 
   # set the modules df in the Seurat object
   mods <- GetNetworkData(seurat_obj)$colors
@@ -465,6 +484,7 @@ ComputeModuleEigengene <- function(
   verbose=TRUE,
   vars.to.regress = NULL,
   scale.model.use = 'linear',
+  pc_dim = 1,
   wgcna_name=NULL, ...
 ){
 
@@ -474,6 +494,7 @@ ComputeModuleEigengene <- function(
 
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+  print(cur_genes)
 
   # subset seurat object by these genes only:
   X <- GetAssayData(seurat_obj, slot='counts')[cur_genes,]
@@ -490,7 +511,6 @@ ComputeModuleEigengene <- function(
     stop(paste0("Some variables specified in vars.to.regress are not found in seurat_obj@meta.data"))
   }
 
-
   # compute average expression of each gene
   cur_expr <- GetAssayData(cur_seurat, slot='data')
   expr <- t(as.matrix(cur_expr))
@@ -503,8 +523,10 @@ ComputeModuleEigengene <- function(
     reduction.key=paste0('pca', cur_mod),
     verbose=verbose, ...
   )@reductions$pca
-  pc <- cur_pca@cell.embeddings[,1]
-  pc_loadings <- cur_pca@feature.loadings[,1]
+  pc <- cur_pca@cell.embeddings[,pc_dim]
+  pc_loadings <- cur_pca@feature.loadings[,pc_dim]
+
+  print('here')
 
   # correlate average expression with eigengene
   pca_cor <- cor(averExpr, pc)
@@ -523,11 +545,11 @@ ComputeModuleEigengene <- function(
       group.by.vars=group.by.vars,
       reduction="ME", verbose=verbose, ...
     )@reductions$harmony
-    ha <- cur_harmony@cell.embeddings[,1]
-    ha_loadings <- cur_pca@feature.loadings[,1]
+    ha <- cur_harmony@cell.embeddings[,pc_dim]
+    ha_loadings <- cur_pca@feature.loadings[,pc_dim]
 
     if(pca_cor < 0){
-      cur_harmony@cell.embeddings[,1] <- -ha
+      cur_harmony@cell.embeddings[,pc_dim] <- -ha
       ha_loadings <- -ha_loadings
     }
 
@@ -547,7 +569,7 @@ ComputeModuleEigengene <- function(
   }
 
   if(pca_cor < 0){
-    cur_pca@cell.embeddings[,1] <- -pc
+    cur_pca@cell.embeddings[,pc_dim] <- -pc
     pc_loadings <- -pc_loadings
   }
 
@@ -591,6 +613,7 @@ ModuleEigengenes <- function(
   vars.to.regress = NULL,
   scale.model.use = 'linear',
   verbose=TRUE,
+  pc_dim = 1,
   wgcna_name=NULL, ...
 ){
 
@@ -648,18 +671,19 @@ ModuleEigengenes <- function(
       vars.to.regress = vars.to.regress,
       scale.model.use = scale.model.use,
       verbose=verbose,
+      pc_dim = pc_dim,
       wgcna_name=wgcna_name,
       ...
     )
 
     # add module eigengene to ongoing list
-    cur_me <- seurat_obj@reductions$ME@cell.embeddings[,1]
+    cur_me <- seurat_obj@reductions$ME@cell.embeddings[,pc_dim]
     me_list[[cur_mod]] <- cur_me
 
     # run harmony
     if(harmonized){
       # add module eigengene to ongoing list
-      cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[,1]
+      cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[,pc_dim]
       harmonized_me_list[[cur_mod]] <- cur_harmonized_me
     }
   }
@@ -1075,12 +1099,15 @@ ProjectModules <- function(
     modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
   }
 
+  print(head(modules))
+
   # get genes that overlap between WGCNA genes & seurat_obj genes:
   gene_names <- modules$gene_name
   genes_use <- intersect(gene_names, rownames(seurat_obj))
 
   print('n genes:')
   print(length(genes_use))
+  print(head(gene_names))
 
   # subset modules by genes in this seurat object:
   modules <- modules %>% subset(gene_name %in% genes_use)
@@ -1133,6 +1160,12 @@ TransferModuleGenome <- function(
   if(is.null(genome1_col)){genome1_col <- colnames(gene_mapping)[1]}
   if(is.null(genome2_col)){genome2_col <- colnames(gene_mapping)[2]}
 
+  # TODO
+  # need to add a check that there's a one to one mapping
+  if(!all(table(gene_mapping[[genome2_col]]) == 1)){
+    stop("There can only be one value for each feature in genome2_col in the gene_mapping table.")
+  }
+
   # switch gene names to human:
   gene_mapping <- gene_mapping[,c(genome1_col, genome2_col)]
 
@@ -1150,7 +1183,10 @@ TransferModuleGenome <- function(
   # update modules table with the new gene names
   # modules <- na.omit(modules[gene_match,])
 
+  print(head(gene_mapping))
+
   modules$gene_name <- gene_mapping[,genome2_col]
+  rownames(modules) <- modules$gene_name
 
   modules
 

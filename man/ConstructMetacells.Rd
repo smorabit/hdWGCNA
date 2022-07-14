@@ -8,7 +8,7 @@ ConstructMetacells(
   seurat_obj,
   name = "agg",
   ident.group = "seurat_clusters",
-  k = 50,
+  k = 25,
   reduction = "umap",
   assay = "RNA",
   cells.use = NULL,
@@ -16,7 +16,9 @@ ConstructMetacells(
   meta = NULL,
   return_metacell = FALSE,
   mode = "average",
-  max_shared = 10,
+  max_shared = 15,
+  target_metacells = 1000,
+  max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
 )
@@ -39,6 +41,10 @@ ConstructMetacells(
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
 
 \item{max_shared}{the maximum number of cells to be shared across two metacells}
+
+\item{target_metacells}{the maximum target number of metacells to construct}
+
+\item{max_iter}{the maximum number of iterations in the metacells bootstrapping loop}
 
 \item{verbose}{logical indicating whether to print additional information}
 

@@ -8,13 +8,16 @@ MetacellsByGroups(
   seurat_obj,
   group.by = c("seurat_clusters"),
   ident.group = "seurat_clusters",
-  k = 50,
-  reduction = "umap",
+  k = 25,
+  reduction = "pca",
   assay = "RNA",
   cells.use = NULL,
   slot = "counts",
   mode = "average",
-  max_shared = 10,
+  min_cells = 100,
+  max_shared = 15,
+  target_metacells = 1000,
+  max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
 )
@@ -26,7 +29,7 @@ MetacellsByGroups(
 
 \item{k}{Number of nearest neighbors to aggregate. Default = 50}
 
-\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'umap'}
+\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'pca'}
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
@@ -34,7 +37,13 @@ MetacellsByGroups(
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
 
+\item{min_cells}{the minimum number of cells in a particular grouping to construct metacells}
+
 \item{max_shared}{the maximum number of cells to be shared across two metacells}
+
+\item{target_metacells}{the maximum target number of metacells to construct}
+
+\item{max_iter}{the maximum number of iterations in the metacells bootstrapping loop}
 
 \item{verbose}{logical indicating whether to print additional information}
 

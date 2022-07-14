@@ -2011,6 +2011,7 @@ PlotModuleTraitCorrelation <- function(
         axis.line=element_blank(),
         axis.ticks.y=element_blank(),
         axis.text.y.left = element_blank(),
+        axis.title.y = element_text(angle=0, vjust=0.5),
         legend.title = element_blank(),
         legend.position='bottom'
       )
@@ -2038,7 +2039,8 @@ PlotModuleTraitCorrelation <- function(
           plot.title = element_blank(),
           legend.position='bottom',
           axis.text.x = element_blank(),
-          axis.ticks=element_blank()
+          axis.ticks=element_blank(),
+          axis.title.y = element_text(angle=0, vjust=0.5)
         )
     }
 

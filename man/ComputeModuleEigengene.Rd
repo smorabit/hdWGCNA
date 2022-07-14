@@ -12,6 +12,7 @@ ComputeModuleEigengene(
   verbose = TRUE,
   vars.to.regress = NULL,
   scale.model.use = "linear",
+  pc_dim = 1,
   wgcna_name = NULL,
   ...
 )
