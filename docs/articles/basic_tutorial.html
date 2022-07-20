@@ -197,7 +197,7 @@
 <h2 id="set-up-seurat-object-for-wgcna">Set up Seurat object for WGCNA<a class="anchor" aria-label="anchor" href="#set-up-seurat-object-for-wgcna"></a>
 </h2>
 <p>Before running hdWGCNA, we first have to set up the Seurat object. Most of the information computed by hdWGCNA is stored in the Seurat object’s <code>@misc</code> slot. A single Seurat object can hold multiple hdWGCNA experiments, for example representing different cell types in the same single-cell dataset. Notably, since we consider hdWGCNA to be a downstream data analysis step, <strong><em>we do not support subsetting the Seurat object</em></strong> after <code>SetupForWGCNA</code> has been run.</p>
-<p>Here we will set up the Seurat object using the <code>SetupForWGCNA</code> function, specifying the name of the scWGNCA experiment. This function also selects the genes that will be used for WGCNA. The user can select genes using three different approaches using the <code>gene_select</code> parameter:</p>
+<p>Here we will set up the Seurat object using the <code>SetupForWGCNA</code> function, specifying the name of the hdWGNCA experiment. This function also selects the genes that will be used for WGCNA. The user can select genes using three different approaches using the <code>gene_select</code> parameter:</p>
 <ul>
 <li>
 <code>variable</code>: use the genes stored in the Seurat object’s <code>VariableFeatures</code>.</li>
@@ -218,7 +218,7 @@
 <div class="section level2">
 <h2 id="construct-metacells">Construct metacells<a class="anchor" aria-label="anchor" href="#construct-metacells"></a>
 </h2>
-<p>After we have set up our Seurat object, the first step in running the scWGCNA pipeine in hdWGCNA is to construct metacells from the single-cell dataset. Briefly, metacells are aggregates of small groups of similar cells originating from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to identify groups of similar cells to aggregate, and then the average or summed expression of these cells is computed, thus yielding a metacell gene expression matrix. The sparsity of the metacell expression matrix is considerably reduced when compared to the original expression matrix, and therefore it is preferable to use. We were originally motivated to use metacells in place of the original single cells because correlation network approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cell epigenomic approaches, such as <a href="https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1" class="external-link">Cicero</a>, employ a similar metacell aggregation approach prior to constructing co-accessibility networks.</p>
+<p>After we have set up our Seurat object, the first step in running the hdWGCNA pipeine in hdWGCNA is to construct metacells from the single-cell dataset. Briefly, metacells are aggregates of small groups of similar cells originating from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to identify groups of similar cells to aggregate, and then the average or summed expression of these cells is computed, thus yielding a metacell gene expression matrix. The sparsity of the metacell expression matrix is considerably reduced when compared to the original expression matrix, and therefore it is preferable to use. We were originally motivated to use metacells in place of the original single cells because correlation network approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cell epigenomic approaches, such as <a href="https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1" class="external-link">Cicero</a>, employ a similar metacell aggregation approach prior to constructing co-accessibility networks.</p>
 <p>hdWGCNA includes a function <code>MetacellsByGroups</code> to construct metacell expression matrices given a single-cell dataset. This function constructs a new Seurat object for the metacell dataset which is stored internally in the hdWGCNA experiment. The <code>group.by</code> parameter determines which groups metacells will be constructed in. We only want to construct metacells from cells that came from the same biological sample of origin, so it is critical to pass that information to hdWGCNA via the <code>group.by</code> parameter. Additionally, we usually construct metacells for each cell type separately. Thus, in this example, we are grouping by <code>Sample</code> and <code>cell_type</code> to achieve the desired result.</p>
 <p>The number of cells to be aggregated <code>k</code> should be tuned based on the size of the input dataset, in general a lower number for <code>k</code> can be used for small datasets. We generally use <code>k</code> values between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from 890 to 8,188 in each biological sample, and here we used <code>k=25</code>. The amount of allowable overlap between metacells can be tuned using the <code>max_shared</code> argument.</p>
 <p><strong><em>Note:</em></strong> we have found that the metacell aggregation approach does not yield good results for extremely underrepresented cell types. For example, in this dataset, the brain vascular cells (pericytes and endothelial cells) were the least represented, and we have excluded them from this analysis. <code>MetacellsByGroups</code> has a parameter <code>min_cells</code> to exclude groups that are smaller than a specified number of cells.</p>
@@ -242,26 +242,24 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>Additionally, we have included a few wrapper functions to apply the Seurat workflow to the metacell object within the hdWGCNA experiment. Here we apply these wrapper functions to process the metacell object and visualize the aggregated expression profiles in two dimensions with UMAP.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/ScaleMetacells.html">ScaleMetacells</a></span><span class="op">(</span>features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/RunPCAMetacells.html">RunPCAMetacells</a></span><span class="op">(</span>features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/RunHarmonyMetacells.html">RunHarmonyMetacells</a></span><span class="op">(</span>group.by.vars<span class="op">=</span><span class="st">'Sample'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/RunUMAPMetacells.html">RunUMAPMetacells</a></span><span class="op">(</span>reduction<span class="op">=</span><span class="st">'harmony'</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span>
-
-
-<span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DimPlotMetacells.html">DimPlotMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span><span class="op">)</span> <span class="op">+</span> <span class="va">umap_theme</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Cell Type"</span><span class="op">)</span>
-<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DimPlotMetacells.html">DimPlotMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'Sample'</span><span class="op">)</span> <span class="op">+</span> <span class="va">umap_theme</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Sample"</span><span class="op">)</span>
-
-<span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">NormalizeMetacells</span>(seurat_obj)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">ScaleMetacells</span>(seurat_obj, <span class="at">features=</span><span class="fu">VariableFeatures</span>(seurat_obj))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunPCAMetacells</span>(seurat_obj, <span class="at">features=</span><span class="fu">VariableFeatures</span>(seurat_obj))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunHarmonyMetacells</span>(seurat_obj <span class="at">group.by.vars=</span><span class="st">'Sample'</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunUMAPMetacells</span>(seurat_obj, <span class="at">reduction=</span><span class="st">'harmony'</span>, <span class="at">dims=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">DimPlotMetacells</span>(seurat_obj, <span class="at">group.by=</span><span class="st">'cell_type'</span>) <span class="sc">+</span> <span class="fu">umap_theme</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Cell Type"</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">DimPlotMetacells</span>(seurat_obj, <span class="at">group.by=</span><span class="st">'Sample'</span>) <span class="sc">+</span> <span class="fu">umap_theme</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Sample"</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">|</span> p2</span></code></pre></div>
 <p><img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h2>
-<p>In this section we discuss how to perform co-expression network analysis with scWGNCA on the inhibitory neuron (INH) cells in our example dataset.</p>
+<p>In this section we discuss how to perform co-expression network analysis with hdWGNCA on the inhibitory neuron (INH) cells in our example dataset.</p>
 <div class="section level3">
 <h3 id="transpose-the-expression-matrix">Transpose the expression matrix<a class="anchor" aria-label="anchor" href="#transpose-the-expression-matrix"></a>
 </h3>
@@ -287,7 +285,7 @@ Selecting more than one group
 <div class="section level3">
 <h3 id="select-soft-power-threshold">Select soft-power threshold<a class="anchor" aria-label="anchor" href="#select-soft-power-threshold"></a>
 </h3>
-<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the scWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA constructs a correlation adjacency matrix to infer co-expression relationships between genes. The correlations are raised to a power to reduce the amount of noise present in the correlation matrix, thereby retaining the strong connections and removing the weak connections. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
+<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the hdWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA constructs a correlation adjacency matrix to infer co-expression relationships between genes. The correlations are raised to a power to reduce the amount of noise present in the correlation matrix, thereby retaining the strong connections and removing the weak connections. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
 <p>We include a function <code>TestSoftPowers</code> to perform a parameter sweep for different soft power thresholds. This function helps us to guide our choice in a soft power threshold for constructing the co-expression network by inspecting the resulting network topology for different power values. The co-expression network should have a <a href="https://en.wikipedia.org/wiki/Scale-free_network" class="external-link">scale-free topology</a>, therefore the <code>TestSoftPowers</code> function models how closely the co-expression network resembles a scale-free graph at different soft power thresholds. Furthermore, we include a function <code>PlotSoftPowers</code> to visualize the results of the parameter sweep.</p>
 <p>The following code performs the parameter sweep and outputs a summary figure.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -329,13 +327,21 @@ Output
 <code class="sourceCode R"><span class="co"># construct co-expression network:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>, soft_power<span class="op">=</span><span class="fl">9</span>,
-  setDatExpr<span class="op">=</span><span class="cn">FALSE</span>
+  setDatExpr<span class="op">=</span><span class="cn">FALSE</span>,
+  tom_name <span class="op">=</span> <span class="st">'INH'</span> <span class="co"># name of the topoligical overlap matrix written to disk</span>
 <span class="op">)</span></code></pre></div>
 <p>hdWGCNA also includes a function <code>PlotDendrogram</code> to visualize the WGCNA dendrogram, a common visualization to show the different co-expression modules resulting from the network analysis. Each leaf on the dendrogram represents a single gene, and the color at the bottom indicates the co-expression module assignment.</p>
 <p><strong>Importantly, the “grey” module consists of genes that were not grouped into any co-expression module. The grey module should be ignored for all downstream analysis and interpretation.</strong></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'INH hdWGCNA Dendrogram'</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/inh_dendro.png" width="600" height="600"></p>
+</div>
+<div class="section level3">
+<h3 id="optional-inspect-the-topoligcal-overlap-matrix-tom">Optional: inspect the topoligcal overlap matrix (TOM)<a class="anchor" aria-label="anchor" href="#optional-inspect-the-topoligcal-overlap-matrix-tom"></a>
+</h3>
+<p>hdWGCNA represents the co-expression network as a topoligcal overlap matrix (TOM). This is a square matrix of genes by genes, where each value is the topoligcal overlap between the genes. The TOM is written to the disk when running <code>ConstructNetwork</code>, and we can load it into R using the <code>GetTOM</code> function. Advanced users may wish to inspect the TOM for custom downstream analyses.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">TOM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTOM.html">GetTOM</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -348,7 +354,7 @@ Output
 <p>Module Eigengenes (MEs) are a commonly used metric to summarize the gene expression profile of an entire co-expression module. Briefly, module eigengenes are computed by performing principal component analysis (PCA) on the subset of the gene expression matrix comprising each module. The first PC of each of these PCA matrices are the MEs.</p>
 <p>Dimensionality reduction techniques are a very hot topic in single-cell genomics. It is well known that technical artifacts can muddy the analysis of single-cell datasets, and over the years there have been many methods that aim to reduce the effects of these artifacts. Therefore it stands to reason that MEs would be subject to these technical artifacts as well, and hdWGCNA seeks to alleviate these effects.</p>
 <p>hdWGCNA includes a function <code>ModuleEigengenes</code> to compute module eigengenes in single cells. Additionally, we allow the user to apply Harmony batch correction to the MEs, yielding <strong>harmonized module eigengenes (hMEs)</strong>. The following code performs the module eigengene computation harmonizing by the Sample of origin using the <code>group.by.vars</code> parameter.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># need to run ScaleData first or else harmony throws an error:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 
@@ -358,7 +364,7 @@ Output
  group.by.vars<span class="op">=</span><span class="st">"Sample"</span>
 <span class="op">)</span></code></pre></div>
 <p>The ME matrices are stored as a matrix where each row is a cell and each column is a module. This matrix can be extracted from the Seurat object using the <code>GetMEs</code> function, which retrieves the <strong>hMEs by default</strong>.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># harmonized module eigengenes:</span>
 <span class="va">hMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
@@ -369,21 +375,21 @@ Output
 <h3 id="compute-module-connectivity">Compute module connectivity<a class="anchor" aria-label="anchor" href="#compute-module-connectivity"></a>
 </h3>
 <p>In co-expression network analysis, we often want to focus on the “hub genes”, those which are highly connected within each module. Therefore we wish to determine the <em>eigengene-based connectivity</em>, also known as <em>kME</em>, of each gene. hdWGCNA includes the <code>ModuleConnectivity</code> to compute the <em>kME</em> values in the full single-cell dataset, rather than the metacell dataset. This function essentially computes pairwise correlations between genes and module eigengenes. kME can be computed for all cells in the dataset, but we recommend computing kME in the cell type or group that was previously used to run <code>ConstructNetwork</code>.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compute eigengene-based connectivity (kME):</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name <span class="op">=</span> <span class="st">'INH'</span>
 <span class="op">)</span></code></pre></div>
 <p>For convenience, we re-name the hdWGCNA modules to indicate that they are from the inhibitory neuron group. More information about renaming modules can be found in the <a href="customization.html">module customization tutorial</a>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># rename the modules</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   new_name <span class="op">=</span> <span class="st">"INH-M"</span>
 <span class="op">)</span></code></pre></div>
 <p>We can visualize the genes in each module ranked by kME using the <code>PlotKMEs</code> function.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot genes ranked by kME for each module</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotKMEs.html">PlotKMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span>, ncol<span class="op">=</span><span class="fl">5</span><span class="op">)</span>
 
@@ -394,7 +400,7 @@ Output
 <h3 id="getting-the-module-assignment-table">Getting the module assignment table<a class="anchor" aria-label="anchor" href="#getting-the-module-assignment-table"></a>
 </h3>
 <p>hdWGCNA allows for easy access of the module assignment table using the <code>GetModules</code> function. This table consists of three columns: <code>gene_name</code> stores the gene’s symbol or ID, <code>module</code> stores the gene’s module assignment, and <code>color</code> stores a color mapping for each module, which is used in many downstream plotting steps. If <code>ModuleConnectivity</code> has been called on this hdWGCNA experiment, this table will have additional columns for the <em>kME</em> of each module.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the module assignment table:</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
@@ -411,7 +417,7 @@ AGRN             AGRN INH-M19 brown -0.008488577  0.035558532  0.0379326966
 C1orf159     C1orf159    grey  grey -0.015618737  0.002235229 -0.0003824554
 </code></pre>
 </details><p>A table of the top N hub genes sorted by kME can be extracted using the <code>GetHubGenes</code> function.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get hub genes</span>
 <span class="va">hub_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetHubGenes.html">GetHubGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, n_hubs <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
 
@@ -427,13 +433,13 @@ Output
 6      ASB3 INH-M1 0.3417400
 </code></pre>
 </details><p>This wraps up the critical analysis steps for hdWGCNA, so remember to save your output.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'hdWGCNA_object.rds'</span><span class="op">)</span></code></pre></div>
 <div class="section level4">
 <h4 id="compute-hub-gene-signature-scores">Compute hub gene signature scores<a class="anchor" aria-label="anchor" href="#compute-hub-gene-signature-scores"></a>
 </h4>
-<p>Gene scoring analysis is a popular method in single-cell transcriptomics for computing a score for the overall signature of a set of genes. Seurat implements their own gene scoring technique using the <code>AddModuleScore</code> function, but there are also alternative approaches such as <a href="https://github.com/carmonalab/UCell" class="external-link">UCell</a>. hdWGCNA includes the function <code>ModuleExprScore</code> to compute gene scores for a give number of genes for each module, using either the Seurat or UCell algorithm.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<p>Gene scoring analysis is a popular method in single-cell transcriptomics for computing a score for the overall signature of a set of genes. Seurat implements their own gene scoring technique using the <code>AddModuleScore</code> function, but there are also alternative approaches such as <a href="https://github.com/carmonalab/UCell" class="external-link">UCell</a>. hdWGCNA includes the function <code>ModuleExprScore</code> to compute gene scores for a give number of genes for each module, using either the Seurat or UCell algorithm. Gene scoring is an alternative way of summarizing the expression of a module from computing the module eigengene.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compute gene scoring for the top 25 hub genes by kME for each module</span>
 <span class="co"># with Seurat method</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleExprScore.html">ModuleExprScore</a></span><span class="op">(</span>
@@ -461,7 +467,7 @@ Output
 <h3 id="module-feature-plots">Module Feature Plots<a class="anchor" aria-label="anchor" href="#module-feature-plots"></a>
 </h3>
 <p><a href="https://www.rdocumentation.org/packages/Seurat/versions/4.1.0/topics/FeaturePlot" class="external-link">FeaturePlot</a> is a commonly used Seurat visualization to show a feature of interest directly on the dimensionality reduction. hdWGCNA includes the <code>ModuleFeaturePlot</code> function to consruct FeaturePlots for each co-expression module colored by each module’s uniquely assigned color.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -473,31 +479,41 @@ Output
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_featureplot.png" width="800" height="800"></p>
 <p>We can also plot the hub gene signature score using the same function:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make a featureplot of hub scores for each module</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>plot_list <span class="ot">&lt;-</span> <span class="fu">ModuleFeaturePlot</span>(</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">features=</span><span class="st">'scores'</span>, <span class="co"># plot the hub gene scores</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">order=</span><span class="st">'shuffle'</span> <span class="co"># order so cells are shuffled</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ucell =</span> <span class="cn">TRUE</span> <span class="co"># depending on Seurat vs UCell for gene scoring</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co"># stitch together with patchwork</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(plot_list, <span class="at">ncol=</span><span class="dv">6</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make a featureplot of hub scores for each module</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>plot_list <span class="ot">&lt;-</span> <span class="fu">ModuleFeaturePlot</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">features=</span><span class="st">'scores'</span>, <span class="co"># plot the hub gene scores</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">order=</span><span class="st">'shuffle'</span> <span class="co"># order so cells are shuffled</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ucell =</span> <span class="cn">TRUE</span> <span class="co"># depending on Seurat vs UCell for gene scoring</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="co"># stitch together with patchwork</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(plot_list, <span class="at">ncol=</span><span class="dv">6</span>)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_featureplot_scores.png" width="800" height="800"></p>
 </div>
 <div class="section level3">
 <h3 id="module-correlations">Module Correlations<a class="anchor" aria-label="anchor" href="#module-correlations"></a>
 </h3>
 <p>hdWGCNA includes the <code>ModuleCorrelogram</code> function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package <a href="https://rpubs.com/melike/corrplot" class="external-link">corrplot</a>.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot module correlagram</span>
 <span class="fu"><a href="../reference/ModuleCorrelogram.html">ModuleCorrelogram</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_correlogram.png" width="800" height="800"></p>
-<p>While hdWGCNA includes the <code>ModuleCorrelogram</code> function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand the relationship between different modules, and we encourage users to explore their data beyond the functions that we provide here. Here is an example of inspecting the correlation structure of the hMEs using an alternative approach, <a href="rdocumentation.org/packages/GGally/versions/1.5.0">GGally</a>:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># use GGally to investigate 6 selected modules:</span>
-<span class="fu">GGally</span><span class="fu">::</span><span class="fu">ggpairs</span><span class="op">(</span><span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">12</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/basic_tutorial/ME_correlation_GGally.png" width="800" height="800"></p>
+<!--
+While hdWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
+the relationship between different modules, and we encourage users to explore
+their data beyond the functions that we provide here. Here is an example of
+inspecting the correlation structure of the hMEs using an alternative approach,
+[GGally](rdocumentation.org/packages/GGally/versions/1.5.0):
+
+
+```r
+# use GGally to investigate 6 selected modules:
+GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
+```
+
+<img src="figures/basic_tutorial/ME_correlation_GGally.png" width="800" height="800">
+ -->
 </div>
 <div class="section level3">
 <h3 id="seurat-plotting-functions">Seurat plotting functions<a class="anchor" aria-label="anchor" href="#seurat-plotting-functions"></a>

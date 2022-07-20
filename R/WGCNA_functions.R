@@ -471,6 +471,8 @@ ConstructNetwork <- function(
 #' @param verbose logical indicating whether to print messages
 #' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
+#' @param pc_dim Which PC to use as the module eigengene? Default to 1.
+#' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
@@ -485,22 +487,34 @@ ComputeModuleEigengene <- function(
   vars.to.regress = NULL,
   scale.model.use = 'linear',
   pc_dim = 1,
+  assay = NULL,
   wgcna_name=NULL, ...
 ){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  ass <- DefaultAssay(seurat_obj)
+
+  # get the assay
+  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
+  if(dim(seurat_obj@assays[[assay]]@data)[1] == 0){
+    stop(paste0("Normalized data slot not found in selected assay ", assay))
+  }
 
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
   print(cur_genes)
 
   # subset seurat object by these genes only:
-  X <- GetAssayData(seurat_obj, slot='counts')[cur_genes,]
-  X_dat <- GetAssayData(seurat_obj, slot='data')[cur_genes,]
-  cur_seurat <- CreateSeuratObject(X, assay = ass, meta.data = seurat_obj@meta.data)
-  cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=ass)
+  X_dat <- GetAssayData(seurat_obj, slot='data', assay = assay)[cur_genes,]
+  if(dim(seurat_obj@assays[[assay]]@counts)[1] == 0){
+    X <- X_dat
+  } else{
+    X <- GetAssayData(seurat_obj, slot='counts', assay = assay)[cur_genes,]
+  }
+
+  # create seurat obj with just these genes
+  cur_seurat <- CreateSeuratObject(X, assay = assay, meta.data = seurat_obj@meta.data)
+  cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
 
   # scale the subsetted expression dataset:
   if(is.null(vars.to.regress)){
@@ -513,8 +527,8 @@ ComputeModuleEigengene <- function(
 
   # compute average expression of each gene
   cur_expr <- GetAssayData(cur_seurat, slot='data')
-  expr <- t(as.matrix(cur_expr))
-  averExpr <- rowSums(expr) / ncol(expr)
+  expr <- t(cur_expr)
+  averExpr <- Matrix::rowSums(expr) / ncol(expr)
 
   # run PCA with Seurat function
   cur_pca <- Seurat::RunPCA(
@@ -526,8 +540,6 @@ ComputeModuleEigengene <- function(
   pc <- cur_pca@cell.embeddings[,pc_dim]
   pc_loadings <- cur_pca@feature.loadings[,pc_dim]
 
-  print('here')
-
   # correlate average expression with eigengene
   pca_cor <- cor(averExpr, pc)
 
@@ -537,13 +549,13 @@ ComputeModuleEigengene <- function(
     # add this PCA as its own reduction in the seurat object
     seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
       embeddings = cur_pca@cell.embeddings,
-      assay = Seurat::DefaultAssay(cur_seurat)
+      assay = assay
     )
 
     cur_harmony <- harmony::RunHarmony(
       seurat_obj,
       group.by.vars=group.by.vars,
-      reduction="ME", verbose=verbose, ...
+      reduction="ME", verbose=verbose, assay.use=assay, ...
     )@reductions$harmony
     ha <- cur_harmony@cell.embeddings[,pc_dim]
     ha_loadings <- cur_pca@feature.loadings[,pc_dim]
@@ -556,7 +568,7 @@ ComputeModuleEigengene <- function(
     # add harmonized PCA as its own reduction in the seurat object
     seurat_obj@reductions$ME_harmony <- Seurat::CreateDimReducObject(
       embeddings = cur_harmony@cell.embeddings,
-      assay = Seurat::DefaultAssay(seurat_obj)
+      assay = assay
     )
 
     seurat_obj <- SetMELoadings(
@@ -576,7 +588,7 @@ ComputeModuleEigengene <- function(
   # add this PCA as its own reduction in the seurat object
   seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
     embeddings = cur_pca@cell.embeddings,
-    assay = Seurat::DefaultAssay(cur_seurat)
+    assay = assay
   )
 
   seurat_obj <- SetMELoadings(
@@ -601,6 +613,8 @@ ComputeModuleEigengene <- function(
 #' @param verbose logical indicating whether to print messages
 #' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
+#' @param pc_dim Which PC to use as the module eigengene? Default to 1.
+#' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
@@ -613,6 +627,7 @@ ModuleEigengenes <- function(
   vars.to.regress = NULL,
   scale.model.use = 'linear',
   verbose=TRUE,
+  assay = NULL,
   pc_dim = 1,
   wgcna_name=NULL, ...
 ){
@@ -626,6 +641,15 @@ ModuleEigengenes <- function(
   if(harmonized & !any(grepl("ScaleData", seurat_obj@commands))){
       stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
   }
+
+  # get the assay
+  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
+
+  # check for the data slot in this assay
+  if(dim(seurat_obj@assays[[assay]]@data)[1] == 0){
+    stop(paste0("Normalized data slot not found in selected assay ", assay))
+  }
+
 
   me_list <- list()
   harmonized_me_list <- list()
@@ -672,6 +696,7 @@ ModuleEigengenes <- function(
       scale.model.use = scale.model.use,
       verbose=verbose,
       pc_dim = pc_dim,
+      assay = assay,
       wgcna_name=wgcna_name,
       ...
     )

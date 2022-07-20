@@ -89,7 +89,20 @@ ConstructMetacells <- function(
 
   shared_old <- shared
   cell_sample <- nn_map[chosen, ]
-  combs <- combn(nrow(cell_sample), 2)
+
+  #
+  # combs <- combn(nrow(cell_sample), 2)
+
+  combs <- tryCatch(
+    {combn(nrow(cell_sample), 2)},
+    error = function(cond){return(NA)}
+  )
+  if(any(is.na(combs))){
+    warning('Metacell failed')
+    return(NULL)
+  }
+
+
   shared <- apply(combs, 2, function(x) {
       k2 - length(unique(as.vector(cell_sample[x, ])))
   })
@@ -124,7 +137,8 @@ ConstructMetacells <- function(
 
   # make seurat obj:
   metacell_obj <- CreateSeuratObject(
-    counts = new_exprs
+    counts = new_exprs,
+    assay = assay
   )
 
   # calculate stats:
@@ -213,7 +227,7 @@ ConstructMetacells <- function(
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'),
   ident.group='seurat_clusters',
-  k=25, reduction='pca', assay='RNA',
+  k=25, reduction='pca', assay=NULL,
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
   slot='counts', mode = 'average', min_cells=100,
   max_shared=15,
@@ -241,6 +255,13 @@ MetacellsByGroups <- function(
     stop(paste0("Invalid reduction (", reduction, "). Reductions in Seurat object: ", paste(names(seurat_obj@reductions), collapse=', ')))
   }
 
+  # check assay:
+  if(is.null(assay)){
+    assay <- DefaultAssay(seurat_obj)
+  } else if(!(assay %in% names(seurat_obj@assays))){
+    stop(paste0('Assay ', assay, ' not found in seurat_obj. Select a valid assay: ', paste0(names(seurat_obj@assays), collapse = ', ')))
+  }
+
   # subset seurat object by seleted cells:
   if(!is.null(cells.use)){
     seurat_full <- seurat_obj
@@ -261,9 +282,9 @@ MetacellsByGroups <- function(
   groupings <- groupings[order(groupings)]
 
   # remove groups that are too small:
-  # TODO: add a warning to let the user know that some groups are skipped?
+  group_counts <- table(seurat_obj$metacell_grouping) >= min_cells
+  warning(paste0("Removing the following groups that did not meet min_cells: ", paste(names(group_counts)[group_counts], collapse=', ')))
   groupings <- groupings[table(seurat_obj$metacell_grouping) >= min_cells]
-  print(groupings)
 
   if(length(groupings) == 0 ){
     stop("No groups met the min_cells requirement.")
@@ -284,8 +305,6 @@ MetacellsByGroups <- function(
   seurat_list <- lapply(groupings, function(x){seurat_obj[,seurat_obj$metacell_grouping == x]})
   names(seurat_list) <- groupings
 
-  print(meta_list)
-
   # construct metacells
   metacell_list <- mapply(
     ConstructMetacells,
@@ -296,6 +315,12 @@ MetacellsByGroups <- function(
   )
   names(metacell_list) <- groupings
 
+
+  # remove NULL
+  remove <- which(sapply(metacell_list, is.null))
+  if(length(remove) > 1){
+    metacell_list <- metacell_list[-remove]
+  }
   # get the run stats:
   run_stats <- as.data.frame(do.call(rbind, lapply(metacell_list, function(x){x@misc$run_stats})))
   rownames(run_stats) <- 1:nrow(run_stats)

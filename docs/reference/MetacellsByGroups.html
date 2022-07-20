@@ -157,7 +157,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">MetacellsByGroups</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, group.by = c("seurat_clusters"), ident.group = "seurat_clusters", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 25, reduction = "pca", assay = "RNA", cells.use = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 25, reduction = "pca", assay = NULL, cells.use = NULL, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     slot = "counts", mode = "average", min_cells = 100, max_shared = 15, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     target_metacells = 1000, max_iter = 5000, verbose = FALSE, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL) </span>
@@ -178,6 +178,13 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid reduction (", reduction, "). Reductions in Seurat object: ", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             paste(names(seurat_obj@reductions), collapse = ", ")))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(assay)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         assay &lt;- DefaultAssay(seurat_obj)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else if (!(assay %in% names(seurat_obj@assays))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Assay ", assay, " not found in seurat_obj. Select a valid assay: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             paste0(names(seurat_obj@assays), collapse = ", ")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(cells.use)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, cells.use]</span>
@@ -195,9 +202,11 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- unique(seurat_obj$metacell_grouping)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[order(groupings)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     group_counts &lt;- table(seurat_obj$metacell_grouping) &gt;= min_cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     warning(paste0("Removing the following groups that did not meet min_cells: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         paste(names(group_counts)[group_counts], collapse = ", ")))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[table(seurat_obj$metacell_grouping) &gt;= </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         min_cells]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(groupings)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(groupings) == 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("No groups met the min_cells requirement.")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -213,7 +222,6 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj[, seurat_obj$metacell_grouping == x]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(seurat_list) &lt;- groupings</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(meta_list)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_list &lt;- mapply(ConstructMetacells, seurat_obj = seurat_list, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         name = groupings, meta = meta_list, MoreArgs = list(k = k, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             reduction = reduction, assay = assay, slot = slot, </span>
@@ -221,6 +229,10 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             max_iter = max_iter, target_metacells = target_metacells, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             verbose = verbose, wgcna_name = wgcna_name))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(metacell_list) &lt;- groupings</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     remove &lt;- which(sapply(metacell_list, is.null))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(remove) &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_list &lt;- metacell_list[-remove]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     run_stats &lt;- as.data.frame(do.call(rbind, lapply(metacell_list, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         function(x) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             x@misc$run_stats</span>
@@ -243,7 +255,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc1217b95b0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffc2761f240&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

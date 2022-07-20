@@ -210,7 +210,15 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     shared_old &lt;- shared</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cell_sample &lt;- nn_map[chosen, ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     combs &lt;- combn(nrow(cell_sample), 2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     combs &lt;- tryCatch({</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         combn(nrow(cell_sample), 2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }, error = function(cond) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         return(NA)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (any(is.na(combs))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         warning("Metacell failed")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         return(NULL)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     shared &lt;- apply(combs, 2, function(x) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         k2 - length(unique(as.vector(cell_sample[x, ])))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
@@ -233,7 +241,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(new_exprs) &lt;- paste0(name, "_", 1:ncol(new_exprs))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(cell_sample) &lt;- paste0(name, "_", 1:ncol(new_exprs))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(cell_sample) &lt;- paste0("knn_", 1:ncol(cell_sample))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj &lt;- CreateSeuratObject(counts = new_exprs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj &lt;- CreateSeuratObject(counts = new_exprs, assay = assay)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared &lt;- max(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     median_shared &lt;- median(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mean_shared &lt;- mean(shared)</span>
@@ -267,7 +275,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc1194dd3d0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffc2bc01b50&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

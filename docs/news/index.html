@@ -95,6 +95,22 @@
     </div>
 
     <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.1.9007" id="hdwgcna-0119007-2022-07-20">hdWGCNA 0.1.1.9007 (2022-07-20)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119007-2022-07-20"></a></h2>
+<div class="section level3">
+<h3 id="added-0-1-1-9007">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9007"></a></h3>
+<ul><li>None</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-0-1-1-9007">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9007"></a></h3>
+<ul><li>New warning message in <code>MetacellsByGroups</code> if there are any groups that are excluded by <code>min_cells</code>.</li>
+<li>Assay in Metacell seurat object is now the same as the assay supplied to <code>MetacellsByGroups</code>, instead of the default “RNA”.</li>
+<li>
+<code>ModuleEigengenes</code> takes <code>assay</code> as an argument, clears up some issues with <code>RunHarmony</code>.</li>
+<li>
+<code>ModuleEigengenes</code> doesn’t require a “counts” slot to be present in the given assay, but now it throws an error if the normalized data slot is missing.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.1.9006" id="hdwgcna-0119006-2022-07-14">hdWGCNA 0.1.1.9006 (2022-07-14)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119006-2022-07-14"></a></h2>
 <div class="section level3">
 <h3 id="added-0-1-1-9006">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9006"></a></h3>

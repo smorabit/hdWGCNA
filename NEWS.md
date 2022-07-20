@@ -1,3 +1,13 @@
+# hdWGCNA 0.1.1.9007 (2022-07-20)
+## Added
+- None
+
+## Changes
+- New warning message in `MetacellsByGroups` if there are any groups that are excluded by `min_cells`.
+- Assay in Metacell seurat object is now the same as the assay supplied to `MetacellsByGroups`, instead of the default "RNA".
+- `ModuleEigengenes` takes `assay` as an argument, clears up some issues with `RunHarmony`.
+- `ModuleEigengenes` doesn't require a "counts" slot to be present in the given assay, but now it throws an error if the normalized data slot is missing.
+
 # hdWGCNA 0.1.1.9006 (2022-07-14)
 ## Added
 - None
