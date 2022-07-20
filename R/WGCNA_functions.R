@@ -527,7 +527,7 @@ ComputeModuleEigengene <- function(
 
   # compute average expression of each gene
   cur_expr <- GetAssayData(cur_seurat, slot='data')
-  expr <- t(cur_expr)
+  expr <- Matrix::t(cur_expr)
   averExpr <- Matrix::rowSums(expr) / ncol(expr)
 
   # run PCA with Seurat function
