@@ -10,7 +10,7 @@ MetacellsByGroups(
   ident.group = "seurat_clusters",
   k = 25,
   reduction = "pca",
-  assay = "RNA",
+  assay = NULL,
   cells.use = NULL,
   slot = "counts",
   mode = "average",

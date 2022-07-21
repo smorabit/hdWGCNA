@@ -1,6 +1,6 @@
 title: hdWGCNA
 
-url: https://smorabit.github.io/scWGCNA/
+url: https://smorabit.github.io/hdWGCNA/
 
 template:
   params:
@@ -78,6 +78,8 @@ reference:
     - '`TestSoftPowersConsensus`'
     - '`PlotSoftPowers`'
     - '`ConstructNetwork`'
+    - '`ModuleEigengenes`'
+    - '`ModuleConnectivity`'
 - title: Network Visualization
   desc: Functions for visualizing the co-expression network
   contents:
@@ -95,33 +97,82 @@ reference:
     - '`OverlapBarPlot`'
     - '`OverlapDotPlot`'
 - title: Plotting
-  desc: Functions for generating plots with scWGCNA
+  desc: Functions for generating plots with hdWGCNA
   contents:
-  - '`ModuleFeaturePlot`'
+    - '`ModuleFeaturePlot`'
 - title: Module Preservation
   desc: Functions for performing module preservation analysis
   contents:
-  - '`ModulePreservation`'
-  - '`PlotModulePreservation`'
+    - '`ModulePreservation`'
+    - '`PlotModulePreservation`'
 - title: Module Trait Correlation
   desc: Functions for performing module trait correlation analysis
   contents:
-  - '`ModuleTraitCorrelation`'
-  - '`PlotModuleTraitCorrelation`'
+    - '`ModuleTraitCorrelation`'
+    - '`PlotModuleTraitCorrelation`'
+- title: Getters and setters
+  desc: Functions to retrieve and set the values for various attributes
+  contents:
+    - '`SetActiveWGCNA`'
+    - '`GetActiveWGCNA`'
+    - '`SetMetacellObject`'
+    - '`GetMetacellObject`'
+    - '`SetWGCNAGenes`'
+    - '`GetWGCNAGenes`'
+    - '`SetDatExpr`'
+    - '`GetDatExpr`'
+    - '`SetMultiExpr`'
+    - '`GetMultiExpr`'
+    - '`SetWGCNAParams`'
+    - '`GetWGCNAParams`'
+    - '`SetPowerTable`'
+    - '`GetPowerTable`'
+    - '`SetNetworkData`'
+    - '`GetNetworkData`'
+    - '`SetModules`'
+    - '`GetModules`'
+    - '`GetHubGenes`'
+    - '`SetMEs`'
+    - '`GetMEs`'
+    - '`SetMELoadings`'
+    - '`GetMELoadings`'
+    - '`SetEnrichrTable`'
+    - '`GetEnrichrTable`'
+    - '`SetModuleScores`'
+    - '`GetModuleScores`'
+    - '`GetTOM`'
+    - '`SetModuleUMAP`'
+    - '`GetModuleUMAP`'
+    - '`SetModuleTraitCorrelation`'
+    - '`GetModuleTraitCorrelation`'
+    - '`SetModulePreservation`'
+    - '`GetModulePreservation`'
+    - '`SetMotifs`'
+    - '`GetMotifs`'
+    - '`SetMotifMatrix`'
+    - '`GetMotifMatrix`'
+    - '`SetPFMList`'
+    - '`GetPFMList`'
+    - '`SetMotifTargets`'
+    - '`GetMotifTargets`'
+    - '`SetMotifOverlap`'
+    - '`GetMotifOverlap`'
+    - '`SetMotifScores`'
+    - '`GetMotifScores`'
 - title: Seurat wrappers
   desc: Wrapper functions to run Seurat commands on the metacell data
   contents:
-  - '`NormalizeMetacells`'
-  - '`ScaleMetacells`'
-  - '`RunPCAMetacells`'
-  - '`RunHarmonyMetacells`'
-  - '`RunUMAPMetacells`'
-  - '`DimPlotMetacells`'
-- title: Other
-  desc: Other functions
+    - '`NormalizeMetacells`'
+    - '`ScaleMetacells`'
+    - '`RunPCAMetacells`'
+    - '`RunHarmonyMetacells`'
+    - '`RunUMAPMetacells`'
+    - '`DimPlotMetacells`'
+- title: Customization
+  desc: Customization functions
   contents:
-    -'`ResetModuleColors`'
-    -'`ResetModuleNames`'
+    - '`ResetModuleColors`'
+    - '`ResetModuleNames`'
 
 deploy:
   install_metadata: true

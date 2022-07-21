@@ -13,6 +13,7 @@ ComputeModuleEigengene(
   vars.to.regress = NULL,
   scale.model.use = "linear",
   pc_dim = 1,
+  assay = NULL,
   wgcna_name = NULL,
   ...
 )
@@ -31,6 +32,10 @@ ComputeModuleEigengene(
 \item{vars.to.regress}{character vector of variables in seurat_obj@meta.data to regress when running ScaleData}
 
 \item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
+
+\item{pc_dim}{Which PC to use as the module eigengene? Default to 1.}
+
+\item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
 
 \item{wgcna_name}{name of the WGCNA experiment}
 }

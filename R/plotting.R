@@ -572,7 +572,9 @@ ModuleFeaturePlot<- function(
     }
 
     # aspect ratio:
-    p <- p + coord_fixed(ratio = plot_ratio)
+    if(is.numeric(plot_ratio)){
+      p <- p + coord_fixed(ratio = plot_ratio)
+    }
 
     # UCell?
     if(!ucell){
@@ -834,10 +836,17 @@ ModuleNetworkPlot <- function(
   MEs <- GetMEs(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
 
+
+
   # using all modules?
   if(mods == 'all'){
     mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
+  }
+
+  # check if we have eigengene-based connectivities:
+  if(!all(paste0('kME_', as.character(mods)) %in% colnames(modules))){
+    stop('Eigengene-based connectivity (kME) not found. Did you run ModuleEigengenes and ModuleConnectivity?')
   }
 
   # create output folder

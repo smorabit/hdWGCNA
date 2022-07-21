@@ -7,9 +7,6 @@
 
 * This is the .yml configuration file for the actual pkgdown site:
 https://github.com/r-lib/pkgdown/blob/main/pkgdown/_pkgdown.yml
-  - idk how some things work, like I can't change author name??
-
-* The home page is just from the README.md. Not sure how to add more pages yet.
 
 
 Need to make function documentation before building the package!!!
@@ -30,7 +27,6 @@ in the .yml config file. Currently I have only put a few functions in each group
 so there's more I need to add. This is also nice since we can just easily ignore
 random helper functions.
 
-I have no idea how to deploy yet. I also have no idea how to customize it.
 
 The author info goes into the DESCRIPTION file, and the citation goes in inst/CITATION
 

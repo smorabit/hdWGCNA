@@ -197,16 +197,17 @@ SetDatExpr <- function(
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
 
-  if(is.null(assay)){
-    assay <- params$metacell_assay
-    warning(paste0('assay not specified, trying to use assay ', assay))
-  }
-
   # use metacells or whole seurat object?
   if(use_metacells){
     s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
   } else{
     s_obj <- seurat_obj
+  }
+
+
+  if(is.null(assay)){
+    assay <- DefaultAssay(s_obj)
+    warning(paste0('assay not specified, trying to use assay ', assay))
   }
 
   # check the assay:
@@ -257,7 +258,6 @@ SetDatExpr <- function(
     datExpr <- datExpr[,gene_list]
   }
 
-
   if(return_seurat){
 
     # update the WGCNA gene list:
@@ -301,7 +301,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
 #' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
-#' @param multi_groups A character vecrtor containing the names of
+#' @param multi_groups A character vecrtor containing the names of groups to select
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
 #' @keywords scRNA-seq
 #' @export
@@ -315,6 +315,8 @@ SetMultiExpr <- function(
   multi.group.by = NULL,
   multi_groups = NULL,
   wgcna_name=NULL,
+  assay=NULL,
+  slot='data',
   ...
 ){
 
@@ -322,7 +324,21 @@ SetMultiExpr <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # get the WGCNA genes:
+  params <- GetWGCNAParams(seurat_obj, wgcna_name)
   gene_names <- GetWGCNAGenes(seurat_obj, wgcna_name)
+
+  # use metacells or whole seurat object?
+  if(use_metacells){
+    s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  } else{
+    s_obj <- seurat_obj
+  }
+
+  # get assay
+  if(is.null(assay)){
+    assay <- DefaultAssay(s_obj)
+    warning(paste0('assay not specified, trying to use assay ', assay))
+  }
 
   # get the different groups present if not specified by the user:
   if(is.null(multi_groups)){
@@ -343,7 +359,10 @@ SetMultiExpr <- function(
       multi.group.by = multi.group.by,
       multi_group_name = x,
       return_seurat = FALSE,
-      wgcna_name = wgcna_name
+      use_metacells = use_metacells,
+      wgcna_name = wgcna_name,
+      assay = assay,
+      slot = slot
     ) %>% as.matrix
   })
   datExpr_list
@@ -804,6 +823,11 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
 
   # load TOM
   tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
+
+  if(!file.exists(tom_files[[1]])){
+    stop(paste0("TOM file ", tom_files[[1]], ' not found. Please update path to TOM file.'))
+  }
+
   load(tom_files[[1]])
 
   TOM <- as.matrix(consTomDS)

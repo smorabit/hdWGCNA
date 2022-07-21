@@ -1,3 +1,12 @@
+# hdWGCNA 0.1.1.9008 (2022-07-21)
+## Added
+- New tutorial for consensus co-expression network analysis.
+
+## Changes
+- `ModuleNetworkPlot` and `RunModuleUMAP` now checks if `ModuleConnectivity` has been computed in order to throw a more informative error.
+- `GetTOM` checks if the TOM file exists in order to throw a more informative error.
+
+
 # hdWGCNA 0.1.1.9007 (2022-07-20)
 ## Added
 - None

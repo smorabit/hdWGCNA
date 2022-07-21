@@ -174,7 +174,7 @@ SetupForWGCNA <- function(
 TestSoftPowers <- function(
   seurat_obj,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  setDatExpr = TRUE,
+  setDatExpr = FALSE,
   use_metacells = TRUE,
   group.by=NULL, group_name=NULL
 ){
@@ -221,7 +221,7 @@ TestSoftPowers <- function(
 TestSoftPowersConsensus <- function(
   seurat_obj,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  setDatExpr = TRUE,
+  setDatExpr = FALSE,
   use_metacells = TRUE,
   group.by=NULL, group_name=NULL,
   multi.group.by = NULL,
@@ -291,7 +291,7 @@ ConstructNetwork <- function(
   seurat_obj, soft_power=NULL, min_power=3,
   tom_outdir="TOM",
   use_metacells=TRUE,
-  setDatExpr=TRUE, group.by=NULL,
+  setDatExpr=FALSE, group.by=NULL,
   group_name=NULL,
   tom_name = NULL,
   consensus = FALSE,
@@ -308,6 +308,22 @@ ConstructNetwork <- function(
 ){
 
   wgcna_name <- seurat_obj@misc$active_wgcna
+
+
+  # suffix for the tom
+  if(is.null(tom_name)){
+    tom_name <- gsub(' ', '_', group_name)
+  }
+
+  # tom file name
+  renamed <- paste0(tom_outdir, '/', tom_name, '_TOM.rda')
+  if(file.exists(renamed)){
+    if(overwrite_tom){
+      warning(paste0('Overwriting TOM ', renamed))
+    } else{
+      stop(paste0("TOM ", renamed, " already exists. Set overwrite_tom = TRUE or change tom_name to proceed."))
+    }
+  }
 
   # constructing network on multiple datasets (consensus WGCNA)
   if(consensus){
@@ -349,21 +365,21 @@ ConstructNetwork <- function(
     if(is.null(group_name)){
       group_name <- 'all'
     }
-
-    # suffix for the tom
-    if(is.null(tom_name)){
-      tom_name <- gsub(' ', '_', group_name)
-    }
-
-    # tom file name
-    renamed <- paste0(tom_outdir, '/', tom_name, '_TOM.rda')
-    if(file.exists(renamed)){
-      if(overwrite_tom){
-        warning(paste0('Overwriting TOM ', renamed))
-      } else{
-        stop(paste0("TOM ", renamed, " already exists. Set overwrite_tom = TRUE or change tom_name to proceed."))
-      }
-    }
+    #
+    # # suffix for the tom
+    # if(is.null(tom_name)){
+    #   tom_name <- gsub(' ', '_', group_name)
+    # }
+    #
+    # # tom file name
+    # renamed <- paste0(tom_outdir, '/', tom_name, '_TOM.rda')
+    # if(file.exists(renamed)){
+    #   if(overwrite_tom){
+    #     warning(paste0('Overwriting TOM ', renamed))
+    #   } else{
+    #     stop(paste0("TOM ", renamed, " already exists. Set overwrite_tom = TRUE or change tom_name to proceed."))
+    #   }
+    # }
 
     nSets = 1
     setLabels = gsub(' ', '_', group_name)
@@ -898,7 +914,7 @@ ModuleConnectivity <- function(
   #modules <- subset(modules, module != 'grey')
   #MEs <- MEs[,colnames(MEs) != 'grey']
 
-  if(is.null(assay)){assay <- seurat_obj@active.assay}
+  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
 
   if(!is.null(group.by)){
     cells.use <- seurat_obj@meta.data %>% subset(get(group.by) %in% group_name) %>% rownames
@@ -1672,6 +1688,11 @@ RunModuleUMAP <- function(
   # get modules,
   modules <- GetModules(seurat_obj, wgcna_name)
   mods <- levels(modules$module)
+
+  # check if we have eigengene-based connectivities:
+  if(!all(paste0('kME_', as.character(mods)) %in% colnames(modules))){
+    stop('Eigengene-based connectivity (kME) not found. Did you run ModuleEigengenes and ModuleConnectivity?')
+  }
 
   if(exclude_grey){
     mods <- mods[mods != 'grey']

@@ -11,6 +11,7 @@ ModuleEigengenes(
   vars.to.regress = NULL,
   scale.model.use = "linear",
   verbose = TRUE,
+  assay = NULL,
   pc_dim = 1,
   wgcna_name = NULL,
   ...
@@ -28,6 +29,10 @@ ModuleEigengenes(
 \item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
 
 \item{verbose}{logical indicating whether to print messages}
+
+\item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
+
+\item{pc_dim}{Which PC to use as the module eigengene? Default to 1.}
 
 \item{wgcna_name}{name of the WGCNA experiment}
 }

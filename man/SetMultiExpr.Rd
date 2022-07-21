@@ -12,6 +12,8 @@ SetMultiExpr(
   multi.group.by = NULL,
   multi_groups = NULL,
   wgcna_name = NULL,
+  assay = NULL,
+  slot = "data",
   ...
 )
 }

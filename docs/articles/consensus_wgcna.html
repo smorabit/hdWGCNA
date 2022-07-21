@@ -20,7 +20,7 @@
 <script src="../pkgdown.js"></script><meta property="og:title" content="Consensus network analysis">
 <meta property="og:description" content="Tutorial for performing consensus co-expression network analysis.
 ">
-<meta property="og:image" content="https://smorabit.github.io/scWGCNA/logo.png">
+<meta property="og:image" content="https://smorabit.github.io/hdWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9006</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9008</span>
       </span>
     </div>
 
@@ -137,8 +137,8 @@
 
     
     
-<p><strong><em>Tutorial Under Construction</em></strong></p>
-<p>Load the snRNA-seq data and the required libraries:</p>
+<p>In this tutorial, we perform <strong>consensus</strong> co-expression network analysis using hdWGCNA. Consensus co-expression network analysis differs from the standard co-expression network analysis workflow by constructing individual networks across distinct datasets, and then computing an integrated co-expression network. This framework can be used to identify networks that are conserved across a variety of biological conditions, and it can also be used as a way to construct a unified network from any number of different datasets. Here, we provide two examples of co-expression network analysis; <strong>1</strong>: consensus network analysis of astrocytes between biological sex in the Zhou <em>et al</em>. snRNA-seq dataset; <strong>2</strong>: cross-species consensus network analysis of astrocytes from mouse and human snRNA-seq datasets.</p>
+<p>First we load the required R libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
@@ -150,7 +150,7 @@
 
 <span class="co"># co-expression network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/" class="external-link">hdWGCNA</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span>
 
 <span class="co"># network analysis &amp; visualization package:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
@@ -159,42 +159,419 @@
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># set random seed for reproducibility</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
-
-<span class="co"># load the Zhou et al snRNA-seq dataset</span>
-<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
-<p>Setup data:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># just run SetMultiExpr by itself</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMultiExpr.html">SetMultiExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  group_name <span class="op">=</span> <span class="st">"INH"</span>,
-  group.by <span class="op">=</span> <span class="st">"cell_type"</span>,
-  multi.group.by <span class="op">=</span> <span class="st">"Sex"</span>,
-  multi_groups <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
-<p>Run the consensus network</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  soft_power<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">8</span><span class="op">)</span>, <span class="co"># soft power can be a single number of a vector with a value for each datExpr in multiExpr</span>
-  consensus<span class="op">=</span><span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
-<p>MEs</p>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></code></pre></div>
+<p>Download the tutorial dataset:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
+<div class="section level2">
+<h2 id="example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors">Example 1: Consensus network analysis of astrocytes from male and female donors<a class="anchor" aria-label="anchor" href="#example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors"></a>
+</h2>
+<p>In this section, we perform consensus network analysis between male and female donors from the Zhou <em>et al.</em> snRNA-seq dataset. We will also follow the “standard” workflow (not consensus), and compare the resulting gene module assignments.</p>
+<p>First, we setup the seurat object for hdWGCNA and we construct metacells. This part of the workflow is the same as the standard hdWGCNA workflow, <strong>but we must include the relevant metadata for consensus network analysis when running <code>MetacellsByGroups</code></strong>. This Seurat object has a metadata column called <code>msex</code>, which contains a 0 or 1 depending on the sex of the donor where a given cell originated from, so we must include <code>msex</code> in our <code>group.by</code> list within <code>MetacellsByGroups</code> in order to run consensus network analysis.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">'data/Zhou_control.rds'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">SetupForWGCNA</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_select =</span> <span class="st">"fraction"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">fraction =</span> <span class="fl">0.05</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">wgcna_name =</span> <span class="st">'ASC_consensus'</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">MetacellsByGroups</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">seurat_obj =</span> seurat_obj,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">group.by =</span> <span class="fu">c</span>(<span class="st">"cell_type"</span>, <span class="st">"Sample"</span>, <span class="st">'msex'</span>),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">ident.group =</span> <span class="st">'cell_type'</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">25</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_shared =</span> <span class="dv">12</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_cells =</span> <span class="dv">50</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_metacells =</span> <span class="dv">250</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">reduction =</span> <span class="st">'harmony'</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">NormalizeMetacells</span>(seurat_obj)</span></code></pre></div>
+<p>Next we have to set up the expression dataset for consensus network analysis. In the standard workflow, we use the function <code>SetDatExpr</code> to set up the expression matrix that will be used for network analyis. Instead of <code>SetDatExpr</code>, here we use <code>SetMultiExpr</code> to set up a separate expression matrix for male and female donors. This allows us to perform network analysis individually on these expression matrices.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># compute all MEs in the full single-cell 21  dataset</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span>
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMultiExpr.html">SetMultiExpr</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
-  group.by.vars<span class="op">=</span><span class="st">"Sample"</span>
+  group_name <span class="op">=</span> <span class="st">"ASC"</span>,
+  group.by <span class="op">=</span> <span class="st">"cell_type"</span>,
+  multi.group.by <span class="op">=</span><span class="st">"msex"</span>,
+  multi_groups <span class="op">=</span> <span class="cn">NULL</span> <span class="co"># this parameter can be used to select a subset of groups in the multi.group.by column</span>
+<span class="op">)</span></code></pre></div>
+<p>Now that we have expression matrices for male and female donors, we must identify an appropriate soft power threshold for each of these matrices separately. Instead of the <code>TestSoftPowers</code> function which we use in the standard hdWGCNA workflow, we use <code>TestSoftPowersConsensus</code>, which will perform the test for each of the expression matrices. When we plot the results with <code>PlotSoftPowers</code>, we get a nested list of plots for each dataset, and we can assemble the plots using <code>patchwork</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run soft power test</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowersConsensus.html">TestSoftPowersConsensus</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># generate plots</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># get just the scale-free topology fit plot for each group</span>
+<span class="va">consensus_groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">msex</span><span class="op">)</span>
+<span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">consensus_groups</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span>
+  <span class="va">cur_group</span> <span class="op">&lt;-</span> <span class="va">consensus_groups</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
+  <span class="va">plot_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'Sex: '</span>, <span class="va">cur_group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/sex_consensus_ASC_softpowers.png" width="800" height="900"></p>
+<p>Now we construct the co-expression network and identify gene modules using the <code>ConstructNetwork</code> function, making sure to specify <code>consensus=TRUE</code>. Indicating <code>consensus=TRUE</code> tells hdWGCNA to construct a separate network for each expression matrix, followed by integrating the networks and identifying gene modules. Depending on the results of <code>TestSoftPowersConsensus</code>, we can supply a different soft power threshold for each dataset.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># build consensus network</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  soft_power<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>,<span class="fl">5</span><span class="op">)</span>, <span class="co"># soft power can be a single number of a vector with a value for each datExpr in multiExpr</span>
+  consensus<span class="op">=</span><span class="cn">TRUE</span>,
+  tom_name <span class="op">=</span> <span class="st">"Sex_Consensus"</span>
 <span class="op">)</span>
 
-<span class="co"># compute module connectivity:</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<span class="co"># plot the dendogram</span>
+<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Sex consensus dendrogram'</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/Sex_dendro.png" width="800" height="900"></p>
+<p>We can compare the consensus network results to the standard hdWGCNA workflow.</p>
+<details><summary>
+standard hdWGCNA workflow
+</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># setup new hdWGCNA experiment</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  gene_select <span class="op">=</span> <span class="st">"fraction"</span>,
+  fraction <span class="op">=</span> <span class="fl">0.05</span>,
+  wgcna_name <span class="op">=</span> <span class="st">'ASC_standard'</span>,
+  metacell_location <span class="op">=</span> <span class="st">'ASC'</span> <span class="co"># use the same metacells</span>
+<span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># construct network</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_obj</span>,group_name <span class="op">=</span> <span class="st">"ASC"</span>,group.by <span class="op">=</span> <span class="st">"cell_type"</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span>,soft_power<span class="op">=</span><span class="fl">8</span>, tom_name <span class="op">=</span> <span class="st">"ASC_standard"</span><span class="op">)</span>
+
+<span class="co"># plot the dendrogram</span>
+<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'ASC standard Dendrogram'</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/ASC_all_dendro.png" width="800" height="900"></p>
+</details><p>We can plot the gene module assignments from the standard workflow under those from the consensus analysis in the same dendrogram plot as a rough comparison.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get both sets of modules</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="st">'ASC_standard'</span><span class="op">)</span>
+<span class="va">consensus_modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="st">'ASC'</span><span class="op">)</span>
+
+<span class="co"># get consensus dendrogram</span>
+<span class="va">net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetNetworkData.html">GetNetworkData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, wgcna_name<span class="op">=</span><span class="st">"ASC"</span><span class="op">)</span>
+<span class="va">dendro</span> <span class="op">&lt;-</span> <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
+
+<span class="co"># get the gene and module color for consensus</span>
+<span class="va">consensus_genes</span> <span class="op">&lt;-</span> <span class="va">consensus_modules</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="va">consensus_colors</span> <span class="op">&lt;-</span> <span class="va">consensus_modules</span><span class="op">$</span><span class="va">color</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">consensus_colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">consensus_genes</span>
+
+<span class="co"># get the gene and module color for standard</span>
+<span class="va">genes</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="va">colors</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">$</span><span class="va">color</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">genes</span>
+
+<span class="co"># re-order the genes to match the consensus genes</span>
+<span class="va">colors</span> <span class="op">&lt;-</span> <span class="va">colors</span><span class="op">[</span><span class="va">consensus_genes</span><span class="op">]</span>
+
+<span class="co"># set up dataframe for plotting</span>
+<span class="va">color_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>
+  consensus <span class="op">=</span> <span class="va">consensus_colors</span>,
+  standard <span class="op">=</span> <span class="va">colors</span>
+<span class="op">)</span>
+
+<span class="co"># plot dendrogram using WGCNA function</span>
+<span class="fu">WGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/plotDendroAndColors.html" class="external-link">plotDendroAndColors</a></span><span class="op">(</span>
+  <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,
+  <span class="va">color_df</span>,
+  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
+  dendroLabels <span class="op">=</span> <span class="cn">FALSE</span>, hang <span class="op">=</span> <span class="fl">0.03</span>, addGuide <span class="op">=</span> <span class="cn">TRUE</span>, guideHang <span class="op">=</span> <span class="fl">0.05</span>,
+  main <span class="op">=</span> <span class="st">"Sex consensus dendrogram"</span>,
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/Sex_dendro_compare.png" width="800" height="900"></p>
+<p>We can see that many co-expression modules are identified by both the consensus and standard workflows, but there are also modules that are unique to each workflow. Now we can perform any of the downstream analysis tasks using the consensus network, for example network visualization:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/reshape" class="external-link">reshape2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
+
+<span class="co"># change active hdWGCNA experiment to consensus</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="st">'ASC_consensus'</span><span class="op">)</span>
+
+<span class="co"># compute eigengenes and connectivity</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group_name <span class="op">=</span><span class="st">'ASC'</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span><span class="op">)</span>
+
+<span class="co"># visualize network with semi-supervised UMAP</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_hubs <span class="op">=</span> <span class="fl">5</span>,
+  n_neighbors<span class="op">=</span><span class="fl">5</span>,
+  min_dist<span class="op">=</span><span class="fl">0.1</span>,
+  spread<span class="op">=</span><span class="fl">2</span>,
+  wgcna_name <span class="op">=</span> <span class="st">'ASC'</span>,
+  target_weight<span class="op">=</span><span class="fl">0.05</span>,
+  supervised<span class="op">=</span><span class="cn">TRUE</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.5</span>,
+  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
+  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>,
+  edge_prop<span class="op">=</span><span class="fl">0.075</span>,
+  label_hubs<span class="op">=</span><span class="fl">0</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/Sex_consensus_hubgene_umap_igraph.png" width="600" height="900"></p>
+</div>
+<div class="section level2">
+<h2 id="example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples">Example 2: Cross-species consensus network analysis of astrocytes from mouse and human samples<a class="anchor" aria-label="anchor" href="#example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples"></a>
+</h2>
+<p>In this section, we cover a more complex example of consensus network analysis using astrocytes from mouse and human cortex snRNA-seq datasets. The main difference between this section and Example 1 is that here we start from two different Seurat objects, so this section is more applicable for those who wish to perform consensus network analysis from two or more different datasets. For the cross-species analysis, we require a table that maps gene names between the different species, so we can convert the gene names such that they are consistent in both datasets. We provide this table for this analysis, which we obtained from <a href="http://uswest.ensembl.org/biomart/martview/604e1e1ec3cd6317d61fbae53cd6a6f1" class="external-link">BioMart</a>.</p>
+<p>First, download the human and mouse datasets.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020_mouse.rds</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/hg38_mm10_orthologs_2021.txt</span></code></pre></div>
+<div class="section level3">
+<h3 id="formatting-mouse-and-human-datasets">Formatting mouse and human datasets<a class="anchor" aria-label="anchor" href="#formatting-mouse-and-human-datasets"></a>
+</h3>
+<p>Next, we load the data, convert the mouse gene names to human, and construct a merged Seurat object. Note that when using datasets from different sources, metadata columns may be named differently, so be careful to ensure that any relevant metadata is properly renamed.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load mouse &lt;-&gt; human gene name table:</span>
+<span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"hg38_mm10_orthologs_2021.txt"</span>, sep<span class="op">=</span><span class="st">'\t'</span>, header<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span><span class="op">)</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'hg38_id'</span>, <span class="st">'mm10_id'</span>, <span class="st">'mm10_name'</span>, <span class="st">'hg38_name'</span><span class="op">)</span>
+
+<span class="co"># remove entries that don't have an ortholog</span>
+<span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span>, <span class="va">mm10_name</span> <span class="op">!=</span> <span class="st">''</span> <span class="op">&amp;</span> <span class="va">hg38_name</span> <span class="op">!=</span> <span class="st">''</span><span class="op">)</span>
+
+<span class="co"># show what the table looks like</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Show table
+</summary><pre><code>hg38_id            mm10_id mm10_name hg38_name
+6  ENSG00000198888 ENSMUSG00000064341    mt-Nd1    MT-ND1
+10 ENSG00000198763 ENSMUSG00000064345    mt-Nd2    MT-ND2
+16 ENSG00000198804 ENSMUSG00000064351    mt-Co1    MT-CO1
+19 ENSG00000198712 ENSMUSG00000064354    mt-Co2    MT-CO2
+21 ENSG00000228253 ENSMUSG00000064356   mt-Atp8   MT-ATP8
+22 ENSG00000198899 ENSMUSG00000064357   mt-Atp6   MT-ATP6</code></pre>
+</details><p>The <code>hg38_mm10_genes</code> table contains a gene ID and gene symbol (name) for mm10 and hg38, which we can use to translate the gene names in the mouse dataset to their human orthologs.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load seurat objects</span>
+<span class="va">seurat_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020_mouse.rds'</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020.rds'</span><span class="op">)</span>
+
+<span class="co"># re-order the gene table by mouse genes</span>
+<span class="va">mm10_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span><span class="op">)</span>
+<span class="va">hg38_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">hg38_name</span><span class="op">)</span>
+<span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="va">hg38_mm10_genes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">mm10_genes</span>, <span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span><span class="op">)</span>,<span class="op">]</span>
+
+<span class="co"># get the mouse counts matrix, keep only genes with a human ortholog</span>
+<span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
+<span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="va">X_mouse</span><span class="op">[</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span>,<span class="op">]</span>
+
+<span class="co"># rename mouse genes to human ortholog</span>
+<span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>, <span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span><span class="op">)</span>
+<span class="va">converted_genes</span> <span class="op">&lt;-</span> <span class="va">hg38_mm10_genes</span><span class="op">[</span><span class="va">ix</span>,<span class="st">'hg38_name'</span><span class="op">]</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">converted_genes</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>, <span class="st">'_mouse'</span><span class="op">)</span>
+
+<span class="co"># get the human counts matrix</span>
+<span class="va">X_human</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
+
+<span class="co"># what genes are in common?</span>
+<span class="va">genes_common</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span><span class="op">)</span>
+<span class="va">X_human</span> <span class="op">&lt;-</span> <span class="va">X_human</span><span class="op">[</span><span class="va">genes_common</span>,<span class="op">]</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span>, <span class="st">'_human'</span><span class="op">)</span>
+
+<span class="co"># make sure to only keep genes that are common in the mouse and human datasets</span>
+<span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="va">X_mouse</span><span class="op">[</span><span class="va">genes_common</span>,<span class="op">]</span>
+
+<span class="co"># set up metadata table for mouse</span>
+<span class="va">mouse_meta</span> <span class="op">&lt;-</span> <span class="va">seurat_mouse</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Sample.ID</span>, <span class="va">Wt.Tg</span>, <span class="va">Age</span>, <span class="va">Cell.Types</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Sample<span class="op">=</span><span class="va">Sample.ID</span>, cell_type<span class="op">=</span><span class="va">Cell.Types</span>, condition<span class="op">=</span><span class="va">Wt.Tg</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mouse_meta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>
+
+<span class="co"># set up metadata table for mouse</span>
+<span class="va">human_meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Sample</span>, <span class="va">group</span>, <span class="va">age_death</span>, <span class="va">cell_type</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>condition<span class="op">=</span><span class="va">group</span>, Age<span class="op">=</span><span class="va">age_death</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">human_meta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span>
+
+<span class="co"># make mouse seurat obj</span>
+<span class="va">seurat_m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_mouse</span>, meta <span class="op">=</span> <span class="va">mouse_meta</span><span class="op">)</span>
+<span class="va">seurat_h</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_human</span>, meta <span class="op">=</span> <span class="va">human_meta</span><span class="op">)</span>
+
+<span class="co"># merge:</span>
+<span class="va">seurat_m</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="st">'mouse'</span>
+<span class="va">seurat_h</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="st">'human'</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">seurat_m</span>, <span class="va">seurat_h</span><span class="op">)</span></code></pre></div>
+<p>We run the Seurat workflow to process this dataset, using Harmony to integrate cells across species.</p>
+<details><summary>
+Code
+</summary><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">seurat_merged</span>, nfeatures<span class="op">=</span><span class="fl">3000</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu">RunHarmony</span><span class="op">(</span><span class="va">seurat_merged</span>, group.by.vars <span class="op">=</span> <span class="st">'Species'</span>, reduction<span class="op">=</span><span class="st">'pca'</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
+
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">seurat_merged</span>, reduction<span class="op">=</span><span class="st">'harmony'</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">30</span>, min.dist<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span>
+
+<span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_merged</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, split.by<span class="op">=</span><span class="st">'Species'</span>, raster<span class="op">=</span><span class="cn">FALSE</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/umap_cross_species.png" width="600" height="900"></p>
+</details>
+</div>
+<div class="section level3">
+<h3 id="consensus-network-analysis">Consensus network analysis<a class="anchor" aria-label="anchor" href="#consensus-network-analysis"></a>
+</h3>
+<p>Now we have a Seurat object that is ready for consensus network analysis. We perform consensus network analysis with hdWGCNA using a similar approach as in Example 1.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  gene_select <span class="op">=</span> <span class="st">"fraction"</span>,
+  fraction <span class="op">=</span> <span class="fl">0.05</span>,
+  wgcna_name <span class="op">=</span> <span class="st">'ASC_consensus'</span>
+<span class="op">)</span>
+
+<span class="co"># construct metacells:</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span>, <span class="st">'Species'</span><span class="op">)</span>,
+  k <span class="op">=</span> <span class="fl">25</span>,
+  max_shared <span class="op">=</span> <span class="fl">12</span>,
+  min_cells <span class="op">=</span> <span class="fl">50</span>,
+  target_metacells <span class="op">=</span> <span class="fl">250</span>,
+  reduction <span class="op">=</span> <span class="st">'harmony'</span>,
+  ident.group <span class="op">=</span> <span class="st">'cell_type'</span>
+<span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+
+<span class="co"># setup expression matrices for each species in astrocytes</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMultiExpr.html">SetMultiExpr</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  group_name <span class="op">=</span> <span class="st">"ASC"</span>,
+  group.by <span class="op">=</span> <span class="st">"cell_type"</span>,
+  multi.group.by <span class="op">=</span><span class="st">"Species"</span>,
+  multi_groups <span class="op">=</span> <span class="cn">NULL</span>
+<span class="op">)</span>
+
+<span class="co"># identify soft power thresholds</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowersConsensus.html">TestSoftPowersConsensus</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+
+<span class="co"># plot soft power results</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+<span class="va">consensus_groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span>
+<span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">consensus_groups</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span>
+  <span class="va">cur_group</span> <span class="op">&lt;-</span> <span class="va">consensus_groups</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
+  <span class="va">plot_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">cur_group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
+
+<span class="co"># consensus network analysis</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  soft_power<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">7</span><span class="op">)</span>,
+  consensus<span class="op">=</span><span class="cn">TRUE</span>,
+  tom_name <span class="op">=</span> <span class="st">"Species_Consensus"</span>
+<span class="op">)</span>
+
+<span class="co"># plot the dendrogram</span>
+<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_merged</span>, main<span class="op">=</span><span class="st">'ASC cross species dendrogram'</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Soft power plots
+</summary><p><img src="figures/consensus/Species_consensus_ASC_softpowers.png" width="800" height="900"></p>
+</details><p><img src="figures/consensus/cross_species_dendro.png" width="800" height="900"></p>
+<p>We can compare the consensus network results to the standard hdWGCNA workflow. By checking the resulting dendrogram from the standard workflow, it is clearthat much of the underlying co-expression structure is lost.</p>
+<details><summary>
+Standard hdWGCNA workflow
+</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  gene_select <span class="op">=</span> <span class="st">"fraction"</span>,
+  fraction <span class="op">=</span> <span class="fl">0.05</span>,
+  wgcna_name <span class="op">=</span> <span class="st">'ASC_standard'</span>,
+  metacell_location <span class="op">=</span> <span class="st">'ASC_consensus'</span>
+<span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_merged</span><span class="op">)</span>
+
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_merged</span>, group_name <span class="op">=</span> <span class="st">"ASC"</span>, group.by <span class="op">=</span> <span class="st">"cell_type"</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_merged</span>, setDatExpr <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span><span class="va">seurat_merged</span>, tom_name <span class="op">=</span> <span class="st">"Species_ASC_standard"</span><span class="op">)</span>
+
+<span class="co"># plot the dendrogram</span>
+<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_merged</span>, main<span class="op">=</span><span class="st">'ASC standard Dendrogram'</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/cross_species_ASD_standard_dendro.png" width="800" height="900"></p>
+</details><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_merged</span>, <span class="st">'ASC_standard'</span><span class="op">)</span>
+<span class="va">consensus_modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_merged</span>, <span class="st">'ASC_consensus'</span><span class="op">)</span>
+
+<span class="co"># get consensus dendro</span>
+<span class="va">net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetNetworkData.html">GetNetworkData</a></span><span class="op">(</span><span class="va">seurat_merged</span>, wgcna_name<span class="op">=</span><span class="st">"ASC_consensus"</span><span class="op">)</span>
+
+<span class="va">consensus_genes</span> <span class="op">&lt;-</span> <span class="va">consensus_modules</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="va">consensus_colors</span> <span class="op">&lt;-</span> <span class="va">consensus_modules</span><span class="op">$</span><span class="va">color</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">consensus_colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">consensus_genes</span>
+
+<span class="va">genes</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="va">colors</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">$</span><span class="va">color</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">colors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">genes</span>
+
+<span class="va">colors</span> <span class="op">&lt;-</span> <span class="va">colors</span><span class="op">[</span><span class="va">consensus_genes</span><span class="op">]</span>
+
+<span class="va">color_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>
+  consensus <span class="op">=</span> <span class="va">consensus_colors</span>,
+  standard <span class="op">=</span> <span class="va">colors</span>
+<span class="op">)</span>
+
+<span class="co"># plot dendrogram</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/pdf.html" class="external-link">pdf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">"cross_species_dendro_compare.pdf"</span><span class="op">)</span>,height<span class="op">=</span><span class="fl">3</span>, width<span class="op">=</span><span class="fl">6</span><span class="op">)</span>
+<span class="fu">WGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/plotDendroAndColors.html" class="external-link">plotDendroAndColors</a></span><span class="op">(</span>
+  <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,
+  <span class="va">color_df</span>,
+  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
+  dendroLabels <span class="op">=</span> <span class="cn">FALSE</span>, hang <span class="op">=</span> <span class="fl">0.03</span>, addGuide <span class="op">=</span> <span class="cn">TRUE</span>, guideHang <span class="op">=</span> <span class="fl">0.05</span>,
+  main <span class="op">=</span> <span class="st">"ASC cross species consensus dendrogram"</span>,
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/cross_species_dendro_compare.png" width="800" height="900"></p>
+<p>It is clear to see that much of the co-expression structure is missing when using the standard workflow when the dataset contains vast differences coming from the individual species. Once again, we can take the consensus network and perform any of the downstream hdWGCNA analysis steps.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># change the active WGCNA back to the consensus</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_merged</span>, <span class="st">'ASC_consensus'</span><span class="op">)</span>
+
+<span class="co"># compute module eigengenes and connectivity</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_merged</span>, group.by.vars<span class="op">=</span><span class="st">"Species"</span><span class="op">)</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_merged</span>, group_name <span class="op">=</span><span class="st">'ASC'</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span><span class="op">)</span>
+
+<span class="co"># re-name modules</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span><span class="va">seurat_merged</span>, new_name <span class="op">=</span> <span class="st">"ASC-CM"</span><span class="op">)</span>
+
+<span class="co"># visualize network with UMAP</span>
+<span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  n_hubs <span class="op">=</span> <span class="fl">5</span>,
+  n_neighbors<span class="op">=</span><span class="fl">15</span>,
+  min_dist<span class="op">=</span><span class="fl">0.3</span>,
+  spread<span class="op">=</span><span class="fl">5</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_merged</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.5</span>,
+  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
+  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>,
+  edge_prop<span class="op">=</span><span class="fl">0.075</span>, <span class="co"># taking the top 20% strongest edges in each module</span>
+  label_hubs<span class="op">=</span><span class="fl">0</span> <span class="co"># how many hub genes to plot per module?</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/consensus/cross-species_hubgene_umap_igraph.png" width="600" height="900"></p>
+<p>In summary, consensus co-expression network analysis is a useful alternative to the standard hdWGCNA workflow for cases where you want to build an integrated co-expression network using different datasets/batches or biological conditions.</p>
+</div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
