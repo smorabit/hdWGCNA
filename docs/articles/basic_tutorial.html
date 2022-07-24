@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9008</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9009</span>
       </span>
     </div>
 
@@ -529,7 +529,7 @@ GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
 <p>Now we can easily use Seurat’s <code>DotPlot</code> function:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot with Seurat's DotPlot function</span>
-<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span><span class="op">)</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span><span class="op">)</span>
 
 <span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span>

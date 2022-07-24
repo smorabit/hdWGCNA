@@ -282,8 +282,10 @@ MetacellsByGroups <- function(
   groupings <- groupings[order(groupings)]
 
   # remove groups that are too small:
-  group_counts <- table(seurat_obj$metacell_grouping) >= min_cells
-  warning(paste0("Removing the following groups that did not meet min_cells: ", paste(names(group_counts)[group_counts], collapse=', ')))
+  group_counts <- table(seurat_obj$metacell_grouping) < min_cells
+  if(any(group_counts)){
+    warning(paste0("Removing the following groups that did not meet min_cells: ", paste(names(group_counts)[group_counts], collapse=', ')))
+  }
   groupings <- groupings[table(seurat_obj$metacell_grouping) >= min_cells]
 
   if(length(groupings) == 0 ){
@@ -315,21 +317,31 @@ MetacellsByGroups <- function(
   )
   names(metacell_list) <- groupings
 
+  print('done making metacells')
 
   # remove NULL
   remove <- which(sapply(metacell_list, is.null))
   if(length(remove) > 1){
     metacell_list <- metacell_list[-remove]
   }
+
   # get the run stats:
   run_stats <- as.data.frame(do.call(rbind, lapply(metacell_list, function(x){x@misc$run_stats})))
   rownames(run_stats) <- 1:nrow(run_stats)
   for(i in 1:length(group.by)){
-    run_stats[[group.by[i]]] <- do.call(rbind, strsplit(run_stats$name, '#'))[,i]
+    run_stats[[group.by[i]]] <- do.call(rbind, strsplit(as.character(run_stats$name), '#'))[,i]
   }
 
   # combine metacell objects
-  metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+  print(length(metacell_list))
+  if(length(metacell_list) > 1){
+    metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+  } else{
+    metacell_obj <- metacell_list[[1]]
+  }
+
+  print('metacell shape')
+
 
   # set idents for metacell object:
   Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]

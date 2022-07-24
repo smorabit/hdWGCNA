@@ -1,3 +1,11 @@
+# hdWGCNA 0.1.1.9009 (2022-07-23)
+## Added
+- None
+
+## Changes
+- Bugfix in `ProjectModules`.
+- Bugfix in `MetacellsByGroups`
+
 # hdWGCNA 0.1.1.9008 (2022-07-21)
 ## Added
 - New tutorial for consensus co-expression network analysis.

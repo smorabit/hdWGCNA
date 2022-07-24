@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9008</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9009</span>
       </span>
     </div>
 
@@ -147,28 +147,33 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>             stop("Missing columns in modules table. Required columns are gene_name, module, color")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.factor(modules$module)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         modules$module &lt;- as.factor(modules$module)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(gene_mapping)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         modules &lt;- TransferModuleGenome(modules, gene_mapping, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             genome1_col, genome2_col)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(modules))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene_names &lt;- modules$gene_name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     genes_use &lt;- intersect(gene_names, rownames(seurat_obj))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print("n genes:")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print(length(genes_use))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(gene_names))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- modules %&gt;% subset(gene_name %in% genes_use)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(head(modules))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(wgcna_name_proj %in% names(seurat_obj@misc))) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- SetupForWGCNA(seurat_obj, wgcna_name = wgcna_name_proj, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             features = genes_use)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("project modules")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- ModuleEigengenes(seurat_obj, group.by.vars = group.by.vars, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         modules = modules, vars.to.regress = vars.to.regress, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         scale.model.use = scale.model.use, wgcna_name = wgcna_name_proj, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         ...)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("done")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffde54bc908&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbd70622e78&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

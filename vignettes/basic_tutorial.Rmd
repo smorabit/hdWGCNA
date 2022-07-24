@@ -674,7 +674,7 @@ Now we can easily use Seurat's `DotPlot` function:
 ```{r eval=FALSE}
 
 # plot with Seurat's DotPlot function
-p <- DotPlot(seurat_obj, mods, group.by = 'cell_type')
+p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +

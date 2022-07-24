@@ -18,7 +18,7 @@ on neighboring cells in provided groupings, such as cluster or cell type."><meta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9008</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9009</span>
       </span>
     </div>
 
@@ -202,9 +202,11 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- unique(seurat_obj$metacell_grouping)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[order(groupings)]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     group_counts &lt;- table(seurat_obj$metacell_grouping) &gt;= min_cells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     warning(paste0("Removing the following groups that did not meet min_cells: ", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         paste(names(group_counts)[group_counts], collapse = ", ")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     group_counts &lt;- table(seurat_obj$metacell_grouping) &lt; min_cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (any(group_counts)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         warning(paste0("Removing the following groups that did not meet min_cells: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             paste(names(group_counts)[group_counts], collapse = ", ")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groupings &lt;- groupings[table(seurat_obj$metacell_grouping) &gt;= </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         min_cells]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(groupings) == 0) {</span>
@@ -229,6 +231,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             max_iter = max_iter, target_metacells = target_metacells, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             verbose = verbose, wgcna_name = wgcna_name))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     names(metacell_list) &lt;- groupings</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("done making metacells")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     remove &lt;- which(sapply(metacell_list, is.null))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(remove) &gt; 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_list &lt;- metacell_list[-remove]</span>
@@ -239,10 +242,17 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         })))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(run_stats) &lt;- 1:nrow(run_stats)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:length(group.by)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         run_stats[[group.by[i]]] &lt;- do.call(rbind, strsplit(run_stats$name, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         run_stats[[group.by[i]]] &lt;- do.call(rbind, strsplit(as.character(run_stats$name), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             "#"))[, i]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj &lt;- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print(length(metacell_list))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(metacell_list) &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_obj &lt;- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_obj &lt;- metacell_list[[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("metacell shape")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Idents(metacell_obj) &lt;- metacell_obj@meta.data[[ident.group]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(cells.use)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_full</span>
@@ -255,7 +265,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffde4b86da0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbd6d175918&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

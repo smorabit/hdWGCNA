@@ -1,0 +1,129 @@
+
+```{r eval=FALSE}
+library(Seurat)
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+library(WGCNA)
+
+library(Matrix)
+library(viridis)
+library(harmony)
+library(RColorBrewer)
+library(ggpubr)
+library(tictoc)
+library(RColorBrewer)
+library(Hmisc)
+library(corrplot)
+library(enrichR)
+library(GeneOverlap)
+library(grid)
+library(gridExtra)
+library(igraph)
+library(ggrepel)
+#library(hdWGCNA)
+enableWGCNAThreads(nThreads = 8)
+theme_set(theme_cowplot())
+set.seed(12345)
+
+
+# spatial plotting functions
+source('/dfs7/swaruplab/smorabit/analysis/scWGCNA/bin/spatial_functions.R')
+source("/pub/smorabit/hdWGCNA/bin/spatial_functions.R")
+
+#devtools::install_github('smorabit/hdWGCNA', ref='dev')
+library(hdWGCNA)
+
+setwd('/dfs7/swaruplab/smorabit/analysis/scWGCNA/')
+
+# output directories
+data_dir <- "data/"
+fig_dir <- 'figures/'
+
+
+
+# re-load scWGCNA dataset:
+load(file='data/Zhou_color_scheme.rda')
+
+
+# reload process ed with all cell types
+# seurat_obj <-  readRDS(file=paste0(data_dir, 'Zhou_scWGCNA_all_celltypes.rds'))
+
+
+load('/dfs7/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/color_scheme.rda')
+cp <- unlist(color_scheme_snRNA_celltype)
+cp[names(cp) == 'EX'] <- 'turquoise'
+
+
+setwd('/dfs7/swaruplab/smorabit/analysis/scWGCNA/project_modules/')
+
+seurat_zhou <- readRDS(file= '/dfs7/swaruplab/smorabit/analysis/scWGCNA/brain_iterative/data/Zhou_scWGCNA_all_celltypes.rds')
+
+
+```
+
+Project Bulk RNA-seq modules into single-cell dataset
+
+```{r eval=FALSE}
+
+# load Morabito & miyoshi et al dataset
+seurat_obj <- readRDS("/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/Swarup_2021.rds")
+
+# load consensus modules from
+consensus_modules <- read.csv("/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/hmg_cWGCNA_modules.csv")
+
+consensus_modules <- consensus_modules %>%
+  dplyr::select(c(-Ensembl.Gene.ID)) %>%
+  dplyr::rename(c(gene_name = GeneSymbol, module = ModuleLabels, color = Initially.Assigned.Module.Color)) %>%
+   dplyr::select(c(gene_name, module, color))
+
+consensus_modules <- subset(consensus_modules, gene_name %in% rownames(seurat_obj))
+
+# remove duplicate gene names
+consensus_modules <- consensus_modules[match(unique(consensus_modules$gene_name), consensus_modules$gene_name),]
+
+seurat_obj <- FindVariableFeatures(seurat_obj, nfeatures=2000)
+seurat_obj <- ScaleData(seurat_obj)
+
+seurat_obj <- ProjectModules(
+  seurat_obj,
+  modules = consensus_modules,
+  group.by.vars = "Batch",
+  seurat_ref = NULL,
+  wgcna_name = "None",
+  wgcna_name_proj = 'HMG_2020'
+)
+
+saveRDS(seurat_obj, file = 'data/Swarup_2021_hmg_projected.rds')
+
+
+plot_list <- ModuleFeaturePlot(seurat_obj, order='shuffle', raster=TRUE, raster_dpi=400, alpha=1, restrict_range=FALSE, raster_scale=0.25)
+
+pdf("figures/featureplot_hmg_projected.pdf",height=9, width=16)
+wrap_plots(plot_list, ncol=6)
+dev.off()
+
+
+# get hMEs from seurat object
+MEs <- GetMEs(seurat_obj, harmonized=TRUE)
+mods <- colnames(MEs); mods <- mods[mods != 'grey']
+
+# add hMEs to Seurat meta-data:
+seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_obj, features=mods, group.by = 'annotation', dot.min=0.25)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  coord_flip() +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue')
+
+# plot output
+pdf("figures/dotplot_hmg_projected.pdf",height=6, width=12)
+p
+dev.off()
+
+
+```

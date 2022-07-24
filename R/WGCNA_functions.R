@@ -648,6 +648,8 @@ ModuleEigengenes <- function(
   wgcna_name=NULL, ...
 ){
 
+  print('in here')
+
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -1112,7 +1114,8 @@ OverlapModulesDEGs <- function(
 #' @examples
 #' ProjectModules
 ProjectModules <- function(
-  seurat_obj, seurat_ref,
+  seurat_obj,
+  seurat_ref,
   modules=NULL,
   group.by.vars=NULL,
   gene_mapping=NULL, # table mapping genes from species 1 to species 2
@@ -1135,12 +1138,15 @@ ProjectModules <- function(
     }
   }
 
+  # cast "modules" to a factor
+  if(!is.factor(modules$module)){
+    modules$module <- as.factor(modules$module)
+  }
+
   # are we mapping gene names?
   if(!is.null(gene_mapping)){
     modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
   }
-
-  print(head(modules))
 
   # get genes that overlap between WGCNA genes & seurat_obj genes:
   gene_names <- modules$gene_name
@@ -1152,6 +1158,8 @@ ProjectModules <- function(
 
   # subset modules by genes in this seurat object:
   modules <- modules %>% subset(gene_name %in% genes_use)
+  print(head(modules))
+
 
   # setup new seurat obj for wgcna:
   if(!(wgcna_name_proj %in% names(seurat_obj@misc))){
@@ -1163,6 +1171,7 @@ ProjectModules <- function(
   }
 
   # project modules:
+  print('project modules')
   seurat_obj <- ModuleEigengenes(
     seurat_obj,
     group.by.vars=group.by.vars,
@@ -1172,6 +1181,7 @@ ProjectModules <- function(
     wgcna_name = wgcna_name_proj,
     ...
   )
+  print('done')
 
   seurat_obj
 
