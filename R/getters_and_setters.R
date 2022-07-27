@@ -204,6 +204,9 @@ SetDatExpr <- function(
     s_obj <- seurat_obj
   }
 
+  # get the metadata from the seurat object:
+  seurat_meta <- s_obj@meta.data
+
 
   if(is.null(assay)){
     assay <- DefaultAssay(s_obj)
@@ -216,14 +219,13 @@ SetDatExpr <- function(
   }
 
   # check that group.by is in the Seurat object & in the metacell object:
-  if(!(group.by %in% colnames(s_obj@meta.data))){
-    m_cell_message <- ""
-    if(use_metacells){m_cell_message <- "metacell"}
-    stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+  if(!is.null(group.by)){
+    if(!(group.by %in% colnames(s_obj@meta.data))){
+      m_cell_message <- ""
+      if(use_metacells){m_cell_message <- "metacell"}
+      stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+    }
   }
-
-  # get the metadata from the seurat object:
-  seurat_meta <- s_obj@meta.data
 
   # columns to group by for cluster/celltype
   if(!is.null(group.by)){

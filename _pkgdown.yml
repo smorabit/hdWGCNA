@@ -56,6 +56,8 @@ navbar:
       href: articles/consensus_wgcna.html
     - text: Motif analysis
       href: articles/motif_analysis.html
+    - text: Alternative metacell algorithms
+      href: articles/other_metacells.html
     - text: -------
     - text: Other
     - text: Module customization

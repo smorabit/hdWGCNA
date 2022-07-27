@@ -66,6 +66,9 @@ the metacell expression matrix, or from the full expression matrix."><meta prope
     <li>
       <a href="../articles/motif_analysis.html">Motif analysis</a>
     </li>
+    <li>
+      <a href="../articles/other_metacells.html">Alternative metacell algorithms</a>
+    </li>
     <li class="divider">
     <li class="dropdown-header">Other</li>
     <li>
@@ -153,6 +156,7 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_meta &lt;- s_obj@meta.data</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(assay)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         assay &lt;- DefaultAssay(s_obj)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         warning(paste0("assay not specified, trying to use assay ", </span>
@@ -161,15 +165,16 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(assay %in% names(s_obj@assays))) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Assay not found. Check names(seurat_obj@assays) or names(GetMetacellObject(seurat_obj)@assays)")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(group.by %in% colnames(s_obj@meta.data))) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         m_cell_message &lt;- ""</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (use_metacells) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             m_cell_message &lt;- "metacell"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(group.by)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!(group.by %in% colnames(s_obj@meta.data))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             m_cell_message &lt;- ""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             if (use_metacells) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 m_cell_message &lt;- "metacell"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             stop(paste0(group.by, " not found in the meta data of the ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 m_cell_message, " Seurat object"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0(group.by, " not found in the meta data of the ", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             m_cell_message, " Seurat object"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_meta &lt;- s_obj@meta.data</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(group.by)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_meta &lt;- seurat_meta %&gt;% subset(get(group.by) %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             group_name)</span>
@@ -196,7 +201,7 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbd6f8cbc18&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f990aab7540&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
