@@ -7,7 +7,7 @@
 TestSoftPowersConsensus(
   seurat_obj,
   powers = c(seq(1, 10, by = 1), seq(12, 30, by = 2)),
-  setDatExpr = TRUE,
+  setDatExpr = FALSE,
   use_metacells = TRUE,
   group.by = NULL,
   group_name = NULL,

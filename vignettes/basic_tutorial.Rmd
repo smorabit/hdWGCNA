@@ -196,7 +196,7 @@ profiles in two dimensions with UMAP.
 seurat_obj <- NormalizeMetacells(seurat_obj)
 seurat_obj <- ScaleMetacells(seurat_obj, features=VariableFeatures(seurat_obj))
 seurat_obj <- RunPCAMetacells(seurat_obj, features=VariableFeatures(seurat_obj))
-seurat_obj <- RunHarmonyMetacells(seurat_obj group.by.vars='Sample')
+seurat_obj <- RunHarmonyMetacells(seurat_obj, group.by.vars='Sample')
 seurat_obj <- RunUMAPMetacells(seurat_obj, reduction='harmony', dims=1:15)
 
 

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9009</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9010</span>
       </span>
     </div>
 
@@ -245,17 +245,18 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>Additionally, we have included a few wrapper functions to apply the Seurat workflow to the metacell object within the hdWGCNA experiment. Here we apply these wrapper functions to process the metacell object and visualize the aggregated expression profiles in two dimensions with UMAP.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">NormalizeMetacells</span>(seurat_obj)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">ScaleMetacells</span>(seurat_obj, <span class="at">features=</span><span class="fu">VariableFeatures</span>(seurat_obj))</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunPCAMetacells</span>(seurat_obj, <span class="at">features=</span><span class="fu">VariableFeatures</span>(seurat_obj))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunHarmonyMetacells</span>(seurat_obj <span class="at">group.by.vars=</span><span class="st">'Sample'</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">RunUMAPMetacells</span>(seurat_obj, <span class="at">reduction=</span><span class="st">'harmony'</span>, <span class="at">dims=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">DimPlotMetacells</span>(seurat_obj, <span class="at">group.by=</span><span class="st">'cell_type'</span>) <span class="sc">+</span> <span class="fu">umap_theme</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Cell Type"</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">DimPlotMetacells</span>(seurat_obj, <span class="at">group.by=</span><span class="st">'Sample'</span>) <span class="sc">+</span> <span class="fu">umap_theme</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Sample"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">|</span> p2</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ScaleMetacells.html">ScaleMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunPCAMetacells.html">RunPCAMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunHarmonyMetacells.html">RunHarmonyMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by.vars<span class="op">=</span><span class="st">'Sample'</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunUMAPMetacells.html">RunUMAPMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, reduction<span class="op">=</span><span class="st">'harmony'</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span>
+
+
+<span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DimPlotMetacells.html">DimPlotMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Cell Type"</span><span class="op">)</span>
+<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DimPlotMetacells.html">DimPlotMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'Sample'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Sample"</span><span class="op">)</span>
+
+<span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
 <p><img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600"></p>
 </div>
 </div>

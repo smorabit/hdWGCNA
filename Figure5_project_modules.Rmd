@@ -127,3 +127,276 @@ dev.off()
 
 
 ```
+
+Set up human spatial dataset
+
+```{r eval=FALSE}
+
+seurat_vis <- readRDS('~/swaruplab/smorabit/analysis/scWGCNA/data/maynard_prefrontal.rds')
+
+patch <- VisDimPlot(
+  seurat_vis,
+  group.by = 'layer_guess_reordered_short',
+  sample_col = 'sample_name',
+  dpi=600,
+  ncol = 2,
+  text_size=15
+)
+
+pdf(paste0(fig_dir, 'hex_ananotation_human.pdf'), width=6, height=6)
+patch
+dev.off()
+
+
+```
+
+Project modules into Human spatial dataset
+
+```{r eval=FALSE}
+
+
+seurat_vis <- ProjectModules(
+  seurat_vis,
+  seurat_ref = seurat_zhou,
+  group.by.vars = "sample_name",
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="hg38_id", # genome of query data
+  wgcna_name = "ASC",
+  wgcna_name_proj = 'ASC_Projected'
+)
+
+
+
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs7/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, hg38_id))
+
+hg38_mm10_genes %<>% subset(hg38_id %in% rownames(seurat_vis))
+
+hg38_ids <- unique(hg38_mm10_genes$hg38_id)
+hg38_genes <- unique(hg38_mm10_genes$hg38_name)
+hg38_mm10_genes <- hg38_mm10_genes[match(hg38_genes, hg38_mm10_genes$hg38_name),]
+
+
+dim(hg38_mm10_genes)
+length(hg38_ids)
+length(hg38_genes)
+
+
+
+
+########################################
+# Dot Plot
+########################################
+
+
+MEs <- GetMEs(seurat_vis)
+modules <- GetModules(seurat_vis)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+
+seurat_vis@meta.data <- cbind(seurat_vis@meta.data, MEs)
+
+
+# make dotplot
+p <- DotPlot(
+  seurat_vis,
+  group.by='layer_guess_reordered',
+  features = rev(mods)
+) + coord_flip() + RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') + xlab('') + ylab('') +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)
+  )
+
+pdf(paste0(fig_dir, 'maynard_ASC_hMEs_dotplot.pdf'), width=9, height=5)
+p
+dev.off()
+
+# remove from seurat obj
+seurat_vis@meta.data <- cbind(seurat_vis@meta.data, MEs)
+
+seurat_vis@meta.data <- seurat_vis@meta.data[,!(colnames(seurat_vis@meta.data) %in% colnames(MEs))]
+
+
+
+
+
+for(cur_mod in mods){
+  print(cur_mod)
+  p <- SampleFeaturePlot(
+    seurat_vis,
+    feature=cur_mod,
+    sample_col = "sample_name",
+    ncol = 4,
+    raster=TRUE,
+    plot_max = 'q99',
+    plot_min = 0,
+    colfunc = inferno,
+    rev_colors=TRUE,
+    dpi=400,
+  )
+
+  pdf(paste0(fig_dir, 'ME_spatial_featureplots/', cur_mod, '_featureplot.pdf'), width=10, height=3)
+  print(p)
+  dev.off()
+
+}
+
+
+```
+
+Project into mouse spatial
+
+```{r eval=FALSE}
+
+# load 10X genomics visium dataset
+seurat_vis_mouse <- readRDS("~/swaruplab/smorabit/analysis/scWGCNA/data/10x_visium_scWGCNA.rds")
+
+image_df <- seurat_vis_mouse@images$anterior1@coordinates
+seurat_vis_mouse$row <- image_df$row
+seurat_vis_mouse$imagerow <- image_df$imagerow
+seurat_vis_mouse$col <- image_df$col
+seurat_vis_mouse$imagecol <- image_df$imagecol
+
+# process the Visium dataset with Seurat:
+seurat_vis <- seurat_vis %>%
+  NormalizeData() %>%
+  FindVariableFeatures() %>%
+  ScaleData() %>%
+  RunPCA() %>%
+  RunUMAP(dims=1:30) %>%
+  FindNeighbors(dims=1:30) %>%
+  FindClusters(res=0.75)
+
+
+p1 <- DimPlot(seurat_vis_mouse, reduction = "umap", label = TRUE) +
+  umap_theme() +
+  NoLegend()
+
+p2 <- SpatialDimPlot(seurat_vis_mouse, label = TRUE, label.size = 3) +
+  NoLegend()
+
+png(paste0(fig_dir, 'mouse_vis_umap.png'), units='in', res=400, width=10, height=5)
+p1 | p2
+dev.off()
+
+
+
+
+
+
+
+
+# load mouse <-> human gene name table:
+hg38_mm10_genes <- read.table(
+  "/dfs7/swaruplab/smorabit/resources/hg38_mm10_orthologs_2021.txt",
+  sep='\t',
+  header=TRUE
+)
+colnames(hg38_mm10_genes) <-c('hg38_id', 'mm10_id', 'mm10_name', 'hg38_name')
+hg38_mm10_genes <- dplyr::select(hg38_mm10_genes, c(hg38_name, mm10_name, hg38_id, mm10_id))
+
+hg38_mm10_genes <- subset(hg38_mm10_genes, mm10_name != '' & hg38_name != '')
+
+# TODO
+# need to make sure that there's only one entry for each gene in hg38_mm10_genes
+
+mm10_genes <- unique(hg38_mm10_genes$mm10_name)
+hg38_genes <- unique(hg38_mm10_genes$hg38_name)
+hg38_mm10_genes <- hg38_mm10_genes[match(mm10_genes, hg38_mm10_genes$mm10_name),]
+
+
+
+ seurat_mg <- readRDS(file='/dfs7/swaruplab/smorabit/analysis/scWGCNA/microglia/data/AD_MG_scWGCNA.rds')
+
+seurat_vis_mouse <- ProjectModules(
+  seurat_vis_mouse,
+  seurat_ref = seurat_mg,
+  #group.by.vars = "sample_name",
+  gene_mapping=hg38_mm10_genes,
+  genome1_col="hg38_name", # genome of reference data
+  genome2_col="mm10_name", # genome of query data
+  wgcna_name = "MG",
+  wgcna_name_proj = 'MG_Projected'
+)
+
+
+
+
+
+
+########################################
+# Dot Plot
+########################################
+
+
+MEs <- GetMEs(seurat_vis_mouse)
+modules <- GetModules(seurat_vis_mouse)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+
+seurat_vis_mouse@meta.data <- cbind(seurat_vis_mouse@meta.data, MEs)
+
+#
+# # make dotplot
+# p <- DotPlot(
+#   seurat_vis_mouse,
+#   group.by='layer_guess_reordered',
+#   features = rev(mods)
+# ) + coord_flip() + RotatedAxis() +
+#   scale_color_gradient2(high='red', mid='grey95', low='blue') + xlab('') + ylab('') +
+#   theme(
+#     plot.title = element_text(hjust = 0.5),
+#     axis.line.x = element_blank(),
+#     axis.line.y = element_blank(),
+#     panel.border = element_rect(colour = "black", fill=NA, size=1)
+#   )
+#
+# pdf(paste0(fig_dir, 'maynard_ASC_hMEs_dotplot.pdf'), width=9, height=5)
+# p
+# dev.off()
+#
+# # remove from seurat obj
+# seurat_vis@meta.data <- cbind(seurat_vis@meta.data, MEs)
+#
+# seurat_vis@meta.data <- seurat_vis@meta.data[,!(colnames(seurat_vis@meta.data) %in% colnames(MEs))]
+#
+
+
+
+
+for(cur_mod in mods){
+  print(cur_mod)
+  p <- SampleFeaturePlot(
+    seurat_vis_mouse,
+    feature=cur_mod,
+    sample_col = "orig.ident",
+    ncol = 1,
+    raster=TRUE,
+    plot_max = 'q99',
+    plot_min = 0,
+    colfunc = inferno,
+    rev_colors=TRUE,
+    dpi=400,
+  )
+
+  pdf(paste0(fig_dir, 'mouse_ME_spatial_featureplots/', cur_mod, '_featureplot.pdf'), width=5, height=5)
+  print(p)
+  dev.off()
+
+}
+
+
+
+```

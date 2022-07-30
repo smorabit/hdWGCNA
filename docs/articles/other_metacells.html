@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9009</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9010</span>
       </span>
     </div>
 
@@ -494,11 +494,11 @@
 <span class="va">gene_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">indir</span>, <span class="st">'tutorial_singlecell_var.csv'</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">','</span>, header<span class="op">=</span><span class="cn">TRUE</span>, row.names<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 
 <span class="co"># get the umap from cell_meta:</span>
-<span class="va">umap</span> <span class="op">&lt;-</span> <span class="va">cell_meta</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'UMAP_1'</span>, <span class="st">'UMAP_2'</span><span class="op">)</span><span class="op">]</span>
+<span class="va">umap</span> <span class="op">&lt;-</span> <span class="va">cell_meta</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'UMAP_1'</span>, <span class="st">'UMAP_2'</span><span class="op">)</span><span class="op">]</span>
 
 <span class="co"># set the rownames and colnames for the expression matrix:</span>
 <span class="co"># for Seurat, rows of X are genes, cols of X are cells</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">gene_meta</span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_pca</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">umap</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
@@ -541,7 +541,7 @@
 
 <span class="va">cell_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">indir</span>, <span class="st">'tutorial_seacells_obs.csv'</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">','</span>, header<span class="op">=</span><span class="cn">TRUE</span>, row.names<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">gene_meta</span><span class="op">)</span>
 
 <span class="co"># create a Seruat object:</span>
@@ -566,7 +566,7 @@
 <span class="va">cell_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">indir</span>, <span class="st">'tutorial_MC2_obs.csv'</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">','</span>, header<span class="op">=</span><span class="cn">TRUE</span>, row.names<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 <span class="va">gene_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">indir</span>, <span class="st">'tutorial_MC2_var.csv'</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">','</span>, header<span class="op">=</span><span class="cn">TRUE</span>, row.names<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cell_meta</span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">gene_meta</span><span class="op">)</span>
 
 <span class="co"># create a Seruat object:</span>
@@ -666,7 +666,7 @@
 <span class="co"># make sure the genes that we selected for WGCNA are actually in the metacell</span>
 <span class="co"># dataset</span>
 <span class="va">wgcna_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">wgcna_genes</span> <span class="op">&lt;-</span> <span class="va">wgcna_genes</span><span class="op">[</span><span class="va">wgcna_genes</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span><span class="op">]</span>
+<span class="va">wgcna_genes</span> <span class="op">&lt;-</span> <span class="va">wgcna_genes</span><span class="op">[</span><span class="va">wgcna_genes</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span><span class="op">]</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetWGCNAGenes.html">SetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">wgcna_genes</span><span class="op">)</span>
 
 <span class="co"># add the MC2 dataset</span>
@@ -806,7 +806,7 @@ SEACells dendrogram code
 <span class="fu">WGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/plotDendroAndColors.html" class="external-link">plotDendroAndColors</a></span><span class="op">(</span>
   <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,
   <span class="va">color_df</span>,
-  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
+  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
   dendroLabels <span class="op">=</span> <span class="cn">FALSE</span>, hang <span class="op">=</span> <span class="fl">0.03</span>, addGuide <span class="op">=</span> <span class="cn">TRUE</span>, guideHang <span class="op">=</span> <span class="fl">0.05</span>,
   main <span class="op">=</span> <span class="st">"SEACells dendro"</span>,
 <span class="op">)</span>
@@ -848,7 +848,7 @@ MC2 dendrogram code
 <span class="fu">WGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/plotDendroAndColors.html" class="external-link">plotDendroAndColors</a></span><span class="op">(</span>
   <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,
   <span class="va">color_df</span>,
-  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
+  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
   dendroLabels <span class="op">=</span> <span class="cn">FALSE</span>, hang <span class="op">=</span> <span class="fl">0.03</span>, addGuide <span class="op">=</span> <span class="cn">TRUE</span>, guideHang <span class="op">=</span> <span class="fl">0.05</span>,
   main <span class="op">=</span> <span class="st">"MC2 dendro"</span>,
 <span class="op">)</span>
@@ -890,7 +890,7 @@ hdWGCNA dendrogram code
 <span class="fu">WGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/plotDendroAndColors.html" class="external-link">plotDendroAndColors</a></span><span class="op">(</span>
   <span class="va">net</span><span class="op">$</span><span class="va">dendrograms</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,
   <span class="va">color_df</span>,
-  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
+  groupLabels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">color_df</span><span class="op">)</span>,
   dendroLabels <span class="op">=</span> <span class="cn">FALSE</span>, hang <span class="op">=</span> <span class="fl">0.03</span>, addGuide <span class="op">=</span> <span class="cn">TRUE</span>, guideHang <span class="op">=</span> <span class="fl">0.05</span>,
   main <span class="op">=</span> <span class="st">"hdWGCNA dendro"</span>,
 <span class="op">)</span>
@@ -901,6 +901,7 @@ hdWGCNA dendrogram code
 <h3 id="gene-overlap-analysis">Gene overlap analysis<a class="anchor" aria-label="anchor" href="#gene-overlap-analysis"></a>
 </h3>
 <p>Here we perform statistical tests to compare the overlap between the sets of co-expression modules that we got from the three different metacell approaches.</p>
+<p><strong><em>This section of the tutorial is under construction</em></strong></p>
 </div>
 </div>
   </div>

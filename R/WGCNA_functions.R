@@ -631,6 +631,7 @@ ComputeModuleEigengene <- function(
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
+#' @param exclude_grey logical determining whether to compute MEs for the grey module
 #' @param wgcna_name name of the WGCNA experiment
 #' @keywords scRNA-seq
 #' @export
@@ -645,10 +646,9 @@ ModuleEigengenes <- function(
   verbose=TRUE,
   assay = NULL,
   pc_dim = 1,
+  exclude_grey = TRUE,
   wgcna_name=NULL, ...
 ){
-
-  print('in here')
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -698,9 +698,15 @@ ModuleEigengenes <- function(
 
   # get list of modules:
   mods <- levels(modules$module)
+  mods_loop <- mods
+
+  # exclude grey:
+  if(exclude_grey){
+    mods_loop <- mods[mods != 'grey']
+  }
 
   # loop over modules:
-  for(cur_mod in mods){
+  for(cur_mod in mods_loop){
 
     print(cur_mod)
 
@@ -747,7 +753,7 @@ ModuleEigengenes <- function(
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
   modules$module <- factor(
     as.character(modules$module),
-    levels=colnames(MEs)
+    levels=mods
   )
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
 

@@ -13,6 +13,7 @@ ModuleEigengenes(
   verbose = TRUE,
   assay = NULL,
   pc_dim = 1,
+  exclude_grey = TRUE,
   wgcna_name = NULL,
   ...
 )
@@ -33,6 +34,8 @@ ModuleEigengenes(
 \item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
 
 \item{pc_dim}{Which PC to use as the module eigengene? Default to 1.}
+
+\item{exclude_grey}{logical determining whether to compute MEs for the grey module}
 
 \item{wgcna_name}{name of the WGCNA experiment}
 }

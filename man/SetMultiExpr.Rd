@@ -28,7 +28,7 @@ SetMultiExpr(
 
 \item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
 
-\item{multi_groups}{A character vecrtor containing the names of}
+\item{multi_groups}{A character vecrtor containing the names of groups to select}
 
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }

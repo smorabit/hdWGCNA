@@ -10,7 +10,7 @@ ConstructNetwork(
   min_power = 3,
   tom_outdir = "TOM",
   use_metacells = TRUE,
-  setDatExpr = TRUE,
+  setDatExpr = FALSE,
   group.by = NULL,
   group_name = NULL,
   tom_name = NULL,

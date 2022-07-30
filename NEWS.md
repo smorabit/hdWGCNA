@@ -1,3 +1,11 @@
+# hdWGCNA 0.1.1.9009 (2022-07-30)
+## Added
+- None
+
+## Changes
+- By default, `ModuleEigengenes` does not compute MEs for the grey module. User can change behavior with the `exclude_grey` flag.
+
+
 # hdWGCNA 0.1.1.9009 (2022-07-23)
 ## Added
 - None
