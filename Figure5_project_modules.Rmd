@@ -1,5 +1,6 @@
 
 ```{r eval=FALSE}
+
 library(Seurat)
 library(tidyverse)
 library(cowplot)
@@ -68,6 +69,7 @@ Project Bulk RNA-seq modules into single-cell dataset
 
 # load Morabito & miyoshi et al dataset
 seurat_obj <- readRDS("/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/Swarup_2021.rds")
+seurat_obj <- readRDS("data/Swarup_2021_hmg_projected.rds")
 
 # load consensus modules from
 consensus_modules <- read.csv("/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/hmg_cWGCNA_modules.csv")
@@ -99,8 +101,37 @@ saveRDS(seurat_obj, file = 'data/Swarup_2021_hmg_projected.rds')
 
 plot_list <- ModuleFeaturePlot(seurat_obj, order='shuffle', raster=TRUE, raster_dpi=400, alpha=1, restrict_range=FALSE, raster_scale=0.25)
 
-pdf("figures/featureplot_hmg_projected.pdf",height=9, width=16)
-wrap_plots(plot_list, ncol=6)
+plot_list <- lapply(1:length(plot_list), function(x){
+  plot_list[[x]] + NoLegend() + theme(plot.title=element_text(face='plain', vjust=0.25), plot.margin=margin(c(0,0,0,0)))
+})
+
+pdf("figures/featureplot_hmg_projected.pdf",height=6, width=16)
+wrap_plots(plot_list, ncol=8)
+dev.off()
+
+
+
+load('/dfs7/swaruplab/smorabit/analysis/AD_NucSeq_2019/batch_correction/liger/update/celltype-analysis/data/color_scheme.rda')
+cp <- unlist(color_scheme_snRNA_celltype)
+cp[names(cp) == 'EX'] <- 'turquoise'
+color_df <- data.frame(
+  group = names(cp),
+  colour = cp
+)
+
+p <- PlotEmbedding(
+  seurat_obj,
+  group.by = 'cell_type',
+  label=FALSE,
+  raster=TRUE,
+  raster_dpi = 600,
+  raster_scale=0.25,
+  plot_theme = umap_theme() + NoLegend(),
+  color_df = color_df
+) + ggtitle('')
+
+pdf(paste0(fig_dir, 'Morabito_umap_celltypes.pdf'), width=5, height=5)
+p
 dev.off()
 
 
@@ -146,6 +177,152 @@ patch <- VisDimPlot(
 pdf(paste0(fig_dir, 'hex_ananotation_human.pdf'), width=6, height=6)
 patch
 dev.off()
+
+
+
+
+
+library(hdWGCNA)
+seurat_vis <- SetupForWGCNA(
+  seurat_vis,
+  gene_select = "fraction",
+  fraction = 0.05,
+  wgcna_name = "vis"
+)
+length(GetWGCNAGenes(seurat_vis))
+
+# construct metaspots
+seurat_vis <- MetaspotsByGroups(
+  seurat_vis,
+  group.by = c("sample_name"),
+  mode = 'sum'
+)
+
+seurat_vis  <- NormalizeMetacells(seurat_vis )
+
+
+
+seurat_vis  <- SetDatExpr(
+  seurat_vis ,
+  group.by=NULL,
+  group_name = NULL,
+  use_metacells=TRUE,
+  slot = 'data',
+)
+
+
+seurat_vis <- TestSoftPowers(seurat_vis)
+
+# plot the results:
+plot_list <- PlotSoftPowers(seurat_vis)
+
+# assemble with patchwork
+pdf(paste0(fig_dir, 'human_vis_softpower.pdf'), width=12, height=8)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+# construct wgcna network:
+seurat_vis <- ConstructNetwork(
+  seurat_vis, tom_name='human_vis', overwrite_tom=TRUE
+)
+
+# plot the dendrogram
+pdf(paste0(fig_dir, "human_vis_dendro.pdf"),height=3, width=6)
+PlotDendrogram(seurat_vis, main='hdWGCNA Dendrogram')
+dev.off()
+
+
+seurat_vis <- ModuleEigengenes(seurat_vis, exclude_grey=FALSE)
+seurat_vis <- ModuleConnectivity(seurat_vis)
+
+seurat_vis <- ResetModuleNames(
+  seurat_vis,
+  new_name = "HSM"
+)
+print(names(GetModules(seurat_vis)))
+
+
+
+MEs <- GetMEs(seurat_vis)
+modules <- GetModules(seurat_vis)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+MEs <- MEs[,mods]
+
+seurat_vis@meta.data <- cbind(seurat_vis@meta.data, MEs)
+
+plot_list <- list()
+for(cur_mod in mods){
+  print(cur_mod)
+  p <- SampleFeaturePlot(
+    seurat_vis,
+    feature=cur_mod,
+    sample_col = "sample_name",
+    ncol = 2,
+    raster=TRUE,
+    plot_max = 'q99',
+    plot_min = 0,
+    colfunc = inferno,
+    rev_colors=TRUE,
+    dpi=600,
+  )
+  plot_list[[cur_mod]] <- p
+  #
+  # pdf(paste0(fig_dir, 'mouse_ME_spatial_featureplots/', cur_mod, '_featureplot.pdf'), width=8, height=4)
+  # print(p)
+  # dev.off()
+
+}
+
+pdf(paste0(fig_dir, 'human_combined_featureplot.pdf'), width=12, height=6)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+
+
+
+
+################################################################################
+# Hubgene circle plots:
+################################################################################
+
+library(igraph)
+
+# individual module networks
+ModuleNetworkPlot(
+  seurat_vis,
+  mods = "all",
+  outdir = paste0(fig_dir, 'human_vis_hubNetworks/')
+)
+
+
+
+library(enrichR)
+
+dbs <-c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021')
+
+# compute GO terms:
+seurat_vis <- RunEnrichr(seurat_vis, dbs=dbs)
+
+enrichr_df <- GetEnrichrTable(seurat_vis) %>% subset(P.value < 0.05)
+write.table(enrichr_df, quote=FALSE, sep='\t', row.names=FALSE, file=paste0(data_dir, 'human_vis_enrichr.tsv'))
+
+
+# make GO term plots:
+EnrichrBarPlot(
+  seurat_vis,
+  outdir = "figures/human_vis_enrichr_plots",
+  n_terms = 25, plot_size = c(4,16),
+  logscale=TRUE
+)
+
+
+
+
+
+saveRDS(seurat_vis, file='data/10x_human_hdWGCNA.rds')
+
+
 
 
 ```
@@ -254,6 +431,9 @@ for(cur_mod in mods){
 }
 
 
+
+
+
 ```
 
 Project into mouse spatial
@@ -261,7 +441,20 @@ Project into mouse spatial
 ```{r eval=FALSE}
 
 # load 10X genomics visium dataset
-seurat_vis_mouse <- readRDS("~/swaruplab/smorabit/analysis/scWGCNA/data/10x_visium_scWGCNA.rds")
+#seurat_vis_mouse <- readRDS("~/swaruplab/smorabit/analysis/scWGCNA/data/10x_visium_scWGCNA.rds")
+
+seurat_vis_mouse <- readRDS("~/swaruplab/smorabit/analysis/scWGCNA/data/10x_mouse_brain_processed.rds")
+
+seurat_vis_mouse <- NormalizeData(seurat_vis_mouse)
+seurat_vis_mouse <- FindVariableFeatures(seurat_vis_mouse)
+seurat_vis_mouse <- ScaleData(seurat_vis_mouse)
+seurat_vis_mouse <- RunPCA(seurat_vis_mouse)
+seurat_vis_mouse <- FindNeighbors(seurat_vis_mouse, dims = 1:30)
+seurat_vis_mouse <- FindClusters(seurat_vis_mouse,verbose = TRUE)
+seurat_vis_mouse %<>% RunUMAP(dims = 1:30)
+
+head(seurat_vis_mouse@meta.data)
+
 
 image_df <- seurat_vis_mouse@images$anterior1@coordinates
 seurat_vis_mouse$row <- image_df$row
@@ -270,7 +463,7 @@ seurat_vis_mouse$col <- image_df$col
 seurat_vis_mouse$imagecol <- image_df$imagecol
 
 # process the Visium dataset with Seurat:
-seurat_vis <- seurat_vis %>%
+seurat_vis_mouse <- seurat_vis_mouse %>%
   NormalizeData() %>%
   FindVariableFeatures() %>%
   ScaleData() %>%
@@ -397,6 +590,951 @@ for(cur_mod in mods){
 
 }
 
+p1 <- DimPlot(seurat_mouse_vis, reduction = "umap", label = TRUE, split.by='region') +
+  umap_theme() +
+  NoLegend()
+
+pdf(paste0(fig_dir, 'mouse_vis_umap.pdf'),  width=8, height=4)
+p1
+dev.off()
+
+
+
+
+```
+
+Run hdWGCNA in the mouse dataset
+
+```{r eval=FALSE}
+
+# load processed mouse vis
+seurat_mouse_vis <- readRDS('/dfs7/swaruplab/smorabit/analysis/scWGCNA/project_modules/data/10x_mouse_hdWGCNA.rds')
+
+# load unprocessed mouse vis
+seurat_mouse_vis <- readRDS('/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/10x_mouse_brain_processed.rds')
+
+#add the cluster annotations
+annotations <- read.csv('~/swaruplab/smorabit/analysis/scWGCNA/data/10x_mouse_brain_annotations.csv')
+
+ix <- match(seurat_mouse_vis$seurat_clusters, annotations$seurat_clusters)
+seurat_mouse_vis$annotation <- annotations$annotation[ix]
+
+patch <- VisDimPlot(
+  seurat_mouse_vis,
+  group.by = 'seurat_clusters',
+  sample_col = 'region',
+  dpi=600,
+  ncol = 2,
+  text_size=15
+)
+
+pdf(paste0(fig_dir, 'mouse_hex_clusters.pdf'), width=8, height=4)
+patch
+dev.off()
+
+
+patch <- VisDimPlot(
+  seurat_mouse_vis,
+  group.by = 'annotation',
+  sample_col = 'region',
+  dpi=600,
+  ncol = 2,
+  text_size=15
+)
+
+pdf(paste0(fig_dir, 'mouse_hex_ananotation.pdf'), width=12, height=4)
+patch
+dev.off()
+
+
+# plot each cluster separately
+clusters <- levels(seurat_mouse_vis$seurat_clusters)
+pdf(paste0(fig_dir, 'mouse_hex_ananotation_split.pdf'), width=8, height=4)
+for(cur_cluster in clusters){
+  print(cur_cluster)
+  seurat_mouse_vis$plot_cluster <- ifelse(
+    as.character(seurat_mouse_vis$seurat_clusters) == cur_cluster,
+    cur_cluster, 'other'
+  )
+
+  patch <- VisDimPlot(
+    seurat_mouse_vis,
+    group.by = 'plot_cluster',
+    sample_col = 'region',
+    dpi=200,
+    ncol = 2,
+    text_size=15
+  )
+  print(patch)
+
+  patch
+
+}
+dev.off()
+
+
+
+
+library(hdWGCNA)
+seurat_mouse_vis <- SetupForWGCNA(
+  seurat_mouse_vis,
+  gene_select = "fraction",
+  fraction = 0.05,
+  wgcna_name = "vis"
+)
+length(GetWGCNAGenes(seurat_mouse_vis))
+
+# construct metaspots
+seurat_mouse_vis$region <- factor(as.character(seurat_mouse_vis$region), levels=c('anterior', 'posterior'))
+seurat_mouse_vis <- MetaspotsByGroups(
+  seurat_mouse_vis,
+  group.by = c("region"),
+  mode = 'sum'
+)
+
+seurat_mouse_vis  <- NormalizeMetacells(seurat_mouse_vis )
+
+
+
+seurat_mouse_vis  <- SetDatExpr(
+  seurat_mouse_vis ,
+  group.by=NULL,
+  group_name = NULL,
+  use_metacells=TRUE,
+  slot = 'data',
+)
+
+
+seurat_mouse_vis <- TestSoftPowers(seurat_mouse_vis)
+
+# plot the results:
+plot_list <- PlotSoftPowers(seurat_mouse_vis)
+
+# assemble with patchwork
+pdf(paste0(fig_dir, 'mouse_vis_softpower.pdf'), width=12, height=8)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+# construct wgcna network:
+seurat_mouse_vis <- ConstructNetwork(
+  seurat_mouse_vis, tom_name='mouse_vis', overwrite_tom=TRUE
+)
+
+# plot the dendrogram
+pdf(paste0(fig_dir, "mouse_vis_dendro2.pdf"),height=3, width=6)
+PlotDendrogram(seurat_mouse_vis, main='hdWGCNA Dendrogram')
+dev.off()
+
+
+seurat_mouse_vis <- ModuleEigengenes(seurat_mouse_vis, exclude_grey=FALSE)
+seurat_mouse_vis <- ModuleConnectivity(seurat_mouse_vis)
+
+seurat_mouse_vis <- ResetModuleNames(
+  seurat_mouse_vis,
+  new_name = "SM"
+)
+print(names(GetModules(seurat_mouse_vis)))
+
+
+
+MEs <- GetMEs(seurat_mouse_vis)
+modules <- GetModules(seurat_mouse_vis)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+MEs <- MEs[,mods]
+
+seurat_mouse_vis@meta.data <- cbind(seurat_mouse_vis@meta.data, MEs)
+
+plot_list <- list()
+for(cur_mod in mods){
+  print(cur_mod)
+  p <- SampleFeaturePlot(
+    seurat_mouse_vis,
+    feature=cur_mod,
+    sample_col = "region",
+    ncol = 2,
+    raster=TRUE,
+    plot_max = 'q99',
+    plot_min = 0,
+    colfunc = inferno,
+    rev_colors=TRUE,
+    dpi=600,
+  )
+  plot_list[[cur_mod]] <- p
+  #
+  # pdf(paste0(fig_dir, 'mouse_ME_spatial_featureplots/', cur_mod, '_featureplot.pdf'), width=8, height=4)
+  # print(p)
+  # dev.off()
+
+}
+
+pdf(paste0(fig_dir, 'mouse_ME_spatial_featureplots/combined_featureplot.pdf'), width=10, height=12)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+
+
+# add hMEs to Seurat meta-data:
+seurat_@meta.data <- cbind(seurat_obj@meta.data, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_mouse_vis, features=mods, group.by = 'annotation', dot.min=0.25)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue')
+
+# plot output
+pdf("figures/mouse_vis_dotplot.pdf",height=6, width=8)
+p
+dev.off()
+
+
+
+seurat_mouse_vis@meta.data <- seurat_mouse_vis@meta.data[,colnames(seurat_mouse_vis@meta.data)[!colnames(seurat_mouse_vis@meta.data) %in% c(mods, 'grey')]]
+
+
+
+cur_gene <- 'Plp1'
+p <- SampleFeaturePlot(
+  seurat_mouse_vis,
+  feature=cur_gene,
+  sample_col = "region",
+  ncol = 2,
+  raster=TRUE,
+  plot_max = 5,
+  plot_min = 2,
+  colfunc = inferno,
+  rev_colors=TRUE,
+  dpi=400,
+)
+
+pdf(paste0(fig_dir, cur_gene, '_featureplot.pdf'), width=8, height=4)
+print(p)
+dev.off()
+
+
+
+
+################################################################################
+# Hubgene circle plots:
+################################################################################
+
+library(igraph)
+
+# individual module networks
+ModuleNetworkPlot(
+  seurat_mouse_vis,
+  mods = "all",
+  outdir = paste0(fig_dir, 'mouse_vis_hubNetworks/')
+)
+
+
+################################################################################
+# UMAP:
+################################################################################
+
+
+seurat_mouse_vis <- RunModuleUMAP(
+  seurat_mouse_vis,
+  n_hubs = 5,
+  n_neighbors=15,
+  min_dist=0.3,
+  spread=1
+)
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(
+  seurat_mouse_vis
+)
+
+# plot with ggplot
+p <- ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color,
+   size=umap_df$kME*2
+  ) +
+  umap_theme()
+
+pdf(paste0(fig_dir, 'mouse_vis_hubgene_umap_ggplot_uns.pdf'), width=5, height=5)
+p
+dev.off()
+
+
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(seurat_mouse_vis)
+
+
+
+# plot with ggplot
+plot_df <- umap_df
+
+# compute coordinates for cluster labels
+centroid_df <- data.frame()
+for(cur_cluster in unique(plot_df[['module']])){
+  cur_meta <- plot_df[plot_df[['module']] == cur_cluster,]
+  df <- data.frame(
+    cluster = cur_cluster,
+    UMAP1 = mean(cur_meta$UMAP1),
+    UMAP2 = mean(cur_meta$UMAP2)
+  )
+  centroid_df <- rbind(centroid_df, df)
+}
+
+
+
+hub_genes <- GetHubGenes(seurat_mouse_vis, 3)
+
+
+# add annotation
+anno_genes <- hub_genes$gene_name
+plot_df$anno <- ifelse(plot_df$gene %in% anno_genes, umap_df$gene, '')
+
+
+
+plot_df_anno <- subset(plot_df, anno != '')
+p <-  plot_df %>%
+  ggplot(aes(x=UMAP1, y=UMAP2, color=module)) +
+  ggrastr::rasterise(
+    geom_point(
+      inherit.aes=FALSE,
+      data=plot_df,
+      aes(x=UMAP1, y=UMAP2, color=module),
+      color=plot_df$color,
+      size=plot_df$kME,
+    ), dpi=800, dpi_scale=0.5) +
+  geom_point(
+    inherit.aes = FALSE,
+    data = plot_df_anno,
+    shape=21, color='black',
+    fill=plot_df_anno$color,
+    size=plot_df_anno$kME,
+    aes(x=UMAP1, y=UMAP2, fill=module)
+  ) +
+  # add labels
+  ggrepel::geom_text_repel(data = centroid_df, label=centroid_df$cluster, color='black', max.overlaps=Inf, size=3, fontface='bold') +
+
+  geom_text_repel(label=plot_df$anno, max.overlaps=Inf, color='black', fontface='italic', size=2) +
+#  scale_color_manual(values=cp) +
+#  scale_fill_manual(values=cp) +
+  umap_theme() + NoLegend() +
+  coord_equal() +
+  theme(
+    plot.margin = margin(0,0,0,0)
+  )
+
+
+  pdf(paste0(fig_dir, 'mouse_vis_hubgene_umap_ggplot.pdf'), width=5, height=5)
+  print(p)
+  dev.off()
+
+
+
+
+
+saveRDS(seurat_mouse_vis, file='data/10x_mouse_hdWGCNA.rds')
+
+
+
+library(reshape2)
+library(igraph)
+pdf(paste0(fig_dir, 'mouse_vis_hubgene_umap_igraph.pdf'), width=10, height=10)
+ModuleUMAPPlot(
+  seurat_mouse_vis,
+  edge.alpha=0.5,
+  sample_edges=TRUE,
+  keep_grey_edges=FALSE,
+  edge_prop=0.075, # taking the top 20% strongest edges in each module
+  #label_genes = label_genes,
+  label_hubs=5 # how many hub genes to plot per module?
+)
+dev.off()
+
+
+```
+
+
+change module colors
+
+```{r eval=FALSE}
+
+library(MetBrewer)
+
+modules <- GetModules(seurat_mouse_vis)
+mods <- levels(modules$module)
+mod_colors <- dplyr::select(modules, c(module, color)) %>%
+  distinct %>% arrange(module) %>% .$color
+n_colors <- length(mod_colors) -1
+
+modules$module <- ifelse(
+  is.na(as.character(modules$module)), 'grey',
+  as.character(modules$module)
+)
+modules$module <- as.factor(modules$module)
+modules[is.na(modules$module),'module'] <- 'grey'
+seurat_mouse_vis <- SetModules(seurat_mouse_vis, modules)
+
+new_colors <- paste0(met.brewer("Redon", n=n_colors, type='discrete'))
+seurat_mouse_vis <- ResetModuleColors(seurat_mouse_vis, new_colors)
+
+```
+
+
+Enrichment analysis
+
+```{r eval=FALSE}
+
+library(enrichR)
+
+dbs <-c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021', 'WikiPathway_2021_Mouse', 'KEGG_2021_Mouse')
+
+# compute GO terms:
+seurat_mouse_vis <- RunEnrichr(seurat_mouse_vis, dbs=dbs)
+
+enrichr_df <- GetEnrichrTable(seurat_mouse_vis) %>% subset(P.value < 0.05)
+write.table(enrichr_df, quote=FALSE, sep='\t', row.names=FALSE, file=paste0(data_dir, 'mouse_vis_enrichr.tsv'))
+
+
+# make GO term plots:
+EnrichrBarPlot(
+  seurat_mouse_vis,
+  outdir = "figures/mouse_vis_enrichr_plots",
+  n_terms = 25, plot_size = c(4,16),
+  logscale=TRUE
+)
+
+
+# inspect the enrichr table:
+enrichr_df <- GetEnrichrTable(seurat_mouse_vis)
+
+
+
+# plot selected go terms:
+
+
+modules <- GetModules(seurat_mouse_vis)
+color_df <- modules %>% subset(module!='grey') %>%
+  select(c(module, color)) %>% distinct %>%
+  mutate(module=droplevels(module)) %>%
+  rename(c(group=module, colour=color))
+mods <- levels(modules$module); mods <- mods[mods != 'grey']
+mods <- paste0('SM', 1:12)
+
+color_df$group <- factor(as.character(color_df$group), levels=mods)
+
+# helper function to wrap text
+wrapText <- function(x, len) {
+    sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), USE.NAMES = FALSE)
+}
+
+combined_output <- GetEnrichrTable(seurat_mouse_vis)
+selected_terms <- read.delim('data/mouse_vis_enrichr_selected.txt', sep='\t', header=1)
+
+# subset selected terms
+selected_terms <- subset(combined_output, Term %in% selected_terms$Term & P.value < 0.05)
+
+selected_terms$group <- factor(
+  as.character(selected_terms$module),
+  levels = mods
+)
+
+# set max pval
+
+quantile(-log(selected_terms$P.value), 0.95)
+max_p <- 10
+
+selected_terms$logp <- -log(selected_terms$P.value)
+selected_terms$logp <- ifelse(selected_terms$logp > max_p, max_p, selected_terms$logp)
+
+# remove GO Term ID
+selected_terms$Term <- str_replace(selected_terms$Term, " \\s*\\([^\\)]+\\)", "")
+
+selected_terms <- selected_terms %>%
+  arrange(group)
+
+
+selected_terms$wrap <- wrapText(selected_terms$Term, 35)
+
+selected_terms$Term <- factor(
+  as.character(selected_terms$Term),
+  levels = rev(unique(as.character(selected_terms$Term)))
+)
+
+# GO Term dot plot
+
+p <- selected_terms %>%
+  ggplot(aes(x = group, y = Term, color =logp, size=log(Combined.Score))) +
+  geom_point() +
+  scale_color_stepsn(colors=rev(magma(256))) +
+  RotatedAxis() + xlab('') + ylab('') +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.border = element_rect(size=1, color='black', fill=NA),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    plot.margin = margin(0,0,0,0),
+    panel.grid = element_line(size=0.25, color='lightgrey')
+  )
+
+
+# make the colorbar as its own heatmap
+color_df$var <- 1
+cp <- color_df$colour; names(cp) <- color_df$group
+colorbar <- color_df %>%
+  ggplot(aes(x=group, y=var, fill=group)) +
+  geom_tile() +
+  scale_fill_manual(values=cp) +
+  coord_equal() +
+  NoLegend() + RotatedAxis() +
+  theme(
+    plot.title=element_blank(),
+    axis.line=element_blank(),
+    axis.ticks.y =element_blank(),
+    axis.text.y = element_blank(),
+    axis.title = element_blank(),
+    plot.margin=margin(0,0,0,0),
+  )
+
+
+
+
+pdf(paste0(fig_dir, 'mouse_vis_selected_GO_terms.pdf'), width=8.5, height=8)
+p / colorbar #+ plot_layout(heights=c(20,1))
+dev.off()
+
+library(viridis)
+
+
+
+plot_df <- selected_terms %>% subset(module %in% c('SM4', 'SM6'))
+
+p <- plot_df  %>%
+  ggplot(aes(x=log(Combined.Score), y=reorder(wrap, Combined.Score), fill=module))+
+  geom_bar(stat='identity', position='identity', color='white') +
+  geom_text(aes(label=wrap), x=.1, color='black', size=3.5, hjust='left') +
+  scale_fill_manual(values=cp) +
+  ylab('Term') + xlab('log(Enrichment)') +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  theme(
+    panel.grid.major=element_blank(),
+    panel.grid.minor=element_blank(),
+    legend.title = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.y=element_blank(),
+    axis.line.y=element_blank(),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+pdf(paste0(fig_dir, 'mouse_vis_selected_GO_terms_bar.pdf'), width= 3, height=5 , useDingbats=FALSE)
+p + facet_wrap(~module, ncol=1, scales='free') + NoLegend()
+dev.off()
+
+
+
+```
+
+Overlap with the FIRE mouse DEGs with
+
+```{r eval=FALSE}
+
+seurat_fire <- readRDS(file='/dfs7/swaruplab/smorabit/analysis/FIRE_mouse_2021/data/FIRE_mouse_seurat.rds')
+
+
+load('~/swaruplab/smorabit/analysis/FIRE_mouse_2021/differential_analysis/data/cluster_marker_DEGs.rda')
+
+table(markers$cluster) %>% dim
+
+markers <- dplyr::rename(markers, avg_log2FC = avg_logFC)
+
+overlap_df <- OverlapModulesDEGs(
+  seurat_mouse_vis,
+  deg_df = markers,
+  fc_cutoff=1
+)
+
+overlap_df$group <- factor(
+  as.character(overlap_df$group), levels=
+  levels(seurat_fire$clusternum_anno)
+)
+
+
+
+# plot the results as a heatmap:
+maxval <- 50
+plot_df <- overlap_df
+plot_df$odds_ratio <- ifelse(plot_df$odds_ratio > maxval, maxval, plot_df$odds_ratio)
+plot_df$textcolor <- ifelse(plot_df$odds_ratio > 0.7*maxval, 'white', 'black')
+
+high_color = 'navy'
+p <- plot_df %>%
+  ggplot(aes(y=group, x=module, fill=odds_ratio)) +
+  geom_tile() +
+  geom_text(label=plot_df$Significance, vjust = 0.72, color=plot_df$textcolor) +
+  scale_fill_gradient(low='white', high=high_color) +
+  RotatedAxis() +
+  labs(fill = 'Odds ratio') +
+  theme(
+    panel.border = element_rect(fill=NA, color='black', size=1),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+  #  axis.text.y = element_blank(),
+  #  axis.ticks.y = element_blank(),
+    plot.margin=margin(0,0,0,0)
+  ) +
+  coord_equal()
+
+
+
+# set up module colors
+m1 <- GetModules(seurat_mouse_vis)
+mods1 <- levels(m1$module); mods1 <- mods1[mods1 != 'grey']
+m1_colors <- m1 %>% subset(module != 'grey') %>%
+  mutate(module = droplevels(module)) %>%
+  dplyr::select(module, color) %>% distinct
+rownames(m1_colors) <- as.character(m1_colors$module)
+m1_colors <- m1_colors[mods1,]
+m1_colors$module <- factor(as.character(m1_colors$module), levels=levels(overlap_df$module))
+#m1_colors$module <- fct_rev(m1_colors$module)
+m1_colors %<>% arrange(module)
+
+m1_colors$var <- 1
+colorbar1 <- m1_colors %>%
+  ggplot(aes(y=var, x=module, fill=module)) +
+  geom_tile() +
+  scale_fill_manual(values=m1_colors$color) +
+  NoLegend() + RotatedAxis() +
+  theme(
+    plot.title=element_blank(),
+    axis.line=element_blank(),
+    axis.ticks.y =element_blank(),
+    axis.text.y = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank(),
+    plot.margin=margin(0,0,0,0),
+  )
+
+
+
+
+pdf(paste0(fig_dir, 'module_overlap_FIRE_DEGs.pdf'), width=6, height=9)
+ p + colorbar1 + plot_layout(heights=c(50,1))
+dev.off()
+
+
+
+```
+
+
+
+
+
+
+
+Set up the anterior / posterior mouse brain dataset:
+
+Locally
+
+```{r eval=FALSE}
+
+library(Seurat)
+library(SeuratData)
+library(tidyverse)
+library(magrittr)
+
+brain <- LoadData("stxBrain", type = "anterior1")
+brain2 <- LoadData("stxBrain", type = "posterior1")
+seurat_obj <- merge(brain, brain2)
+
+# add image data:
+image_df <- do.call(rbind, lapply(names(seurat_obj@images), function(x){
+  seurat_obj@images[[x]]@coordinates
+}))
+
+
+tmp <- merge(seurat_obj@meta.data, image_df, by='row.names')
+rownames(tmp) <- tmp$Row.names
+ix <- match(as.character(colnames(seurat_obj)), as.character(rownames(tmp)))
+tmp <- tmp[ix,]
+all.equal(as.character(rownames(tmp)), as.character(colnames(seurat_obj)))
+
+seurat_obj@meta.data <- tmp
+
+# jointly process
+
+seurat_obj %<>% NormalizeData() %>%
+  FindVariableFeatures() %>%
+  ScaleData() %>%
+  RunPCA()
+seurat_obj <- FindNeighbors(seurat_obj, dims = 1:30)
+seurat_obj <- FindClusters(seurat_obj,verbose = TRUE)
+seurat_obj %<>% RunUMAP(dims = 1:30)
+head(seurat_obj@meta.data)
+
+p <- DimPlot(seurat_obj, reduction = "umap", group.by = c("ident", "orig.ident"))
+
+pdf('umap.pdf', width=10, height=4)
+p
+dev.off()
+
+saveRDS(seurat_obj, file='10x_mouse_brain_processed.rds')
+
+```
+
+Make a plot to demonstrate the metapot algorithm
+
+```{r eval=FALSE}
+
+cur_seurat <- seurat_mouse_vis %>% subset(region == 'anterior')
+
+
+# get expression matrix:
+X <- GetAssayData(cur_seurat, slot='counts')
+
+# boundaries
+row_range <- range(cur_seurat$row)
+col_range <- range(cur_seurat$col)
+
+# loop boundaries
+col_bounds <- col_range[1]:col_range[2]
+col_bounds <- col_bounds[which(1:length(col_bounds) %% 4 == 0)]
+
+# even or odd cols?
+if(all(col_bounds %% 2 == 0)){even = TRUE} else{even = FALSE}
+
+row_bounds <- row_range[1]:row_range[2]
+if(even){
+  row_bounds <- row_bounds[row_bounds %% 2 == 0]
+} else{
+  row_bounds <- row_bounds[row_bounds %% 2 != 0]
+}
+
+# note: even number rows go to even number cols etc
+coords <- cur_seurat@meta.data[,c('row', 'col')]
+# print(head(coords))
+# print(row_bounds)
+# print(col_bounds)
+
+distances <- proxy::dist(coords, coords, method='euclidean')
+
+tmp <- distances[distances != 0]
+min1 <- min(tmp)
+
+bcs <- c()
+unique_cols <- unique(cur_seurat$col);
+unique_cols <- unique_cols[order(unique_cols)]
+combine_list <- list()
+
+tmp <- lapply(1:length(col_bounds), function(i){
+  x = col_bounds[i]
+  tmp <- lapply(1:length(row_bounds), function(j){
+  #  print(j)
+    y = row_bounds[j]
+    cur_coords <- coords %>% subset(row == y & col == x)
+    out <- c()
+    if(nrow(cur_coords) > 0){
+      # print('in here')
+      # print(paste(x,y))
+      # print(paste(i,j))
+      # print('cur_coords')
+      # print(head(cur_coords))
+
+      cur_bc <- rownames(cur_coords)
+      bcs <- c(bcs, cur_bc)
+
+      # get cur distances:
+      cur_dist <- distances[cur_bc,]
+      cur_dist <- cur_dist[cur_dist != 0]
+      cur_dist <- cur_dist[cur_dist == min1]
+
+      # find neighbors that are close to this spot
+      ix <- which(unique_cols == x)
+      other_bcs <- coords %>% subset(col %in% unique_cols[c(ix-2, ix+2)] & row == y) %>% rownames
+      cur_neighbors <- c(names(cur_dist), other_bcs)
+
+      # update list of barcodes:
+      combine_list[[cur_bc]] <- cur_neighbors
+      if(length(cur_neighbors) < 2){
+        return(c())
+      }
+
+      # aggregate expression profile for these spots:
+      cur_X <- X[,c(cur_bc, cur_neighbors)]
+      cur_X <- Matrix::rowSums(cur_X)
+
+      if(mode == 'average'){
+        cur_X <- cur_X / (length(cur_neighbors) + 1)
+      }
+
+      out <- cur_X
+
+    } else{
+      return()
+    }
+    list(cur_bc, cur_neighbors, out)
+
+  })
+
+
+  # get bc-neighbor results
+  bcs <- unlist(lapply(1:length(tmp), function(k){tmp[[k]][[1]]}))
+  cur_neighbors <- lapply(1:length(tmp), function(k){tmp[[k]][[2]]})
+  cur_neighbors[sapply(cur_neighbors, is.null)] <- NULL
+  names(cur_neighbors) <- bcs
+
+  # combine expression results
+  cur_X <- do.call(rbind, lapply(1:length(tmp), function(k){tmp[[k]][[3]]}))
+
+  list(bcs, cur_neighbors, cur_X)
+
+})
+
+
+# get bc-neighbor results
+bcs <- unlist(lapply(1:length(tmp), function(k){tmp[[k]][[1]]}))
+
+cur_neighbors <- list()
+for(k in 1:length(tmp)){
+  cur_neighbors <- c(cur_neighbors, tmp[[k]][[2]])
+}
+names(cur_neighbors) <- bcs
+
+
+
+cur_seurat$selected <- ifelse(colnames(cur_seurat) %in% bcs, 'selected', 'other')
+
+color_df <- data.frame(
+  colour = c('lightgrey', 'navy'),
+  group = c('other', 'selected')
+)
+
+p <- VisDimPlot(
+  cur_seurat,
+  group.by = 'selected',
+  sample_col = 'region',
+  raster=FALSE,
+  ncol = 1,
+  text_size=15,
+  color_df = color_df
+)
+
+pdf(paste0(fig_dir, 'mouse_metaspot_selected.pdf'), width=6, height=6)
+p
+dev.off()
+
+
+cn <- which(unlist(lapply(cur_neighbors, function(x){length(x) == 6})))
+
+
+cur_bc <- cur_neighbors[[cn[1]]]
+
+cur_seurat$selected <- ifelse(colnames(cur_seurat) == names(cn[1]), 'selected', ifelse(
+  colnames(cur_seurat) %in% cur_bc, 'neighbor', 'other'
+))
+
+
+color_df <- data.frame(
+  colour = c('lightgrey', 'dodgerblue', 'navy'),
+  group = c('other', 'neighbor', 'selected')
+)
+
+p <- VisDimPlot(
+  cur_seurat,
+  group.by = 'selected',
+  sample_col = 'region',
+  raster=FALSE,
+  ncol = 1,
+  text_size=15,
+  color_df = color_df
+)
+
+pdf(paste0(fig_dir, 'mouse_metaspot_selected_neighbors.pdf'), width=6, height=6)
+p
+dev.off()
+
+
+mobj <- GetMetacellObject(seurat_mouse_vis)
+
+density_df <- mobj@misc$density %>% reshape2::melt()
+
+p <- ggplot(density_df, aes(x = group, y=value, fill=variable)) +
+  geom_bar(position='dodge', stat='identity') +
+  ylab('1 - Sparsity') + xlab('') +
+  scale_fill_manual(values=c('navy', 'grey')) +
+  RotatedAxis()
+
+
+pdf(paste0(fig_dir, 'mouse_metaspot_density.pdf'), width=3, height=3)
+p
+dev.off()
+
+
+
+
+```
+
+
+Compare distributions of pairwise correlations
+
+```{r eval=FALSE}
+library(widyr)
+
+n_genes <- 3000
+genes_use <- rownames(seurat_mouse_vis)
+genes_use <- sample(genes_use, n_genes)
+X <- GetAssayData(seurat_mouse_vis, slot='data')[genes_use,]
+X <- t(X)
+
+# pairwise corr
+out <- qlcMatrix::corSparse(X)
+
+# flatten for plotting
+plot_df <- reshape2::melt(out)
+plot_df <- subset(plot_df, Var1 != Var2)
+plot_df$group <- 'st'
+
+
+# run for metacell
+mobj <- GetMetacellObject(seurat_mouse_vis)
+X <- GetAssayData(mobj, slot='data')[genes_use,]
+X <- t(X)
+
+# pairwise corr
+out <- qlcMatrix::corSparse(X)
+
+# flatten for plotting
+plot_df_mc <- reshape2::melt(out)
+plot_df_mc <- subset(plot_df_mc, Var1 != Var2)
+plot_df_mc$group <- 'ms'
+plot_df <- rbind(plot_df, plot_df_mc)
+
+plot_df <- plot_df[!is.nan(plot_df$value),]
+plot_df$group <- factor(as.character(plot_df$group), levels=c('st', 'ms'))
+
+
+p <- plot_df %>%
+  ggplot(aes(x=value, fill=group)) +
+#  geom_histogram(aes(y=..density..), position="identity", alpha=0.5)+
+  geom_density(alpha=0.6) +
+  geom_vline(xintercept=0, color='black', linetype='dashed') +
+  scale_fill_manual(values=c('grey', 'navy')) +
+  xlim(c(-1,1)) + theme(
+    panel.border = element_rect(size=1, fill=NA, color='black'),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank()
+  )
+
+pdf(paste0(fig_dir, 'mouse_correlation_hist.pdf'), width=5, height=2)
+p
+dev.off()
 
 
 ```

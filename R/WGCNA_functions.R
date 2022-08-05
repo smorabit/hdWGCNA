@@ -517,8 +517,7 @@ ComputeModuleEigengene <- function(
   }
 
   # get genes in this module:
-  cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
-  print(cur_genes)
+  cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name %>% as.character()
 
   # subset seurat object by these genes only:
   X_dat <- GetAssayData(seurat_obj, slot='data', assay = assay)[cur_genes,]
@@ -646,7 +645,7 @@ ModuleEigengenes <- function(
   verbose=TRUE,
   assay = NULL,
   pc_dim = 1,
-  exclude_grey = TRUE,
+  exclude_grey = FALSE,
   wgcna_name=NULL, ...
 ){
 
@@ -667,6 +666,9 @@ ModuleEigengenes <- function(
   if(dim(seurat_obj@assays[[assay]]@data)[1] == 0){
     stop(paste0("Normalized data slot not found in selected assay ", assay))
   }
+
+  # exclude grey doesn't work yet:
+  if(exclude_grey){exclude_grey <- FALSE}
 
 
   me_list <- list()
