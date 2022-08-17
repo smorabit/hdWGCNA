@@ -1164,6 +1164,12 @@ ProjectModules <- function(
     sum(cur_mod$gene_name %in% rownames(seurat_obj)) / nrow(cur_mod)
   }))
   mods_keep <- mods[mod_props >= overlap_proportion]
+  mods_remove <- mods[mod_props < overlap_proportion]
+
+  if(length(mods) > 0){
+    warning(paste0("The following modules will not be projected because too few genes are present in seurat_obj: ", paste(mods_remove, collapse=', ')))
+  }
+
 
   # only keep modules that have enough overlapping genes
   modules <- subset(modules, module %in% mods_keep) %>%
