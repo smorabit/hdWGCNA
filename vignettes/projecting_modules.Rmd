@@ -99,7 +99,6 @@ in the query dataset, Seurat's `ScaleData` function will be run from within
 seurat_query <- ProjectModules(
   seurat_obj = seurat_query,
   seurat_ref = seurat_ref,
-  scale_genes = TRUE,
   # vars.to.regress = c(), # optionally regress covariates when running ScaleData
   group.by.vars = "Batch", # column in seurat_query to run harmony on
   wgcna_name_proj="Zhou_projected", # name of the new hdWGCNA experiment in the query dataset

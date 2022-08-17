@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9010</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9011</span>
       </span>
     </div>
 
@@ -229,7 +229,6 @@ Code
   seurat_obj <span class="op">=</span> <span class="va">seurat_atac</span>,
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
   group.by.vars <span class="op">=</span> <span class="st">'Batch'</span>,
-  scale_genes <span class="op">=</span> <span class="cn">TRUE</span>,
   wgcna_name <span class="op">=</span> <span class="st">"INH"</span>,
   wgcna_name_proj<span class="op">=</span><span class="st">"Zhou_projected"</span>
 <span class="op">)</span>
@@ -387,7 +386,6 @@ Code
   gene_mapping<span class="op">=</span><span class="va">hg38_mm10_genes</span>,
   genome1_col<span class="op">=</span><span class="st">"hg38_name"</span>, <span class="co"># genome of reference data</span>
   genome2_col<span class="op">=</span><span class="st">"mm10_name"</span>, <span class="co"># genome of query data</span>
-  scale_genes<span class="op">=</span><span class="cn">TRUE</span>,
   wgcna_name_proj <span class="op">=</span> <span class="st">"Zhou-INH"</span>
 <span class="op">)</span>
 
@@ -517,8 +515,8 @@ Code
 </h3>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load 10X genomics visium dataset</span>
-<span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">InstallData</span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span>
-<span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">LoadData</span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span>
+<span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/InstallData.html" class="external-link">InstallData</a></span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span>
+<span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span>
 
 <span class="co"># process the Visium dataset with Seurat:</span>
 <span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="va">seurat_vis</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span>
@@ -564,7 +562,6 @@ Code
   gene_mapping<span class="op">=</span><span class="va">hg38_mm10_genes</span>,
   genome1_col<span class="op">=</span><span class="st">"hg38_name"</span>, <span class="co"># genome of reference data</span>
   genome2_col<span class="op">=</span><span class="st">"mm10_name"</span>, <span class="co"># genome of query data</span>
-  scale_genes<span class="op">=</span><span class="cn">TRUE</span>,
   wgcna_name_proj <span class="op">=</span> <span class="st">"Zhou-INH"</span>
 <span class="op">)</span>
 

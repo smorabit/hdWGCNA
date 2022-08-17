@@ -81,7 +81,6 @@ ConstructMetacells <- function(
       this_choice <- cell_sample[nrow(cell_sample), ]
       shared <- sapply(others, get_shared, this_choice = this_choice)
 
-      # if (max(shared) < 0.9 * k) { # old way of doing it
       if(max(shared) <= max_shared){
           chosen <- new_chosen
       }

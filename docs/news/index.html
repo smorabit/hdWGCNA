@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9010</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9011</span>
       </span>
     </div>
 
@@ -98,24 +98,37 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.1.9009" id="hdwgcna-0119009-2022-07-30">hdWGCNA 0.1.1.9009 (2022-07-30)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119009-2022-07-30"></a></h2>
+<h2 class="page-header" data-toc-text="0.1.1.9011" id="hdwgcna-0119011-2022-08-17">hdWGCNA 0.1.1.9011 (2022-08-17)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119011-2022-08-17"></a></h2>
 <div class="section level3">
-<h3 id="added-0-1-1-9009">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9009"></a></h3>
+<h3 id="added-0-1-1-9011">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9011"></a></h3>
 <ul><li>None</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-0-1-1-9009">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9009"></a></h3>
+<h3 id="changes-0-1-1-9011">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9011"></a></h3>
+<ul><li>Reverted the <code>exclude_grey</code> flag back to doing nothing in the <code>ModuleEigengenes</code> function because it messed up some downstream tasks, will resolve in a future update.</li>
+<li>
+<code>ProjectModules</code> now excludes modules with too many missing genes in the query dataset, tunable by the <code>overlap_proportion</code> parameter.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.1.9010" id="hdwgcna-0119010-2022-07-30">hdWGCNA 0.1.1.9010 (2022-07-30)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119010-2022-07-30"></a></h2>
+<div class="section level3">
+<h3 id="added-0-1-1-9010">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9010"></a></h3>
+<ul><li>None</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-0-1-1-9010">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9010"></a></h3>
 <ul><li>By default, <code>ModuleEigengenes</code> does not compute MEs for the grey module. User can change behavior with the <code>exclude_grey</code> flag.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.1.9009" id="hdwgcna-0119009-2022-07-23">hdWGCNA 0.1.1.9009 (2022-07-23)<a class="anchor" aria-label="anchor" href="#hdwgcna-0119009-2022-07-23"></a></h2>
 <div class="section level3">
-<h3 id="added-0-1-1-9009-1">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9009-1"></a></h3>
+<h3 id="added-0-1-1-9009">Added<a class="anchor" aria-label="anchor" href="#added-0-1-1-9009"></a></h3>
 <ul><li>None</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-0-1-1-9009-1">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9009-1"></a></h3>
+<h3 id="changes-0-1-1-9009">Changes<a class="anchor" aria-label="anchor" href="#changes-0-1-1-9009"></a></h3>
 <ul><li>Bugfix in <code>ProjectModules</code>.</li>
 <li>Bugfix in <code>MetacellsByGroups</code>
 </li>

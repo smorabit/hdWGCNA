@@ -1,4 +1,14 @@
-# hdWGCNA 0.1.1.9009 (2022-07-30)
+# hdWGCNA 0.1.1.9011 (2022-08-17)
+## Added
+- None
+
+## Changes
+- Reverted the `exclude_grey` flag back to doing nothing in the `ModuleEigengenes` function because it messed up some downstream tasks, will resolve in a future update.
+- `ProjectModules` now excludes modules with too many missing genes in the query dataset,
+tunable by the `overlap_proportion` parameter.
+
+
+# hdWGCNA 0.1.1.9010 (2022-07-30)
 ## Added
 - None
 

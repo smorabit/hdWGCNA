@@ -1128,6 +1128,7 @@ ProjectModules <- function(
   group.by.vars=NULL,
   gene_mapping=NULL, # table mapping genes from species 1 to species 2
   genome1_col=NULL, genome2_col=NULL,
+  overlap_proportion = 0.5,
   vars.to.regress = NULL,
   scale.model.use = 'linear',
   wgcna_name=NULL, wgcna_name_proj=NULL,
@@ -1155,6 +1156,18 @@ ProjectModules <- function(
   if(!is.null(gene_mapping)){
     modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
   }
+
+  # what is the proportion of genes in each module that are in seurat_obj?
+  mods <- as.character(unique(modules$module))
+  mod_props <- unlist(lapply(mods, function(x){
+    cur_mod <- subset(modules, module == x)
+    sum(cur_mod$gene_name %in% rownames(seurat_obj)) / nrow(cur_mod)
+  }))
+  mods_keep <- mods[mod_props >= overlap_proportion]
+
+  # only keep modules that have enough overlapping genes
+  modules <- subset(modules, module %in% mods_keep) %>%
+    dplyr::mutate(module = droplevels(module))
 
   # get genes that overlap between WGCNA genes & seurat_obj genes:
   gene_names <- modules$gene_name
