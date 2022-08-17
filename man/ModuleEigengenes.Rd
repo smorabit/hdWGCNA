@@ -13,7 +13,7 @@ ModuleEigengenes(
   verbose = TRUE,
   assay = NULL,
   pc_dim = 1,
-  exclude_grey = TRUE,
+  exclude_grey = FALSE,
   wgcna_name = NULL,
   ...
 )

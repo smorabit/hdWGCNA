@@ -1111,12 +1111,20 @@ OverlapModulesDEGs <- function(
 
 #' ProjectModules
 #'
-#' Computes intramodular connectivity (kME) based on module eigengenes.
+#' Project a set of co-expression modules from a reference to a query dataset
 #'
-#' @param seurat_obj A Seurat object
-#' @param dbs List of EnrichR databases
-#' @param max_genes Max number of genes to include per module, ranked by kME.
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object where the modules will be projected to
+#' @param seurat_ref A Seurat object containing the co-expression modules to be projected
+#' @param modules optionally provide a dataframe containing gene-module information to bypass seurat_ref
+#' @param group.by.vars groups to harmonize by
+#' @param gene_mapping dataframe to map gene names between genomes
+#' @param genome1_col column in gene_mapping containing the genes for seurat_ref (reference)
+#' @param genome2_col column in gene_mapping containing the genes for seurat_obj (query)
+#' @param overlap_proportion the proportion of genes that must be present in seurat_obj for a given module to be projected. Default = 0.5 (50% of genes)
+#' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
+#' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_ref@misc slot
+#' @param wgcna_name_proj The name of the hdWGCNA experiment to be created for the projected modules in seurat_obj
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -1170,7 +1178,6 @@ ProjectModules <- function(
     warning(paste0("The following modules will not be projected because too few genes are present in seurat_obj: ", paste(mods_remove, collapse=', ')))
   }
 
-
   # only keep modules that have enough overlapping genes
   modules <- subset(modules, module %in% mods_keep) %>%
     dplyr::mutate(module = droplevels(module))
@@ -1186,7 +1193,6 @@ ProjectModules <- function(
   # subset modules by genes in this seurat object:
   modules <- modules %>% subset(gene_name %in% genes_use)
   print(head(modules))
-
 
   # setup new seurat obj for wgcna:
   if(!(wgcna_name_proj %in% names(seurat_obj@misc))){

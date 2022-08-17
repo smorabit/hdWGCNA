@@ -12,6 +12,7 @@ ProjectModules(
   gene_mapping = NULL,
   genome1_col = NULL,
   genome2_col = NULL,
+  overlap_proportion = 0.5,
   vars.to.regress = NULL,
   scale.model.use = "linear",
   wgcna_name = NULL,
@@ -20,16 +21,32 @@ ProjectModules(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object where the modules will be projected to}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{seurat_ref}{A Seurat object containing the co-expression modules to be projected}
 
-\item{dbs}{List of EnrichR databases}
+\item{modules}{optionally provide a dataframe containing gene-module information to bypass seurat_ref}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{group.by.vars}{groups to harmonize by}
+
+\item{gene_mapping}{dataframe to map gene names between genomes}
+
+\item{genome1_col}{column in gene_mapping containing the genes for seurat_ref (reference)}
+
+\item{genome2_col}{column in gene_mapping containing the genes for seurat_obj (query)}
+
+\item{overlap_proportion}{the proportion of genes that must be present in seurat_obj for a given module to be projected. Default = 0.5 (50\% of genes)}
+
+\item{vars.to.regress}{character vector of variables in seurat_obj@meta.data to regress when running ScaleData}
+
+\item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_ref@misc slot}
+
+\item{wgcna_name_proj}{The name of the hdWGCNA experiment to be created for the projected modules in seurat_obj}
 }
 \description{
-Computes intramodular connectivity (kME) based on module eigengenes.
+Project a set of co-expression modules from a reference to a query dataset
 }
 \examples{
 ProjectModules
