@@ -4,7 +4,7 @@
 [![R](https://img.shields.io/github/r-package/v/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/tree/dev)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/issues)
 [![DOI](https://zenodo.org/badge/286864581.svg)](https://zenodo.org/badge/latestdoi/286864581)
-
+[![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
 
 **Note:** hdWGCNA is under active development, so you will likely run into errors and small typos
 if you choose to use hdWGCNA before its first stable release.

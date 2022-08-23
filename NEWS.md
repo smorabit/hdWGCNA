@@ -1,3 +1,11 @@
+# hdWGCNA 0.1.1.9012 (2022-08-27)
+## Added
+- None
+
+## Changes
+- Now includes options for other types of correlations in `ModuleConnectivity`.
+
+
 # hdWGCNA 0.1.1.9011 (2022-08-17)
 ## Added
 - None

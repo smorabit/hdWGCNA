@@ -6,22 +6,38 @@
 \usage{
 ModuleConnectivity(
   seurat_obj,
+  group.by = NULL,
+  group_name = NULL,
+  corFnc = "bicor",
+  corOptions = "use='p'",
   harmonized = TRUE,
   assay = NULL,
   slot = "data",
-  group.by = NULL,
-  group_name = NULL,
   wgcna_name = NULL,
   ...
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{group.by}{column in seurat_obj@meta.data containing grouping info, ie clusters or celltypes}
+
+\item{group_name}{name of the group(s) in group.by to use for kME calculation}
+
+\item{corFnc}{character string specifying the function to be used to calculate co-expression similarity. Defaults to bicor. Any function returning values}
+
+\item{corOptions}{character string specifying additional arguments to be passed to the function given by corFnc. Use "use = 'p', method = 'spearman'" to obtain Spearman correlation. Use "use = 'p'" to obtain Pearson correlation.}
+
+\item{harmonized}{logical determining whether to use harmonized MEs for kME calculation}
+
+\item{assay}{Assay in seurat_obj containing expression information.}
+
+\item{slot}{Slot in specified, default to normalized 'data' slot.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
-Computes intramodular connectivity (kME) based on module eigengenes.
-}
-\examples{
-ModuleConnectivity(pbmc)
+Computes eigengene-based connectivity (kME) based on module eigengenes and the
+gene expression in selected cell populations.
 }
 \keyword{scRNA-seq}

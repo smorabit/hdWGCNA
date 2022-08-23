@@ -893,20 +893,29 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 
 #' ModuleConnectivity
 #'
-#' Computes intramodular connectivity (kME) based on module eigengenes.
+#' Computes eigengene-based connectivity (kME) based on module eigengenes and the
+#' gene expression in selected cell populations.
 #'
 #' @param seurat_obj A Seurat object
+#' @param group.by column in seurat_obj@meta.data containing grouping info, ie clusters or celltypes
+#' @param group_name name of the group(s) in group.by to use for kME calculation
+#' @param corFnc character string specifying the function to be used to calculate co-expression similarity. Defaults to bicor. Any function returning values
+#' @param corOptions 	character string specifying additional arguments to be passed to the function given by corFnc. Use "use = 'p', method = 'spearman'" to obtain Spearman correlation. Use "use = 'p'" to obtain Pearson correlation.
+#' @param harmonized logical determining whether to use harmonized MEs for kME calculation
+#' @param assay Assay in seurat_obj containing expression information.
+#' @param slot Slot in specified, default to normalized 'data' slot.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ModuleConnectivity(pbmc)
 ModuleConnectivity <- function(
   seurat_obj,
+  group.by = NULL,
+  group_name = NULL,
+  corFnc = 'bicor',
+  corOptions = "use='p'",
   harmonized=TRUE,
   assay = NULL,
   slot = 'data',
-  group.by = NULL,
-  group_name = NULL,
   wgcna_name = NULL,
   ...
 ){
@@ -941,14 +950,13 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   datExpr <- t(as.matrix(exp_mat))
-  print(dim(datExpr))
-  print('running signedKME...')
 
   kMEs <- WGCNA::signedKME(
     datExpr,
     MEs,
     outputColumnName = "kME",
-    corFnc = "bicor",
+    corFnc = corFnc,
+    corOptions = corOptions,
     ...
   )
 
