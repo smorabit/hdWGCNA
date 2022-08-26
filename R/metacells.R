@@ -316,7 +316,6 @@ MetacellsByGroups <- function(
   )
   names(metacell_list) <- groupings
 
-  print('done making metacells')
 
   # remove NULL
   remove <- which(sapply(metacell_list, is.null))
@@ -332,14 +331,12 @@ MetacellsByGroups <- function(
   }
 
   # combine metacell objects
-  print(length(metacell_list))
   if(length(metacell_list) > 1){
     metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
   } else{
     metacell_obj <- metacell_list[[1]]
   }
 
-  print('metacell shape')
 
 
   # set idents for metacell object:

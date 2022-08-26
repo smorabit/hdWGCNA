@@ -62,6 +62,8 @@ navbar:
     - text: Other
     - text: Module customization
       href: articles/customization.html
+    - text: Using SCTransform normalized data
+      href: articles/sctransform.html
     - text: -------
     - text: All vignettes
       href: articles/index.html

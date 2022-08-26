@@ -207,7 +207,6 @@ SetDatExpr <- function(
   # get the metadata from the seurat object:
   seurat_meta <- s_obj@meta.data
 
-
   if(is.null(assay)){
     assay <- DefaultAssay(s_obj)
     warning(paste0('assay not specified, trying to use assay ', assay))

@@ -1,4 +1,12 @@
-# hdWGCNA 0.1.1.9012 (2022-08-27)
+# hdWGCNA 0.1.1.9012 (2022-08-25)
+## Added
+- Tutorial for using SCTransform normalized data.
+
+## Changes
+- None
+
+
+# hdWGCNA 0.1.1.9012 (2022-08-24)
 ## Added
 - None
 
