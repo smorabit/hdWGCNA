@@ -1203,8 +1203,27 @@ ResetModuleNames <- function(
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
   old_mods <- levels(modules$module)
+  nmods <- length(old_mods) - 1
 
-  new_names <- paste0(new_name, 1:(length(old_mods)-1))
+
+  # if it's a named list:
+  if(class(new_name) == 'list'){
+    if(all(names(new_name) %in% old_mods)){
+      ix <- match(names(new_name), old_mods)
+      new_names <- old_mods
+      new_names[ix] <- as.character(new_name)
+      new_names <- new_names[new_names != 'grey']
+    } else{
+      stop("Some module names present in new_name are not found in this hdWGCNA experiment.")
+    }
+  } else if(length(new_name) == 1){
+    new_names <- paste0(new_name, 1:nmods)
+  } else if(length(new_name) == nmods){
+    new_names <- new_name
+  } else{
+    stop("Invalid input for new_name.")
+  }
+
   grey_ind <- which(old_mods == 'grey')
 
   # account for when grey is first / last
@@ -1352,7 +1371,6 @@ ResetModuleColors <- function(
 
   # case where we give a named list:
   if(class(new_colors) == 'list'){
-    print('named list')
     ix <- match(names(new_colors), mod_colors_df$module)
     mod_colors_df[ix, 'color'] <- as.character(new_colors)
     new_colors <- mod_colors_df$color

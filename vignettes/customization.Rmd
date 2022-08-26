@@ -50,12 +50,73 @@ The following code shows how to rename the hdWGCNA modules.
 
 ```{r eval=FALSE}
 
-# run RenameModules
 seurat_obj <- ResetModuleNames(
   seurat_obj,
   new_name = "Renamed-M" # the base name for the new modules
 )
 
+# print out the new module names
+modules <- GetModules(seurat_obj)
+print(levels(modules$module))
+
+```
+
+```
+[1] "Renamed-M1"  "Renamed-M2"  "Renamed-M3"  "Renamed-M4"  "Renamed-M5"
+[6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
+[11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
+[16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"
+```
+
+Alternatively, we can supply a named list to rename selected modules.
+
+```{r eval=FALSE}
+
+rename_list <- list(
+  "Renamed-M1" = 'Charlie', # "old_module_name" = "new_module_name"
+  "Renamed-M2" = "Mac",
+  "Renamed-M3" = "Dennis"
+)
+
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = rename_list
+)
+
+# print out the new module names
+modules <- GetModules(seurat_obj)
+print(levels(modules$module))
+
+```
+
+```
+[1] "Charlie"     "Mac"         "Dennis"      "Renamed-M4"  "Renamed-M5"
+[6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
+[11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
+[16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"
+```
+
+Finally, we can supply a character vector with a new name for each module rather than a named list.
+
+```{r eval=FALSE}
+
+# how many non-grey modules are there?
+n_mods <- length(levels(modules$module)) - 1
+
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = as.character(1:n_mods)
+)
+
+# print out the new module names
+modules <- GetModules(seurat_obj)
+print(levels(modules$module))
+
+```
+
+```
+[1] "1"    "2"    "3"    "4"    "5"    "6"    "7"    "8"    "9"    "10"
+[11] "grey" "11"   "12"   "13"   "14"   "15"   "16"   "17"   "18"
 ```
 
 In the next section, we will re-make some of the hdWGCNA visualizations so we can

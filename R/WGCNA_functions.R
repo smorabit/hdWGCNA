@@ -962,8 +962,11 @@ ModuleConnectivity <- function(
 
   # add module color to the kMEs table
   modules <- modules[,1:3]
+  mods <- levels(modules$module)
+  colnames(kMEs) <- colnames(MEs)
+  kMEs <- kMEs[,mods]
+  colnames(kMEs) <- paste0("kME_", colnames(kMEs))
   kMEs <- cbind(modules, kMEs)
-  colnames(kMEs) <- c(colnames(modules), paste0("kME_", colnames(MEs)))
 
   # update the modules table in the Seurat object:
   seurat_obj <- SetModules(seurat_obj, kMEs, wgcna_name)

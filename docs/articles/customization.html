@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9013</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9014</span>
       </span>
     </div>
 
@@ -171,11 +171,53 @@
 </h2>
 <p>hdWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire hdWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the hdWGCNA modules.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># run RenameModules</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   new_name <span class="op">=</span> <span class="st">"Renamed-M"</span> <span class="co"># the base name for the new modules</span>
-<span class="op">)</span></code></pre></div>
+<span class="op">)</span>
+
+<span class="co"># print out the new module names</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>[1] "Renamed-M1"  "Renamed-M2"  "Renamed-M3"  "Renamed-M4"  "Renamed-M5"
+[6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
+[11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
+[16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
+<p>Alternatively, we can supply a named list to rename selected modules.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">rename_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  <span class="st">"Renamed-M1"</span> <span class="op">=</span> <span class="st">'Charlie'</span>, <span class="co"># "old_module_name" = "new_module_name"</span>
+  <span class="st">"Renamed-M2"</span> <span class="op">=</span> <span class="st">"Mac"</span>,
+  <span class="st">"Renamed-M3"</span> <span class="op">=</span> <span class="st">"Dennis"</span>
+<span class="op">)</span>
+
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  new_name <span class="op">=</span> <span class="va">rename_list</span>
+<span class="op">)</span>
+
+<span class="co"># print out the new module names</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>[1] "Charlie"     "Mac"         "Dennis"      "Renamed-M4"  "Renamed-M5"
+[6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
+[11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
+[16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
+<p>Finally, we can supply a character vector with a new name for each module rather than a named list.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># how many non-grey modules are there?</span>
+<span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>
+
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  new_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_mods</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="co"># print out the new module names</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>[1] "1"    "2"    "3"    "4"    "5"    "6"    "7"    "8"    "9"    "10"
+[11] "grey" "11"   "12"   "13"   "14"   "15"   "16"   "17"   "18"</code></pre>
 <p>In the next section, we will re-make some of the hdWGCNA visualizations so we can see that the module names have been updated.</p>
 </div>
 <div class="section level2">
@@ -186,7 +228,7 @@
 <h3 id="change-the-colors-of-all-modules">Change the colors of all modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-all-modules"></a>
 </h3>
 <p>In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules. First, we can make a table to show the original module-color pairings.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the module table</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
@@ -223,7 +265,7 @@ INH-M18 INH-M18      magenta
 INH-M19 INH-M19         pink
 INH-M20 INH-M20    royalblue</code></pre>
 </details><p>Next, we will use <code>ResetModuleColors</code> to change all of the module-color pairings.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load MetBrewer color scheme pakckage</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span>
 
@@ -243,12 +285,12 @@ INH-M20 INH-M20    royalblue</code></pre>
 <p>Now we will test some of the different visualization functions to check that the colors were successfully modified.</p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Recolored Dendrogram'</span><span class="op">)</span></code></pre></div>
 </details><p><img src="figures/customization/dendro.png" width="700" height="700"></p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
@@ -257,7 +299,7 @@ Code
 </details><p><img src="figures/customization/featureplot.png" width="700" height="700"></p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
@@ -271,7 +313,7 @@ Code
 <h3 id="change-the-colors-of-selected-modules">Change the colors of selected modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-selected-modules"></a>
 </h3>
 <p>In this example, we will change the colors of only two modules rather than all of them. We need to supply <code>ResetModuleColors</code> with a named list detailing which modules we want to change, and which color to change them to. We will make a FeaturePlot before and after changing the colors to test if they were properly changed.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># make a featureplot before changing colors</span>
 <span class="va">pl1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span>
 

@@ -1,3 +1,11 @@
+# hdWGCNA 0.1.1.9012 (2022-08-26)
+## Added
+- None
+
+## Changes
+- Bugfix in `ModuleConnectivity` that caused kMEs to be out of order.
+
+
 # hdWGCNA 0.1.1.9012 (2022-08-25)
 ## Added
 - Tutorial for using SCTransform normalized data.
