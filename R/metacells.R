@@ -261,6 +261,18 @@ MetacellsByGroups <- function(
     stop(paste0('Assay ', assay, ' not found in seurat_obj. Select a valid assay: ', paste0(names(seurat_obj@assays), collapse = ', ')))
   }
 
+  # check slot:
+  if(!(slot %in% c('counts', 'data', 'scale.data'))){
+    stop('Invalid input for slot. Valid choices are counts, data, scale.data.')
+  } else{
+
+    # check the shape of the slot
+    slot_dim <- dim(GetAssayData(seurat_obj, assay=assay, slot=slot))
+    if(any(slot_dim) == 0){
+      stop(paste(c("Selected slot ", slot, " not found in this assay.")))
+    }
+  }
+
   # subset seurat object by seleted cells:
   if(!is.null(cells.use)){
     seurat_full <- seurat_obj

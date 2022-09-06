@@ -18,7 +18,7 @@ on neighboring cells in provided groupings, such as cluster or cell type."><meta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9014</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9015</span>
       </span>
     </div>
 
@@ -191,6 +191,16 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Assay ", assay, " not found in seurat_obj. Select a valid assay: ", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             paste0(names(seurat_obj@assays), collapse = ", ")))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(slot %in% c("counts", "data", "scale.data"))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Invalid input for slot. Valid choices are counts, data, scale.data.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         slot_dim &lt;- dim(GetAssayData(seurat_obj, assay = assay, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             slot = slot))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (any(slot_dim) == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             stop(paste(c("Selected slot ", slot, " not found in this assay.")))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(cells.use)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, cells.use]</span>
@@ -268,7 +278,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe2c597c6e8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96679ca118&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

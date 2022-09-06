@@ -109,14 +109,15 @@ GetMetacellObject <- function(seurat_obj,  wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
-  if(class(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj) == "Seurat"){
+  input_class <- class(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj)
+  if(input_class == "Seurat"){
     return(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj)
-  } else{
+  } else if(input_class == "character") {
     metacell_location <- seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj
     return(seurat_obj@misc[[metacell_location]]$wgcna_metacell_obj)
+  } else{
+    return(NULL)
   }
-
 }
 
 ############################
@@ -197,10 +198,14 @@ SetDatExpr <- function(
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
 
+  # get metacell object
+  m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+
   # use metacells or whole seurat object?
-  if(use_metacells){
-    s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  if(use_metacells & !is.null(m_obj)){
+    s_obj <- m_obj
   } else{
+    if(is.null(m_obj)){warning("Metacell Seurat object not found. Using full Seurat object instead.")}
     s_obj <- seurat_obj
   }
 

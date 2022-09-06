@@ -18,7 +18,7 @@ the metacell expression matrix, or from the full expression matrix."><meta prope
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9014</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9015</span>
       </span>
     </div>
 
@@ -153,10 +153,14 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     params &lt;- GetWGCNAParams(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     genes_use &lt;- GetWGCNAGenes(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (use_metacells) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- GetMetacellObject(seurat_obj, wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     m_obj &lt;- GetMetacellObject(seurat_obj, wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (use_metacells &amp; !is.null(m_obj)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- m_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (is.null(m_obj)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             warning("Metacell Seurat object not found. Using full Seurat object instead.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_meta &lt;- s_obj@meta.data</span>
@@ -204,7 +208,7 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe2c9671d58&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f966c37f758&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

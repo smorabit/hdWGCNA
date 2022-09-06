@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9014</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1.9015</span>
       </span>
     </div>
 
@@ -144,7 +144,7 @@
     
     
 <p>Data-driven models are thought to be useful when they are generalizable across different datasets. If we think about co-expression networks from this perspective, we need a way to statistically quantify the conservation of co-expression modules that were identified in one datasets across external datasets. This is a common theme in machine learning, where a model is learned on a training dataset but evaluated using an external validation dataset.</p>
-<p>In the <a href="projecting_modules.html">previous tutorial</a>, we projected the co-expression modules from a reference to a query dataset, but we did not quantify the degree to which these modules were preserved across datasets. In this tutorial, we perform statistical tests to estimate the conservation of projected modules, and we perform binary classification analysis to test if the expression of projected modules are similar across cell states between the reference and query datasets.</p>
+<p>In the <a href="projecting_modules.html">previous tutorial</a>, we projected the co-expression modules from a reference to a query dataset, but we did not quantify the degree to which these modules were preserved across datasets. In this tutorial, we perform statistical tests to estimate the conservation of projected modules.</p>
 <p>First we must load the data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -177,21 +177,40 @@
 <h2 id="module-preservation-analysis">Module preservation analysis<a class="anchor" aria-label="anchor" href="#module-preservation-analysis"></a>
 </h2>
 <p>In their 2011 paper titled <a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">“Is My Network Module Preserved and Reproducible?”</a>, Langfelder et al discuss statistical methods for module preservation analysis in co-expression network analysis. Notably, module preservation analysis can be used to assess the reproducibility of co-expression networks, but it can also be used for specific biological analyses, for example to identify which modules are significantly preserved across different disease conditions, tissues, developmental stages, or even evolutionary time.</p>
+<p>The first step in module preservation analysis is to project modules from a reference to a query dataset, which is explained in more detail in the <a href="projecting_modules.html">previous tutorial</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># set dat expr for single-cell dataset:</span>
+<code class="sourceCode R"><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
+  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
+  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
+  wgcna_name <span class="op">=</span> <span class="st">"INH"</span>,
+  wgcna_name_proj<span class="op">=</span><span class="st">"INH_projected"</span>,
+  assay<span class="op">=</span><span class="st">"RNA"</span> <span class="co"># assay for query dataset</span>
+<span class="op">)</span></code></pre></div>
+<p>Next, we set up the expression matrices for the query and reference datasets.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set dat expr for reference dataset</span>
+<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
+  <span class="va">seurat_ref</span>,
+  group_name <span class="op">=</span> <span class="st">"INH"</span>,
+  group.by <span class="op">=</span> <span class="st">"cell_type"</span>
+<span class="op">)</span>
+
+<span class="co"># set dat expr for query dataset:</span>
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   group_name <span class="op">=</span> <span class="st">"INH"</span>,
   group.by <span class="op">=</span> <span class="st">"cell_type"</span>,
   use_metacells <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span>
-
-<span class="co"># run module preservation function</span>
+<span class="op">)</span></code></pre></div>
+<p>Now we can run the <code>ModulePreservation</code> function. Note that this function does take a while to run since it is permutation based, but it can be sped up by lowering the <code>n_permutations</code> parameter, but we do not recommend any lower than 100 permutations. Also note that the <code>parallel</code> option currently does not work.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run module preservation function</span>
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservation.html">ModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
-  verbose<span class="op">=</span><span class="fl">3</span>
+  verbose<span class="op">=</span><span class="fl">3</span>,
+  n_permutations<span class="op">=</span><span class="fl">250</span>
 <span class="op">)</span>
 
 <span class="co"># getthe module preservation table</span>
@@ -205,7 +224,7 @@
 <h3 id="visualize-preservation-stats">Visualize preservation stats<a class="anchor" aria-label="anchor" href="#visualize-preservation-stats"></a>
 </h3>
 <p>In this section, we use the function <code>PlotModulePreservation</code> to visualize the statistics we computed in the previous section. This function generates a scatter plot showing the module size versus the module preservation stats.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
@@ -215,7 +234,7 @@
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/module_preservation_summary.png" width="700" height="700"></p>
 <p>Plot the ranking stats</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot ranking stats</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
@@ -229,7 +248,7 @@
 <span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/module_preservation_rank.png" width="700" height="700"></p>
 <p>Plot all of the different stats:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
@@ -239,83 +258,97 @@
 
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/module_preservation_all.png" width="700" height="700"></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="binary-classification-analysis">Binary classification analysis<a class="anchor" aria-label="anchor" href="#binary-classification-analysis"></a>
-</h2>
-<p>Explain the binary classification analysis.</p>
-<div class="section level3">
-<h3 id="transfer-cell-states-from-reference-to-query">Transfer cell states from reference to query<a class="anchor" aria-label="anchor" href="#transfer-cell-states-from-reference-to-query"></a>
-</h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># add SCANVI predicted labels from Zhou et al:</span>
-<span class="va">predicted_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'../data/Swarup_2021_predicted_obs.csv'</span><span class="op">)</span><span class="op">)</span>
-<span class="va">predicted_labels</span> <span class="op">&lt;-</span> <span class="va">predicted_labels</span> <span class="op"><a href="https://rdrr.io/pkg/igraph/man/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span><span class="op">)</span>
-<span class="va">seurat_query</span><span class="op">$</span><span class="va">predictions</span> <span class="op">&lt;-</span> <span class="va">predicted_labels</span><span class="op">$</span><span class="va">predictions</span>
+<!--
+## Binary classification analysis
 
-<span class="co"># setup cell cluster labels for ROC computation</span>
-<span class="va">seurat_ref</span><span class="op">$</span><span class="va">roc_group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>,
-  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>
-<span class="op">)</span>
-<span class="va">seurat_query</span><span class="op">$</span><span class="va">roc_group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">$</span><span class="va">predictions</span><span class="op">)</span>,
-  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">$</span><span class="va">roc_group</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
-<p>Now we visualize the transferred cell states on the UMAP:</p>
-<details><summary>
-Code
-</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_ref</span>, group.by<span class="op">=</span><span class="st">'roc_group'</span>, label<span class="op">=</span><span class="cn">TRUE</span>, repel<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Zhou'</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+Explain the binary classification analysis.
 
-<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_query</span>, group.by<span class="op">=</span><span class="st">'roc_group'</span>, label<span class="op">=</span><span class="cn">TRUE</span>, repel<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Morabito &amp; Miyoshi'</span><span class="op">)</span> <span class="op">+</span>
-   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+### Transfer cell states from reference to query
 
-<span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
-</details><p><img src="figures/projection/umap_transfer_labels.png" width="600" height="600"></p>
-</div>
-<div class="section level3">
-<h3 id="compute-roc">Compute ROC<a class="anchor" aria-label="anchor" href="#compute-roc"></a>
-</h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># compute ROC</span>
-<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ComputeROC.html">ComputeROC</a></span><span class="op">(</span>
-  <span class="va">seurat_ref</span>,
-  seurat_test <span class="op">=</span> <span class="va">seurat_query</span>,
-  group.by <span class="op">=</span> <span class="st">'roc_group'</span>
-<span class="op">)</span>
 
-<span class="co"># head the ROC table:</span>
-<span class="va">roc_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetROCData.html">GetROCData</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">roc_data</span><span class="op">$</span><span class="va">roc</span><span class="op">)</span></code></pre></div>
-<details><summary>
-Output
-</summary><pre><code>specificity sensitivity module   color       auc
+```r
+# add SCANVI predicted labels from Zhou et al:
+predicted_labels <- read.csv(paste0('../data/Swarup_2021_predicted_obs.csv'))
+predicted_labels <- predicted_labels %>% subset(X %in% colnames(seurat_query))
+seurat_query$predictions <- predicted_labels$predictions
+
+# setup cell cluster labels for ROC computation
+seurat_ref$roc_group <- factor(
+  as.character(seurat_ref$annotation),
+  levels = levels(seurat_ref$annotation)
+)
+seurat_query$roc_group <- factor(
+  as.character(seurat_query$predictions),
+  levels = levels(seurat_ref$roc_group)
+)
+```
+
+Now we visualize the transferred cell states on the UMAP:
+
+<details> <summary> Code </summary>
+
+
+```r
+p1 <- DimPlot(seurat_ref, group.by='roc_group', label=TRUE, repel=TRUE) +
+   umap_theme() +
+   ggtitle('Zhou') +
+   NoLegend()
+
+p2 <- DimPlot(seurat_query, group.by='roc_group', label=TRUE, repel=TRUE) +
+   umap_theme() +
+   ggtitle('Morabito & Miyoshi') +
+   NoLegend()
+
+p1 | p2
+```
+
+</details>
+
+<img src="figures/projection/umap_transfer_labels.png" width="600" height="600">
+
+
+### Compute ROC
+
+
+```r
+# compute ROC
+seurat_ref <- ComputeROC(
+  seurat_ref,
+  seurat_test = seurat_query,
+  group.by = 'roc_group'
+)
+
+# head the ROC table:
+roc_data <- GetROCData(seurat_obj)
+head(roc_data$roc)
+```
+
+
+<details> <summary> Output </summary>
+```
+specificity sensitivity module   color       auc
 1   1.0000000           1 INH-M1 darkred 0.9948718
 2   0.9333333           1 INH-M1 darkred 0.9948718
 3   0.8666667           1 INH-M1 darkred 0.9948718
 4   0.8000000           1 INH-M1 darkred 0.9948718
 5   0.7333333           1 INH-M1 darkred 0.9948718
 
-6   0.6666667           1 INH-M1 darkred 0.9948718</code></pre>
+6   0.6666667           1 INH-M1 darkred 0.9948718
+```
 </details>
-</div>
-<div class="section level3">
-<h3 id="plot-roc-curves">Plot ROC curves<a class="anchor" aria-label="anchor" href="#plot-roc-curves"></a>
-</h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># plot the ROC Curves</span>
-<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ROCCurves.html">ROCCurves</a></span><span class="op">(</span>seurat_obj<span class="op">=</span><span class="va">seurat_obj</span><span class="op">)</span>
 
-<span class="co"># plot the ROC curves faceted by module</span>
-<span class="va">p</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">module</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/projection/Zhou_ROC.png" width="700" height="700"></p>
+### Plot ROC curves
+
+
+```r
+# plot the ROC Curves
+p <- ROCCurves(seurat_obj=seurat_obj)
+
+# plot the ROC curves faceted by module
+p + facet_wrap(~module, ncol=6) + NoLegend()
+```
+
+<img src="figures/projection/Zhou_ROC.png" width="700" height="700"> -->
 </div>
 </div>
   </div>

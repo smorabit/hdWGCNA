@@ -1,4 +1,14 @@
-# hdWGCNA 0.1.1.9012 (2022-08-26)
+# hdWGCNA 0.1.1.9015 (2022-09-06)
+## Added
+- None
+
+## Changes
+- New data format check in `MetacellsByGroups` to ensure that the selected slot is present in the selected assay.
+- `SetDatExpr` now backs up to the full dataset if the metacell dataset isn't found.
+- Changed some text to clarify some points in the Module Preservation tutorial.
+
+
+# hdWGCNA 0.1.1.9014 (2022-08-26)
 ## Added
 - None
 
@@ -6,7 +16,7 @@
 - Bugfix in `ModuleConnectivity` that caused kMEs to be out of order.
 
 
-# hdWGCNA 0.1.1.9012 (2022-08-25)
+# hdWGCNA 0.1.1.9013 (2022-08-25)
 ## Added
 - Tutorial for using SCTransform normalized data.
 
