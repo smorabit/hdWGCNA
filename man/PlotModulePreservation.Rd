@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{PlotModulePreservation}
 \alias{PlotModulePreservation}
-\title{PlotModulePreservatgion}
+\title{PlotModulePreservation}
 \usage{
 PlotModulePreservation(
   seurat_obj,

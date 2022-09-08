@@ -1,3 +1,13 @@
+# hdWGCNA 0.1.2.0000 (2022-09-08)
+## Added
+- Differential Module Eigengene (DME) tutorial
+- FindDMEs function
+- FindAllDMEs function
+- PlotDMEsVolcano function
+
+## Changes
+- None
+
 # hdWGCNA 0.1.1.9015 (2022-09-06)
 ## Added
 - None
@@ -14,7 +24,6 @@
 
 ## Changes
 - Bugfix in `ModuleConnectivity` that caused kMEs to be out of order.
-
 
 # hdWGCNA 0.1.1.9013 (2022-08-25)
 ## Added

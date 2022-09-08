@@ -19,6 +19,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/articles/customization.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/articles/differential_MEs.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/articles/encirhment_analysis.html</loc>
   </url>
   <url>
@@ -92,6 +95,12 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/EnrichrDotPlot.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/FindAllDMEs.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/FindDMEs.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNA.html</loc>
@@ -236,6 +245,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/OverlapModulesMotifs.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotDMEsVolcano.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/PlotDendrogram.html</loc>

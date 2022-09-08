@@ -1757,7 +1757,7 @@ DoHubGeneHeatmap <- function(
 
 }
 
-#' PlotModulePreservatgion
+#' PlotModulePreservation
 #'
 #' Plotting function for Module Preservation statistics
 #'
@@ -1833,7 +1833,6 @@ PlotModulePreservation <- function(
     # don't include grey & gold:
     plot_df <- plot_df %>% subset(!(module %in% c('grey', 'gold')))
 
-
     if(grepl("Rank", statistic)){
       cur_p <-  plot_df %>% ggplot(aes(x=size, y=value, fill=module, color=module)) +
         geom_point(size=mod_point_size, pch=21, color='black') +
@@ -1863,7 +1862,7 @@ PlotModulePreservation <- function(
 
 
     if(plot_labels){
-      cur_p <- cur_p + geom_text_repel(label = plot_df$module, size=label_size)
+      cur_p <- cur_p + geom_text_repel(label = plot_df$module, size=label_size, max.overlaps=Inf, color='black')
     }
 
     plot_list[[statistic]] <- cur_p
@@ -2340,5 +2339,97 @@ PlotKMEs <- function(
   })
 
   wrap_plots(plot_list, ncol=ncol)
+
+}
+
+
+#' PlotDMEsVolcano
+#'
+#' Plotting function for the results of FindDMEs and FindAllDMEs
+#'
+#' @param DMEs dataframe output from FindDMEs or FindAllDMEs
+#' @param plot_labels logical determining whether to plot the module labels
+#' @param label_size the size of the module labels
+#' @param mod_point_size the size of the points in each plot
+#' @param show_cutoff logical determining whether to plot the significance cutoff. Should set this to FALSE if using facet_wrap.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' @return A ggplot object
+#' @examples
+#' PlotDMEsVolcano
+PlotDMEsVolcano <- function(
+  DMEs,
+  plot_labels=TRUE,
+  mod_point_size=4,
+  label_size=4,
+  show_cutoff = TRUE,
+  wgcna_name=NULL
+){
+
+  # remove NAs:
+  DMEs <- na.omit(DMEs)
+
+  # lowest non-zero value
+  lowest <- DMEs %>% subset(p_val_adj != 0) %>% top_n(-1, wt=p_val_adj) %>% .$p_val_adj
+  DMEs$p_val_adj <- ifelse(DMEs$p_val_adj == 0, lowest, DMEs$p_val_adj)
+
+  # fix infinite fold change
+  max_fc <- max(abs(DMEs$avg_log2FC))
+  max_fc <- DMEs %>% subset(abs(avg_log2FC) != Inf) %>% .$avg_log2FC %>% max
+  DMEs$avg_log2FC <- ifelse(DMEs$avg_log2FC == -Inf, -1*max_fc, DMEs$avg_log2FC)
+  DMEs$avg_log2FC <- ifelse(DMEs$avg_log2FC == Inf, max_fc, DMEs$avg_log2FC)
+
+  # get modules and module colors
+  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey') %>% mutate(module=droplevels(module))
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+
+  # module names
+  mods <- levels(modules$module)
+  mods <- mods[mods %in% DMEs$module]
+  mod_colors <- module_colors$color; names(mod_colors) <- as.character(module_colors$module)
+
+  # annotate modules with significant DME
+  DMEs$anno <- ifelse(DMEs$p_val_adj < 0.05, DMEs$module, '')
+
+  # set x-axis limit
+  xmax <- max_fc
+
+  # plot basics
+  p <- DMEs %>%
+    ggplot(aes(x=avg_log2FC, y=-log10(p_val_adj), fill=module, color=module))
+
+
+  if(show_cutoff){
+    p <- p +
+      geom_vline(xintercept=0, linetype='dashed', color='grey75', alpha=0.8) +
+      geom_rect(
+        data=DMEs[1,],
+        aes(xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=-log10(0.05)), fill='grey75', alpha=0.8, color=NA)
+  }
+
+  # add points:
+  p <- p + geom_point(size=mod_point_size, pch=21, color='black')
+
+  # label points?
+  if(plot_labels){
+    p <- p + geom_text_repel(aes(label=anno), color='black', min.segment.length=0, max.overlaps=Inf, size=label_size)
+  }
+
+  p <- p +
+    scale_fill_manual(values=mod_colors) +
+    scale_color_manual(values=mod_colors) +
+     xlim((-1*xmax)-0.1, xmax+0.1) +
+    xlab(bquote("Average log"[2]~"(Fold Change)")) +
+    ylab(bquote("-log"[10]~"(Adj. P-value)")) +
+    theme(
+     panel.border = element_rect(color='black', fill=NA, size=1),
+     panel.grid.major = element_blank(),
+     axis.line = element_blank(),
+     plot.title = element_text(hjust = 0.5),
+     legend.position='bottom'
+   ) + NoLegend()
+
+   p + NoLegend()
 
 }

@@ -5,6 +5,7 @@ articles:
   basic_tutorial: basic_tutorial.html
   consensus_wgcna: consensus_wgcna.html
   customization: customization.html
+  differential_MEs: differential_MEs.html
   enrichment_analysis: enrichment_analysis.html
   hdWGCNA: hdWGCNA.html
   module_preservation: module_preservation.html
@@ -15,7 +16,7 @@ articles:
   projecting_modules: projecting_modules.html
   projecting_modules_cross: projecting_modules_cross.html
   sctransform: sctransform.html
-last_built: 2022-09-06T23:27Z
+last_built: 2022-09-08T23:45Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles
