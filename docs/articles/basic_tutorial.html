@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0001</span>
       </span>
     </div>
 
@@ -271,15 +271,16 @@
 </h2>
 <p>In this section we discuss how to perform co-expression network analysis with hdWGNCA on the inhibitory neuron (INH) cells in our example dataset.</p>
 <div class="section level3">
-<h3 id="transpose-the-expression-matrix">Transpose the expression matrix<a class="anchor" aria-label="anchor" href="#transpose-the-expression-matrix"></a>
+<h3 id="set-up-the-expression-matrix">Set up the expression matrix<a class="anchor" aria-label="anchor" href="#set-up-the-expression-matrix"></a>
 </h3>
-<p>Seurat objects stores gene expression matrices such that each row is a gene and each column is a cell. However, WGCNA expects each column to be a gene, thus we have to transpose our expression matrix. Furthermore, for this analysis, we only want to include the inhibitory neurons, so we have to subset our expression data prior to constructing the network. hdWGCNA includes the <code>SetDatExpr</code> function to store the transposed expression matrix for a given group of cells that will be used for downstream network analysis. The metacell expression matrix or the single-cell expression matrix can be used for WGCNA, by default <code>use_metacells=TRUE</code>. This function allows the user to specify which slot to take the expression matrix from, for example if the user wanted to apply <a href="https://satijalab.org/seurat/articles/sctransform_vignette.html" class="external-link">SCTransform</a> normalization instead of <code>NormalizeData</code>.</p>
-<p>The following code is used to store the transposed metacell expression matrix for the INH cells in our Seurat object:</p>
+<p>Here we specify the expression matrix that we will use for network analysis. Since We only want to include the inhibitory neurons, so we have to subset our expression data prior to constructing the network. hdWGCNA includes the <code>SetDatExpr</code> function to store the transposed expression matrix for a given group of cells that will be used for downstream network analysis. The metacell expression matrix is used by default (<code>use_metacells=TRUE</code>), but hdWGCNA does allow for the single-cell expression matrix to be used if desired.. This function allows the user to specify which slot to take the expression matrix from, for example if the user wanted to apply <a href="https://satijalab.org/seurat/articles/sctransform_vignette.html" class="external-link">SCTransform</a> normalization instead of <code>NormalizeData</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   group_name <span class="op">=</span> <span class="st">"INH"</span>, <span class="co"># the name of the group of interest in the group.by column</span>
-  group.by<span class="op">=</span><span class="st">'cell_type'</span> <span class="co"># the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups</span>
+  group.by<span class="op">=</span><span class="st">'cell_type'</span>, <span class="co"># the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups</span>
+  assay <span class="op">=</span> <span class="st">'RNA'</span>, <span class="co"># using RNA assay</span>
+  slot <span class="op">=</span> <span class="st">'data'</span> <span class="co"># using normalized data</span>
 <span class="op">)</span></code></pre></div>
 <details><summary>
 Selecting more than one group
@@ -295,14 +296,14 @@ Selecting more than one group
 <div class="section level3">
 <h3 id="select-soft-power-threshold">Select soft-power threshold<a class="anchor" aria-label="anchor" href="#select-soft-power-threshold"></a>
 </h3>
-<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the hdWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA constructs a correlation adjacency matrix to infer co-expression relationships between genes. The correlations are raised to a power to reduce the amount of noise present in the correlation matrix, thereby retaining the strong connections and removing the weak connections. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
+<p>Next we will select the <strong>“soft power threshold”</strong>. This is an extremely important step in the hdWGNCA pipleine (and for vanilla WGCNA). hdWGCNA constructs a gene-gene correlation adjacency matrix to infer co-expression relationships between genes. The correlations are raised to a power to reduce the amount of noise present in the correlation matrix, thereby retaining the strong connections and removing the weak connections. Therefore, it is critical to determine a proper value for the soft power threshold.</p>
 <p>We include a function <code>TestSoftPowers</code> to perform a parameter sweep for different soft power thresholds. This function helps us to guide our choice in a soft power threshold for constructing the co-expression network by inspecting the resulting network topology for different power values. The co-expression network should have a <a href="https://en.wikipedia.org/wiki/Scale-free_network" class="external-link">scale-free topology</a>, therefore the <code>TestSoftPowers</code> function models how closely the co-expression network resembles a scale-free graph at different soft power thresholds. Furthermore, we include a function <code>PlotSoftPowers</code> to visualize the results of the parameter sweep.</p>
 <p>The following code performs the parameter sweep and outputs a summary figure.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Test different soft powers:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
-  setDatExpr <span class="op">=</span> <span class="cn">FALSE</span>, <span class="co"># set this to FALSE since we did this above</span>
+  networkType <span class="op">=</span> <span class="st">'signed'</span> <span class="co"># you can also use "unsigned" or "signed hybrid"</span>
 <span class="op">)</span>
 
 <span class="co"># plot the results:</span>

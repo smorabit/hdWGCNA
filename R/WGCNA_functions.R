@@ -165,7 +165,12 @@ SetupForWGCNA <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param powers numeric vector specifying soft powers to test
-#' @param setDatExpr logical flag indicating whether to run setDatExpr
+#' @param use_metacells logical flag for whether to use the metacell expression matrix
+#' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
+#' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
+#' @param setDatExpr logical flag indicating whether to run setDatExpr.
+#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
+#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
 #' @param ... additional parameters passed to SetDatExpr
 #' @keywords scRNA-seq
 #' @export
@@ -174,9 +179,12 @@ SetupForWGCNA <- function(
 TestSoftPowers <- function(
   seurat_obj,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  setDatExpr = FALSE,
   use_metacells = TRUE,
-  group.by=NULL, group_name=NULL
+  networkType="signed",
+  corFnc='bicor',
+  setDatExpr = FALSE,
+  group.by=NULL, group_name=NULL,
+  ...
 ){
 
   # add datExpr if not already added:
@@ -193,8 +201,9 @@ TestSoftPowers <- function(
       datExpr,
       powerVector=powers,
       verbose = 100,
-      networkType="signed",
-      corFnc="bicor"
+      networkType=networkType,
+      corFnc=corFnc,
+      ...
     )[[2]]
   );
 
@@ -212,20 +221,30 @@ TestSoftPowers <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param powers numeric vector specifying soft powers to test
-#' @param setDatExpr logical flag indicating whether to run setDatExpr
+#' @param use_metacells logical flag for whether to use the metacell expression matrix
+#' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
+#' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
+#' @param setDatExpr logical flag indicating whether to run setDatExpr.
+#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
+#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
+#' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
+#' @param multi_groups A character vecrtor containing the names of groups to select
 #' @param ... additional parameters passed to SetDatExpr
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' TestSoftPowers(pbmc)
+#' # TestSoftPowers(pbmc)
 TestSoftPowersConsensus <- function(
   seurat_obj,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  setDatExpr = FALSE,
   use_metacells = TRUE,
+  networkType="signed",
+  corFnc='bicor',
+  setDatExpr = FALSE,
   group.by=NULL, group_name=NULL,
   multi.group.by = NULL,
-  multi_groups = NULL
+  multi_groups = NULL,
+  ...
 ){
 
   # add multiExpr if not already added:
@@ -256,8 +275,9 @@ TestSoftPowersConsensus <- function(
         multiExpr[[cur_group]]$data,
         powerVector=powers,
         verbose = 100,
-        networkType="signed",
-        corFnc="bicor"
+        networkType=networkType,
+        corFnc=corFnc,
+        ...
       )[[2]]
     );
     powerTable$data$group <- cur_group

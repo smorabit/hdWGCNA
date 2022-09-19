@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0001</span>
       </span>
     </div>
 
@@ -112,12 +112,15 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">TestSoftPowersConsensus</span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   powers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">30</span>, by <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,
-  setDatExpr <span class="op">=</span> <span class="cn">FALSE</span>,
   use_metacells <span class="op">=</span> <span class="cn">TRUE</span>,
+  networkType <span class="op">=</span> <span class="st">"signed"</span>,
+  corFnc <span class="op">=</span> <span class="st">"bicor"</span>,
+  setDatExpr <span class="op">=</span> <span class="cn">FALSE</span>,
   group.by <span class="op">=</span> <span class="cn">NULL</span>,
   group_name <span class="op">=</span> <span class="cn">NULL</span>,
   multi.group.by <span class="op">=</span> <span class="cn">NULL</span>,
-  multi_groups <span class="op">=</span> <span class="cn">NULL</span>
+  multi_groups <span class="op">=</span> <span class="cn">NULL</span>,
+  <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -127,16 +130,30 @@
 <dd><p>A Seurat object</p></dd>
 <dt>powers</dt>
 <dd><p>numeric vector specifying soft powers to test</p></dd>
+<dt>use_metacells</dt>
+<dd><p>logical flag for whether to use the metacell expression matrix</p></dd>
+<dt>networkType</dt>
+<dd><p>The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork</p></dd>
+<dt>corFnc</dt>
+<dd><p>Correlation function for the gene-gene correlation adjacency matrix.</p></dd>
 <dt>setDatExpr</dt>
-<dd><p>logical flag indicating whether to run setDatExpr</p></dd>
+<dd><p>logical flag indicating whether to run setDatExpr.</p></dd>
+<dt>group.by</dt>
+<dd><p>A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.</p></dd>
+<dt>group_name</dt>
+<dd><p>A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.</p></dd>
+<dt>multi.group.by</dt>
+<dd><p>A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)</p></dd>
+<dt>multi_groups</dt>
+<dd><p>A character vecrtor containing the names of groups to select</p></dd>
 <dt>...</dt>
 <dd><p>additional parameters passed to SetDatExpr</p></dd>
 </dl></div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">pbmc</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in GetActiveWGCNA(seurat_obj):</span> object 'pbmc' not found</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># TestSoftPowers(pbmc)</span></span>
+<span class="r-in"></span>
 </code></pre></div>
     </div>
   </div>

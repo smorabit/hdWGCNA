@@ -1,3 +1,11 @@
+# hdWGCNA 0.1.2.0001 (2022-09-19)
+## Added
+- None
+
+## Changes
+- networkType option in `TestSoftPowers`.
+
+
 # hdWGCNA 0.1.2.0000 (2022-09-08)
 ## Added
 - Differential Module Eigengene (DME) tutorial

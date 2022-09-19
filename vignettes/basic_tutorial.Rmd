@@ -215,28 +215,24 @@ p1 | p2
 In this section we discuss how to perform co-expression network analysis with
 hdWGNCA on the inhibitory neuron (INH) cells in our example dataset.
 
-## Transpose the expression matrix
+## Set up the expression matrix
 
-Seurat objects stores gene expression matrices such that each row is a gene and
-each column is a cell. However, WGCNA expects each column to be a gene, thus we
-have to transpose our expression matrix. Furthermore, for this analysis, we only
+Here we specify the expression matrix that we will use for network analysis. Since We only
 want to include the inhibitory neurons, so we have to subset our expression data
 prior to constructing the network. hdWGCNA includes the `SetDatExpr` function to store the
 transposed expression matrix for a given group of cells that will be used for downstream
-network analysis. The metacell expression matrix
-or the single-cell expression matrix can be used for WGCNA, by default `use_metacells=TRUE`.
+network analysis. The metacell expression matrix is used by default (`use_metacells=TRUE`), but hdWGCNA does allow for the single-cell expression matrix to be used if desired..
 This function allows the user to specify which slot to take the expression matrix from,
 for example if the user wanted to apply [SCTransform](https://satijalab.org/seurat/articles/sctransform_vignette.html) normalization instead of `NormalizeData`.
-
-The following code is used to store the transposed metacell expression matrix
-for the INH cells in our Seurat object:
 
 ```{r eval=FALSE}
 
 seurat_obj <- SetDatExpr(
   seurat_obj,
   group_name = "INH", # the name of the group of interest in the group.by column
-  group.by='cell_type' # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
+  group.by='cell_type', # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
+  assay = 'RNA', # using RNA assay
+  slot = 'data' # using normalized data
 )
 
 
@@ -265,8 +261,8 @@ seurat_obj <- SetDatExpr(
 ## Select soft-power threshold
 
 Next we will select the **"soft power threshold"**. This is an extremely important
-step in the hdWGNCA pipleine (and for vanilla WGCNA). Under the hood, WGCNA
-constructs a correlation adjacency matrix to infer co-expression
+step in the hdWGNCA pipleine (and for vanilla WGCNA). hdWGCNA
+constructs a gene-gene correlation adjacency matrix to infer co-expression
 relationships between genes. The correlations are raised to a power to
 reduce the amount of noise present in the correlation matrix, thereby retaining the
 strong connections and removing the weak connections. Therefore, it is
@@ -289,7 +285,7 @@ The following code performs the parameter sweep and outputs a summary figure.
 # Test different soft powers:
 seurat_obj <- TestSoftPowers(
   seurat_obj,
-  setDatExpr = FALSE, # set this to FALSE since we did this above
+  networkType = 'signed' # you can also use "unsigned" or "signed hybrid"
 )
 
 # plot the results:

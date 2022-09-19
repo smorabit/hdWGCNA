@@ -34,7 +34,7 @@ SetDatExpr(
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }
 \description{
-This function sets up the gene expression matrix for co-expression network analysis.
+This function specifies the gene expression matrix for co-expression network analysis.
 }
 \examples{
 SetDatExpr(pbmc)

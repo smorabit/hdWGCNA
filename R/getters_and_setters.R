@@ -163,7 +163,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 
 #' SetDatExpr
 #'
-#' This function sets up the gene expression matrix for co-expression network analysis.
+#' This function specifies the gene expression matrix for co-expression network analysis.
 #'
 #' @param seurat_obj A Seurat object
 #' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
