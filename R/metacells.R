@@ -139,6 +139,14 @@ ConstructMetacells <- function(
     counts = new_exprs,
     assay = assay
   )
+  if(slot == 'scale.data'){
+    metacell_obj <- SeuratObject::SetAssayData(
+      metacell_obj,
+      slot=slot,
+      assay=assay,
+      new.data=as.matrix(new_exprs)
+    )
+  }
 
   # calculate stats:
   # shared <- shared[shared <= max_shared]
@@ -348,8 +356,6 @@ MetacellsByGroups <- function(
   } else{
     metacell_obj <- metacell_list[[1]]
   }
-
-
 
   # set idents for metacell object:
   Idents(metacell_obj) <- metacell_obj@meta.data[[ident.group]]

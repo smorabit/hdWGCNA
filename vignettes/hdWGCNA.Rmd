@@ -14,7 +14,7 @@ vignette: >
 These tutorials cover the essentials of performing co-expression network
 analysis in single-cell transcriptomics data, and visualizing the key results.
 
-### [hdWGCNA basics](basic_tutorial.html)
+### [hdWGCNA in single-cell data](basic_tutorial.html)
 This tutorial covers the essential functions to construct a co-expression network
 in single-cell transcriptomics data with hdWGCNA.
 

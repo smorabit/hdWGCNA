@@ -32,8 +32,10 @@ navbar:
     text: Vignettes
     menu:
     - text: Core functionality
-    - text: hdWGCNA basics
+    - text: hdWGCNA in single-cell data
       href: articles/basic_tutorial.html
+    - text: hdWGCNA in spatial transcriptomics data
+      href: articles/ST_basics.html
     - text: Network visualization
       href: articles/network_visualizations.html
     - text: -------
@@ -72,11 +74,11 @@ navbar:
 
 
 reference:
-- title: Metacells
-  desc: Functions for constructing metacells from single-cell data
+- title: Metacells and metaspots
+  desc: Functions for constructing metacells from single-cell data and metaspots from ST data
   contents:
-  - '`ConstructMetacells`'
   - '`MetacellsByGroups`'
+  - '`MetaspotsByGroups`'
 - title: Network Analysis
   desc: Functions for constructing the co-expression network
   contents:

@@ -2309,6 +2309,8 @@ FindDMEs <- function(
   # get module eigengenes, remove grey module
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
   MEs <- MEs[, colnames(MEs) != 'grey']
+  print(dim(MEs))
+  print(colnames(MEs))
 
   # set all negative values to zero
   MEs[MEs < 0] <- 0

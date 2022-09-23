@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.00</span>
       </span>
     </div>
 
@@ -58,7 +58,10 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="articles/basic_tutorial.html">hdWGCNA basics</a>
+      <a href="articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
+    </li>
+    <li>
+      <a href="articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
     </li>
     <li>
       <a href="articles/network_visualizations.html">Network visualization</a>
@@ -138,8 +141,8 @@
 <div class="page-header"><h1 id="high-dimensional-wgcna-">high dimensional WGCNA <img src="reference/figures/logo.png" align="right" height="20%" width="20%"><a class="anchor" aria-label="anchor" href="#high-dimensional-wgcna-"></a>
 </h1></div>
 
-<p><strong>Note:</strong> hdWGCNA is under active development, so you will likely run into errors and small typos if you choose to use hdWGCNA before its first stable release.</p>
-<p>hdWGCNA, formerly known as scWGCNA, is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in high dimensional data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA constructs co-expression networks in a cell-type-specific manner, identifies robust modules of inerconnected genes, and provides biological context for these modules. hdWGCNA is directly compatible with <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA basics tutorial</a> to get started.</p>
+<p>hdWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in high dimensional data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct co-expression networks to facilitate multi-scale analysis of cellular and spatial hierarchies. hdWGNCA identifies robust modules of inerconnected genes, and provides biologicalcontext for these modules through various biological knowledge sources. hdWGCNA requires data formatted as <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA in single-cell data tutorial</a> or the <a href="https://smorabit.github.io/hdWGCNA/articles/ST_basics.html">hdWGCNA in spatial transcriptomics data tutorial</a> to get started.</p>
+<p><strong>Note:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to, report bugs, ask for help and ask for potential enhancements. GitHub issues are preferred to emailing the authors directly.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -193,7 +196,6 @@
 <ul>
 <li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease</a></li>
 </ul>
-<script type="text/javascript" id="clustrmaps" src="//clustrmaps.com/map_v2.js?d=ZbvvWi3GtADIZ64bWsbd-3ymsBF_hOnWKlJdg7t0e8Q"></script>
 </div>
 </div>
   </div>
@@ -203,7 +205,7 @@
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li><small>GNU GPLv3</small></li>
 </ul>
 </div>
 

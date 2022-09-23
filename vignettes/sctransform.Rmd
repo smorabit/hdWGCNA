@@ -10,7 +10,10 @@ vignette: >
 ---
 
 In this tutorial, we briefly cover how to use data normalized with [`SCTransform`](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1) for hdWGCNA.
-This tutorial assumes that you are familiar with the [basics of the hdWGCNA workflow](basic_tutorial.html).
+This tutorial assumes that you are familiar with the [basics of the hdWGCNA workflow](basic_tutorial.html). This tutorial also assumes that you are familiar with
+the [SCTransform R package](https://github.com/satijalab/sctransform) and the [SCTransform methods paper(https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). We generally do
+not advise using SCTransform unless you are fully aware of how the method works 
+and the underlying assumptions that it makes about gene expression distributions etc.
 
 First we load the required R libraries.
 ```{r eval=FALSE}
@@ -68,8 +71,8 @@ seurat_subset <- SCTransform(seurat_subset, vars.to.regress = "percent.mt", verb
 
 ```
 
-It is important to note that `SCTransform` typically only runs on the highly variable features.
-We can check this by extracting the expression matrix.
+It is important to note that `SCTransform` pearson residuals are typically only output for the highly
+variable features. We can check this by extracting the expression matrix.
 
 ```{r eval=FALSE}
 
@@ -93,8 +96,9 @@ print(dim(sct_data))
 [1] 36601  3162
 ```
 
-We see that `seurat_obj` has 36,601 genes, but only 3,000 are in the SCTransform `scale.data` slot. Therefore, if we want to use hdWGCNA on the SCTransform normalized data, we must
-only include the highly variable genes.
+We see that `seurat_obj` has 36,601 genes, but only 3,000 are in the SCTransform `scale.data` slot. Therefore, if we want to use hdWGCNA on the SCTransform pearson residuals, we must
+only include the highly variable genes. Alternatively, SCTransform does output a `counts` and
+normalized `data` slot which may also be used.
 
 
 ## Option 1: SCTransform on single-cell data

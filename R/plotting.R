@@ -173,7 +173,6 @@ PlotSoftPowers <- function(
   }
 
   if(length(plot_list) == 1){
-    print('return')
     return(plot_list[[1]])
   }
   plot_list

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.00</span>
       </span>
     </div>
 
@@ -59,7 +59,10 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="../articles/basic_tutorial.html">hdWGCNA basics</a>
+      <a href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
+    </li>
+    <li>
+      <a href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
     </li>
     <li>
       <a href="../articles/network_visualizations.html">Network visualization</a>
@@ -146,7 +149,7 @@
 
     
     
-<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a> for hdWGCNA. This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>.</p>
+<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a> for hdWGCNA. This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>. This tutorial also assumes that you are familiar with the <a href="https://github.com/satijalab/sctransform" class="external-link">SCTransform R package</a> and the [SCTransform methods paper(<a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1</a>). We generally do not advise using SCTransform unless you are fully aware of how the method works and the underlying assumptions that it makes about gene expression distributions etc.</p>
 <p>First we load the required R libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -190,7 +193,7 @@
 
 <span class="co"># run SCTransform</span>
 <span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SCTransform.html" class="external-link">SCTransform</a></span><span class="op">(</span><span class="va">seurat_subset</span>, vars.to.regress <span class="op">=</span> <span class="st">"percent.mt"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<p>It is important to note that <code>SCTransform</code> typically only runs on the highly variable features. We can check this by extracting the expression matrix.</p>
+<p>It is important to note that <code>SCTransform</code> pearson residuals are typically only output for the highly variable features. We can check this by extracting the expression matrix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># extract sct expression data</span>
 <span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_subset</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span>
@@ -202,7 +205,7 @@
 <code class="sourceCode R"><span class="co"># print the shape of the seurat object (genes by cells)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sct_data</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>[1] 36601  3162</code></pre>
-<p>We see that <code>seurat_obj</code> has 36,601 genes, but only 3,000 are in the SCTransform <code>scale.data</code> slot. Therefore, if we want to use hdWGCNA on the SCTransform normalized data, we must only include the highly variable genes.</p>
+<p>We see that <code>seurat_obj</code> has 36,601 genes, but only 3,000 are in the SCTransform <code>scale.data</code> slot. Therefore, if we want to use hdWGCNA on the SCTransform pearson residuals, we must only include the highly variable genes. Alternatively, SCTransform does output a <code>counts</code> and normalized <code>data</code> slot which may also be used.</p>
 </div>
 <div class="section level2">
 <h2 id="option-1-sctransform-on-single-cell-data">Option 1: SCTransform on single-cell data<a class="anchor" aria-label="anchor" href="#option-1-sctransform-on-single-cell-data"></a>

@@ -18,7 +18,7 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2.0001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.00</span>
       </span>
     </div>
 
@@ -34,7 +34,10 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
   </a>
   <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Core functionality</li>
     <li>
-      <a href="../articles/basic_tutorial.html">hdWGCNA basics</a>
+      <a href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
+    </li>
+    <li>
+      <a href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
     </li>
     <li>
       <a href="../articles/network_visualizations.html">Network visualization</a>
@@ -251,6 +254,10 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(cell_sample) &lt;- paste0(name, "_", 1:ncol(new_exprs))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(cell_sample) &lt;- paste0("knn_", 1:ncol(cell_sample))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj &lt;- CreateSeuratObject(counts = new_exprs, assay = assay)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (slot == "scale.data") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_obj &lt;- SeuratObject::SetAssayData(metacell_obj, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             slot = slot, assay = assay, new.data = as.matrix(new_exprs))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared &lt;- max(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     median_shared &lt;- median(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mean_shared &lt;- mean(shared)</span>
@@ -284,7 +291,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff68189ec18&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff8be793358&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

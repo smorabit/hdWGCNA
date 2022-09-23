@@ -1,15 +1,13 @@
 ---
-title: "hdWGCNA Basics"
+title: "hdWGCNA in single-cell data"
 output: rmarkdown::html_vignette
 description: >
-  Tutorial for applying the core functions of hdWGCNA.
+  Tutorial for applying the core functions of hdWGCNA in single-cell data.
 vignette: >
-  %\VignetteIndexEntry{hdWGCNA Basics}
+  %\VignetteIndexEntry{hdWGCNA in single-cell data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-# Overview and prerequisites
 
 This tutorial covers the basics of using hdWGCNA to perform co-expression network
 analysis on single-cell data. Here, we demonstrate hdWGCNA using a processed
@@ -716,4 +714,4 @@ p
 
 In this tutorial we went over the core functions for performing co-expression
 network analysis in single-cell transcriptomics data. We encourage you to explore
-our other tutorials for downstream analysis of these hdWGCNA results.
+our [other tutorials](hdWGCNA.html) for downstream analysis of these hdWGCNA results.

@@ -1,10 +1,17 @@
+# hdWGCNA 0.2.00 (2022-09-23)
+## Added
+- `MetaspotsByGroups` to aggregate neighboring ST spots prior to network analysis.
+- Tutorial for applying hdWGCNA to spatial transcriptomics datasets.
+
+## Changes
+- None
+
 # hdWGCNA 0.1.2.0001 (2022-09-19)
 ## Added
 - None
 
 ## Changes
 - networkType option in `TestSoftPowers`.
-
 
 # hdWGCNA 0.1.2.0000 (2022-09-08)
 ## Added

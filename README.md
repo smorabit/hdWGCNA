@@ -6,16 +6,18 @@
 [![DOI](https://zenodo.org/badge/286864581.svg)](https://zenodo.org/badge/latestdoi/286864581)
 [![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
 
-**Note:** hdWGCNA is under active development, so you will likely run into errors and small typos
-if you choose to use hdWGCNA before its first stable release.
-
-hdWGCNA, formerly known as scWGCNA, is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in high dimensional
+hdWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in high dimensional
 data such as single-cell RNA-seq or spatial transcriptomics.
-hdWGCNA constructs co-expression networks in a cell-type-specific manner,
-identifies robust modules of inerconnected genes, and provides biological
-context for these modules. hdWGCNA is directly compatible with
-[Seurat](https://satijalab.org/seurat/index.html) objects, one of the most ubiquitous
-formats for single-cell data. Check out the [hdWGCNA basics tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) to get started.
+hdWGCNA is highly modular and can construct co-expression networks to facilitate multi-scale analysis
+of cellular and spatial hierarchies. hdWGNCA identifies robust modules of inerconnected genes, and
+provides biologicalcontext for these modules through various biological knowledge sources.
+hdWGCNA requires data formatted as [Seurat](https://satijalab.org/seurat/index.html) objects,
+one of the most ubiquitous formats for single-cell data. Check out the [hdWGCNA in single-cell data tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) or the [hdWGCNA in spatial transcriptomics data tutorial](https://smorabit.github.io/hdWGCNA/articles/ST_basics.html) to get started.
+
+**Note:** hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to
+write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
+to, report bugs, ask for help and ask for potential enhancements. GitHub issues are
+preferred to emailing the authors directly.
 
 ## Installation
 
@@ -73,7 +75,3 @@ like Dynamic Tree Cut and Module Preservation analysis:
 Our original description of applying WGCNA to single-nucleus RNA-seq data:
 
 * [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z)
-
-<body>
-<script type="text/javascript" id="clustrmaps" src="//clustrmaps.com/map_v2.js?d=ZbvvWi3GtADIZ64bWsbd-3ymsBF_hOnWKlJdg7t0e8Q"></script>
-</body>

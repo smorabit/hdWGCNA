@@ -2,6 +2,7 @@ pandoc: 2.11.1
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
+  ST_basics: ST_basics.html
   basic_tutorial: basic_tutorial.html
   consensus_wgcna: consensus_wgcna.html
   customization: customization.html
@@ -16,7 +17,7 @@ articles:
   projecting_modules: projecting_modules.html
   projecting_modules_cross: projecting_modules_cross.html
   sctransform: sctransform.html
-last_built: 2022-09-19T18:46Z
+last_built: 2022-09-23T20:30Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles

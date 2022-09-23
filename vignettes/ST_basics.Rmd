@@ -1,0 +1,521 @@
+---
+title: "hdWGCNA in spatial transcriptomics"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for applying the core functions of hdWGCNA in spatial transcriptomics data.
+vignette: >
+  %\VignetteIndexEntry{hdWGCNA in spatial transcriptomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This tutorial covers the basics of using hdWGCNA to perform co-expression network
+analysis on spot-based spatial transcriptomics (ST) data like [10X Genomics Visium](https://www.10xgenomics.com/products/spatial-gene-expression). We demonstrate hdWGCNA using a ST dataset containing an anterior and posterior saggital section from the mouse brain. This section is similar to the [hdWGCNA in single-cell data](basic_tutorial.html) tutorial, so we suggest exploring that code first.
+
+## Load required libraries
+
+First we will load the required R libraries for this tutorial.
+
+```{r eval=FALSE}
+
+# single-cell analysis package
+library(Seurat)
+
+# package to install the mouse brain dataset
+library(SeuratData)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(hdWGCNA)
+
+# install this package, which allows us to compute distance between the spots
+install.packages('proxy')
+library(proxy)
+
+# enable parallel processing for network analysis (optional)
+enableWGCNAThreads(nThreads = 8)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+```
+
+## Download and process the mouse brain dataset
+
+Here we use `SeuratData` to download the mouse brain ST dataset, and we will
+use the standard Seurat workflow to process it.
+
+<details> <summary> Note on `SeuratData` download </summary>
+
+In our own testing, we had difficulty running `InstallData` on our institution's
+compute cluster, so we ran these commands locally and then copied the `.rds` file
+containing the Seurat object to the cluster for subsequent analysis.
+
+</details>
+
+```{r eval=FALSE}
+
+# download the mouse brain ST dataset (stxBrain)
+SeuratData::InstallData("stxBrain")
+
+# load the anterior and posterior samples
+brain <- LoadData("stxBrain", type = "anterior1")
+brain2 <- LoadData("stxBrain", type = "posterior1")
+
+# merge into one seurat object
+seurat_obj <- merge(brain, brain2)
+
+# save unprocessed object
+saveRDS(seurat_obj, file='mouse_brain_ST_unprocessed.rds')
+
+```
+
+hdWGCNA requires the spatial coordinates to be stored in the `seurat_obj@meta.data` slot.
+Here we extract the image coordinates for the two samples, merge into a dataframe, and
+add it into the `seurat_obj@meta.data`. Specifically, the `seurat_obj@meta.data` must have
+columns named `row`, `col`, `imagerow`, and `imagecol` (shown below), otherwise the downstream
+steps will not work.
+
+```{r eval=FALSE}
+
+# make a dataframe containing the image coordinates for each sample
+image_df <- do.call(rbind, lapply(names(seurat_obj@images), function(x){
+  seurat_obj@images[[x]]@coordinates
+}))
+
+# merge the image_df with the Seurat metadata
+new_meta <- merge(seurat_obj@meta.data, image_df, by='row.names')
+
+# fix the row ordering to match the original seurat object
+rownames(new_meta) <- new_meta$Row.names
+ix <- match(as.character(colnames(seurat_obj)), as.character(rownames(new_meta)))
+new_meta <- new_meta[ix,]
+
+# add the new metadata to the seurat object
+seurat_obj@meta.data <- new_meta
+
+head(image_df)
+
+```
+
+```
+    tissue row col imagerow imagecol
+AAACAAGTATCTCCCA-1_1      1  50 102     7475     8501
+AAACACCAATAACTGC-1_1      1  59  19     8553     2788
+AAACAGAGCGACTCCT-1_1      1  14  94     3164     7950
+AAACAGCTTTCAGAAG-1_1      1  43   9     6637     2099
+AAACAGGGTCTATATT-1_1      1  47  13     7116     2375
+AAACATGGTGAGAGGA-1_1      1  62   0     8913     1480
+```
+
+Now we run the standard Seurat processing pipeline.
+
+```{r eval=FALSE}
+
+# normalization, feature selection, scaling, and PCA
+seurat_obj <- seurat_obj %>%
+  NormalizeData() %>%
+  FindVariableFeatures() %>%
+  ScaleData() %>%
+  RunPCA()
+
+# Louvain clustering and umap
+seurat_obj <- FindNeighbors(seurat_obj, dims = 1:30)
+seurat_obj <- FindClusters(seurat_obj,verbose = TRUE)
+seurat_obj %<>% RunUMAP(dims = 1:30)
+
+# set factor level for anterior / posterior
+seurat_mouse_vis$region <- factor(as.character(seurat_mouse_vis$region), levels=c('anterior', 'posterior'))
+
+# show the UMAP
+p1 <- DimPlot(seurat_obj, label=TRUE, reduction = "umap", group.by = "seurat_clusters") + NoLegend()
+p1
+```
+
+```{r eval=FALSE, echo=FALSE}
+
+png(paste0(fig_dir, 'umap_clusters.png'), width=5, height=5, units='in', res=600)
+p1
+dev.off()
+
+png(paste0(fig_dir, 'spatial_clusters.png'), width=10, height=5, units='in', res=600)
+p2
+dev.off()
+
+png(paste0(fig_dir, 'spatial_anno.png'), width=15, height=5, units='in', res=600)
+p3 + NoLegend()
+dev.off()
+
+```
+
+<center><img src="figures/ST_basics/umap_clusters.png" width="600" height="600"></center>
+
+
+```{r eval=FALSE}
+
+p2 <- SpatialDimPlot(seurat_obj, label = TRUE, label.size = 3)
+p2
+
+```
+
+<center><img src="figures/ST_basics/spatial_clusters.png" width="800" height="800"></center>
+
+We used the following cluster labels for this analysis.
+<details> <summary> See cluster labels </summary>
+| seurat_clusters | annotation                  |
+|-----------------|-----------------------------|
+| 0               | Caudoputamen                |
+| 1               | White matter                |
+| 2               | Cortex L5                   |
+| 3               | White matter                |
+| 4               | Cortex L6                   |
+| 5               | Medulla                     |
+| 6               | Pons                        |
+| 7               | Cortex L2/3                 |
+| 8               | Cerebellum molecular layer  |
+| 9               | Hippocampus                 |
+| 10              | Cortex L1, Vasculature      |
+| 11              | Olfactory bulb outer        |
+| 12              | Cerebellum arbor vitae      |
+| 13              | Thalamus                    |
+| 14              | Nucleus accumbens           |
+| 15              | Piriform area               |
+| 16              | Hypothalamums               |
+| 17              | Fiber tracts                |
+| 18              | Olfactory bulb inner        |
+| 19              | Cerebellum granular layer   |
+| 20              | Ventricles                  |
+| 21              | Olfactory bulb fiber tracts |
+</details>
+
+```{r eval=FALSE}
+
+# add annotations to Seurat object
+annotations <- read.csv('annotations.csv')
+ix <- match(seurat_obj$seurat_clusters, annotations$seurat_clusters)
+seurat_obj$annotation <- annotations$annotation[ix]
+
+# set idents
+Idents(seurat_obj) <- seurat_obj$annotation
+
+p3 <- SpatialDimPlot(seurat_obj, label = TRUE, label.size = 3)
+p3 + NoLegend()
+
+```
+
+## Construct metaspots
+
+Sequencing-based ST approaches like Visium generate sparse expression profiles
+per spot thus introducing the same potential pitfalls as single-cell data for co-expression network analysis. To alleviate these issues, hdWGCNA includes a data aggregation approach to produce spatial **metaspots**, similar to our metacell algorithm. This approach aggregates neighboring spots based on spatial coordinates rather than their transcriptomes. This procedure is performed in hdWGCNA using the `MetaspotsByGroups` function.
+
+<center><img src="figures/ST_basics/metaspot_explain.png" width="600" height="600"></center>
+
+Here we set up the data for hdWGCNA and run `MetaspotsByGroups`. Similar to
+`MetacellsByGroups`, the `group.by` parameter slices the Seurat object to construct
+metaspots separately for each group. Here we are just grouping by the ST slides
+to perform this step separately for the anterior and posterior sample, but you could
+specify cluster or anatomical regions as well to suit your analysis.
+
+```{r eval=FALSE}
+
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "fraction",
+  fraction = 0.05,
+  wgcna_name = "vis"
+)
+
+
+seurat_obj <- MetaspotsByGroups(
+  seurat_obj,
+  group.by = c("region"),
+  ident.group = "region",
+  assay = 'Spatial',
+  slot = 'counts'
+)
+seurat_obj  <- NormalizeMetacells(seurat_obj)
+
+```
+
+The metaspot object is used everywhere that the metacell object would be used for
+downstream analysis. For example, to extract the metaspot object, you can run the
+`GetMetacellObject` function.
+
+```{r eval=FALSE}
+m_obj <- GetMetacellObject(seurat_obj)
+m_obj
+```
+
+```
+An object of class Seurat
+31053 features across 1505 samples within 1 assay
+Active assay: Spatial (31053 features, 0 variable features)
+```
+
+## Co-expression network analysis
+
+Now we are ready to perform co-expression network analysis using an identical pipeline
+to the single-cell workflow. For this analysis, we are performing brain-wide
+network analysis using all spots from all regions, but this analysis could be
+adjusted to perform network analysis on specific regions.
+
+```{r eval=FALSE}
+
+# set up the expression matrix, set group.by and group_name to NULL to include all spots
+seurat_obj  <- SetDatExpr(
+  seurat_obj,
+  group.by=NULL,
+  group_name = NULL
+)
+
+# test different soft power thresholds
+seurat_obj <- TestSoftPowers(seurat_obj)
+plot_list <- PlotSoftPowers(seurat_obj)
+
+wrap_plots(plot_list, ncol=2)
+
+```
+
+```{r eval=FALSE, echo=FALSE}
+
+# assemble with patchwork
+png(paste0(fig_dir, 'test_softpower.png'), width=12, height=8, res=600, units='in')
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+```
+
+<center><img src="figures/ST_basics/test_softpower.png" width="800" height="600"></center>
+
+
+```{r eval=FALSE}
+
+# construct co-expression network:
+seurat_obj <- ConstructNetwork(
+  seurat_obj,
+  tom_name='test',
+  overwrite_tom=TRUE
+)
+
+# plot the dendrogram
+PlotDendrogram(seurat_obj, main='Spatial hdWGCNA dendrogram')
+
+```
+
+```{r eval=FALSE, echo=FALSE}
+
+PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
+
+
+png(paste0(fig_dir, "dendro.png"), height=3, width=6, units='in', res=500)
+PlotDendrogram(seurat_obj, main='Spatial hdWGCNA dendrogram')
+dev.off()
+
+```
+
+<center><img src="figures/ST_basics/dendro.png" width="800" height="600"></center>
+
+
+
+
+Next, we compute module eigengenes (MEs) and eigengene-based connectivities (kMEs)
+using the `ModuleEigengenes` and `ModuleConnectivity` functions respectively.
+
+
+```{r eval=FALSE}
+
+seurat_obj <- ModuleEigengenes(seurat_obj)
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+```
+
+Here we reset the module names with the prefix "SM" (spatial modules).
+
+```{r eval=FALSE}
+
+seurat_obj <- ResetModuleNames(
+  seurat_obj,
+  new_name = "SM"
+)
+
+modules <- GetModules(seurat_obj) %>% subset(module != 'grey')
+head(modules[,1:3])
+
+```
+
+```
+gene_name module color
+gene_name module     color
+Rgs20                 Rgs20    SM1       red
+Oprk1                 Oprk1    SM1       red
+
+St18                   St18    SM2 turquoise
+3110035E14Rik 3110035E14Rik    SM3     brown
+A830018L16Rik A830018L16Rik    SM3     brown
+Sulf1                 Sulf1    SM4       tan
+```
+
+## Data visualization
+
+Here we visualize module eigengenes using the Seurat functions `DotPlot` and `SpatialFeaturePlot`.
+For network visualization, please refer to the [Network visualization tutorial](network_visualizations.html).
+
+```{r eval=FALSE}
+
+# get module eigengenes and gene-module assignment tables
+MEs <- GetMEs(seurat_obj)
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module); mods <- mods[mods != 'grey']
+
+# add the MEs to the seurat metadata so we can plot it with Seurat functions
+seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_obj, features=mods, group.by = 'annotation', dot.min=0.1)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  coord_flip() +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  xlab('') + ylab('')
+
+p
+
+```
+
+<center><img src="figures/ST_basics/MEs_dotplot.png" width="800" height="500"></center>
+
+
+We can visualize the MEs directly on the spatial coordinates using `SpatialFeaturePlot`.
+
+```{r eval=FALSE}
+
+p <- SpatialFeaturePlot(
+  seurat_obj,
+  features = mods,
+  alpha = c(0.1, 1),
+  ncol = 8
+)
+
+p
+
+png("figures/MEs_featureplot.png", height=16, width=20, units='in', res=200)
+p
+dev.off()
+
+```
+
+<center><img src="figures/ST_basics/MEs_featureplot.png" width="800" height="400"></center>
+
+
+
+```{r eval=FALSE, echo=FALSE}
+
+MEs <- GetMEs(seurat_obj)
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module); mods <- mods[mods != 'grey']
+
+seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_obj, features=mods, group.by = 'annotation', dot.min=0.1)
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  coord_flip() +
+  RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') +
+  xlab('') + ylab('')
+
+# plot output
+png("figures/MEs_dotplot.png", height=5, width=10, units='in', res=600)
+p
+dev.off()
+
+
+p <- SpatialFeaturePlot(
+  seurat_obj,
+  features = mods,
+  alpha = c(0.1, 1),
+  ncol = 8
+)
+
+png("figures/MEs_featureplot.png", height=16, width=20, units='in', res=200)
+p
+dev.off()
+
+
+```
+
+
+## Next steps
+
+In this tutorial we went over the core functions for performing co-expression
+network analysis in spatial transcriptomics data. We encourage you to explore
+our [other tutorials](hdWGCNA.html) for downstream analysis of these hdWGCNA results.
+
+
+
+
+
+
+
+
+
+
+
+
+```{r eval=FALSE, echo=FALSE}
+
+# Testing metaspot functions with new options
+setwd("/dfs7/swaruplab/smorabit/analysis/scWGCNA/tutorials/ST_basics")
+
+# construct metaspots
+seurat_mouse_vis$region <- factor(as.character(seurat_mouse_vis$region), levels=c('anterior', 'posterior'))
+seurat_mouse_vis <- MetaspotsByGroups(
+  seurat_mouse_vis,
+  group.by = c("region"),
+  ident.group = "region",
+  mode = 'sum',
+  assay = 'Spatial',
+  slot = 'counts'
+)
+
+#############################################
+# downstream
+#############################################
+
+
+seurat_mouse_vis  <- NormalizeMetacells(seurat_mouse_vis )
+
+seurat_mouse_vis  <- SetDatExpr(
+  seurat_mouse_vis ,
+  group.by=NULL,
+  group_name = NULL
+)
+
+seurat_mouse_vis <- TestSoftPowers(seurat_mouse_vis)
+
+# plot the results:
+plot_list <- PlotSoftPowers(seurat_mouse_vis)
+
+# assemble with patchwork
+pdf(paste0(fig_dir, 'test_softpower.pdf'), width=12, height=8)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+# construct wgcna network:
+seurat_mouse_vis <- ConstructNetwork(
+  seurat_mouse_vis, tom_name='test', overwrite_tom=TRUE
+)
+
+```
