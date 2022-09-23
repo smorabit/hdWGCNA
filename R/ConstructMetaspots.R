@@ -5,8 +5,8 @@
 #' This function is called by MetaspotsByGroups and should NOT be run directly!
 #' @param cur_seurat A Seurat object
 #' @param mode "sum" or "average"
-#' @param
-#' @param
+#' @param assay Assay to extract data for aggregation. Default = 'Spatial'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @keywords ST
 #' @export
 #' @examples

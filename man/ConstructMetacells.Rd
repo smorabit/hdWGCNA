@@ -34,7 +34,7 @@ ConstructMetacells(
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'data'}
+\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
 
 \item{return_metacell}{Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.}
 

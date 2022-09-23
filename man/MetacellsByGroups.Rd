@@ -33,7 +33,7 @@ MetacellsByGroups(
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'data'}
+\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
 

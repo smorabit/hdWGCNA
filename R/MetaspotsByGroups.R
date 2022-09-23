@@ -5,8 +5,8 @@
 #'
 #' @param cur_seurat A Seurat object
 #' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
-#' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @param assay Assay to extract data for aggregation. Default = 'Spatial'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param wgcna_name name of the WGCNA experiment
 #' @keywords ST

@@ -7,7 +7,7 @@
 #' @param name A string appended to resulting metalcells. Default = 'agg'
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param max_shared the maximum number of cells to be shared across two metacells
@@ -219,7 +219,7 @@ ConstructMetacells <- function(
 #' @param name A string appended to resulting metalcells. Default = 'agg'
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'data'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param min_cells the minimum number of cells in a particular grouping to construct metacells
 #' @param max_shared the maximum number of cells to be shared across two metacells
