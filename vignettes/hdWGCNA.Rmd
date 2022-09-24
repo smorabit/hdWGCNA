@@ -22,6 +22,15 @@ in single-cell transcriptomics data with hdWGCNA.
 <img src="figures/basic_tutorial/Zhou_featureplot_hMEs_selected_wide.png" width="500" height="500">
 
 
+
+### [hdWGCNA in spatial transcriptomics data](ST_basics.html)
+This tutorial covers the essential functions to construct a co-expression network
+in spatial transcriptomics data with hdWGCNA.
+
+
+<img src="figures/ST_basics/spatial_clusters.png" width="500" height="500">
+
+
 ### [Network visualization](network_visualizations.html)
 
 This tutorial highlights several approaches for visualizing the hdWGCNA co-expression

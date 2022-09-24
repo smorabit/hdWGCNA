@@ -1,4 +1,16 @@
-citHeader("To cite scWGCNA in publications use:")
+citHeader("To cite hdWGCNA in publications, please use:")
+
+citEntry(
+  entry    = "article",
+  title    = "High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems",
+  author   = "Samuel Morabito, Emily Miyoshi, Neethu Michael, Saba Shahin, Alessandra Cadete Martini, Elizabeth Head, Justine Silva, Kelsey Leavy, Mari Perez-Rosendahl, Vivek Swarup",
+  journal  = "bioRxiv",
+  year     = "2022",
+  url      = "https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1",
+  textVersion = paste(
+    "Morabito et al. High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems. bioRxiv (2022) [hdWGCNA]"
+  )
+)
 
 citEntry(
   entry    = "Article",
@@ -11,6 +23,6 @@ citEntry(
   pages    = "1143–1155",
   url      = "https://doi.org/10.1038/s41588-021-00894-z",
   textVersion = paste(
-
+    "Morabito and Miyoshi et al. Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease. Nature Genetics (2021) [scWGCNA]"
   )
 )
