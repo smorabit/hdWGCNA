@@ -43,6 +43,10 @@ control human brains from the [Zhou et al 2020 study](https://www.nature.com/art
 wget https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds
 ```
 
+<details> <summary> Download not working? </summary>
+Please try downloading the file from this [Google Drive link](https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing) instead.
+</details>
+
 ## Load the dataset and required libraries
 
 First we will load the single-cell dataset and the required R libraries for this

@@ -53,6 +53,11 @@ Download the tutorial dataset:
 wget https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds
 ```
 
+<details> <summary> Download not working? </summary>
+Please try downloading the file from this [Google Drive link](https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing) instead.
+</details>
+
+
 ## Example 1: Consensus network analysis of astrocytes from male and female donors
 
 In this section, we perform consensus network analysis between male and female
