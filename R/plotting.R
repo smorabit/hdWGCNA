@@ -2358,6 +2358,7 @@ PlotKMEs <- function(
 #' @examples
 #' PlotDMEsVolcano
 PlotDMEsVolcano <- function(
+  seurat_obj,
   DMEs,
   plot_labels=TRUE,
   mod_point_size=4,

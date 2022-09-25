@@ -93,6 +93,7 @@ We can visualize the results using the hdWGNCA function `PlotDMEsVolcano`.
 ```{r eval=FALSE}
 
 PlotDMEsVolcano(
+  seurat_obj,
   DMEs,
   wgcna_name = 'INH'
 )
@@ -102,6 +103,7 @@ PlotDMEsVolcano(
 ```{r eval=FALSE, echo=FALSE}
 
 p <- PlotDMEsVolcano(
+  seurat_obj,
   DMEs,
   wgcna_name = 'INH'
 )
@@ -150,6 +152,7 @@ Now we can plot the results with `PlotDMEsVolcano`
 ```{r eval=FALSE}
 
 p <- PlotDMEsVolcano(
+  seurat_obj,
   DMEs_all,
   wgcna_name = 'INH',
   plot_labels=FALSE,
@@ -164,6 +167,7 @@ p + facet_wrap(~group, ncol=3)
 ```{r eval=FALSE, echo=FALSE}
 
 p <- PlotDMEsVolcano(
+  seurat_obj,
   DMEs_all,
   wgcna_name = 'INH',
   plot_labels=FALSE,
