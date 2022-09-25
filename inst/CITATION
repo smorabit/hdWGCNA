@@ -3,7 +3,7 @@ citHeader("To cite hdWGCNA in publications, please use:")
 citEntry(
   entry    = "article",
   title    = "High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems",
-  author   = "Samuel Morabito, Emily Miyoshi, Neethu Michael, Saba Shahin, Alessandra Cadete Martini, Elizabeth Head, Justine Silva, Kelsey Leavy, Mari Perez-Rosendahl, Vivek Swarup",
+  author   = "Samuel Morabito, Fairlie Reese, Negin Rahimzadeh, Emily Miyoshi, Vivek Swarup",
   journal  = "bioRxiv",
   year     = "2022",
   url      = "https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1",
