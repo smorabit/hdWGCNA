@@ -11,6 +11,7 @@ MetaspotsByGroups(
   assay = "Spatial",
   slot = "counts",
   mode = "sum",
+  min_spots = 50,
   wgcna_name = NULL
 )
 }
@@ -22,6 +23,8 @@ MetaspotsByGroups(
 \item{slot}{Slot to extract data for aggregation. Default = 'counts'}
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+
+\item{min_spots}{the minimum number of spots in a particular grouping to construct metaspots}
 
 \item{wgcna_name}{name of the WGCNA experiment}
 

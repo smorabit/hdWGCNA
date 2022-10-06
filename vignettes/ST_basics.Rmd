@@ -68,10 +68,13 @@ SeuratData::InstallData("stxBrain")
 
 # load the anterior and posterior samples
 brain <- LoadData("stxBrain", type = "anterior1")
+brain$region <- 'anterior'
 brain2 <- LoadData("stxBrain", type = "posterior1")
+brain2$region <- 'posterior'
 
 # merge into one seurat object
 seurat_obj <- merge(brain, brain2)
+seurat_obj$region <- factor(as.character(seurat_obj$region), levels=c('anterior', 'posterior'))
 
 # save unprocessed object
 saveRDS(seurat_obj, file='mouse_brain_ST_unprocessed.rds')
@@ -130,7 +133,7 @@ seurat_obj <- seurat_obj %>%
 # Louvain clustering and umap
 seurat_obj <- FindNeighbors(seurat_obj, dims = 1:30)
 seurat_obj <- FindClusters(seurat_obj,verbose = TRUE)
-seurat_obj %<>% RunUMAP(dims = 1:30)
+seurat_obj <- RunUMAP(seurat_obj, dims = 1:30)
 
 # set factor level for anterior / posterior
 seurat_mouse_vis$region <- factor(as.character(seurat_mouse_vis$region), levels=c('anterior', 'posterior'))

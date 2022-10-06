@@ -5,6 +5,7 @@
 \title{PlotDMEsVolcano}
 \usage{
 PlotDMEsVolcano(
+  seurat_obj,
   DMEs,
   plot_labels = TRUE,
   mod_point_size = 4,

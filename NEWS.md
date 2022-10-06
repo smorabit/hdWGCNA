@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.01 (2022-10-06)
+## Added
+- None
+
+## Changes
+- Bugfix in `MetaspotsByGroups`.
+
+
 # hdWGCNA 0.2.00 (2022-09-23)
 ## Added
 - `MetaspotsByGroups` to aggregate neighboring ST spots prior to network analysis.

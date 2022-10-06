@@ -8,6 +8,7 @@
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
+#' @param min_spots the minimum number of spots in a particular grouping to construct metaspots
 #' @param wgcna_name name of the WGCNA experiment
 #' @keywords ST
 #' @export
@@ -20,6 +21,7 @@ MetaspotsByGroups <- function(
   assay = 'Spatial',
   slot = 'counts',
   mode = 'sum',
+  min_spots = 50,
   wgcna_name = NULL
 ){
 
@@ -75,6 +77,17 @@ MetaspotsByGroups <- function(
   }
   groupings <- unique(seurat_obj$metacell_grouping)
   groupings <- groupings[order(groupings)]
+
+  # remove groups that are too small:
+  group_counts <- table(seurat_obj$metacell_grouping) < min_spots
+  if(any(group_counts)){
+    warning(paste0("Removing the following groups that did not meet min_spots: ", paste(names(group_counts)[group_counts], collapse=', ')))
+  }
+  groupings <- groupings[table(seurat_obj$metacell_grouping) >= min_spots]
+
+  if(length(groupings) == 0 ){
+    stop("No groups met the min_spots requirement.")
+  }
 
   # split seurat obj by groupings
   seurat_list <- lapply(groupings, function(x){seurat_obj[,seurat_obj$metacell_grouping == x]})

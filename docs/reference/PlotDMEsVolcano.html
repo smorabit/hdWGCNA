@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.00</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.01</span>
       </span>
     </div>
 
@@ -113,6 +113,7 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">PlotDMEsVolcano</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
   <span class="va">DMEs</span>,
   plot_labels <span class="op">=</span> <span class="cn">TRUE</span>,
   mod_point_size <span class="op">=</span> <span class="fl">4</span>,
@@ -145,8 +146,8 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">PlotDMEsVolcano</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (DMEs, plot_labels = TRUE, mod_point_size = 4, label_size = 4, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     show_cutoff = TRUE, wgcna_name = NULL) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, DMEs, plot_labels = TRUE, mod_point_size = 4, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     label_size = 4, show_cutoff = TRUE, wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     DMEs &lt;- na.omit(DMEs)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lowest &lt;- DMEs %&gt;% subset(p_val_adj != 0) %&gt;% top_n(-1, wt = p_val_adj) %&gt;% </span>
@@ -191,7 +192,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p + NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9ec2135030&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f99039c66b0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.00</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.01</span>
       </span>
     </div>
 
@@ -196,10 +196,13 @@ Note on <code>SeuratData</code> download
 
 <span class="co"># load the anterior and posterior samples</span>
 <span class="va">brain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span>
+<span class="va">brain</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'anterior'</span>
 <span class="va">brain2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"posterior1"</span><span class="op">)</span>
+<span class="va">brain2</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'posterior'</span>
 
 <span class="co"># merge into one seurat object</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">brain</span>, <span class="va">brain2</span><span class="op">)</span>
+<span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># save unprocessed object</span>
 <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'mouse_brain_ST_unprocessed.rds'</span><span class="op">)</span></code></pre></div>
@@ -241,7 +244,7 @@ AAACATGGTGAGAGGA-1_1      1  62   0     8913     1480</code></pre>
 <span class="co"># Louvain clustering and umap</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters</a></span><span class="op">(</span><span class="va">seurat_obj</span>,verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">%&lt;&gt;%</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span>dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
 
 <span class="co"># set factor level for anterior / posterior</span>
 <span class="va">seurat_mouse_vis</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_mouse_vis</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span>

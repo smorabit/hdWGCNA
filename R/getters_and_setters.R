@@ -312,7 +312,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @keywords scRNA-seq
 #' @export
 #' @examples
-#' SetDatExpr
+#' SetMultiExpr
 SetMultiExpr <- function(
   seurat_obj,
   group_name,
@@ -348,9 +348,9 @@ SetMultiExpr <- function(
 
   # get the different groups present if not specified by the user:
   if(is.null(multi_groups)){
-    multi_groups <- unique(seurat_obj@meta.data[[multi.group.by]])
+    multi_groups <- unique(s_obj@meta.data[[multi.group.by]])
   } else{
-    seurat_groups <- unique(seurat_obj@meta.data[[multi.group.by]])
+    seurat_groups <- unique(s_obj@meta.data[[multi.group.by]])
     if(sum(multi_groups %in% seurat_groups) != length(multi_groups)){
       stop('Some or all groups specified in multi_groups not found in seurat_obj@meta.data[,multi.group.by]')
     }

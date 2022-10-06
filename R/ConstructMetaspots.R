@@ -96,6 +96,11 @@ ConstructMetaspots <- function(
 
     })
 
+    if(length(tmp) <= 1){
+      print('here')
+      next
+    }
+
     # get bc-neighbor results
     bcs <- unlist(lapply(1:length(tmp), function(k){tmp[[k]][[1]]}))
     cur_neighbors <- lapply(1:length(tmp), function(k){tmp[[k]][[2]]})
@@ -119,7 +124,14 @@ ConstructMetaspots <- function(
   names(cur_neighbors) <- bcs
 
   # combine expression results
+  if(length(tmp) <= 1){
+    return(NULL)
+  }
   agg_X <- do.call(rbind, lapply(1:length(tmp), function(k){tmp[[k]][[3]]}))
+
+
+  # print(length(tmp))
+  # print(dim(agg_X))
 
   # transpose expression matrix:
   agg_X <- t(agg_X)
