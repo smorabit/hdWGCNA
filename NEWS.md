@@ -1,3 +1,12 @@
+# hdWGCNA 0.2.02 (2022-11-01)
+## Added
+- None
+
+## Changes
+- New warning in `SetupForWGCNA` if the user selects a very small number of genes.
+- `MetaspotsByGroups` uses sparse matrix format internally.
+
+
 # hdWGCNA 0.2.01 (2022-10-06)
 ## Added
 - None

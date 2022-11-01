@@ -135,11 +135,15 @@ ConstructMetaspots <- function(
   agg_X <- do.call(rbind, lapply(1:length(tmp), function(k){tmp[[k]][[3]]}))
 
 
+  # experimental
+  agg_X <- as(agg_X, 'sparseMatrix')
+
   # print(length(tmp))
   # print(dim(agg_X))
 
   # transpose expression matrix:
-  agg_X <- t(agg_X)
+  print(class(agg_X))
+  agg_X <- Matrix::t(agg_X)
   colnames(agg_X) <- bcs
 
   # get metadata:

@@ -149,6 +149,12 @@ SetupForWGCNA <- function(
     seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list=features, wgcna_name=wgcna_name)
   }
 
+  # give the user a warning if there's too few genes (under 200?)
+  genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name=wgcna_name)
+  if(length(genes_use) < 500){
+    warning(paste0(length(genes_use), ' features selected. You may wish to change the settings to include more features in your analysis.'))
+  }
+
   if(!is.null(metacell_location)){
     if(!(metacell_location %in% names(seurat_obj@misc))){
       stop('metacell_location not found in seurat_obj@misc')
