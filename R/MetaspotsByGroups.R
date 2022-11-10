@@ -108,6 +108,10 @@ MetaspotsByGroups <- function(
     metaspot_list <- metaspot_list[-remove]
   }
 
+  if(length(metaspot_list) == 0){
+    stop('All metaspot aggregations failed.')
+  }
+
   # combine density information:
   if(length(metaspot_list) > 1){
     density_agg <- unlist(lapply(metaspot_list, function(x){x@misc$density_agg}))

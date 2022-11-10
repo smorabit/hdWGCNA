@@ -92,6 +92,11 @@ ConstructMetacells <- function(
   #
   # combs <- combn(nrow(cell_sample), 2)
 
+  # get a list of the cell barcodes that have been merged:
+  cells_merged <- apply(cell_sample, 1, function(x){
+    paste0(colnames(seurat_obj)[x], collapse=',')
+  })
+
   combs <- tryCatch(
     {combn(nrow(cell_sample), 2)},
     error = function(cond){return(NA)}
@@ -100,7 +105,6 @@ ConstructMetacells <- function(
     warning('Metacell failed')
     return(NULL)
   }
-
 
   shared <- apply(combs, 2, function(x) {
       k2 - length(unique(as.vector(cell_sample[x, ])))
@@ -147,6 +151,9 @@ ConstructMetacells <- function(
       new.data=as.matrix(new_exprs)
     )
   }
+
+  # add the cells merged info to the metacell obj
+  metacell_obj$cells_merged <- as.character(cells_merged)
 
   # calculate stats:
   # shared <- shared[shared <= max_shared]

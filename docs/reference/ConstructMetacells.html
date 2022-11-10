@@ -18,7 +18,7 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.02</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.03</span>
       </span>
     </div>
 
@@ -222,6 +222,9 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     shared_old &lt;- shared</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cell_sample &lt;- nn_map[chosen, ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cells_merged &lt;- apply(cell_sample, 1, function(x) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         paste0(colnames(seurat_obj)[x], collapse = ",")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     combs &lt;- tryCatch({</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         combn(nrow(cell_sample), 2)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }, error = function(cond) {</span>
@@ -258,6 +261,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         metacell_obj &lt;- SeuratObject::SetAssayData(metacell_obj, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             slot = slot, assay = assay, new.data = as.matrix(new_exprs))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     metacell_obj$cells_merged &lt;- as.character(cells_merged)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared &lt;- max(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     median_shared &lt;- median(shared)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mean_shared &lt;- mean(shared)</span>
@@ -291,7 +295,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fe326fcec10&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fcf9a5aa2f0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

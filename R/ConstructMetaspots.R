@@ -31,7 +31,19 @@ ConstructMetaspots <- function(
 
   # loop boundaries
   col_bounds <- col_range[1]:col_range[2]
-  col_bounds <- col_bounds[which(1:length(col_bounds) %% 4 == 0)]
+
+  if(length(col_bounds) >= 4){
+    col_bounds <- col_bounds[which(1:length(col_bounds) %% 4 == 0)]
+  } else if(length(col_bounds) == 3){
+    warning('The selected grouping is spatially constrained and might fail the metaspot aggregation step. You may wish to change the group.by parameter to form larger groups.')
+    col_bounds <- col_bounds[2]
+  } else if(length(col_bounds) >= 1){
+    warning('The selected grouping is spatially constrained and might fail the metaspot aggregation step. You may wish to change the group.by parameter to form larger groups.')
+    col_bounds <- col_bounds[1]
+  } else{
+    warning('No columns specified. Need to change the group.by parameter.')
+    return()
+  }
 
   # even or odd cols?
   if(all(col_bounds %% 2 == 0)){even = TRUE} else{even = FALSE}
@@ -102,7 +114,6 @@ ConstructMetaspots <- function(
     })
 
     if(length(tmp) <= 1){
-      print('here')
       next
     }
 
@@ -130,6 +141,7 @@ ConstructMetaspots <- function(
 
   # combine expression results
   if(length(tmp) <= 1){
+    warning('Metaspot aggregation failed for this grouping.')
     return(NULL)
   }
   agg_X <- do.call(rbind, lapply(1:length(tmp), function(k){tmp[[k]][[3]]}))

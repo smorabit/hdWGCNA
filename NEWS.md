@@ -1,3 +1,12 @@
+# hdWGCNA 0.2.03 (2022-11-010)
+## Added
+- None
+
+## Changes
+- New error checking in `MetaspotsByGroups`
+- `MetacellsByGroups` now keeps track of which cells were merged.
+
+
 # hdWGCNA 0.2.02 (2022-11-01)
 ## Added
 - None
