@@ -1,4 +1,11 @@
-# hdWGCNA 0.2.03 (2022-11-010)
+# hdWGCNA 0.2.03 (2022-12-15)
+## Added
+- None
+
+## Changes
+- Fixed a bug in `ResetModuleNames`.
+
+# hdWGCNA 0.2.03 (2022-11-10)
 ## Added
 - None
 

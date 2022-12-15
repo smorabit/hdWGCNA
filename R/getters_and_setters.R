@@ -1261,14 +1261,18 @@ ResetModuleNames <- function(
   # update hME table:
   hMEs <- GetMEs(seurat_obj, harmonized=TRUE, wgcna_name)
   if(!is.null(hMEs)){
-    colnames(hMEs) <- new_mod_df$new
+    me_colnames <- colnames(hMEs)
+    ix <- match(me_colnames, new_mod_df$old)
+    colnames(hMEs) <- new_mod_df$new[ix]
     seurat_obj <- SetMEs(seurat_obj, hMEs, harmonized=TRUE, wgcna_name)
   }
 
   # update ME table
   MEs <- GetMEs(seurat_obj, harmonized=FALSE, wgcna_name)
   if(!is.null(MEs)){
-    colnames(MEs) <- new_mod_df$new
+    me_colnames <- colnames(MEs)
+    ix <- match(me_colnames, new_mod_df$old)
+    colnames(MEs) <- new_mod_df$new[ix]
     seurat_obj <- SetMEs(seurat_obj, MEs, harmonized=FALSE, wgcna_name)
   }
 

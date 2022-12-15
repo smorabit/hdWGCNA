@@ -18,7 +18,7 @@ one of the most ubiquitous formats for single-cell data. Check out the [hdWGCNA 
 write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
 to report bugs, ask for help, and to request potential enhancements.
 
-If you use hdWGCNA in your research, please cite the following papers:
+If you use hdWGCNA in your research, please cite the following papers in addition to the original WGCNA publication:
 
 * [Morabito et al. bioRxiv 2022](https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1)
 * [Morabito & Miyoshi et al. Nature Genetics 2021](https://doi.org/10.1038/s41588-021-00894-z)
