@@ -231,6 +231,14 @@ SetDatExpr <- function(
     }
   }
 
+  # check that the selected groups are in the Seurat object:
+  if(!all(group_name %in% s_obj@meta.data[[group.by]])){
+    groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
+    stop(
+      paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
+    )
+  }
+
   # columns to group by for cluster/celltype
   if(!is.null(group.by)){
     seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
