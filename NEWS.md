@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.1 (2023-01-24)
+## Added
+- `ReassignModules` function.
+
+## Changes
+- New option in `ModuleConnectivity` to use `corSparse` to compute the correlation, which greatly reduces runtime and memory usage.
+- New option in `ModuleConnectivity` to automatically reassign features to different modules if kME is negative.
+
 # hdWGCNA 0.2.03 (2022-12-15)
 ## Added
 - None

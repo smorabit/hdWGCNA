@@ -1,0 +1,115 @@
+#' RunModuleUMAP
+#'
+#' Run UMAP on co-expression matrix using hub genes as features.
+#'
+#' @param seurat_obj A Seurat object
+#' @param n_hubs number of hub genes to use in the UMAP computation
+#' @param exclude_grey logical indicating whether to include grey module
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Additional parameters supplied to uwot::umap
+#' @keywords scRNA-seq
+#' @export
+#' @examples
+RunModuleUMAP <- function(
+  seurat_obj,
+  features = "TOM", # "TOM" or "kME"
+  n_hubs = 10,
+  exclude_grey = TRUE,
+  wgcna_name = NULL,
+  n_neighbors= 25,
+  metric = "cosine",
+  spread=1,
+  min_dist=0.4,
+  supervised = FALSE,
+  ...
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # get modules,
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module)
+
+  # check if we have eigengene-based connectivities:
+  if(!all(paste0('kME_', as.character(mods)) %in% colnames(modules))){
+    stop('Eigengene-based connectivity (kME) not found. Did you run ModuleEigengenes and ModuleConnectivity?')
+  }
+
+  if(exclude_grey){
+    mods <- mods[mods != 'grey']
+    modules <- subset(modules, module != 'grey')
+  }
+
+  # get hub genes:
+  hub_list <- lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs) %>% .$gene_name
+  })
+  names(hub_list) <- mods
+
+  # get all genes that aren't in gray mod
+  selected_genes <- modules[modules$module %in% mods,'gene_name']
+
+  # get the TOM
+  TOM <- GetTOM(seurat_obj, wgcna_name)
+
+  # subset the TOM for umap
+  # keep all genes as rows, and keep only hubs as cols (features)
+  feature_mat <- TOM[selected_genes,unlist(hub_list)]
+
+  # run UMAP
+  if(supervised){
+    print('running supervised UMAP:')
+    hub_umap <-  uwot::umap(
+      X = feature_mat,
+      min_dist = min_dist,
+      n_neighbors= n_neighbors,
+      metric = metric,
+      spread=spread,
+      y = modules$module, # for supervised UMAP
+      ...
+    )
+  } else {
+    hub_umap <-  uwot::umap(
+      X = feature_mat,
+      min_dist = min_dist,
+      n_neighbors= n_neighbors,
+      metric = metric,
+      spread=spread,
+      ...
+    )
+  }
+
+
+  # set up plotting df
+  plot_df <- as.data.frame(hub_umap)
+  colnames(plot_df) <- c("UMAP1", "UMAP2")
+  plot_df$gene <- rownames(feature_mat)
+
+  # add module color, and hub gene status to the plotting df:
+  ix <- match(plot_df$gene, modules$gene_name)
+  plot_df$module <- modules$module[ix]
+  plot_df$color <- modules$color[ix]
+  plot_df$hub <- ifelse(
+    plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
+  )
+
+  # get kME values for each gene
+  kMEs <- do.call(rbind, lapply(mods, function(cur_mod){
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[,c('gene_name', paste0('kME_', cur_mod))]
+    colnames(cur) <- c('gene_name', 'kME')
+
+    # scale kMEs between 0 & 1:
+    cur$kME <- scale01(cur$kME)
+    cur
+  }))
+  ix <- kMEs$gene_name[match(plot_df$gene, kMEs$gene_name)]
+  plot_df$kME <- kMEs[ix, 'kME']
+
+  # add the UMAP to the Seurat object:
+  seurat_obj <- SetModuleUMAP(seurat_obj, plot_df, wgcna_name)
+
+  seurat_obj
+}

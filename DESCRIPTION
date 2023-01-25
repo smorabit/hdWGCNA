@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.2.04
+Version: 0.2.1
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
@@ -13,3 +13,4 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://smorabit.github.io/hdWGCNA/
+Imports: WGCNA, Seurat
