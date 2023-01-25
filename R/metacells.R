@@ -234,9 +234,7 @@ ConstructMetacells <- function(
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name name of the WGCNA experiment
-#' @keywords scRNA-seq
 #' @export
-#' @examples
 #' MetacellsByGroups
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'),
@@ -396,6 +394,7 @@ MetacellsByGroups <- function(
 #' Wrapper function to run Seurat's NormalizeData function on the metacell object.
 #'
 #' @param seurat_obj A Seurat object
+#' @export
 NormalizeMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
   metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
   metacell_obj <- Seurat::NormalizeData(metacell_obj, ...)
@@ -407,6 +406,7 @@ NormalizeMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
 #' Wrapper function to run Seurat's ScaleData function on the metacell object.
 #'
 #' @param seurat_obj A Seurat object
+#' @export
 ScaleMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
   if(!exists("features")){
     features = VariableFeatures(seurat_obj)
@@ -421,6 +421,7 @@ ScaleMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
 #' Wrapper function to run Seurat's RunPCA function on the metacell object.
 #'
 #' @param seurat_obj A Seurat object
+#' @export
 RunPCAMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
   metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
   metacell_obj <- Seurat::RunPCA(metacell_obj, ...)
@@ -432,6 +433,7 @@ RunPCAMetacells <- function(seurat_obj, wgcna_name=NULL, ...){
 #' Wrapper function to run harmony's RunHarmony function on the metacell object.
 #'
 #' @param seurat_obj A Seurat object
+#' @export
 RunHarmonyMetacells <- function(seurat_obj, ...){
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- harmony::RunHarmony(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
@@ -443,6 +445,7 @@ RunHarmonyMetacells <- function(seurat_obj, ...){
 #'
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
+#' @export
 RunUMAPMetacells <- function(seurat_obj, ...){
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- Seurat::RunUMAP(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
   seurat_obj
@@ -455,6 +458,7 @@ RunUMAPMetacells <- function(seurat_obj, ...){
 #'
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
+#' @export
 DimPlotMetacells <- function(seurat_obj, ...){
   Seurat::DimPlot(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
 }

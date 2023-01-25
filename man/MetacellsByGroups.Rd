@@ -55,7 +55,3 @@ MetacellsByGroups(
 This function takes a Seurat object and constructs averaged 'metacells' based
 on neighboring cells in provided groupings, such as cluster or cell type.
 }
-\examples{
-MetacellsByGroups
-}
-\keyword{scRNA-seq}
