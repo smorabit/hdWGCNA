@@ -12,7 +12,3 @@ AvgModuleExpr(seurat_obj, n_genes = 25, wgcna_name = NULL, ...)
 \description{
 Computes module eigengenes for all WGCNA co-expression modules
 }
-\examples{
- AverageModuleExpr (pbmc)
-}
-\keyword{scRNA-seq}

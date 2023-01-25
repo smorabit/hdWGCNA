@@ -24,7 +24,3 @@ ConstructMetaspots(
 Computes metaspots in a given Seurat object containing spatial transcriptomics data.
 This function is called by MetaspotsByGroups and should NOT be run directly!
 }
-\examples{
-
-}
-\keyword{ST}

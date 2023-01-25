@@ -35,6 +35,7 @@
 #'
 #' @import WGCNA
 #' @import Seurat
+#' @export
 ConstructNetwork <- function(
   seurat_obj, soft_power=NULL, min_power=3,
   tom_outdir="TOM",

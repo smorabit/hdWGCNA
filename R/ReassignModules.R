@@ -19,6 +19,7 @@
 #' but the user can do so at their own risk by setting ignore=TRUE.
 #'
 #' @import Seurat
+#' @export
 ReassignModules <- function(
   seurat_obj,
   harmonized=TRUE,

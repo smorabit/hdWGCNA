@@ -36,6 +36,7 @@
 #'
 #' @import WGCNA
 #' @import Seurat
+#' @export
 ModuleConnectivity <- function(
   seurat_obj,
   group.by = NULL,

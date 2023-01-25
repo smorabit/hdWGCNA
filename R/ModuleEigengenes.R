@@ -12,6 +12,7 @@
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param wgcna_name name of the WGCNA experiment
+#' @export
 ComputeModuleEigengene <- function(
   seurat_obj,
   cur_mod,
@@ -167,6 +168,7 @@ ComputeModuleEigengene <- function(
 #' or other factors using the Harmony algorithm with the group.by.vars parameter.
 #'
 #' @import Seurat
+#' @export
 ModuleEigengenes <- function(
   seurat_obj,
   group.by.vars=NULL,
@@ -313,6 +315,7 @@ ModuleEigengenes <- function(
 #' the expression level of each module. The user can choose between Seurat AddModuleScore
 #' or UCell using the method parameter.
 #'
+#' @export
 ModuleExprScore <- function(
   seurat_obj,
   n_genes = 25,
@@ -379,10 +382,7 @@ ModuleExprScore <- function(
 #' Computes module eigengenes for all WGCNA co-expression modules
 #'
 #' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
 #' @export
-#' @examples
-#'  AverageModuleExpr (pbmc)
 AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 
   # set as active assay if wgcna_name is not given

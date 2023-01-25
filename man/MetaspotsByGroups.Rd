@@ -33,7 +33,3 @@ MetaspotsByGroups(
 \description{
 Computes metaspots in a given Seurat object containing spatial transcriptomics data.
 }
-\examples{
-
-}
-\keyword{ST}

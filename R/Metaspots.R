@@ -7,10 +7,7 @@
 #' @param mode "sum" or "average"
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
-#' @keywords ST
 #' @export
-#' @examples
-#'
 ConstructMetaspots <- function(
   cur_seurat,
   mode = 'sum',
@@ -199,10 +196,7 @@ ConstructMetaspots <- function(
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param min_spots the minimum number of spots in a particular grouping to construct metaspots
 #' @param wgcna_name name of the WGCNA experiment
-#' @keywords ST
 #' @export
-#' @examples
-#'
 MetaspotsByGroups <- function(
   seurat_obj,
   group.by=c('seurat_clusters'),
