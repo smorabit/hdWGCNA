@@ -91,7 +91,8 @@ ReassignModules <- function(
       cur %>% subset(kME < 0)
     }))
     if(nrow(neg_df) == 0){
-      stop('No genes to reassign, all kMEs of assigned modules are greater than 0.')
+      # warning('No genes to reassign, all kMEs of assigned modules are greater than 0.')
+      return(seurat_obj)
     }
     rownames(neg_df) <- 1:nrow(neg_df)
 
