@@ -12,6 +12,8 @@
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param wgcna_name name of the WGCNA experiment
+#' @import Seurat
+#' @import harmony
 #' @export
 ComputeModuleEigengene <- function(
   seurat_obj,

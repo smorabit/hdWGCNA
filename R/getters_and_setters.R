@@ -263,6 +263,7 @@ SetDatExpr <- function(
     )[genes_use,cells]
   )
 
+
   # transpose data
   datExpr <- as.data.frame(t(datExpr))
 

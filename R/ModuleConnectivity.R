@@ -36,6 +36,7 @@
 #'
 #' @import WGCNA
 #' @import Seurat
+#' @import Matrix
 #' @export
 ModuleConnectivity <- function(
   seurat_obj,
@@ -82,9 +83,12 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   if(sparse){
-
+    if(!('qlcMatrix' %in% installed.packages())){
+      stop('Need to install package qlcMatrix if sparse=TRUE. Either set sparse=FALSE or install qlcMatrix package.')
+    }
+    
     kMEs <- qlcMatrix::corSparse(
-      X = t(exp_mat),
+      X = Matrix::t(exp_mat),
       Y = as.matrix(MEs)
     )
     rownames(kMEs) <- genes_use

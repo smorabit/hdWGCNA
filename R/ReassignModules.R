@@ -39,7 +39,6 @@ ReassignModules <- function(
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-
   if(!is.null(features) & !is.null(new_modules)){
 
     ##############################
@@ -117,7 +116,7 @@ ReassignModules <- function(
     reassigned <- factor(as.character(reassigned), levels=levels(modules$module))
 
     # new colors:
-    reassigned_colors <- as.character(mod_cp[as.character(reassigned)])
+    reassigned_colors <- factor(as.character(mod_cp[as.character(reassigned)]), levels=levels(modules$color))
 
     # reassign modules and colors
     modules[neg_df$gene_name,'module'] <- reassigned

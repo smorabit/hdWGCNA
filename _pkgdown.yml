@@ -36,6 +36,8 @@ navbar:
       href: articles/basic_tutorial.html
     - text: hdWGCNA in spatial transcriptomics data
       href: articles/ST_basics.html
+    - text: Isoform co-expression network analysis with PacBio MAS-Seq
+      href: articles/isoform_pbmcs.html
     - text: Network visualization
       href: articles/network_visualizations.html
     - text: -------

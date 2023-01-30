@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.11 (2023-01-30)
+## Added
+- MAS-Seq tutorial (still under construction)
+
+## Changes
+- Bugfix in `ModuleConnectivity` and `ReassignModules`.
+
 # hdWGCNA 0.2.1 (2023-01-24)
 ## Added
 - `ReassignModules` function.

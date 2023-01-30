@@ -79,7 +79,7 @@ SelectNetworkGenes <- function(
 
   } else if(gene_select == "custom"){
 
-    gene_list <- gene_list
+    gene_list <- unique(gene_list)
 
     # check that custom genes are present in the seurat object:
     check_genes <- gene_list %in% rownames(seurat_obj)
