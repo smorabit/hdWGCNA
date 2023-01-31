@@ -12,7 +12,7 @@
 #' @param corOptions 	character string specifying additional arguments to be passed to the function given by corFnc. Use "use = 'p', method = 'spearman'" to obtain Spearman correlation. Use "use = 'p'" to obtain Pearson correlation.
 #' @param harmonized logical determining whether to use harmonized MEs for kME calculation
 #' @param assay Assay in seurat_obj containing expression information.
-#' @param slot Slot in specified, default to normalized 'data' slot.
+#' @param slot Slot in seurat_obj, default to normalized 'data' slot.
 #' @param sparse logical indicating whether or not to run the correlation using a sparse matrix.
 #' @param reassign_modules logical indicating whether or not to reassign genes to different co-expression modules if their kME value in the assigned module is negative.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot

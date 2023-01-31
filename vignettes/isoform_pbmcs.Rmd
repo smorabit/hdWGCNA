@@ -13,17 +13,21 @@ vignette: >
 
 This tutorial covers the basics of using hdWGCNA to perform **isoform**
 co-expression network analysis using [PacBio MAS-Seq](https://www.pacb.com/wp-content/uploads/Application-note-MAS-Seq-for-single-cell-isoform-sequencing.pdf) data.
-We start from the genes by cells and isoforms by cells counts matrices, and cover how 
-to perform clustering analysis in this long-read single-cell data using Seurat, and then
+Briefly, MAS-Seq is a single-cell RNA-seq protocol that uses long-read sequencing to profile full-length RNA molecules,
+potentially providing a much greater depth of information about individual RNA splicing isoforms compared to traditional 
+short-read scRNA-seq. This tutorial starts from the typical genes by cells counts matrix, as well as an isoforms by cells counts matrix
+unique to long-read single-cell approaches like MAS-seq, and we cover how 
+to perform clustering analysis in long-read single-cell data using Seurat. Finally,
 we demonstrate several different ways to use hdWGCNA for isoform co-expression
 network analysis. Here we use a MAS-Seq dataset of PBMCs from
-two donors, sequenced using the Revio platform. Before working through this tutorial, 
+two donors, sequenced using the PacBio Revio platform. Before working through this tutorial, 
 we recommend becoming familar with the basics of hdWGCNA using our single-cell tutorial.
 
 # Download the tutorial data
 
 Here we download the genes and isoforms counts matrices from PacBio for the
-two replicates using wget.
+two replicates using wget. These counts matrices were generated using the  
+PacBio SMRT Link software, more details can be found at the [isoseq documentation website](https://isoseq.how/umi/).
 
 ```{bash eval=FALSE}
 # download replicate 1
@@ -707,7 +711,7 @@ length(VariableFeatures(seurat_obj))
 ```
 
 ```
-[1] 9264
+[1] 9265
 ```
 
 This approach gives us 9265 isoforms to perform network analysis on. Next we run the 
@@ -750,11 +754,14 @@ to find suitable values for the `soft_power` parameter.
 
 ```{r eval=FALSE}
 
+# get list of cell populations
+groups <- unique(GetMetacellObject(seurat_obj)$annotation)
+
 # set up gene expression matrix
 seurat_obj <- SetDatExpr(
   seurat_obj,
   group.by='cell_type',
-  group_name = unique(seurat_obj$cell_type),
+  group_name = groups,
   use_metacells=TRUE,
   slot = 'data',
   assay = 'iso'
@@ -797,7 +804,7 @@ seurat_obj <- ConstructNetwork(
 
 # plot the dendrogram
 PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
-
+     
 # note: we have to run ScaleData or else harmony won't work in the ModuleEigengenes function
 seurat_obj <- ScaleData(seurat_obj, features=rownames(seurat_obj)[1:100])
 
@@ -806,11 +813,12 @@ seurat_obj <- ModuleEigengenes(
   seurat_obj,
   group.by.vars = 'Sample',
   verbose=TRUE
-)
+)       
 
 # compute module connectivity:
 modules_orig <- GetModules(seurat_obj)
 seurat_obj <- ModuleConnectivity(seurat_obj)
+modules <- GetModules(seurat_obj)
 
 
 ```
@@ -938,243 +946,171 @@ saveRDS(seurat_obj, file=paste0(data_dir, 'PBMC_masseq_hdWGCNA_wip.rds'))
 <img src="figures/isoseq/variable_coex_umap.png" width="900" height="600">
 
 
-
 ## Example 2: Major isoforms of cluster marker genes in all PBMCs
+
+Here we use a different approach for obtaining a list of input isoforms for hdWGCNA. We 
+first identify **Major Isoforms**, defined as the set of isoforms accounting for 80% of a gene's 
+total expression. Major isoforms are identified for each gene and for each cell population, and the 
+80% threshold parameter can be tweaked. hdWGCNA includes `FindMajorIsoforms`, a function to call major
+isoforms from a Seurat object. 
+
+The set of major isoforms across all of the cell populations may still contain feature set 
+that would be challenging to perform network analysis on due to its size. Therefore, 
+in this tutorial we will intersect the major isoform list with a cluster marker gene list,
+giving us a set of major isoforms for each cell population's marker genes.
+In the following block of code, we run Seurat's `FindAllMarkers` function on the 
+RNA assay to get a marker gene table. Note that we are identifying **marker genes** and not 
+marker isoforms for this step.
 
 ```{r eval=FALSE}
 
+# switch to the RNA assay because we want marker genes
 DefaultAssay(seurat_obj) <- 'RNA'
 
+# change the idents to your desired clusters, cell annotations, etc
 Idents(seurat_obj) <- seurat_obj$annotation
 
+# Run FindAllMarkers to get cluster marker genes!!
 cluster_markers <- FindAllMarkers(
   seurat_obj,
   logfc.threshold = 0.5,
   min.pct = 0.1
 )
 
+# save your cluster markers as a table
 cluster_markers <- read.csv(file='data/cluster_markers.csv')
+cluster_markers <- subset(cluster_markers, !(cluster %in% c('DC', 'Platelet')))
+
+```
 
 
+Next, we run `FindMajorIsoforms` to identify major isoforms of the cluster 
+marker genes, and then we set up the Seurat object with a new hdWGCNA 
+experiment using these isoforms as the input features. 
 
-#####################################################
-# Get Major isoform for each gene in each cell type
-#
-# TODO: write the documentation for the FindMajorIsoforms function
-#####################################################
+```{r eval=FALSE}
 
-
+# get the list of major isoforms in each cell population
+# intersected with the cluster_markers table
 major_list <- FindMajorIsoforms(
   seurat_obj,
   group.by = 'annotation', 
   replicate_col = 'Sample',
-  isoform_delim = '[.]'
+  isoform_delim = '[.]',
+  cluster_markers = cluster_markers
 )
+major_marker_list <- major_list[[2]]
+major_list <- major_list[[1]]
 
-
-
-cluster_markers <- subset(cluster_markers, !(cluster %in% c('DC', 'Platelet')))
-
-
-proportion_thresh <- 0.8
-lowcount_thresh <- 25
-selected_isoforms <- c()
-major_list <- list()
-for(cur_group in names(pseudobulks)){
-  print(cur_group)
-  cur_pb <- pseudobulks[[cur_group]]
-  cur_pb_genes <- do.call(rbind, strsplit(rownames(cur_pb), '[.]'))[,1]
-
-  # loop through each gene:
-  major_isos <- sapply(unique(iso_df$gene), function(cur_gene){
-    cur_iso_df <- subset(iso_df, gene == cur_gene)
-    if(nrow(cur_iso_df) == 1){
-      return(cur_iso_df$iso)
-    }
-
-    cur_iso_pb <- cur_pb[cur_pb_genes == cur_gene,]
-    cur_iso_sum  <- rowSums(cur_iso_pb)
-    cur_iso_prop <- cur_iso_sum / sum(cur_iso_sum)
-
-    # don't consider isoforms with very few counts
-    ix <- cur_iso_sum > lowcount_thresh
-    cur_iso_sum <- cur_iso_sum[ix]
-    if(length(cur_iso_sum) == 0){
-      return()
-    }
-
-    # order isoforms from high to low:
-    cur_iso_prop <- cur_iso_prop[rev(order(cur_iso_prop))]
-
-    # identify the set of genes that reach the chosen propotion
-    prop_sums <- sapply(1:length(cur_iso_prop), function(i){
-      sum(cur_iso_prop[1:i])
-    })
-    ix <- min(which(prop_sums >= proportion_thresh))
-
-    # return the set of major isoforms
-    names(cur_iso_prop[cur_iso_prop >= cur_iso_prop[ix]])
-
-  })
-  major_list[[cur_group]] <- as.character(unlist(major_isos))
-
-}
-
-sapply(major_list, function(x){length(x)})
-selected_isoforms <- unique(unlist(major_list))
-length(selected_isoforms)
-
-all(as.character(major_list[['NK']]) %in% rownames(seurat_obj))
-
-# subset major isoforms that are marker genes:
-major_marker_list <- lapply(names(major_list), function(cur_group){
-  cur_isos <- major_list[[cur_group]]
-  cur_genes <- unique( do.call(rbind, strsplit(cur_isos, '[.]'))[,1])
-  cur_genes <- subset(cluster_markers, cluster == cur_group & gene %in% cur_genes) %>% .$gene
-  subset(iso_df, gene %in% cur_genes & iso %in% cur_isos) %>% .$iso
-})
-names(major_marker_list) <- names(major_list)
-sapply(major_marker_list, function(x){length(x)})
+# merge into a single list of features for hdWGCNA
 selected_isoforms <- unique(unlist(major_marker_list))
-length(selected_isoforms)
-
-#####################################################
-# Run hdWGCNA on major marker isos
-#####################################################
 
 # setup for WGCNA
 seurat_obj <- SetupForWGCNA(
   seurat_obj,
   gene_select = "custom",
   gene_list = selected_isoforms,
-  wgcna_name = "major_iso",
-)
-length(GetWGCNAGenes(seurat_obj))
-
-# construct metacells:
-seurat_obj <- MetacellsByGroups(
-  seurat_obj = seurat_obj,
-  group.by = c("annotation", "cell_type", "Sample"),
-  k = 50,
-  max_shared=25,
-  min_cells=75,
-  reduction = 'harmony_RNA',
-  ident.group = 'annotation',
-  assay = 'iso',
-  mode = 'sum',
-  target_metacells=150
+  metacell_location = 'variable', # this will use the same Metacell seurat object that we made before
+  wgcna_name = "major"
 )
 
-seurat_obj <- NormalizeMetacells(seurat_obj)
+# how many isoforms?
+length(selected_isoforms)
+```
 
-mobj <- GetMetacellObject(seurat_obj)
+```
+[1] 13217
+```
+
+This approach gives us 13217 isoforms for network analysis. Now we run the main steps of co-expression 
+network analysis with hdWGCNA similarly to what we did in the previous section.
 
 
+```{r eval=FALSE, echo=FALSE}
+
+major_list2 <- FindMajorIsoforms(
+  seurat_obj,
+  group.by = 'annotation', 
+  replicate_col = 'Sample',
+  isoform_delim = '[.]',
+  cluster_markers = cluster_markers %>% group_by(cluster) %>% slice_max(n=25, order_by = avg_log2FC)
+)
+major_marker_list2 <- major_list2[[2]]
+major_list <- major_list2[[1]]
+
+# major isoform heatmap??
+selected_isoforms <- unique(unlist(major_marker_list))
+
+seurat_obj <- ScaleData(seurat_obj, features=selected_isoforms)
+
+p <- DoHeatmap(seurat_obj, features=selected_isoforms, group.by='annotation')
+
+
+```
+
+```{r eval=FALSE}
+
+# set up expression matrix
+groups <- unique(GetMetacellObject(seurat_obj)$annotation)
 seurat_obj <- SetDatExpr(
   seurat_obj,
   group.by='annotation',
-  group_name = unique(mobj$annotation),
+  group_name = groups,
   use_metacells=TRUE,
   slot = 'data',
   assay = 'iso'
 )
-length(GetWGCNAGenes(seurat_obj))
 
-#
-# genes_use <- GetWGCNAGenes(seurat_obj)
-# datExpr <- as.data.frame(
-#   Seurat::GetAssayData(
-#     mobj,
-#     slot='data'
-#   )[genes_use,]
-# )
-# datExpr <- as.data.frame(t(datExpr))
-#
-# all(genes_use %in% colnames(datExpr))
-#
-#
-# gene_list = genes_use[WGCNA::goodGenes(datExpr)]
-# all.equal(gene_list, colnames(datExpr))
-# all(gene_list %in% colnames(datExpr))
-#
-# length(gene_list)
-# wtf <- gene_list[which(gene_list != colnames(datExpr))]
-# wtf %in% genes_use
-# datExpr <- datExpr[,gene_list]
-
-
-seurat_obj <- TestSoftPowers(
-  seurat_obj,
-  setDatExpr = FALSE
-)
-
-# plot the results:
+# test soft powers
+seurat_obj <- TestSoftPowers(seurat_obj,)
 plot_list <- PlotSoftPowers(seurat_obj)
-
-# assemble with patchwork
-pdf(paste0(fig_dir, 'test_softpower_major.pdf'), width=12, height=9)
 wrap_plots(plot_list, ncol=2)
-dev.off()
-
 
 # construct wgcna network:
 seurat_obj <- ConstructNetwork(
   seurat_obj,
-  setDatExpr=FALSE,
+  soft_power = 5,
   detectCutHeight=0.995,
   mergeCutHeight=0.05,
-  TOM_name = 'major_iso',
+  TOM_name = 'major',
   minModuleSize=30,
   overwrite_tom = TRUE
 )
 
 # plot the dendrogram
-pdf(paste0(fig_dir, "major_iso_dendro.pdf"),height=3, width=6)
 PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
-dev.off()
 
 # have to have this ScaleData line or else Harmony gets angry
 seurat_obj <- ScaleData(seurat_obj, features=rownames(seurat_obj)[1:100])
-seurat_obj <- ModuleEigengenes(
-  seurat_obj,
-  group.by.vars = 'Sample',
-  verbose=TRUE
-)
-
+seurat_obj <- ModuleEigengenes(seurat_obj, group.by.vars = 'Sample')
 
 # compute module connectivity:
-seurat_obj <- ModuleConnectivity(
-  seurat_obj,
-  reassign_modules = FALSE
-)
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+```
 
 
+```{r eval=FALSE, echo=FALSE}
 
+plot_list <- PlotSoftPowers(seurat_obj)
 
-
-
-p <- PlotKMEs(seurat_obj, ncol=4)
-pdf(paste0(fig_dir, 'major_iso_kME_distributions.pdf'), width=12 , height=8)
-p
+png(paste0(fig_dir, 'major_test_softpower.png'), width=12, height=9, units='in', res=500)
+wrap_plots(plot_list, ncol=2)
 dev.off()
 
 
-
-
-
-plot_list <- ModuleFeaturePlot(
-  seurat_obj,
-  order=TRUE,
-  raster=TRUE,
-  raster_dpi=400, alpha=1, restrict_range=TRUE,
-  reduction = 'umap_RNA'
-)
-
-pdf("figures/major_iso_featureplot_MEs.pdf",height=10, width=15)
-wrap_plots(plot_list, ncol=4)
+png(paste0(fig_dir, "major_dendro.png"),height=3, width=6, units='in', res=500)
+PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
 dev.off()
 
 
+```
+
+<img src="figures/isoseq/major_dendro.png" width="900" height="600">
+
+Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.
+
+```{r eval=FALSE}
 
 
 MEs <- GetMEs(seurat_obj)
@@ -1200,15 +1136,240 @@ p <- DotPlot(
     panel.border = element_rect(colour = "black", fill=NA, size=1)
   )
 
-pdf(paste0(fig_dir, 'major_iso_dotplot_MEs.pdf'), width=8, height=4)
+p
+
+```
+
+<img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600">
+
+```{r eval=FALSE, echo=FALSE}
+
+png(paste0(fig_dir, 'major_iso_dotplot_MEs.png'), width=8, height=4, units='in', res=500)
 p
 dev.off()
+
+p <- VlnPlot(
+  seurat_obj,
+  group.by = 'annotation',
+  split.by = 'Sample',
+  features = rev(mods),
+  stack = TRUE,
+  flip=TRUE
+) + theme(legend.position="bottom") + 
+  xlab('')
+
+png(paste0(fig_dir, 'major_vlnplot_MEs.png'), width=7, height=6, res=500, units='in')
+p
+dev.off()
+
+```
+
+```{r eval=FALSE}
+
 
 seurat_obj@meta.data <- meta
 
 
+seurat_obj <- RunModuleUMAP(
+  seurat_obj,
+  n_hubs =5,
+  n_neighbors=15,
+  min_dist=0.2,
+  spread=1
+  #supervised=TRUE,
+  #target_weight=0.5
+)
 
 
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(
+  seurat_obj
+)
+
+# plot with ggplot
+p <- ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color,
+   size=umap_df$kME*2
+  ) +
+  umap_theme()
+
+pdf(paste0(fig_dir, 'major_iso_hubgene_umap_ggplot_uns.pdf'), width=5, height=5)
+p
+dev.off()
+
+png(paste0(fig_dir, 'major_coex_umap.png'), width=7, height=7, units='in', res=500)
+ModuleUMAPPlot(
+  seurat_obj,
+  edge.alpha=0.5,
+  sample_edges=TRUE,
+  keep_grey_edges=FALSE,
+  edge_prop=0.075, # taking the top 20% strongest edges in each module
+#   label_genes = umap_df$isoform_name[umap_df$gene_name %in% plot_genes],
+  #label_genes = c(''),
+  label_hubs=2 # how many hub genes to plot per module?
+)
+dev.off()
+
+
+# individual module networks
+ModuleNetworkPlot(
+  seurat_obj,
+  mods = "all",
+  #label_center=TRUE,
+  outdir = paste0(fig_dir, 'hubNetworks/')
+)
+
+
+saveRDS(seurat_obj, file = paste0(data_dir, 'PBMC_masseq_hdWGCNA_wip.rds'))
+seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
+
+
+```
+
+
+
+```{r eval=FALSE, echo=FALSE}
+
+# consensus network analysis  (just for funsies)
+
+selected_isoforms <- unique(unlist(major_marker_list))
+
+
+# setup for WGCNA
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "custom",
+  #gene_list = selected_isoforms,
+  gene_list = unique(unlist(major_list)),
+  metacell_location = 'variable', # this will use the same Metacell seurat object that we made before
+  wgcna_name = "major_consensus"
+)
+
+# get list of cell populations
+groups <- unique(GetMetacellObject(seurat_obj)$annotation)
+
+seurat_obj <- SetMultiExpr(
+  seurat_obj,
+  group.by='annotation',
+  group_name = groups,
+  multi.group.by = 'Sample',
+  multi_groups = NULL,
+  slot = 'data',
+  assay = 'iso'
+)
+length(GetWGCNAGenes(seurat_obj))
+
+
+seurat_obj <- TestSoftPowersConsensus(seurat_obj)
+
+# plot the results:
+# generate plots
+plot_list <-  PlotSoftPowers(seurat_obj)
+
+# get just the scale-free topology fit plot for each group
+consensus_groups <- unique(seurat_obj$Sample)
+p_list <- lapply(1:length(consensus_groups), function(i){
+  cur_group <- consensus_groups[[i]]
+  plot_list[[i]][[1]] + ggtitle(paste0(cur_group)) + theme(plot.title=element_text(hjust=0.5))
+})
+
+# assemble with patchwork
+png(paste0(fig_dir, 'major_consensus_test_softpower.png'), width=12, height=4.5, units='in', res=500)
+wrap_plots(p_list, ncol=2)
+dev.off()
+
+
+# construct wgcna network:
+seurat_obj <- ConstructNetwork(
+  seurat_obj,
+  soft_power = c(5,5),
+  detectCutHeight=0.995,
+  mergeCutHeight=0.05,
+  TOM_name = 'major_consensus2',
+  minModuleSize=30,
+  consensus=TRUE,
+  overwrite_tom = TRUE
+)
+
+# plot the dendrogram
+png(paste0(fig_dir, "major_consensus_dendro.png"),height=3, width=6, units='in', res=500)
+PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
+dev.off()
+
+# have to have this ScaleData line or else Harmony gets angry
+seurat_obj <- ScaleData(seurat_obj, features=rownames(seurat_obj)[1:100])
+seurat_obj <- ModuleEigengenes(
+  seurat_obj,
+  group.by.vars = 'Sample',
+  verbose=TRUE
+)
+
+
+# compute module connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+
+
+
+
+plot_list <- ModuleFeaturePlot(
+  seurat_obj,
+  order=TRUE,
+  raster=TRUE,
+  raster_dpi=400, alpha=1, restrict_range=TRUE,
+  reduction = 'umap_RNA'
+)
+
+png(paste0(fig_dir, "major_consensus_featureplot_MEs2.png") ,height=10, width=15, units='in', res=500)
+wrap_plots(plot_list, ncol=4)
+dev.off()
+
+MEs <- GetMEs(seurat_obj)
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
+
+
+# make dotplot
+p <- DotPlot(
+  seurat_obj, 
+  group.by='annotation',
+  features = rev(mods)
+) + RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') + xlab('') + ylab('') +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)
+  )
+
+png(paste0(fig_dir, 'major_consensus_dotplot_MEs2.png'), width=8, height=4, res=500, units='in')
+p
+dev.off()
+
+
+
+p <- VlnPlot(
+  seurat_obj,
+  group.by = 'annotation',
+  split.by = 'Sample',
+  features = rev(mods),
+  stack = TRUE,
+  flip=TRUE
+) + theme(legend.position="bottom") + 
+  xlab('')
+
+png(paste0(fig_dir, 'major_consensus_vlnplot_MEs.png'), width=7, height=6, res=500, units='in')
+p
+dev.off()
+
+
+seurat_obj@meta.data <- meta
 
 
 
@@ -1242,8 +1403,7 @@ pdf(paste0(fig_dir, 'major_iso_hubgene_umap_ggplot_uns.pdf'), width=5, height=5)
 p
 dev.off()
 
-library(igraph)
-pdf(paste0(fig_dir, 'major_iso_coex_umap.pdf'), width=8, height=8)
+png(paste0(fig_dir, 'major_coex_umap.png'), width=7, height=7, units='in', res=500)
 ModuleUMAPPlot(
   seurat_obj,
   edge.alpha=0.5,
@@ -1266,15 +1426,12 @@ ModuleNetworkPlot(
 )
 
 
-saveRDS(seurat_obj, file = paste0(data_dir, 'PBMC_masseq_major_hdWGCNA.rds'))
-seurat_obj <- readRDS(file = paste0(data_dir, 'PBMC_masseq_hdWGCNA_major.rds'))
+saveRDS(seurat_obj, file = paste0(data_dir, 'PBMC_masseq_hdWGCNA_wip.rds'))
+seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
 
 
 
 ```
-
-
-
 
 
 

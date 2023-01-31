@@ -112,6 +112,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/reference/FindDMEs.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/FindMajorIsoforms.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNA.html</loc>
   </url>
   <url>
@@ -400,6 +403,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/reference/TransferModuleGenome.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/check_inputs.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/construct_metacells.html</loc>
   </url>
   <url>
@@ -413,6 +419,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/shuffle_points.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/to_pseudobulk.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/umap_theme.html</loc>

@@ -34,7 +34,7 @@ ModuleConnectivity(
 
 \item{assay}{Assay in seurat_obj containing expression information.}
 
-\item{slot}{Slot in specified, default to normalized 'data' slot.}
+\item{slot}{Slot in seurat_obj, default to normalized 'data' slot.}
 
 \item{sparse}{logical indicating whether or not to run the correlation using a sparse matrix.}
 
