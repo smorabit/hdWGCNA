@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.12 (2023-02-04)
+## Added
+- Module eigengene dynamics with pseudotime tutorial
+- `PlotModuleTrajectory` function.
+
+## Changes
+- None.
+
 # hdWGCNA 0.2.11 (2023-01-30)
 ## Added
 - MAS-Seq tutorial (still under construction)

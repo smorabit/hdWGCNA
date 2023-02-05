@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.12</span>
       </span>
     </div>
 
@@ -99,6 +99,9 @@
 <li class="dropdown-header">Advanced topics</li>
     <li>
       <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
+    </li>
+    <li>
+      <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
     </li>
     <li>
       <a href="../articles/motif_analysis.html">Motif analysis</a>
@@ -198,6 +201,9 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 
 <span class="co"># set random seed for reproducibility</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
+
+<span class="co"># optionally enable multithreading</span>
+<span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/allowWGCNAThreads.html" class="external-link">enableWGCNAThreads</a></span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>
 
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020.rds'</span><span class="op">)</span></code></pre></div>

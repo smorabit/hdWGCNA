@@ -107,7 +107,6 @@ ModuleConnectivity <- function(
 
   }
 
-
   # add module color to the kMEs table
   modules <- modules[,1:3]
   mods <- levels(modules$module)

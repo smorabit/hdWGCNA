@@ -17,8 +17,9 @@ articles:
   other_metacells: other_metacells.html
   projecting_modules: projecting_modules.html
   projecting_modules_cross: projecting_modules_cross.html
+  pseudotime: pseudotime.html
   sctransform: sctransform.html
-last_built: 2023-01-31T02:32Z
+last_built: 2023-02-05T01:08Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles

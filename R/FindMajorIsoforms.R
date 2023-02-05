@@ -27,6 +27,7 @@
 #' FindAllMarkers), and then the algorithm will only return major isoforms of the given marker genes.
 #' @import Seurat
 #' @import Matrix
+#' @import magrittr
 #' @export
 FindMajorIsoforms <- function(
   seurat_obj,
@@ -180,6 +181,7 @@ FindMajorIsoforms <- function(
     cur_genes <- subset(cluster_markers, cluster == cur_group & gene %in% cur_genes) %>% .$gene
     subset(iso_df, gene %in% cur_genes & iso %in% cur_isos) %>% .$iso
   })
+  names(major_marker_list) <- names(major_list)
 
   # return major isoforms intersected with the marker gene table
   list('major' = major_list, 'marker' = major_marker_list)

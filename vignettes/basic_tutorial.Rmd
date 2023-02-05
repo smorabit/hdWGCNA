@@ -72,6 +72,9 @@ theme_set(theme_cowplot())
 # set random seed for reproducibility
 set.seed(12345)
 
+# optionally enable multithreading
+enableWGCNAThreads(nThreads = 8)
+
 # load the Zhou et al snRNA-seq dataset
 seurat_obj <- readRDS('Zhou_2020.rds')
 

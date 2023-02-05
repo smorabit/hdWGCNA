@@ -61,6 +61,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules_cross.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/articles/pseudotime.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/articles/scWGCNA.html</loc>
   </url>
   <url>
@@ -77,6 +80,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/AvgModuleExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/BinPseudotime.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/ComputeModuleEigengene.html</loc>
@@ -275,6 +281,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTraitCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTrajectory.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/PlotSoftPowers.html</loc>

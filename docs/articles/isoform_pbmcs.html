@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.12</span>
       </span>
     </div>
 
@@ -99,6 +99,9 @@
 <li class="dropdown-header">Advanced topics</li>
     <li>
       <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
+    </li>
+    <li>
+      <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
     </li>
     <li>
       <a href="../articles/motif_analysis.html">Motif analysis</a>
@@ -833,18 +836,8 @@ See cell type marker genes
 <h3 id="example-2-major-isoforms-of-cluster-marker-genes-in-all-pbmcs">Example 2: Major isoforms of cluster marker genes in all PBMCs<a class="anchor" aria-label="anchor" href="#example-2-major-isoforms-of-cluster-marker-genes-in-all-pbmcs"></a>
 </h3>
 <p>Here we use a different approach for obtaining a list of input isoforms for hdWGCNA. We first identify <strong>Major Isoforms</strong>, defined as the set of isoforms accounting for 80% of a gene’s total expression. Major isoforms are identified for each gene and for each cell population, and the 80% threshold parameter can be tweaked. hdWGCNA includes <code>FindMajorIsoforms</code>, a function to call major isoforms from a Seurat object.</p>
-<p>The <code>FindMajorIsoforms</code> function relies on an external package called <a href="https://github.com/neurorestore/Libra" class="external-link">Libra</a>, which computes pseudobulk matrices for a Seurat object. Below we provide information for installing Libra.</p>
-<details><summary>
-Installing Libra
-</summary><p>Here we will install the Libra R package based on the <a href="https://github.com/neurorestore/Libra" class="external-link">instructions from their GitHub page</a>.</p>
+<p>The set of major isoforms across all of the cell populations may still contain feature set that would be challenging to perform network analysis on due to its size. Therefore, in this tutorial we will intersect the major isoform list with a cluster marker gene list, giving us a set of major isoforms for each cell population’s marker genes. In the following block of code, we run Seurat’s <code>FindAllMarkers</code> function on the RNA assay to get a marker gene table. Note that we are identifying <strong>marker genes</strong> and not marker isoforms for this step.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># install Libra dependencies</span>
-<span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"edgeR"</span>, <span class="st">"DESeq2"</span>, <span class="st">"limma"</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># install Libra from github:</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"neurorestore/Libra"</span><span class="op">)</span></code></pre></div>
-</details><p>The set of major isoforms across all of the cell populations may still contain feature set that would be challenging to perform network analysis on due to its size. Therefore, in this tutorial we will intersect the major isoform list with a cluster marker gene list, giving us a set of major isoforms for each cell population’s marker genes. In the following block of code, we run Seurat’s <code>FindAllMarkers</code> function on the RNA assay to get a marker gene table. Note that we are identifying <strong>marker genes</strong> and not marker isoforms for this step.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># switch to the RNA assay because we want marker genes</span>
 <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span>
 
@@ -862,8 +855,10 @@ Installing Libra
 <span class="va">cluster_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">'data/cluster_markers.csv'</span><span class="op">)</span>
 <span class="va">cluster_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cluster_markers</span>, <span class="op">!</span><span class="op">(</span><span class="va">cluster</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'DC'</span>, <span class="st">'Platelet'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Next, we run <code>FindMajorIsoforms</code> to identify major isoforms of the cluster marker genes, and then we set up the Seurat object with a new hdWGCNA experiment using these isoforms as the input features.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get the list of major isoforms in each cell population</span>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span>
+
+<span class="co"># get the list of major isoforms in each cell population</span>
 <span class="co"># intersected with the cluster_markers table</span>
 <span class="va">major_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/FindMajorIsoforms.html">FindMajorIsoforms</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -891,7 +886,8 @@ Installing Libra
 <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">selected_isoforms</span><span class="op">)</span></code></pre></div>
 <pre><code>[1] 13217</code></pre>
 <p>This approach gives us 13217 isoforms for network analysis. Now we run the main steps of co-expression network analysis with hdWGCNA similarly to what we did in the previous section.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<p><img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600"></p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set up expression matrix</span>
 <span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
@@ -930,7 +926,7 @@ Installing Libra
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/isoseq/major_dendro.png" width="900" height="600"></p>
 <p>Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
@@ -956,7 +952,7 @@ Installing Libra
 
 <span class="va">p</span></code></pre></div>
 <p><img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600"></p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span>
 
 
@@ -1013,6 +1009,150 @@ Installing Libra
 
 <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'PBMC_masseq_hdWGCNA_wip.rds'</span><span class="op">)</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">'tutorial_data/PBMC_masseq_hdWGCNA_major.rds'</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="example-3-major-isoforms-in-one-cell-type">Example 3: Major isoforms in one cell type<a class="anchor" aria-label="anchor" href="#example-3-major-isoforms-in-one-cell-type"></a>
+</h3>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">major_marker_list</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">}</span><span class="op">)</span>
+
+<span class="co"># setup for WGCNA</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  gene_select <span class="op">=</span> <span class="st">"custom"</span>,
+  gene_list <span class="op">=</span> <span class="va">major_marker_list</span><span class="op">[[</span><span class="st">'CD14+ Monocyte'</span><span class="op">]</span><span class="op">]</span>,
+  metacell_location <span class="op">=</span> <span class="st">'variable'</span>, <span class="co"># this will use the same Metacell seurat object that we made before</span>
+  wgcna_name <span class="op">=</span> <span class="st">"major_mono"</span>
+<span class="op">)</span>
+
+<span class="co"># how many isoforms?</span>
+<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">selected_isoforms</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600"></p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set up expression matrix</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  group.by<span class="op">=</span><span class="st">'annotation'</span>,
+  group_name <span class="op">=</span> <span class="st">"CD14+ Monocyte"</span>,
+  use_metacells<span class="op">=</span><span class="cn">TRUE</span>,
+  slot <span class="op">=</span> <span class="st">'data'</span>,
+  assay <span class="op">=</span> <span class="st">'iso'</span>
+<span class="op">)</span>
+
+<span class="co"># test soft powers</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
+
+<span class="co"># construct wgcna network:</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  soft_power <span class="op">=</span> <span class="fl">8</span>,
+  detectCutHeight<span class="op">=</span><span class="fl">0.995</span>,
+  mergeCutHeight<span class="op">=</span><span class="fl">0.05</span>,
+  TOM_name <span class="op">=</span> <span class="st">'major_NK'</span>,
+  minModuleSize<span class="op">=</span><span class="fl">30</span>,
+  overwrite_tom <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span>
+
+<span class="co"># plot the dendrogram</span>
+<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'hdWGCNA Dendrogram'</span><span class="op">)</span>
+
+<span class="co"># have to have this ScaleData line or else Harmony gets angry</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by.vars <span class="op">=</span> <span class="st">'Sample'</span><span class="op">)</span>
+
+<span class="co"># compute module connectivity:</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/isoseq/major_NK_dendro.png" width="900" height="600"></p>
+<p>Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span><span class="op">!=</span><span class="st">'grey'</span><span class="op">]</span>
+
+<span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">meta</span>, <span class="va">MEs</span><span class="op">)</span>
+
+
+<span class="co"># make dotplot</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  group.by<span class="op">=</span><span class="st">'annotation'</span>,
+  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span>
+<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient2</a></span><span class="op">(</span>high<span class="op">=</span><span class="st">'red'</span>, mid<span class="op">=</span><span class="st">'grey95'</span>, low<span class="op">=</span><span class="st">'blue'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
+    plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,
+    axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
+    axis.line.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
+    panel.border <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"black"</span>, fill<span class="op">=</span><span class="cn">NA</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
+  <span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600"></p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span>
+
+
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_hubs <span class="op">=</span><span class="fl">5</span>,
+  n_neighbors<span class="op">=</span><span class="fl">15</span>,
+  min_dist<span class="op">=</span><span class="fl">0.2</span>,
+  spread<span class="op">=</span><span class="fl">1</span>
+  <span class="co">#supervised=TRUE,</span>
+  <span class="co">#target_weight=0.5</span>
+<span class="op">)</span>
+
+
+<span class="co"># get the hub gene UMAP table from the seurat object</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>
+<span class="op">)</span>
+
+<span class="co"># plot with ggplot</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>
+   color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>,
+   size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/pdf.html" class="external-link">pdf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'major_iso_hubgene_umap_ggplot_uns.pdf'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5</span><span class="op">)</span>
+<span class="va">p</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'major_coex_umap.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">7</span>, height<span class="op">=</span><span class="fl">7</span>, units<span class="op">=</span><span class="st">'in'</span>, res<span class="op">=</span><span class="fl">500</span><span class="op">)</span>
+<span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  edge.alpha<span class="op">=</span><span class="fl">0.5</span>,
+  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
+  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>,
+  edge_prop<span class="op">=</span><span class="fl">0.075</span>, <span class="co"># taking the top 20% strongest edges in each module</span>
+<span class="co">#   label_genes = umap_df$isoform_name[umap_df$gene_name %in% plot_genes],</span>
+  <span class="co">#label_genes = c(''),</span>
+  label_hubs<span class="op">=</span><span class="fl">2</span> <span class="co"># how many hub genes to plot per module?</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span>
+
+
+<span class="co"># individual module networks</span>
+<span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  mods <span class="op">=</span> <span class="st">"all"</span>,
+  <span class="co">#label_center=TRUE,</span>
+  outdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'hubNetworks/'</span><span class="op">)</span>
+<span class="op">)</span>
+
+
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'PBMC_masseq_hdWGCNA_wip.rds'</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">'tutorial_data/PBMC_masseq_hdWGCNA_major.rds'</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="bonus-consensus-wgcna-between-the-two-samples">Bonus: consensus wgcna between the two samples:<a class="anchor" aria-label="anchor" href="#bonus-consensus-wgcna-between-the-two-samples"></a>
+</h3>
 </div>
 </div>
   </div>

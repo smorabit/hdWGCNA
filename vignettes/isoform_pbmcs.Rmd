@@ -990,6 +990,8 @@ experiment using these isoforms as the input features.
 
 ```{r eval=FALSE}
 
+library(magrittr)
+
 # get the list of major isoforms in each cell population
 # intersected with the cluster_markers table
 major_list <- FindMajorIsoforms(
@@ -1033,20 +1035,34 @@ major_list2 <- FindMajorIsoforms(
   group.by = 'annotation', 
   replicate_col = 'Sample',
   isoform_delim = '[.]',
-  cluster_markers = cluster_markers %>% group_by(cluster) %>% slice_max(n=25, order_by = avg_log2FC)
+  cluster_markers = cluster_markers %>% group_by(cluster) %>% slice_max(n=5, order_by = avg_log2FC)
 )
 major_marker_list2 <- major_list2[[2]]
-major_list <- major_list2[[1]]
+major_list2 <- major_list2[[1]]
 
 # major isoform heatmap??
-selected_isoforms <- unique(unlist(major_marker_list))
+selected_isoforms <- unique(unlist(major_marker_list2))
+length(selected_isoforms)
 
 seurat_obj <- ScaleData(seurat_obj, features=selected_isoforms)
 
-p <- DoHeatmap(seurat_obj, features=selected_isoforms, group.by='annotation')
+p <- DoHeatmap(seurat_obj, features=selected_isoforms, group.by='annotation') + 
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+
+
+png(paste0(fig_dir, 'major_iso_heatmap2.png'), width=8, height=6, units='in', res=500)
+p
+dev.off()
 
 
 ```
+
+<img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600">
+
 
 ```{r eval=FALSE}
 
@@ -1228,6 +1244,211 @@ seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
 ```
 
 
+## Example 3: Major isoforms in one cell type 
+
+```{r eval=FALSE}
+
+sapply(major_marker_list, function(x){length(x)})
+
+# setup for WGCNA
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "custom",
+  gene_list = major_marker_list[['CD14+ Monocyte']],
+  metacell_location = 'variable', # this will use the same Metacell seurat object that we made before
+  wgcna_name = "major_mono"
+)
+
+# how many isoforms?
+length(selected_isoforms)
+```
+
+<img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600">
+
+
+```{r eval=FALSE}
+
+# set up expression matrix
+seurat_obj <- SetDatExpr(
+  seurat_obj,
+  group.by='annotation',
+  group_name = "CD14+ Monocyte",
+  use_metacells=TRUE,
+  slot = 'data',
+  assay = 'iso'
+)
+
+# test soft powers
+seurat_obj <- TestSoftPowers(seurat_obj)
+plot_list <- PlotSoftPowers(seurat_obj)
+wrap_plots(plot_list, ncol=2)
+
+# construct wgcna network:
+seurat_obj <- ConstructNetwork(
+  seurat_obj,
+  soft_power = 8,
+  detectCutHeight=0.995,
+  mergeCutHeight=0.05,
+  TOM_name = 'major_NK',
+  minModuleSize=30,
+  overwrite_tom = TRUE
+)
+
+# plot the dendrogram
+PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
+
+# have to have this ScaleData line or else Harmony gets angry
+seurat_obj <- ScaleData(seurat_obj, features=rownames(seurat_obj)[1:100])
+seurat_obj <- ModuleEigengenes(seurat_obj, group.by.vars = 'Sample')
+
+# compute module connectivity:
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+```
+
+
+```{r eval=FALSE, echo=FALSE}
+
+plot_list <- PlotSoftPowers(seurat_obj)
+
+png(paste0(fig_dir, 'major_mono_test_softpower.png'), width=12, height=9, units='in', res=500)
+wrap_plots(plot_list, ncol=2)
+dev.off()
+
+
+png(paste0(fig_dir, "major_mono_dendro.png"),height=3, width=6, units='in', res=500)
+PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
+dev.off()
+
+
+```
+
+<img src="figures/isoseq/major_NK_dendro.png" width="900" height="600">
+
+Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.
+
+```{r eval=FALSE}
+
+
+MEs <- GetMEs(seurat_obj)
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module)
+mods <- mods[mods!='grey']
+
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
+
+
+# make dotplot
+p <- DotPlot(
+  seurat_obj,
+  group.by='annotation',
+  features = rev(mods)
+) + RotatedAxis() +
+  scale_color_gradient2(high='red', mid='grey95', low='blue') + xlab('') + ylab('') +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)
+  )
+
+p
+
+```
+
+<img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600">
+
+```{r eval=FALSE, echo=FALSE}
+
+png(paste0(fig_dir, 'major_mono_dotplot_MEs.png'), width=8, height=4, units='in', res=500)
+p
+dev.off()
+
+p <- VlnPlot(
+  seurat_obj,
+  group.by = 'annotation',
+  split.by = 'Sample',
+  features = rev(mods),
+  stack = TRUE,
+  flip=TRUE
+) + theme(legend.position="bottom") + 
+  xlab('')
+
+png(paste0(fig_dir, 'major_mono_vlnplot_MEs.png'), width=7, height=6, res=500, units='in')
+p
+dev.off()
+
+```
+
+```{r eval=FALSE}
+
+
+seurat_obj@meta.data <- meta
+
+
+seurat_obj <- RunModuleUMAP(
+  seurat_obj,
+  n_hubs =5,
+  n_neighbors=15,
+  min_dist=0.2,
+  spread=1
+  #supervised=TRUE,
+  #target_weight=0.5
+)
+
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(
+  seurat_obj
+)
+
+# plot with ggplot
+p <- ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color,
+   size=umap_df$kME*2
+  ) +
+  umap_theme()
+
+pdf(paste0(fig_dir, 'major_iso_hubgene_umap_ggplot_uns.pdf'), width=5, height=5)
+p
+dev.off()
+
+png(paste0(fig_dir, 'major_coex_umap.png'), width=7, height=7, units='in', res=500)
+ModuleUMAPPlot(
+  seurat_obj,
+  edge.alpha=0.5,
+  sample_edges=TRUE,
+  keep_grey_edges=FALSE,
+  edge_prop=0.075, # taking the top 20% strongest edges in each module
+#   label_genes = umap_df$isoform_name[umap_df$gene_name %in% plot_genes],
+  #label_genes = c(''),
+  label_hubs=2 # how many hub genes to plot per module?
+)
+dev.off()
+
+
+# individual module networks
+ModuleNetworkPlot(
+  seurat_obj,
+  mods = "all",
+  #label_center=TRUE,
+  outdir = paste0(fig_dir, 'hubNetworks/')
+)
+
+
+saveRDS(seurat_obj, file = paste0(data_dir, 'PBMC_masseq_hdWGCNA_wip.rds'))
+seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
+
+
+```
+
+
+
+
+
+## Bonus: consensus wgcna between the two samples:
 
 ```{r eval=FALSE, echo=FALSE}
 
