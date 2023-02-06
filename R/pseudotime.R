@@ -83,14 +83,16 @@ PlotModuleTrajectory <- function(
     modules <- GetModules(seurat_obj, wgcna_name=wgcna_name)
     mods <- levels(modules$module)
     mods <- mods[mods!='grey']
-    module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct()
+    module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
     
     #rownames(module_colors) <- module_colors$module
     mod_colors <- module_colors$color; names(mod_colors) <- module_colors$module
 
     # merge the MEs with the seurat metadata
     plot_df <- cbind(seurat_obj@meta.data, MEs)
-    plot_df <-seurat_obj@meta.data
+
+    print(head(plot_df))
+
     # loop through each pseudotime trajectory:
     avg_list <- list()
     for(ps_col in pseudotime_col){
@@ -109,6 +111,7 @@ PlotModuleTrajectory <- function(
         avg_df$group <- ps_col
         avg_list[[ps_col]] <- avg_df
     }
+
 
     plot_df <- do.call(rbind, avg_list)
 

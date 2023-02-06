@@ -458,6 +458,9 @@ dev.off()
 # just get the ery lineage 
 seurat_ery <- subset(seurat_obj, celltype %in% c("HSC", "MEP", 'Ery'))
 
+seurat_ery <- BinPseudotime(seurat_ery, pseudotime_col='ery_pseudotime', n_bins=c(20))
+levels(seurat_ery$ery_pseudotime_bins_20) %>% length
+
 seurat_ery <- BinPseudotime(seurat_ery, pseudotime_col='ery_pseudotime', n_bins=c(5))
 bins <- levels(seurat_ery$ery_pseudotime_bins_5)
 
