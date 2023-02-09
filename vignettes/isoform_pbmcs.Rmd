@@ -9,8 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-** WARNING** This tutorial is under construction, and we do not advise running it at this point in time.
-
 This tutorial covers the basics of using hdWGCNA to perform **isoform**
 co-expression network analysis using [PacBio MAS-Seq](https://www.pacb.com/wp-content/uploads/Application-note-MAS-Seq-for-single-cell-isoform-sequencing.pdf) data.
 Briefly, MAS-Seq is a single-cell RNA-seq protocol that uses long-read sequencing to profile full-length RNA molecules,
@@ -26,8 +24,7 @@ we recommend becoming familar with the basics of hdWGCNA using our single-cell t
 # Download the tutorial data
 
 Here we download the genes and isoforms counts matrices from PacBio for the
-two replicates using wget. These counts matrices were generated using the  
-PacBio SMRT Link software, more details can be found at the [isoseq documentation website](https://isoseq.how/umi/).
+two replicates using wget. These counts matrices were generated using the PacBio SMRT Link software, more details can be found at the [isoseq documentation website](https://isoseq.how/umi/).
 
 ```{bash eval=FALSE}
 # download replicate 1
@@ -36,6 +33,9 @@ wget --recursive --no-parent https://downloads.pacbcloud.com/public/dataset/MAS-
 # download replicate 2
 wget --recursive --no-parent https://downloads.pacbcloud.com/public/dataset/MAS-Seq/DATA-Revio-PBMC-2/4-SeuratMatrix/
 ```
+
+You can also [download the unprocessed Seurat object containing both replicates](https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link)
+instead of running the "Create a multi-assay Seurat object" section.
 
 # Seurat clustering analysis
 
@@ -54,7 +54,8 @@ The MAS-Seq dataset includes both gene and isoform level quantifications,
 and in this section we will load these matrices for both replicates to
 create a multi-assay Seurat object. The number of isoforms detected differs
 for each replicate, and here we have chosen to only include isoforms that
-were detected in both replicates.
+were detected in both replicates. If you don't want to run this section, you can 
+[download the unprocessed Seurat object here](https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link).
 
 ```{r eval=FALSE, echo=FALSE}
 
@@ -1058,10 +1059,10 @@ png(paste0(fig_dir, 'major_iso_heatmap2.png'), width=8, height=6, units='in', re
 p
 dev.off()
 
+# <img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600">
 
 ```
 
-<img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600">
 
 
 ```{r eval=FALSE}
@@ -1244,9 +1245,10 @@ seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
 ```
 
 
-## Example 3: Major isoforms in one cell type 
 
-```{r eval=FALSE}
+
+
+```{r eval=FALSE, echo=FALSE}
 
 sapply(major_marker_list, function(x){length(x)})
 
@@ -1263,10 +1265,9 @@ seurat_obj <- SetupForWGCNA(
 length(selected_isoforms)
 ```
 
-<img src="figures/isoseq/major_iso_heatmap.png" width="900" height="600">
 
 
-```{r eval=FALSE}
+```{r eval=FALSE, echo=FALSE}
 
 # set up expression matrix
 seurat_obj <- SetDatExpr(
@@ -1320,14 +1321,13 @@ png(paste0(fig_dir, "major_mono_dendro.png"),height=3, width=6, units='in', res=
 PlotDendrogram(seurat_obj, main='hdWGCNA Dendrogram')
 dev.off()
 
+# <img src="figures/isoseq/major_NK_dendro.png" width="900" height="600">
 
 ```
 
-<img src="figures/isoseq/major_NK_dendro.png" width="900" height="600">
 
-Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.
 
-```{r eval=FALSE}
+```{r eval=FALSE, echo=FALSE}
 
 
 MEs <- GetMEs(seurat_obj)
@@ -1355,9 +1355,11 @@ p <- DotPlot(
 
 p
 
+# <img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600">
+
+
 ```
 
-<img src="figures/isoseq/major_iso_dotplot_MEs.png" width="900" height="600">
 
 ```{r eval=FALSE, echo=FALSE}
 
@@ -1381,7 +1383,7 @@ dev.off()
 
 ```
 
-```{r eval=FALSE}
+```{r eval=FALSE, echo=FALSE}
 
 
 seurat_obj@meta.data <- meta
@@ -1448,7 +1450,14 @@ seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
 
 
 
-## Bonus: consensus wgcna between the two samples:
+## Example 3: consensus wgcna between the two samples
+
+Coming soon!
+
+
+# Isoform plotting with ggtranscript and Swan
+
+Coming soon!
 
 ```{r eval=FALSE, echo=FALSE}
 
