@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.13 (2023-02-13)
+## Added
+- None
+
+## Changes
+- Fixed a bug in `ReassignModules` that cause some modules assignments to be NA for some genes.
+
 # hdWGCNA 0.2.12 (2023-02-04)
 ## Added
 - Module eigengene dynamics with pseudotime tutorial

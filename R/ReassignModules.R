@@ -116,11 +116,11 @@ ReassignModules <- function(
     reassigned <- factor(as.character(reassigned), levels=levels(modules$module))
 
     # new colors:
-    reassigned_colors <- factor(as.character(mod_cp[as.character(reassigned)]), levels=levels(modules$color))
+    reassigned_colors <- as.character(mod_cp[as.character(reassigned)])
 
     # reassign modules and colors
     modules[neg_df$gene_name,'module'] <- reassigned
-    modules[neg_df$gene_name,'module'] <- reassigned_colors
+    modules[neg_df$gene_name,'color'] <- reassigned_colors
 
   }
 
