@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.14 (2023-02-14)
+## Added
+- None
+
+## Changes
+- Fixed a bug in `SetDatExpr` that would throw an error when group.by=NULL was selected.
+
+
 # hdWGCNA 0.2.13 (2023-02-13)
 ## Added
 - None

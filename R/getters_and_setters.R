@@ -196,7 +196,6 @@ SetDatExpr <- function(
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
-  modules <- GetModules(seurat_obj, wgcna_name)
 
   # get metacell object
   m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
@@ -222,21 +221,23 @@ SetDatExpr <- function(
     stop("Assay not found. Check names(seurat_obj@assays) or names(GetMetacellObject(seurat_obj)@assays)")
   }
 
-  # check that group.by is in the Seurat object & in the metacell object:
   if(!is.null(group.by)){
+
+    # check that group.by is in the Seurat object & in the metacell object:
     if(!(group.by %in% colnames(s_obj@meta.data))){
       m_cell_message <- ""
       if(use_metacells){m_cell_message <- "metacell"}
       stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
     }
-  }
 
-  # check that the selected groups are in the Seurat object:
-  if(!all(group_name %in% s_obj@meta.data[[group.by]])){
-    groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
-    stop(
-      paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
-    )
+    # check that the selected groups are in the Seurat object:
+    if(!all(group_name %in% s_obj@meta.data[[group.by]])){
+      groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
+      stop(
+        paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
+      )
+    }
+
   }
 
   # columns to group by for cluster/celltype
@@ -253,7 +254,7 @@ SetDatExpr <- function(
 
   # get list of cells to use
   cells <- rownames(seurat_meta)
-
+  
   # get expression data from seurat obj
   datExpr <- as.data.frame(
     Seurat::GetAssayData(
