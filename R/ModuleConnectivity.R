@@ -59,12 +59,8 @@ ModuleConnectivity <- function(
   # get module df, wgcna genes, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
-  genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  genes_use <- as.character(modules$gene_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
-
-  # exclude the grey module:
-  #modules <- subset(modules, module != 'grey')
-  #MEs <- MEs[,colnames(MEs) != 'grey']
 
   if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
 
@@ -93,7 +89,6 @@ ModuleConnectivity <- function(
     )
     rownames(kMEs) <- genes_use
     kMEs <- as.data.frame(kMEs)
-
   } else{
     datExpr <- t(as.matrix(exp_mat))
     kMEs <- WGCNA::signedKME(

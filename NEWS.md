@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.15 (2023-03-02)
+## Added
+- None
+
+## Changes
+- Bugfix to allow `ResetModuleNames` and `ResetModuleColors` to work when a grey module is not present.
+
+
 # hdWGCNA 0.2.14 (2023-02-14)
 ## Added
 - None

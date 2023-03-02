@@ -233,7 +233,7 @@ to_pseudobulk = function(input,
                          external = T) {
   if (external) {
     # first, make sure inputs are correct
-    inputs = Libra:::check_inputs(
+    inputs = check_inputs(
       input, 
       meta = meta,
       replicate_col = replicate_col,

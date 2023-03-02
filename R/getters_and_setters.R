@@ -254,7 +254,7 @@ SetDatExpr <- function(
 
   # get list of cells to use
   cells <- rownames(seurat_meta)
-  
+
   # get expression data from seurat obj
   datExpr <- as.data.frame(
     Seurat::GetAssayData(
@@ -1218,8 +1218,11 @@ ResetModuleNames <- function(
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
   old_mods <- levels(modules$module)
-  nmods <- length(old_mods) - 1
-
+  if('grey' %in% modules$module){
+    nmods <- length(old_mods) - 1
+  } else{
+      nmods <- length(old_mods)
+  }
 
   # if it's a named list:
   if(class(new_name) == 'list'){
@@ -1239,15 +1242,19 @@ ResetModuleNames <- function(
     stop("Invalid input for new_name.")
   }
 
-  grey_ind <- which(old_mods == 'grey')
+  if('grey' %in% modules$module){
 
-  # account for when grey is first / last
-  if(grey_ind == 1){
-    new_names <- c('grey', new_names)
-  } else if(grey_ind == length(old_mods)){
-    new_names <- c(new_names, 'grey')
-  } else{
-    new_names <- c(new_names[1:(grey_ind-1)], 'grey', new_names[grey_ind:length(new_names)])
+    grey_ind <- which(old_mods == 'grey')
+
+    # account for when grey is first / last
+    if(grey_ind == 1){
+      new_names <- c('grey', new_names)
+    } else if(grey_ind == length(old_mods)){
+      new_names <- c(new_names, 'grey')
+    } else{
+      new_names <- c(new_names[1:(grey_ind-1)], 'grey', new_names[grey_ind:length(new_names)])
+    }
+
   }
 
   # update kMEs
@@ -1386,7 +1393,11 @@ ResetModuleColors <- function(
   mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
     distinct %>% arrange(module)
   mod_colors <- mod_colors_df$color
-  grey_ind <- which(mod_colors == 'grey')
+  if('grey' %in% modules$mod){
+    grey_ind <- which(mod_colors == 'grey')
+  } else{
+    grey_ind <- NA
+  }
 
   # case where we give a named list:
   if(class(new_colors) == 'list'){
@@ -1394,7 +1405,9 @@ ResetModuleColors <- function(
     mod_colors_df[ix, 'color'] <- as.character(new_colors)
     new_colors <- mod_colors_df$color
   } else{
-    if(grey_ind == 1){
+    if(is.na(grey_ind)){
+      new_colors <- new_colors
+    } else if(grey_ind == 1){
       new_colors <- c('grey', new_colors)
     } else if(grey_ind == length(mod_colors)){
       new_colors <- c(new_colors, 'grey')

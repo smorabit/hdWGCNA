@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.14</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.15</span>
       </span>
     </div>
 
@@ -156,11 +156,17 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     combined_output &lt;- data.frame()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:length(mods)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_mod &lt;- mods[i]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_info &lt;- subset(modules, module == cur_mod)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_info &lt;- cur_info[, c("gene_name", paste0("kME_", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_mod))]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_genes &lt;- top_n(cur_info, max_genes) %&gt;% .$gene_name %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             as.character</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (max_genes != Inf) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_info &lt;- subset(modules, module == cur_mod)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_info &lt;- cur_info[, c("gene_name", paste0("kME_", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_mod))]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_genes &lt;- top_n(cur_info, max_genes) %&gt;% .$gene_name %&gt;% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 as.character</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_genes &lt;- subset(modules, module == cur_mod) %&gt;% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 .$gene_name %&gt;% as.character</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         enriched &lt;- enrichR::enrichr(cur_genes, dbs)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         for (db in names(enriched)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             cur_df &lt;- enriched[[db]]</span>
@@ -175,7 +181,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbd080d9c48&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd96261f148&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
