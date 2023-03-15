@@ -2433,3 +2433,181 @@ PlotDMEsVolcano <- function(
    p + NoLegend()
 
 }
+
+             
+             
+             
+#' PlotDMEslollipop
+#'
+#' Plotting function for the results of FindDMEs and FindAllDMEs
+#'
+#' @param seurat_obj A Seurat object
+#' @param DMEs dataframe output from FindDMEs or FindAllDMEs
+#' @param group.by the column name of the selected comparison in the DMEs dataframe
+#' @param comparison character vector or a list of character vectors containing the comparison in the DMEs dataframe
+#' @param pvalue p_value or fdr used for the comparison in the DMEs dataframe
+#' @keywords scRNA-seq
+#' @export
+#' @return A ggplot object
+#' @examples
+#' plot_list <- PlotDMEslollipop(seurat_obj, DMEs, group.by = "Comparison", comparison = c("Disease_vs_Control"), pvalue = "p_val_adj")
+PlotDMEslollipop <- function(
+  seurat_obj,
+  DMEs,
+  wgcna_name,
+  group.by=NULL,
+  comparison= NULL,
+  pvalue,
+  avg_log2FC = 'avg_log2FC'
+){
+
+  if (!require("ggforestplot")) {
+    print('Missing package: ggforestplot')
+    print('Installing package: ggforestplot')
+    devtools::install_github("NightingaleHealth/ggforestplot")
+  }
+
+  if(!(pvalue %in% colnames(DMEs))){
+  stop('Selected pvalue is not found in DMEs dataframe column names.')
+  }
+
+  if(missing(wgcna_name) || !(wgcna_name %in% names(seurat_obj@misc))){
+  stop('Please provide wgcna_name or the selected wgcna_name is not found in seurat_obj@misc.')
+  }
+
+  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey') %>% mutate(module=droplevels(module))
+
+  if (!missing(group.by) & !missing(comparison)) {
+    comparisons <- comparison
+    if(!(all(comparisons %in% DMEs[[group.by]]))){
+    stop('Not all selected comparisons are not found in DMEs[[group.by]] or the comparison column, DMEs[[group.by]], is not correctly supplied.')
+    }
+
+
+    # comparisons <- unique(DMEs$comparison)
+    plot_list <- list()
+
+    for(cur_comp in comparisons){
+
+        print(cur_comp)
+
+        # cur_DMEs <- DMEs %>% filter(DMEs[[group.by]] == cur_comp)
+        cur_DMEs <- subset(DMEs, DMEs[[group.by]] == cur_comp)
+        # provide title
+        cur_title <- cur_comp
+        #
+        p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+
+        p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+
+        plot_list[[cur_comp]] <- p
+
+      }
+
+  } else if (missing(group.by) && !missing(comparison)) { # Using && instead of & ensures that the second condition is only evaluated if the first condition is TRUE.
+
+    stop('The group.by column is not provided in the DMEs data, and comparison cannot be found.')
+
+  } else if (!missing(group.by) && missing(comparison)) { # Using && instead of & ensures that the second condition is only evaluated if the first condition is TRUE.
+
+    if (!(group.by %in% names(DMEs))) {
+    stop('The group.by column is not found in the DMEs data.')
+    }
+
+    comparisons <- unique(DMEs[[group.by]])
+
+    plot_list <- list()
+
+    for(cur_comp in comparisons){
+
+        print(cur_comp)
+
+        # cur_DMEs <- DMEs %>% filter(DMEs[[group.by]] == cur_comp)
+        cur_DMEs <- subset(DMEs, DMEs[[group.by]] == cur_comp)
+        # provide title
+        cur_title <- cur_comp
+
+        # set plotting attributes for shape
+        p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+
+        p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+
+        plot_list[[cur_comp]] <- p
+
+      }
+
+  } else{
+    # this is for the condition: missing(group.by) && missing(comparison)
+    print('Please be aware comparison group/groups are not provided, which may casue an ERROR. PlotDMEslollipop function will automatically assume all values are within the same group.')
+
+    plot_list <- list()
+
+    cur_DMEs <- DMEs
+
+    # set plotting attributes for shape
+    p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+
+    p <- p + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+
+    plot_list <- p
+
+  }
+
+  return(plot_list)
+}
+
+
+
+
+#' Plotlollipop
+#'
+#' An Internal function for PlotDMEslollipop to Plotting function for the results of FindDMEs and FindAllDMEs
+#'
+#' @param seurat_obj A Seurat object
+#' @param DMEs dataframe output from FindDMEs or FindAllDMEs
+#' @param group.by the column name of the selected comparison in the DMEs dataframe
+#' @param comparison character vector or a list of character vectors containing the comparison in the DMEs dataframe
+#' @param pvalue p_value or fdr used for the comparison in the DMEs dataframe
+#' @keywords scRNA-seq
+#' @return A ggplot object
+#' @examples
+#' plot_list <- Plotlollipop(modules, DMEs, cur_title= c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC')
+Plotlollipop <- function(
+  modules,
+  cur_DMEs,
+  pvalue,
+  avg_log2FC = 'avg_log2FC'
+){
+#
+    # cur_DMEs <- DMEs
+
+    # set plotting attributes for shape
+    cur_DMEs$shape <- ifelse(cur_DMEs[[pvalue]] < 0.05, 21, 4) # 21 cicle; 4 X
+    cur_DMEs <- cur_DMEs %>% arrange(avg_log2FC, descending=TRUE)
+    cur_DMEs$module <- factor(as.character(cur_DMEs$module), levels=as.character(cur_DMEs$module))
+
+    # add number of genes per module
+    n_genes <- table(modules$module)
+    cur_DMEs$n_genes <- as.numeric(n_genes[as.character(cur_DMEs$module)])
+
+    mod_colors <- dplyr::select(modules, c(module, color)) %>% distinct
+    cp <- mod_colors$color; names(cp) <- mod_colors$module
+
+    p <- cur_DMEs %>%
+    ggplot(aes(y=module, x=avg_log2FC, size=log(n_genes), color=module)) +
+    geom_vline(xintercept=0, color='black') +
+    geom_segment(aes(y=module, yend=module, x=0, xend=avg_log2FC), linewidth=0.5, alpha=0.3) +
+    geom_point() +
+    geom_point(shape=cur_DMEs$shape, color='black', fill=NA) +
+    scale_color_manual(values=cp, guide='none') +
+    ylab('') +
+    xlab(bquote("Avg. log"[2]~"(Fold Change)")) +
+    theme(
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust=0.5, face='plain', size=10)
+    )
+
+    return(p)
+
+}
