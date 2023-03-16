@@ -88,8 +88,8 @@ INH-M10 1.513458e-02 -0.07774661 0.975 0.980 2.724224e-01 INH-M10
 INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17
 ```
 
-We can visualize the results using the hdWGNCA function `PlotDMEsLollipop` `PlotDMEsVolcano`.
-
+We can visualize the results using the hdWGNCA functions `PlotDMEsLollipop` or `PlotDMEsVolcano`. First we
+make a lollipop plot to visualize the DME results. 
 ```{r eval=FALSE}
 
 PlotDMEsLollipop(
@@ -103,6 +103,28 @@ PlotDMEsLollipop(
 
 <img src="figures/DMEs/test_DME_lollipop.png" width="800" height="900">
 
+This plot shows the fold-change for each of the modules, and the size of each dot corresponds to the number 
+of genes in that module. An "X" is placed over each point that does not reach statistical significance. 
+
+For `PlotDMEsLollipop`, if we have other self-defined columns 
+in the DMEs data frame, we can use `group.by` parameter to supply the column names and comparison arguments for 
+one comparison group or a list of comparison groups for plotting. For example:
+
+
+```{r eval=FALSE}
+
+PlotDMEslollipop(
+  seurat_obj, 
+  DMEs, 
+  wgcna_name='INH', 
+  group.by = "Comparisons", 
+  comparison = c("group1_vs_control", "group2_vs_control"),  
+  pvalue = "p_val_adj"
+) 
+
+
+```
+
 
 ```{r eval=FALSE, echo=FALSE}
 
@@ -113,6 +135,8 @@ dev.off()
 
 ```
 
+
+Next we use `PlotDMEsVolcano` to make a volcano plot to show the effect size and the significance level together.
 
 ```{r eval=FALSE}
 

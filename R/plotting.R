@@ -2449,8 +2449,7 @@ PlotDMEsVolcano <- function(
 #' @keywords scRNA-seq
 #' @export
 #' @return A ggplot object
-#' @examples
-#' plot_list <- PlotDMEsLollipop(seurat_obj, DMEs, group.by = "Comparison", comparison = c("Disease_vs_Control"), pvalue = "p_val_adj")
+#' PlotDMEsLollipop
 PlotDMEsLollipop <- function(
   seurat_obj,
   DMEs,

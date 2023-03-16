@@ -209,16 +209,28 @@ INH-M2  7.565615e-05 -0.18746938 0.661 0.738 1.361811e-03  INH-M2
 INH-M15 1.496899e-03 -0.06603535 0.969 0.977 2.694417e-02 INH-M15
 INH-M10 1.513458e-02 -0.07774661 0.975 0.980 2.724224e-01 INH-M10
 INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
-<p>We can visualize the results using the hdWGNCA function <code>PlotDMEsLollipop</code> <code>PlotDMEsVolcano</code>.</p>
+<p>We can visualize the results using the hdWGNCA functions <code>PlotDMEsLollipop</code> or <code>PlotDMEsVolcano</code>. First we make a lollipop plot to visualize the DME results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">PlotDMEsLollipop</span><span class="op">(</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/PlotDMEsLollipop.html">PlotDMEsLollipop</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>, 
   <span class="va">DMEs</span>, 
   wgcna_name<span class="op">=</span><span class="st">'INH'</span>, 
   pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/DMEs/test_DME_lollipop.png" width="800" height="900"></p>
+<p>This plot shows the fold-change for each of the modules, and the size of each dot corresponds to the number of genes in that module. An “X” is placed over each point that does not reach statistical significance.</p>
+<p>For <code>PlotDMEsLollipop</code>, if we have other self-defined columns in the DMEs data frame, we can use <code>group.by</code> parameter to supply the column names and comparison arguments for one comparison group or a list of comparison groups for plotting. For example:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">PlotDMEslollipop</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>, 
+  <span class="va">DMEs</span>, 
+  wgcna_name<span class="op">=</span><span class="st">'INH'</span>, 
+  group.by <span class="op">=</span> <span class="st">"Comparisons"</span>, 
+  comparison <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"group1_vs_control"</span>, <span class="st">"group2_vs_control"</span><span class="op">)</span>,  
+  pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span>
+<span class="op">)</span> </code></pre></div>
+<p>Next we use <code>PlotDMEsVolcano</code> to make a volcano plot to show the effect size and the significance level together.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDMEsVolcano.html">PlotDMEsVolcano</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   <span class="va">DMEs</span>,
@@ -230,7 +242,7 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <h2 id="one-versus-all-dme-analysis">One-versus-all DME analysis<a class="anchor" aria-label="anchor" href="#one-versus-all-dme-analysis"></a>
 </h2>
 <p>Similar to the Seurat function <code>FindAllMarkers</code>, we can perform a one-versus-all DME test using the function <code>FindAllDMEs</code> when specifying a column to group cells. Here we will <code>group.by</code> each cell type for the one-versus-all test.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">group.by</span> <span class="op">=</span> <span class="st">'cell_type'</span>
 
 <span class="va">DMEs_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/FindAllDMEs.html">FindAllDMEs</a></span><span class="op">(</span>
@@ -249,7 +261,7 @@ EX.INH-M4     0   1.978553 0.910 0.246         0 INH-M4    EX
 EX.INH-M5     0   2.447565 0.865 0.185         0 INH-M5    EX
 EX.INH-M6     0   2.448315 0.877 0.209         0 INH-M6    EX</code></pre>
 <p>Now we can plot the results with <code>PlotDMEsVolcano</code></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotDMEsVolcano.html">PlotDMEsVolcano</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   <span class="va">DMEs_all</span>,
