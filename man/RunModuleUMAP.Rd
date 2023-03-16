@@ -6,9 +6,9 @@
 \usage{
 RunModuleUMAP(
   seurat_obj,
-  features = "TOM",
   n_hubs = 10,
   exclude_grey = TRUE,
+  genes_use = NULL,
   wgcna_name = NULL,
   n_neighbors = 25,
   metric = "cosine",
@@ -25,6 +25,8 @@ RunModuleUMAP(
 
 \item{exclude_grey}{logical indicating whether to include grey module}
 
+\item{genes_use}{character vector of genes to use for the UMAP, must already be present in GetModules(seurat_obj)}
+
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{...}{Additional parameters supplied to uwot::umap}
@@ -32,4 +34,3 @@ RunModuleUMAP(
 \description{
 Run UMAP on co-expression matrix using hub genes as features.
 }
-\keyword{scRNA-seq}

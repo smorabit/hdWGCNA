@@ -2437,7 +2437,7 @@ PlotDMEsVolcano <- function(
              
              
              
-#' PlotDMEslollipop
+#' PlotDMEsLollipop
 #'
 #' Plotting function for the results of FindDMEs and FindAllDMEs
 #'
@@ -2450,8 +2450,8 @@ PlotDMEsVolcano <- function(
 #' @export
 #' @return A ggplot object
 #' @examples
-#' plot_list <- PlotDMEslollipop(seurat_obj, DMEs, group.by = "Comparison", comparison = c("Disease_vs_Control"), pvalue = "p_val_adj")
-PlotDMEslollipop <- function(
+#' plot_list <- PlotDMEsLollipop(seurat_obj, DMEs, group.by = "Comparison", comparison = c("Disease_vs_Control"), pvalue = "p_val_adj")
+PlotDMEsLollipop <- function(
   seurat_obj,
   DMEs,
   wgcna_name,
@@ -2475,14 +2475,15 @@ PlotDMEslollipop <- function(
   stop('Please provide wgcna_name or the selected wgcna_name is not found in seurat_obj@misc.')
   }
 
-  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey') %>% mutate(module=droplevels(module))
+  modules <- GetModules(seurat_obj, wgcna_name) %>% 
+    subset(module != 'grey') %>% 
+    mutate(module=droplevels(module))
 
   if (!missing(group.by) & !missing(comparison)) {
     comparisons <- comparison
     if(!(all(comparisons %in% DMEs[[group.by]]))){
     stop('Not all selected comparisons are not found in DMEs[[group.by]] or the comparison column, DMEs[[group.by]], is not correctly supplied.')
     }
-
 
     # comparisons <- unique(DMEs$comparison)
     plot_list <- list()
@@ -2496,7 +2497,7 @@ PlotDMEslollipop <- function(
         # provide title
         cur_title <- cur_comp
         #
-        p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+        p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
         p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
@@ -2528,7 +2529,7 @@ PlotDMEslollipop <- function(
         cur_title <- cur_comp
 
         # set plotting attributes for shape
-        p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+        p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
         p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
@@ -2538,14 +2539,14 @@ PlotDMEslollipop <- function(
 
   } else{
     # this is for the condition: missing(group.by) && missing(comparison)
-    print('Please be aware comparison group/groups are not provided, which may casue an ERROR. PlotDMEslollipop function will automatically assume all values are within the same group.')
+    print('Please be aware comparison group/groups are not provided, which may casue an ERROR. PlotDMEsLollipop function will automatically assume all values are within the same group.')
 
     plot_list <- list()
 
     cur_DMEs <- DMEs
 
     # set plotting attributes for shape
-    p <- Plotlollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
+    p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
     p <- p + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
@@ -2559,9 +2560,9 @@ PlotDMEslollipop <- function(
 
 
 
-#' Plotlollipop
+#' PlotLollipop
 #'
-#' An Internal function for PlotDMEslollipop to Plotting function for the results of FindDMEs and FindAllDMEs
+#' An Internal function for PlotDMEsLollipop to Plotting function for the results of FindDMEs and FindAllDMEs
 #'
 #' @param seurat_obj A Seurat object
 #' @param DMEs dataframe output from FindDMEs or FindAllDMEs
@@ -2571,8 +2572,8 @@ PlotDMEslollipop <- function(
 #' @keywords scRNA-seq
 #' @return A ggplot object
 #' @examples
-#' plot_list <- Plotlollipop(modules, DMEs, cur_title= c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC')
-Plotlollipop <- function(
+#' plot_list <- PlotLollipop(modules, DMEs, cur_title= c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC')
+PlotLollipop <- function(
   modules,
   cur_DMEs,
   pvalue,

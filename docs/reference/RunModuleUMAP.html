@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.15</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.16</span>
       </span>
     </div>
 
@@ -120,9 +120,9 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">RunModuleUMAP</span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
-  features <span class="op">=</span> <span class="st">"TOM"</span>,
   n_hubs <span class="op">=</span> <span class="fl">10</span>,
   exclude_grey <span class="op">=</span> <span class="cn">TRUE</span>,
+  genes_use <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   n_neighbors <span class="op">=</span> <span class="fl">25</span>,
   metric <span class="op">=</span> <span class="st">"cosine"</span>,
@@ -141,6 +141,8 @@
 <dd><p>number of hub genes to use in the UMAP computation</p></dd>
 <dt>exclude_grey</dt>
 <dd><p>logical indicating whether to include grey module</p></dd>
+<dt>genes_use</dt>
+<dd><p>character vector of genes to use for the UMAP, must already be present in GetModules(seurat_obj)</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 <dt>...</dt>

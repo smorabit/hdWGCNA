@@ -1,9 +1,11 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.2.15
+Version: 0.2.16
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
+    person("Zechuan", "Shi", , "zechuas@uci.edu", role = c("ctb"),
+          comment = c(ORCID = "0000-0002-2844-5816")),
     person("Swarup Lab", role = "fnd")
   )
 Description: hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional data such as single-cell RNA-seq or spatial transcriptomics.

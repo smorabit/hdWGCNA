@@ -254,10 +254,12 @@ MetacellsByGroups <- function(
     stop('Invalid character # found in group.by, please re-name the group.')
   }
 
+  # check ident.group
   if(!(ident.group %in% group.by)){
     stop('ident.group must be in group.by')
   }
 
+  # check mode
   if(!(mode %in% c('sum', 'average'))){
     stop('Invalid choice for mode. Mode can be either sum or average.')
   }
@@ -284,6 +286,17 @@ MetacellsByGroups <- function(
     if(any(slot_dim) == 0){
       stop(paste(c("Selected slot ", slot, " not found in this assay.")))
     }
+  }
+
+  # check that k > min_cells 
+  if(min_cells < k ){
+    warning("min_cells is smaller than k, this may result in downstream errors if very small groups are allowed.")
+  }
+
+  # check that max_shared is valid:
+  if(max_shared < 0){
+    max_shared <- 0
+    warning(paste0("max_shared specified (", max_shared, ') is too low, setting max_shared <- 0'))
   }
 
   # subset seurat object by seleted cells:
@@ -337,7 +350,19 @@ MetacellsByGroups <- function(
     seurat_obj = seurat_list,
     name = groupings,
     meta = meta_list,
-    MoreArgs = list(k=k, reduction=reduction, assay=assay, slot=slot, return_metacell=TRUE, mode=mode, max_shared=max_shared, max_iter=max_iter, target_metacells=target_metacells, verbose=verbose, wgcna_name=wgcna_name)
+    MoreArgs = list(
+      k=k, 
+      reduction=reduction, 
+      assay=assay, 
+      slot=slot, 
+      return_metacell=TRUE, 
+      mode=mode,
+       max_shared=max_shared, 
+       max_iter=max_iter, 
+       target_metacells=target_metacells, 
+       verbose=verbose, 
+       wgcna_name=wgcna_name
+    )
   )
   names(metacell_list) <- groupings
 

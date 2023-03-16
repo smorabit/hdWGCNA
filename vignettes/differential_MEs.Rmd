@@ -43,7 +43,7 @@ seurat_obj <- readRDS('Zhou_2020_hdWGCNA.rds')
 
 Here we discuss how to perform DME testing between two different groups. We
 use the hdWGCNA function `FindDMEs`, which is a special case of the Seurat function
-`FindMarkers`. We use the Mann-Whitney U test, also known as the Wilcoxon signed-rank test, to compare two groups, but other tests can be used at the user's discretion
+`FindMarkers`. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user's discretion
 with the `test.use` parameter.
 
 Since the tutorial dataset only contains control brain samples, we will use sex
@@ -88,7 +88,31 @@ INH-M10 1.513458e-02 -0.07774661 0.975 0.980 2.724224e-01 INH-M10
 INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17
 ```
 
-We can visualize the results using the hdWGNCA function `PlotDMEsVolcano`.
+We can visualize the results using the hdWGNCA function `PlotDMEsLollipop` `PlotDMEsVolcano`.
+
+```{r eval=FALSE}
+
+PlotDMEsLollipop(
+  seurat_obj, 
+  DMEs, 
+  wgcna_name='INH', 
+  pvalue = "p_val_adj"
+)
+
+```
+
+<img src="figures/DMEs/test_DME_lollipop.png" width="800" height="900">
+
+
+```{r eval=FALSE, echo=FALSE}
+
+png(paste0('test_DME_lollipop.png'), width=5, height=5, res=600, units='in')
+plot_list
+dev.off()
+
+
+```
+
 
 ```{r eval=FALSE}
 

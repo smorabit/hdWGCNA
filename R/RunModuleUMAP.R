@@ -5,16 +5,18 @@
 #' @param seurat_obj A Seurat object
 #' @param n_hubs number of hub genes to use in the UMAP computation
 #' @param exclude_grey logical indicating whether to include grey module
+#' @param genes_use character vector of genes to use for the UMAP, must already be present in GetModules(seurat_obj)
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param ... Additional parameters supplied to uwot::umap
-#' @keywords scRNA-seq
+#' @import uwot
+#' @import Seurat
 #' @export
 #' @examples
 RunModuleUMAP <- function(
   seurat_obj,
-  features = "TOM", # "TOM" or "kME"
   n_hubs = 10,
   exclude_grey = TRUE,
+  genes_use = NULL,
   wgcna_name = NULL,
   n_neighbors= 25,
   metric = "cosine",
@@ -35,6 +37,7 @@ RunModuleUMAP <- function(
     stop('Eigengene-based connectivity (kME) not found. Did you run ModuleEigengenes and ModuleConnectivity?')
   }
 
+  # handle excluding grey module
   if(exclude_grey){
     mods <- mods[mods != 'grey']
     modules <- subset(modules, module != 'grey')
@@ -50,6 +53,10 @@ RunModuleUMAP <- function(
 
   # get all genes that aren't in gray mod
   selected_genes <- modules[modules$module %in% mods,'gene_name']
+
+  if(!is.null(genes_use)){
+    selected_genes <- selected_genes[selected_genes %in% genes_use]
+  } 
 
   # get the TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)

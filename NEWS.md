@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.16 (2023-03-02)
+## Added
+- `PlotDMEsLollipop` function to visualize differential module eigengenes.
+
+## Changes
+- New error checks in `MetacellsByGroups`
+
+
 # hdWGCNA 0.2.15 (2023-03-02)
 ## Added
 - None
