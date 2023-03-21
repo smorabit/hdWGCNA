@@ -161,6 +161,7 @@ between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging 
 extremely underrepresented cell types. For example, in this dataset, the brain vascular
 cells (pericytes and endothelial cells) were the least represented, and we have
 excluded them from this analysis. `MetacellsByGroups` has a parameter `min_cells` to exclude groups that are smaller than a specified number of cells.
+Errors are likely to arise if the selected value for `min_cells` is too low.
 
 Here we construct metacells and normalize the resulting expression matrix
 using the following code:
@@ -171,6 +172,7 @@ using the following code:
 seurat_obj <- MetacellsByGroups(
   seurat_obj = seurat_obj,
   group.by = c("cell_type", "Sample"), # specify the columns in seurat_obj@meta.data to group by
+  reduction = 'harmony', # select the dimensionality reduction to perform KNN on
   k = 25, # nearest-neighbors parameter
   max_shared = 10, # maximum number of shared cells between two metacells
   ident.group = 'cell_type' # set the Idents of the metacell seurat object
@@ -181,7 +183,7 @@ seurat_obj <- NormalizeMetacells(seurat_obj)
 
 ```
 
-## Optional: Process the Metacell Seurat Object
+<details> <summary> Optional: Process the Metacell Seurat Object </summary>
 
 Since we store the Metacell expression information as its own Seurat object,
 we can run Seurat functions on the metacell data. We can get the metacell object
@@ -213,6 +215,8 @@ p1 | p2
 ```
 
 <img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600">
+
+</details> 
 
 
 # Co-expression network analysis

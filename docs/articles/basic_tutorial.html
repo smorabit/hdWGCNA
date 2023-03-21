@@ -243,13 +243,14 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <p>After we have set up our Seurat object, the first step in running the hdWGCNA pipeine in hdWGCNA is to construct metacells from the single-cell dataset. Briefly, metacells are aggregates of small groups of similar cells originating from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to identify groups of similar cells to aggregate, and then the average or summed expression of these cells is computed, thus yielding a metacell gene expression matrix. The sparsity of the metacell expression matrix is considerably reduced when compared to the original expression matrix, and therefore it is preferable to use. We were originally motivated to use metacells in place of the original single cells because correlation network approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cell epigenomic approaches, such as <a href="https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1" class="external-link">Cicero</a>, employ a similar metacell aggregation approach prior to constructing co-accessibility networks.</p>
 <p>hdWGCNA includes a function <code>MetacellsByGroups</code> to construct metacell expression matrices given a single-cell dataset. This function constructs a new Seurat object for the metacell dataset which is stored internally in the hdWGCNA experiment. The <code>group.by</code> parameter determines which groups metacells will be constructed in. We only want to construct metacells from cells that came from the same biological sample of origin, so it is critical to pass that information to hdWGCNA via the <code>group.by</code> parameter. Additionally, we usually construct metacells for each cell type separately. Thus, in this example, we are grouping by <code>Sample</code> and <code>cell_type</code> to achieve the desired result.</p>
 <p>The number of cells to be aggregated <code>k</code> should be tuned based on the size of the input dataset, in general a lower number for <code>k</code> can be used for small datasets. We generally use <code>k</code> values between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from 890 to 8,188 in each biological sample, and here we used <code>k=25</code>. The amount of allowable overlap between metacells can be tuned using the <code>max_shared</code> argument.</p>
-<p><strong><em>Note:</em></strong> we have found that the metacell aggregation approach does not yield good results for extremely underrepresented cell types. For example, in this dataset, the brain vascular cells (pericytes and endothelial cells) were the least represented, and we have excluded them from this analysis. <code>MetacellsByGroups</code> has a parameter <code>min_cells</code> to exclude groups that are smaller than a specified number of cells.</p>
+<p><strong><em>Note:</em></strong> we have found that the metacell aggregation approach does not yield good results for extremely underrepresented cell types. For example, in this dataset, the brain vascular cells (pericytes and endothelial cells) were the least represented, and we have excluded them from this analysis. <code>MetacellsByGroups</code> has a parameter <code>min_cells</code> to exclude groups that are smaller than a specified number of cells. Errors are likely to arise if the selected value for <code>min_cells</code> is too low.</p>
 <p>Here we construct metacells and normalize the resulting expression matrix using the following code:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># construct metacells  in each group</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
   seurat_obj <span class="op">=</span> <span class="va">seurat_obj</span>,
   group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>, <span class="co"># specify the columns in seurat_obj@meta.data to group by</span>
+  reduction <span class="op">=</span> <span class="st">'harmony'</span>, <span class="co"># select the dimensionality reduction to perform KNN on</span>
   k <span class="op">=</span> <span class="fl">25</span>, <span class="co"># nearest-neighbors parameter</span>
   max_shared <span class="op">=</span> <span class="fl">10</span>, <span class="co"># maximum number of shared cells between two metacells</span>
   ident.group <span class="op">=</span> <span class="st">'cell_type'</span> <span class="co"># set the Idents of the metacell seurat object</span>
@@ -257,10 +258,9 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 
 <span class="co"># normalize metacell expression matrix:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
-<div class="section level3">
-<h3 id="optional-process-the-metacell-seurat-object">Optional: Process the Metacell Seurat Object<a class="anchor" aria-label="anchor" href="#optional-process-the-metacell-seurat-object"></a>
-</h3>
-<p>Since we store the Metacell expression information as its own Seurat object, we can run Seurat functions on the metacell data. We can get the metacell object from the hdWGCNA experiment using <code>GetMetacellObject</code>.</p>
+<details><summary>
+Optional: Process the Metacell Seurat Object
+</summary><p>Since we store the Metacell expression information as its own Seurat object, we can run Seurat functions on the metacell data. We can get the metacell object from the hdWGCNA experiment using <code>GetMetacellObject</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p>Additionally, we have included a few wrapper functions to apply the Seurat workflow to the metacell object within the hdWGCNA experiment. Here we apply these wrapper functions to process the metacell object and visualize the aggregated expression profiles in two dimensions with UMAP.</p>
@@ -277,7 +277,7 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 
 <span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
 <p><img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600"></p>
-</div>
+</details>
 </div>
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
