@@ -65,6 +65,7 @@ ModulePreservation <- function(
   print(dim(datExpr_query))
 
   print('Run Module Preservation')
+  print(ref_modules)
 
   # run the module preservation test:
   mp <- WGCNA::modulePreservation(

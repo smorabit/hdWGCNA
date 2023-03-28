@@ -1,4 +1,11 @@
-# hdWGCNA 0.2.16 (2023-03-02)
+# hdWGCNA 0.2.16 (2023-03-27)
+## Added
+- None.
+
+## Changes
+- New error checks in `SetupForWGCNA` and `SelectNetworkGenes`
+
+# hdWGCNA 0.2.16 (2023-03-020)
 ## Added
 - `PlotDMEsLollipop` function to visualize differential module eigengenes.
 

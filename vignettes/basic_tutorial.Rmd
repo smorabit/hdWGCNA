@@ -216,7 +216,7 @@ p1 | p2
 
 <img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600">
 
-</details> 
+</details> <summary> Optional: Process the Metacell Seurat Object </summary>
 
 
 # Co-expression network analysis

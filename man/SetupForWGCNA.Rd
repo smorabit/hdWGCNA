@@ -9,7 +9,6 @@ SetupForWGCNA(
   wgcna_name,
   features = NULL,
   metacell_location = NULL,
-  group = NULL,
   ...
 )
 }
@@ -22,14 +21,15 @@ SetupForWGCNA(
 
 \item{metacell_location}{name of the WGCNA experiment to copy the metacell object from}
 
-\item{group}{(parameter not used anymore, can ignore)}
-
 \item{...}{additional parameters to pass to SelectNetworkGenes}
 }
 \description{
-This function gets the expression matrix from the metacell object.
+Create a slot in a Seurat object to store hdWGCNA data
 }
-\examples{
-SetupForWGCNA(pbmc)
+\details{
+SetupForWGCNA creates a new slot in the Seurat object (seurat_obj) to store an hdWGCNA experiment
+with a given name (wgcna_name). This function calls on SelectNetworkGenes to specify which features
+will be used for network analysis. If there is another hdWGCNA experiment already in the seurat_obj,
+the same metacell/metaspot object can be used by specifying the name of the hdWGCNA experiment
+to the metacell_location parameter.
 }
-\keyword{scRNA-seq}

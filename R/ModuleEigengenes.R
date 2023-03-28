@@ -14,7 +14,6 @@
 #' @param wgcna_name name of the WGCNA experiment
 #' @import Seurat
 #' @import harmony
-#' @export
 ComputeModuleEigengene <- function(
   seurat_obj,
   cur_mod,

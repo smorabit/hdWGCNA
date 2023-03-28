@@ -80,6 +80,11 @@ navbar:
 
 
 reference:
+- title: Data setup
+  desc: Functions to set up the Seurat object for network analysis
+  contents:
+  - '`SetupForWGCNA`'
+  - '`SelectNetworkGenes`'
 - title: Metacells and metaspots
   desc: Functions for constructing metacells from single-cell data and metaspots from ST data
   contents:

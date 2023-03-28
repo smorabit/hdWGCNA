@@ -2,7 +2,6 @@
 
 export(AvgModuleExpr)
 export(BinPseudotime)
-export(ComputeModuleEigengene)
 export(ConstructMetacells)
 export(ConstructMetaspots)
 export(ConstructNetwork)
