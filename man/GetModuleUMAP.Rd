@@ -14,7 +14,4 @@ GetModuleUMAP(seurat_obj, wgcna_name = NULL)
 \description{
 GetModuleUMAP
 }
-\examples{
-GetModuleUMAP
-}
 \keyword{scRNA-seq}

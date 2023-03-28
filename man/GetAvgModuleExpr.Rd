@@ -14,7 +14,4 @@ GetAvgModuleExpr(seurat_obj, wgcna_name = NULL)
 \description{
 GetAvgModuleExpr
 }
-\examples{
-GetAvgModuleExpr
-}
 \keyword{scRNA-seq}

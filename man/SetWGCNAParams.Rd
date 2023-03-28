@@ -16,7 +16,4 @@ SetWGCNAParams(seurat_obj, params, wgcna_name = NULL)
 \description{
 SetWGCNAParams
 }
-\examples{
-SetWGCNAParams
-}
 \keyword{scRNA-seq}

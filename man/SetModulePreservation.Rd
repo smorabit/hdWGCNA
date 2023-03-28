@@ -18,7 +18,4 @@ SetModulePreservation(seurat_obj, mod_pres, mod_name, wgcna_name = NULL)
 \description{
 SetModulePreservation
 }
-\examples{
-SetModulePreservation
-}
 \keyword{scRNA-seq}

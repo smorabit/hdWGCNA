@@ -16,7 +16,4 @@ SetMotifScores(seurat_obj, tf_scores, wgcna_name = NULL)
 \description{
 SetMotifScores
 }
-\examples{
-SetMotifScores
-}
 \keyword{scRNA-seq}

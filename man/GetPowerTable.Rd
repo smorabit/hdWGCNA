@@ -14,7 +14,4 @@ GetPowerTable(seurat_obj, wgcna_name = NULL)
 \description{
 GetPowerTable
 }
-\examples{
-GetPowerTable
-}
 \keyword{scRNA-seq}

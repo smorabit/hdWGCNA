@@ -14,7 +14,4 @@ GetModuleScores(seurat_obj, wgcna_name = NULL)
 \description{
 GetModuleScores
 }
-\examples{
-GetModuleScores
-}
 \keyword{scRNA-seq}

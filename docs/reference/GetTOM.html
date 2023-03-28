@@ -129,29 +129,6 @@
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">GetTOM</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, wgcna_name = NULL) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene_names &lt;- GetWGCNAGenes(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     tom_files &lt;- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!file.exists(tom_files[[1]])) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("TOM file ", tom_files[[1]], " not found. Please update path to TOM file."))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     load(tom_files[[1]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     TOM &lt;- as.matrix(consTomDS)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(TOM) &lt;- gene_names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     colnames(TOM) &lt;- gene_names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     TOM</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b63fadca8&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

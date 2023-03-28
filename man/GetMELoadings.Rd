@@ -16,7 +16,4 @@ GetMELoadings(seurat_obj, harmonized = TRUE, wgcna_name = NULL)
 \description{
 Function to retrieve module eigengens from Seurat object.
 }
-\examples{
-GetMELoadings
-}
 \keyword{scRNA-seq}

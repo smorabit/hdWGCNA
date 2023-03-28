@@ -16,7 +16,4 @@ SetWGCNAGenes(seurat_obj, gene_list, wgcna_name = NULL)
 \description{
 SetWGCNAGenes
 }
-\examples{
-SetWGCNAGenes
-}
 \keyword{scRNA-seq}

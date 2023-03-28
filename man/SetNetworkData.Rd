@@ -16,7 +16,4 @@ SetNetworkData(seurat_obj, net, wgcna_name = NULL)
 \description{
 SetNetworkData
 }
-\examples{
-SetNetworkData
-}
 \keyword{scRNA-seq}

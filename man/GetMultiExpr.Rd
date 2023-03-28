@@ -12,7 +12,4 @@ GetMultiExpr(seurat_obj, wgcna_name = NULL)
 \description{
 This function gets the expression matrix from the metacell object.
 }
-\examples{
-GetDatExpr
-}
 \keyword{scRNA-seq}

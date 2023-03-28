@@ -14,7 +14,4 @@ GetMetacellObject(seurat_obj, wgcna_name = NULL)
 \description{
 GetMetacellObject
 }
-\examples{
-GetMetacellObject
-}
 \keyword{scRNA-seq}

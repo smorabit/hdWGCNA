@@ -14,7 +14,4 @@ GetModuleTraitCorrelation(seurat_obj, wgcna_name = NULL)
 \description{
 GetModuleTraitCorrelation
 }
-\examples{
-GetModuleTraitCorrelation
-}
 \keyword{scRNA-seq}

@@ -16,7 +16,4 @@ SetMotifOverlap(seurat_obj, overlap_df, wgcna_name = NULL)
 \description{
 SetMotifOverlap
 }
-\examples{
-SetMotifOverlap
-}
 \keyword{scRNA-seq}

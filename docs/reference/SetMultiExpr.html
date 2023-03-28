@@ -152,62 +152,6 @@ the metacell expression matrix, or from the full expression matrix.</p>
 <dd><p>A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data</p></dd>
 </dl></div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">SetMultiExpr</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, group_name, use_metacells = TRUE, group.by = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     multi.group.by = NULL, multi_groups = NULL, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     assay = NULL, slot = "data", ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     params &lt;- GetWGCNAParams(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene_names &lt;- GetWGCNAGenes(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (use_metacells) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- GetMetacellObject(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         s_obj &lt;- seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(assay)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         assay &lt;- DefaultAssay(s_obj)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         warning(paste0("assay not specified, trying to use assay ", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             assay))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(multi_groups)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         multi_groups &lt;- unique(s_obj@meta.data[[multi.group.by]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_groups &lt;- unique(s_obj@meta.data[[multi.group.by]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (sum(multi_groups %in% seurat_groups) != length(multi_groups)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             stop("Some or all groups specified in multi_groups not found in seurat_obj@meta.data[,multi.group.by]")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_list &lt;- lapply(multi_groups, function(x) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         SetDatExpr(seurat_obj, group_name = group_name, group.by = group.by, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             multi.group.by = multi.group.by, multi_group_name = x, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             return_seurat = FALSE, use_metacells = use_metacells, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             wgcna_name = wgcna_name, assay = assay, slot = slot) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             as.matrix</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_list</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     multiExpr &lt;- WGCNA::list2multiData(datExpr_list)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     genes_use &lt;- WGCNA::goodGenesMS(multiExpr)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene_names &lt;- gene_names[genes_use]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_list &lt;- lapply(1:length(multiExpr), function(i) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         multiExpr[[i]]$data[, genes_use]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     multiExpr &lt;- WGCNA::list2multiData(datExpr_list)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     names(multiExpr) &lt;- multi_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetWGCNAGenes(seurat_obj, gene_names, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj@misc[[wgcna_name]]$multiExpr &lt;- multiExpr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b794001d8&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

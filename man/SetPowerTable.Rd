@@ -16,7 +16,4 @@ SetPowerTable(seurat_obj, power_table, wgcna_name = NULL)
 \description{
 SetPowerTable
 }
-\examples{
-SetPowerTable
-}
 \keyword{scRNA-seq}

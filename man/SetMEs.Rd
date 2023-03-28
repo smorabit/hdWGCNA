@@ -18,7 +18,4 @@ SetMEs(seurat_obj, MEs, harmonized = TRUE, wgcna_name = NULL)
 \description{
 SetMEs
 }
-\examples{
-SetMEs
-}
 \keyword{scRNA-seq}

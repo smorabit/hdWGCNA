@@ -16,7 +16,4 @@ GetModulePreservation(seurat_obj, mod_name, wgcna_name = NULL)
 \description{
 GetModulePreservation
 }
-\examples{
-GetModulePreservation
-}
 \keyword{scRNA-seq}

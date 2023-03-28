@@ -16,7 +16,4 @@ SetMetacellObject(seurat_obj, metacell_obj, wgcna_name = NULL)
 \description{
 SetMetacellObject
 }
-\examples{
-SetMetacellObject
-}
 \keyword{scRNA-seq}

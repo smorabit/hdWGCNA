@@ -14,7 +14,4 @@ GetTOM(seurat_obj, wgcna_name = NULL)
 \description{
 GetTOM
 }
-\examples{
-GetTOM
-}
 \keyword{scRNA-seq}

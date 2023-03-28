@@ -16,7 +16,4 @@ GetMEs(seurat_obj, harmonized = TRUE, wgcna_name = NULL)
 \description{
 Function to retrieve module eigengens from Seurat object.
 }
-\examples{
-GetMEs
-}
 \keyword{scRNA-seq}

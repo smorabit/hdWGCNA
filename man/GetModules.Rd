@@ -14,7 +14,4 @@ GetModules(seurat_obj, wgcna_name = NULL)
 \description{
 GetModules
 }
-\examples{
-GetModules
-}
 \keyword{scRNA-seq}

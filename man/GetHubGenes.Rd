@@ -20,7 +20,4 @@ Extract the top N hub genes for a given set of modules. This function outputs
 a table with the gene name, the module, and the kME for that module for the
 top N hub genes.
 }
-\examples{
-GetHubGenes
-}
 \keyword{scRNA-seq}

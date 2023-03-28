@@ -14,7 +14,4 @@ GetMotifOverlap(seurat_obj, wgcna_name = NULL)
 \description{
 GetMotifOverlap
 }
-\examples{
-GetMotifOverlap
-}
 \keyword{scRNA-seq}

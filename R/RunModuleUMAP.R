@@ -11,7 +11,6 @@
 #' @import uwot
 #' @import Seurat
 #' @export
-#' @examples
 RunModuleUMAP <- function(
   seurat_obj,
   n_hubs = 10,

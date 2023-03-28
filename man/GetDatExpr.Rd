@@ -12,7 +12,4 @@ GetDatExpr(seurat_obj, wgcna_name = NULL)
 \description{
 This function gets the WGCNA expression matrix.
 }
-\examples{
-GetDatExpr
-}
 \keyword{scRNA-seq}

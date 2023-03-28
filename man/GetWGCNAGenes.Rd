@@ -14,7 +14,4 @@ GetWGCNAGenes(seurat_obj, wgcna_name = NULL)
 \description{
 GetWGCNAGenes
 }
-\examples{
-GetWGCNAGenes
-}
 \keyword{scRNA-seq}

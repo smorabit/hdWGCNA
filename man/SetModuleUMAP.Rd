@@ -16,7 +16,4 @@ SetModuleUMAP(seurat_obj, umap_df, wgcna_name = NULL)
 \description{
 SetModuleUMAP
 }
-\examples{
-SetModuleUMAP
-}
 \keyword{scRNA-seq}

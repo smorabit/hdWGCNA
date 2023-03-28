@@ -16,7 +16,4 @@ SetModules(seurat_obj, mod_df, wgcna_name = NULL)
 \description{
 SetModules
 }
-\examples{
-SetModules
-}
 \keyword{scRNA-seq}

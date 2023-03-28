@@ -36,7 +36,4 @@ SetDatExpr(
 \description{
 This function specifies the gene expression matrix for co-expression network analysis.
 }
-\examples{
-SetDatExpr(pbmc)
-}
 \keyword{scRNA-seq}

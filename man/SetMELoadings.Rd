@@ -18,7 +18,4 @@ SetMELoadings(seurat_obj, loadings, harmonized = TRUE, wgcna_name = NULL)
 \description{
 SetMELoadings
 }
-\examples{
-SetMELoadings
-}
 \keyword{scRNA-seq}

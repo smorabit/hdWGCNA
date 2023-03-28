@@ -14,7 +14,4 @@ SetActiveWGCNA(seurat_obj, wgcna_name)
 \description{
 SetActiveWGCNA
 }
-\examples{
-SetActiveWGCNA
-}
 \keyword{scRNA-seq}

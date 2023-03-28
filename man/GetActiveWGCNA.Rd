@@ -12,7 +12,4 @@ GetActiveWGCNA(seurat_obj)
 \description{
 GetActiveWGCNA
 }
-\examples{
-GetActiveWGCNA
-}
 \keyword{scRNA-seq}

@@ -14,7 +14,4 @@ GetMotifScores(seurat_obj, wgcna_name = NULL)
 \description{
 GetMotifScores
 }
-\examples{
-GetMotifScores
-}
 \keyword{scRNA-seq}

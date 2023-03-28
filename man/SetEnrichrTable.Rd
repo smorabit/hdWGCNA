@@ -16,7 +16,4 @@ SetEnrichrTable(seurat_obj, enrich_table, wgcna_name = NULL)
 \description{
 SetEnrichrTable
 }
-\examples{
-SetEnrichrTable
-}
 \keyword{scRNA-seq}

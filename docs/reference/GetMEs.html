@@ -131,26 +131,6 @@
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">GetMEs</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, harmonized = TRUE, wgcna_name = NULL) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (harmonized == TRUE &amp;&amp; !is.null(seurat_obj@misc[[wgcna_name]]$hMEs)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         MEs &lt;- seurat_obj@misc[[wgcna_name]]$hMEs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         MEs &lt;- seurat_obj@misc[[wgcna_name]]$MEs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b8bf694e0&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

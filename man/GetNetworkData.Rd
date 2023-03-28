@@ -14,7 +14,4 @@ GetNetworkData(seurat_obj, wgcna_name = NULL)
 \description{
 GetNetworkData
 }
-\examples{
-GetNetworkData
-}
 \keyword{scRNA-seq}
