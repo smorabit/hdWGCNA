@@ -1208,21 +1208,6 @@ ResetModuleNames <- function(
     seurat_obj <- SetEnrichrTable(seurat_obj, enrich_table, wgcna_name)
   }
 
-  # update ROC info:
-  # THIS DOES NOT UPDATE THE ROC OBJECTS THEMSELVES!!!
-  roc_data <- GetROCData(seurat_obj, wgcna_name)
-  if(!is.null(roc_data)){
-    roc_data$roc$module <- factor(
-      new_mod_df[match(roc_data$roc$module, new_mod_df$old),'new'],
-      levels = as.character(new_mod_df$new)
-    )
-    roc_data$conf$module <- factor(
-      new_mod_df[match(roc_data$conf$module, new_mod_df$old),'new'],
-      levels = as.character(new_mod_df$new)
-    )
-    seurat_obj <- SetROCData(seurat_obj, roc_data, wgcna_name)
-  }
-
   # update motif overlap
   overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
   if(!is.null(overlap_df)){
