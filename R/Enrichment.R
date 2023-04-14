@@ -6,20 +6,31 @@
 #' @param seurat_obj A Seurat object
 #' @param dbs character vector of EnrichR databases
 #' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
+#' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
 #' RunEnrichr
 RunEnrichr <- function(
   seurat_obj,
   dbs = c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021'),
   max_genes = 100,
+  wait = TRUE,
+  wait_time = 5,
   wgcna_name=NULL, ...
 ){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+  # check wait_time 
+  if(!is.numeric(wait_time)){
+    stop(paste0('wait_time must be a numeric.'))
+  } 
+  if(wait_time > 60 | wait_time < 1){
+    stop(paste0('Invalid value selected for wait_time, must be greater than 0 and less than 60.'))
+  }
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -39,9 +50,12 @@ RunEnrichr <- function(
     } else{
       cur_genes <- subset(modules, module == cur_mod) %>% .$gene_name %>% as.character
     }
-    
     # run the enrichment test
     enriched <- enrichR::enrichr(cur_genes, dbs)
+
+    if(wait){
+      Sys.sleep(wait_time)
+    }
 
     # collapse into one db
     for(db in names(enriched)){
@@ -72,7 +86,6 @@ RunEnrichr <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
 #' OverlapModulesDEGs
 OverlapModulesDEGs <- function(
   seurat_obj,

@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.18 (2023-04-14)
+## Added
+- None.
+
+## Changes
+- We noticed on rare occasion that EnrichR would give duplicated results for different modules, so we added a new option in `RunEnrichr` to wait in between sending requests to the EnrichR server (default is 5 seconds).
+
 # hdWGCNA 0.2.17 (2023-03-27)
 ## Added
 - None.
