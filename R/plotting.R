@@ -510,7 +510,7 @@ ModuleFeaturePlot<- function(
   # use all modules except gray if not specified by the user
   modules <- GetModules(seurat_obj, wgcna_name)
   if(is.null(module_names)){
-    module_names <- colnames(MEs)
+    module_names <- levels(modules$module)
     module_names <- module_names[module_names != 'grey']
   }
 

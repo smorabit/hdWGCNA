@@ -222,17 +222,19 @@ SetDatExpr <- function(
     )[genes_use,cells]
   )
 
-
   # transpose data
   datExpr <- as.data.frame(t(datExpr))
 
   # only get good genes:
-  if(is.null(multi.group.by)){
-    gene_list = genes_use[WGCNA::goodGenes(datExpr, ...)]
-    datExpr <- datExpr[,gene_list]
-  }
+  # if(is.null(multi.group.by)){
+  #   gene_list = genes_use[WGCNA::goodGenes(datExpr, ...)]
+  #   datExpr <- datExpr[,gene_list]
+  # }
 
   if(return_seurat){
+
+    gene_list <- genes_use[WGCNA::goodGenes(datExpr, ...)]
+    datExpr <- datExpr[,gene_list]
 
     # update the WGCNA gene list:
     seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list, wgcna_name)
@@ -1093,6 +1095,7 @@ GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
 ResetModuleNames <- function(
   seurat_obj,
   new_name = "M",
+  reset_levels = FALSE,
   wgcna_name=NULL
 ){
 
