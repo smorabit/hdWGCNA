@@ -78,18 +78,22 @@ seurat_query <- ProjectModules(
 
 ```
 
-Next, we set up the expression matrices for the query and reference datasets.
+Next, we set up the expression matrices for the query and reference datasets. Either the 
+single-cell or the metacell gene expression matrices can be used here by setting the `use_metacells` 
+flag in `SetDatExpr`. In general we recommend using the same matrix that was used to construct the network 
+for the reference (in this case, the metacell matrix). 
+
 
 ```{r eval=FALSE}
 
-# set dat expr for reference dataset
+# set expression matrix for reference dataset
 seurat_ref <- SetDatExpr(
   seurat_ref,
   group_name = "INH",
   group.by = "cell_type"
 )
 
-# set dat expr for query dataset:
+# set expression matrix for query dataset:
 seurat_query <- SetDatExpr(
   seurat_query,
   group_name = "INH",
@@ -98,6 +102,34 @@ seurat_query <- SetDatExpr(
 )
 
 ```
+
+<details> <summary> ** Using the metacell expression matrix for the query dataset ** </summary>
+
+If you choose to use the metacell expression matrix for the query dataset, you have to first run `MetacellsByGroups` on the query dataset.
+
+```{r eval=FALSE}
+
+# compute metacells
+seurat_query <- MetacellsByGroups(
+  seurat_obj = seurat_query,
+  group.by = c("cell_type", "Sample"), 
+  reduction = 'harmony',
+  k = 25,
+  max_shared = 10, 
+  ident.group = 'cell_type'
+)
+seurat_query <- NormalizeMetacells(seurat_query)
+
+# set expression matrix for query dataset:
+seurat_query <- SetDatExpr(
+  seurat_query,
+  group_name = "INH",
+  group.by = "cell_type"
+)
+
+```
+
+</details>
 
 Now we can run the `ModulePreservation` function. Note that this function does take a while to run since it is permutation based, but it can be sped up by lowering the `n_permutations` parameter, but we do not recommend any lower than 100 permutations. Also note that the `parallel` option currently does not work.
 
@@ -127,7 +159,7 @@ description of the stats on this page. The visualizations are inspired by
 those included in the [original WGCNA module preservation tutorials](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf).
 
 
-### Visualize preservation stats
+## Visualize preservation stats
 
 In this section, we use the function `PlotModulePreservation` to visualize the
 statistics we computed in the previous section. This function generates a scatter
