@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.19 (2023-06-13)
+## Added
+- None.
+
+## Changes
+- Updated README to include publication, and fixed several igraph function calls.
+
+
 # hdWGCNA 0.2.18 (2023-04-14)
 ## Added
 - None.

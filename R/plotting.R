@@ -383,7 +383,6 @@ ModuleCorrNetwork <- function(
   })) %>% as.data.frame
 
 
-
   # get correlation matrix
   cor_mat <- Hmisc::rcorr(as.matrix(MEs[,1:ncol(MEs)-1]))$r
   cor_mat[lower.tri(cor_mat)] <- NA
@@ -423,17 +422,17 @@ ModuleCorrNetwork <- function(
   e <-  get.edgelist(g, name=FALSE)
   # l <- igraph::layout_with_fr(
   #   g,
-  #   weights=E(g)$value,
-  #   coords = as.matrix(data.frame(x=V(g)$x, y=V(g)$y)),
+  #   weights=igraph::E(g)$value,
+  #   coords = as.matrix(data.frame(x=igraph::V(g)$x, y=igraph::V(g)$y)),
   #   niter=niter
   # )
   #
   l <- qgraph::qgraph.layout.fruchtermanreingold(
     e, vcount = vcount(g),
-    weights=E(g)$value,
+    weights=igraph::E(g)$value,
     repulse.rad=(vcount(g)),
     #cool.exp = 0.5,
-    # init = as.matrix(data.frame(x=V(g)$x, y=V(g)$y)),
+    # init = as.matrix(data.frame(x=igraph::V(g)$x, y=igraph::V(g)$y)),
     niter=niter,
     #max.delta = vcount(g)/2
   )
@@ -444,21 +443,21 @@ ModuleCorrNetwork <- function(
   temp <- ggplot(plot_df, aes(x=value, y=value, color=value)) +
     geom_point() + scale_color_gradient2(high='darkorchid1', mid='white', low='seagreen', midpoint=0)
   temp <- ggplot_build(temp)
-  E(g)$color <- temp$data[[1]]$colour[1:nrow(cor_df)]
+  igraph::E(g)$color <- temp$data[[1]]$colour[1:nrow(cor_df)]
 
   # label the vertices?
-  if(label_vertices){labels <- V(g)$name} else{labels <- NA}
+  if(label_vertices){labels <- igraph::V(g)$name} else{labels <- NA}
 
   # vertex_frame
-  if(vertex_frame){frame_color <- 'black'} else{frame_color <- V(g)$color}
+  if(vertex_frame){frame_color <- 'black'} else{frame_color <- igraph::V(g)$color}
 
   # plot the graph
   plot(
     g, layout=l,
-    edge.color=E(g)$color,
+    edge.color=igraph::E(g)$color,
     edge.curved=0,
-    edge.width=abs(E(g)$value) * edge_scale,
-    vertex.color=V(g)$color,
+    edge.width=abs(igraph::E(g)$value) * edge_scale,
+    vertex.color=igraph::V(g)$color,
     vertex.frame.color=frame_color,
     vertex.label=labels,
     vertex.label.family='Helvetica',
@@ -1082,16 +1081,16 @@ HubGeneNetworkPlot <- function(
 
   plot(
     g, layout=l,
-    edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
-    vertex.size=V(g)$size,
+    edge.color=adjustcolor(igraph::E(g)$color, alpha.f=edge.alpha),
+    vertex.size=igraph::V(g)$size,
     edge.curved=0,
     edge.width=0.5,
-    vertex.color=V(g)$color,
-    vertex.frame.color=V(g)$color,
-    vertex.label=V(g)$label,
+    vertex.color=igraph::V(g)$color,
+    vertex.frame.color=igraph::V(g)$color,
+    vertex.label=igraph::V(g)$label,
     vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
     vertex.label.font = 3,
-    vertex.label.color = V(g)$fontcolor,
+    vertex.label.color = igraph::V(g)$fontcolor,
     vertex.label.cex=vertex.label.cex,
     ...
   )
@@ -1272,20 +1271,20 @@ ModuleUMAPPlot <- function(
   plot(
     g,
     layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
-    # edge.color=adjustcolor(E(g)$color, alpha.f=edge.alpha),
-    edge.color=adjustcolor(E(g)$color_alpha, alpha.f=edge.alpha),
-    vertex.size=V(g)$kME * 3,
+    # edge.color=adjustcolor(igraph::E(g)$color, alpha.f=edge.alpha),
+    edge.color=adjustcolor(igraph::E(g)$color_alpha, alpha.f=edge.alpha),
+    vertex.size=igraph::V(g)$kME * 3,
     edge.curved=0,
     edge.width=0.5,
-    vertex.color=V(g)$color,
-    vertex.label=V(g)$label,
+    vertex.color=igraph::V(g)$color,
+    vertex.label=igraph::V(g)$label,
     vertex.label.dist=1.1,
     vertex.label.degree=-pi/4,
     vertex.label.family='Helvetica', #vertex.label.font=vertex_df$font,
     vertex.label.font = 3,
-    vertex.label.color = V(g)$fontcolor,
+    vertex.label.color = igraph::V(g)$fontcolor,
     vertex.label.cex=0,
-    vertex.frame.color=V(g)$framecolor,
+    vertex.frame.color=igraph::V(g)$framecolor,
     margin=0
   )
 
@@ -2160,18 +2159,18 @@ ModuleTFNetwork <- function(
     edge.width=1,
     vertex.color='grey',
     vertex.label='',
-    edge.color=adjustcolor(E(g2)$color, alpha.f=edge.alpha),
+    edge.color=adjustcolor(igraph::E(g2)$color, alpha.f=edge.alpha),
   )
 
   plot(
     g1,
     layout = as.matrix(node_df[,c('UMAP1', 'UMAP2')]),
-    edge.color=adjustcolor(E(g1)$color),
-    vertex.size=V(g1)$size * size.scale,
+    edge.color=adjustcolor(igraph::E(g1)$color),
+    vertex.size=igraph::V(g1)$size * size.scale,
     edge.curved=0,
     edge.width=edge_df$value*2,
-    vertex.color=V(g1)$color,
-    vertex.label=V(g1)$name,
+    vertex.color=igraph::V(g1)$color,
+    vertex.label=igraph::V(g1)$name,
     vertex.label.dist=1.1,
     vertex.label.degree=-pi/4,
     vertex.label.family='Helvetica',

@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
       </span>
     </div>
 
@@ -148,11 +148,12 @@
 </h1></div>
 
 <p>hdWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct co-expression networks across multi-scale cellular and spatial hierarchies. hdWGNCA identifies robust modules of inerconnected genes, and provides context for these modules through various biological knowledge sources. hdWGCNA requires data formatted as <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA in single-cell data tutorial</a> or the <a href="https://smorabit.github.io/hdWGCNA/articles/ST_basics.html">hdWGCNA in spatial transcriptomics data tutorial</a> to get started.</p>
-<p><strong>Note:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to report bugs, ask for help, and to request potential enhancements.</p>
+<p><strong>Note about package development:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to report bugs, ask for help, and to request potential enhancements.</p>
+<p><strong>Note about Seurat v5:</strong> We plan to test the compatibility of hdWGCNA with<a href="https://satijalab.org/seurat/articles/get_started_v5.html" class="external-link">Seurat version 5</a>. with Seurat v5, but we have currently not updated hdWGCNA to work with Seurat v5. We strongly suggest using Seurat v4 at this time, or use v5 at your own risk.</p>
 <p>If you use hdWGCNA in your research, please cite the following papers in addition to the original WGCNA publication:</p>
 <ul>
-<li><a href="https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1" class="external-link">Morabito et al. bioRxiv 2022</a></li>
-<li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito &amp; Miyoshi et al. Nature Genetics 2021</a></li>
+<li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">Morabito et al., Cell Reports Methods (2023)</a></li>
+<li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito &amp; Miyoshi et al., Nature Genetics (2021)</a></li>
 </ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -168,7 +169,7 @@
 <li>
 <a href="https://www.bioconductor.org/" class="external-link">Bioconductor</a>, an R-based software ecosystem for bioinformatics and biostatistics.</li>
 <li>
-<a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a>, a general-purpose toolkit for single-cell data science.</li>
+<a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a>, a general-purpose toolkit for single-cell data science. We do not recommend using hdWGCNA with Seurat v5 at this time.</li>
 <li>
 <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a>, a package for co-expression network analysis.</li>
 <li>
@@ -192,9 +193,9 @@
 <div class="section level2">
 <h2 id="suggested-reading">Suggested Reading<a class="anchor" aria-label="anchor" href="#suggested-reading"></a>
 </h2>
-<p>Check out the hdWGCNA manuscript on bioRxiv, and our original description of applying WGCNA to single-nucleus RNA-seq data:</p>
+<p>Check out the paper describing hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data:</p>
 <ul>
-<li><a href="https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1" class="external-link">High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems</a></li>
+<li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data</a></li>
 <li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease</a></li>
 </ul>
 <p>For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis:</p>

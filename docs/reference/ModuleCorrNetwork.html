@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
       </span>
     </div>
 
@@ -207,17 +207,17 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertices = v_df)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     e &lt;- get.edgelist(g, name = FALSE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     l &lt;- qgraph::qgraph.layout.fruchtermanreingold(e, vcount = vcount(g), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         weights = E(g)$value, repulse.rad = (vcount(g)), niter = niter, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         weights = igraph::E(g)$value, repulse.rad = (vcount(g)), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         niter = niter, )</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- rbind(cor_df, data.frame(Var1 = c("x", "y"), Var2 = c("y", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "x"), value = c(-1, 1)))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     temp &lt;- ggplot(plot_df, aes(x = value, y = value, color = value)) + </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         geom_point() + scale_color_gradient2(high = "darkorchid1", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         mid = "white", low = "seagreen", midpoint = 0)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     temp &lt;- ggplot_build(temp)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     E(g)$color &lt;- temp$data[[1]]$colour[1:nrow(cor_df)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     igraph::E(g)$color &lt;- temp$data[[1]]$colour[1:nrow(cor_df)]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (label_vertices) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         labels &lt;- V(g)$name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         labels &lt;- igraph::V(g)$name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         labels &lt;- NA</span>
@@ -226,15 +226,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         frame_color &lt;- "black"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         frame_color &lt;- V(g)$color</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         frame_color &lt;- igraph::V(g)$color</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g, layout = l, edge.color = E(g)$color, edge.curved = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.width = abs(E(g)$value) * edge_scale, vertex.color = V(g)$color, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g, layout = l, edge.color = igraph::E(g)$color, edge.curved = 0, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.width = abs(igraph::E(g)$value) * edge_scale, vertex.color = igraph::V(g)$color, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = frame_color, vertex.label = labels, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.color = "black", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.cex = 0.5, vertex.size = vertex_size)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffe7cbdef60&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd4bbe56d80&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

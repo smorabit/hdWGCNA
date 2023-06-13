@@ -16,15 +16,16 @@ provides context for these modules through various biological knowledge sources.
 hdWGCNA requires data formatted as [Seurat](https://satijalab.org/seurat/index.html) objects,
 one of the most ubiquitous formats for single-cell data. Check out the [hdWGCNA in single-cell data tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) or the [hdWGCNA in spatial transcriptomics data tutorial](https://smorabit.github.io/hdWGCNA/articles/ST_basics.html) to get started.
 
-**Note:** hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to
+**Note about package development:** hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to
 write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
 to report bugs, ask for help, and to request potential enhancements.
 
+**Note about Seurat v5:** We plan to test the compatibility of hdWGCNA with[Seurat version 5](https://satijalab.org/seurat/articles/get_started_v5.html). with Seurat v5, but we have currently not updated hdWGCNA to work with Seurat v5. We strongly suggest using Seurat v4 at this time, or use v5 at your own risk.
+
 If you use hdWGCNA in your research, please cite the following papers in addition to the original WGCNA publication:
 
-* [Morabito et al. bioRxiv 2022](https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1)
-* [Morabito & Miyoshi et al. Nature Genetics 2021](https://doi.org/10.1038/s41588-021-00894-z)
-
+* [Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
+* [Morabito & Miyoshi et al., Nature Genetics (2021)](https://doi.org/10.1038/s41588-021-00894-z)
 
 
 ## Installation
@@ -43,7 +44,7 @@ conda activate hdWGCNA
 Next, open up R and install the required dependencies:
 
 * [Bioconductor](https://www.bioconductor.org/), an R-based software ecosystem for bioinformatics and biostatistics.
-* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science.
+* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science. We do not recommend using hdWGCNA with Seurat v5 at this time.
 * [WGCNA](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/), a package for co-expression network analysis.
 * [igraph](https://igraph.org/r/), a package for general network analysis and visualization.
 * [devtools](https://devtools.r-lib.org/), a package for package development in R.
@@ -68,9 +69,9 @@ devtools::install_github('smorabit/hdWGCNA', ref='dev')
 
 ## Suggested Reading
 
-Check out the hdWGCNA manuscript on bioRxiv, and our original description of applying WGCNA to single-nucleus RNA-seq data:
+Check out the paper describing hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data:
 
-* [High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems](https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1)
+* [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
 * [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z)
 
 

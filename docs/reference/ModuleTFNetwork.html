@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
       </span>
     </div>
 
@@ -240,18 +240,18 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertices = node_df)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g2, layout = as.matrix(node_df[, c("UMAP1", "UMAP2")]), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.size = 1, edge.curved = 0, edge.width = 1, vertex.color = "grey", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = "", edge.color = adjustcolor(E(g2)$color, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = "", edge.color = adjustcolor(igraph::E(g2)$color, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             alpha.f = edge.alpha), )</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g1, layout = as.matrix(node_df[, c("UMAP1", "UMAP2")]), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.color = adjustcolor(E(g1)$color), vertex.size = V(g1)$size * </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.color = adjustcolor(igraph::E(g1)$color), vertex.size = igraph::V(g1)$size * </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             size.scale, edge.curved = 0, edge.width = edge_df$value * </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             2, vertex.color = V(g1)$color, vertex.label = V(g1)$name, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             2, vertex.color = igraph::V(g1)$color, vertex.label = igraph::V(g1)$name, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = "black", vertex.label.cex = 0, vertex.frame.color = "black", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         margin = 0, edge.arrow.size = edge_df$value/2, add = TRUE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ffe84479778&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd4c3f1f6d0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
