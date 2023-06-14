@@ -4,7 +4,7 @@
 
 [![R](https://img.shields.io/github/r-package/v/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/tree/dev)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/issues)
-[![Publication](https://img.shields.io/badge/publication-bioRxiv-dodgerblue)](https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1)
+[![Publication](https://img.shields.io/badge/publication-Cell%20Rep%20Meth-%2300A1D7)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
 [![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/smorabit/hdWGCNA)
 [![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
 
@@ -20,7 +20,7 @@ one of the most ubiquitous formats for single-cell data. Check out the [hdWGCNA 
 write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
 to report bugs, ask for help, and to request potential enhancements.
 
-**Note about Seurat v5:** We plan to test the compatibility of hdWGCNA with[Seurat version 5](https://satijalab.org/seurat/articles/get_started_v5.html). with Seurat v5, but we have currently not updated hdWGCNA to work with Seurat v5. We strongly suggest using Seurat v4 at this time, or use v5 at your own risk.
+**Note about Seurat v5:** We plan to test the compatibility of hdWGCNA with [Seurat version 5](https://satijalab.org/seurat/articles/get_started_v5.html), but we have currently not updated hdWGCNA to work with Seurat v5. We strongly suggest using Seurat v4 at this time, or use v5 at your own risk.
 
 If you use hdWGCNA in your research, please cite the following papers in addition to the original WGCNA publication:
 
