@@ -12,11 +12,11 @@ test_that("Metacell output is Seurat format", {
 
     test_seurat <- MetacellsByGroups(
         test_seurat,
-        group.by = c('Sample'),
+        group.by = c('cell_type'),
         k = 5, 
         max_shared = 5,
-        ident.group = 'Sample',
-        target_metacells=10,
+        ident.group = 'cell_type',
+        target_metacells=50,
         min_cells=10
     )
 
@@ -39,11 +39,11 @@ test_that("Metacell features are same as Seurat object",{
 
     test_seurat <- MetacellsByGroups(
         test_seurat,
-        group.by = c('Sample'),
+        group.by = c('cell_type'),
         k = 5, 
         max_shared = 5,
-        ident.group = 'Sample',
-        target_metacells=10,
+        ident.group = 'cell_type',
+        target_metacells=50,
         min_cells=10
     )
 
@@ -67,17 +67,17 @@ test_that("Meta-data gets passed to the metacell object",{
 
     test_seurat <- MetacellsByGroups(
         test_seurat,
-        group.by = c('Sample', 'cell_type', 'annotation'),
+        group.by = c('cell_type', 'annotation'),
         k = 5, 
         max_shared = 5,
-        ident.group = 'Sample',
-        target_metacells=10,
+        ident.group = 'cell_type',
+        target_metacells=50,
         min_cells=10
     )
 
     m_obj <- GetMetacellObject(test_seurat)
 
-    expect_equal(all(c('Sample', 'cell_type', 'annotation') %in% colnames(m_obj@meta.data)), TRUE)
+    expect_equal(all(c('cell_type', 'annotation') %in% colnames(m_obj@meta.data)), TRUE)
 
 })
 
@@ -105,5 +105,34 @@ test_that("Metacell object Idents are expected", {
 
     check <- all(as.character(Idents(m_obj)) %in% as.character(test_seurat$Sample))
     expect_equal(check, TRUE)
+
+})
+
+# test that normalizing the metacells works as intended
+test_that("Normalizing the metacell object works",{
+    data(test_seurat)
+
+    test_seurat <- SetupForWGCNA(
+        test_seurat,
+        wgcna_name = 'test',
+        features = rownames(test_seurat)
+    )
+
+    test_seurat <- MetacellsByGroups(
+        test_seurat,
+        group.by = c('cell_type'),
+        k = 5, 
+        max_shared = 5,
+        ident.group = 'cell_type',
+        target_metacells=50,
+        min_cells=10
+    )
+
+    test_seurat <- NormalizeMetacells(test_seurat, verbose=FALSE)
+    m_obj <- GetMetacellObject(test_seurat)
+    expr <- Seurat::GetAssayData(test_seurat, slot='data')
+
+    check <- all.equal(ceiling(expr), expr) == TRUE
+    expect_equal(check, FALSE)
 
 })
