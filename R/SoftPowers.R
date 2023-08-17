@@ -2,40 +2,31 @@
 #' TestSoftPowers
 #'
 #' Compute the scale-free topology model fit for different soft power thresholds
-#'
+#' 
 #' @param seurat_obj A Seurat object
 #' @param powers numeric vector specifying soft powers to test
-#' @param use_metacells logical flag for whether to use the metacell expression matrix
 #' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
 #' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
-#' @param setDatExpr logical flag indicating whether to run setDatExpr.
-#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
-#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
-#' @param ... additional parameters passed to SetDatExpr
-#' @keywords scRNA-seq
+#' @param ... additional parameters passed to WGCNA::pickSoftThreshold
+#'
+#' @details 
+#' TestSoftPowers aims to find the optimal value of the "soft-power threshold" for co-expression network analysis. 
+#' For varying values of this soft_power parameter, this function assesses the scale-free topology model fit of the resulting network
+#' and the function also calculates other network statistics such as the connectivity. The user may also vary the type of network used and the correlation function.
+#' For downstream functions, the lowest soft_power that reaches a fit of 0.8 is selected for network construction, but the user may select their own values.
 #' @export
-#' @examples
-#' TestSoftPowers(pbmc)
 TestSoftPowers <- function(
   seurat_obj,
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
-  use_metacells = TRUE,
   networkType="signed",
   corFnc='bicor',
-  setDatExpr = FALSE,
-  group.by=NULL, group_name=NULL,
   ...
 ){
-
-  # add datExpr if not already added:
-  if(!("datExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
-    seurat_obj <- SetDatExpr(seurat_obj, use_metacells=use_metacells, group.by=group.by, group_name=group_name)
-  }
 
   # get datExpr
   datExpr <- GetDatExpr(seurat_obj)
 
-  # Call the network topology analysis function for each set in turn
+  # Call the network topology analysis function 
   powerTable = list(
     data = WGCNA::pickSoftThreshold(
       datExpr,
@@ -49,7 +40,6 @@ TestSoftPowers <- function(
 
   # set the power table in Seurat object:
   seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
-
   seurat_obj
 }
 

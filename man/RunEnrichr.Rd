@@ -9,6 +9,8 @@ RunEnrichr(
   dbs = c("GO_Biological_Process_2021", "GO_Cellular_Component_2021",
     "GO_Molecular_Function_2021"),
   max_genes = 100,
+  wait = TRUE,
+  wait_time = 5,
   wgcna_name = NULL,
   ...
 )
@@ -20,12 +22,13 @@ RunEnrichr(
 
 \item{max_genes}{Max number of genes to include per module, ranked by kME.}
 
+\item{wait}{logical indicating whether or not to wait some time between sending requests to the EnrichR server.}
+
+\item{wait_time}{the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.}
+
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \description{
 Run Enrichr gene set enrichment tests on hdWGCNA modules
-}
-\examples{
-RunEnrichr
 }
 \keyword{scRNA-seq}

@@ -177,7 +177,7 @@ FindMajorIsoforms <- function(
   # intersect with the markers table if it's provided:
   major_marker_list <- lapply(names(major_list), function(cur_group){
     cur_isos <- major_list[[cur_group]]
-    cur_genes <- unique(do.call(rbind, strsplit(cur_isos, '[.]'))[,1])
+    cur_genes <- unique(do.call(rbind, strsplit(cur_isos, isoform_delim))[,1])
     cur_genes <- subset(cluster_markers, cluster == cur_group & gene %in% cur_genes) %>% .$gene
     subset(iso_df, gene %in% cur_genes & iso %in% cur_isos) %>% .$iso
   })

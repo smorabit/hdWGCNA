@@ -111,7 +111,6 @@ test_that("use_metacells flag works", {
 })
 
 
-
 # test that group.by subsetting works as intended
 test_that("group.by subsetting works", {
 

@@ -2290,6 +2290,8 @@ PlotDMEsVolcano <- function(
   wgcna_name=NULL
 ){
 
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
   # remove NAs:
   DMEs <- na.omit(DMEs)
 

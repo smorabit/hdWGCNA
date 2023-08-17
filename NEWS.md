@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.20 (2023-08-17)
+## Added
+- None.
+
+## Changes
+- Dependency for tester pacakge.
+
 # hdWGCNA 0.2.19 (2023-06-13)
 ## Added
 - None.

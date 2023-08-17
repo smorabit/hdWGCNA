@@ -31,6 +31,7 @@ SelectNetworkGenes <- function(
   if(!(gene_select %in% c("variable", "fraction", "all", "custom"))){
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
+  
 
   # get assay
   assay <- DefaultAssay(seurat_obj)
@@ -93,6 +94,13 @@ SelectNetworkGenes <- function(
    # all selected features should be present in the Seurat object:
     if(!all(gene_list %in% rownames(seurat_obj))){
       stop("Some selected features are not found in rownames(seurat_obj).")
+    }
+
+    # check the data type for gene list:
+    if(!is.null(gene_list)){
+      if(class(gene_list) != 'character'){
+        stop(paste0("Invalid type for gene_list, must be a character vector."))
+      }
     }
   }
 

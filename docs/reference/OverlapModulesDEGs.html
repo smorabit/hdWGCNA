@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
       </span>
     </div>
 
@@ -142,64 +142,6 @@
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">OverlapModulesDEGs</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, deg_df, fc_cutoff = 0.5, group_col = "cluster", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name = NULL, ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     deg_df$group &lt;- deg_df[, group_col]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cell_groups &lt;- deg_df$group %&gt;% unique</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (fc_cutoff &gt;= 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         deg_df &lt;- subset(deg_df, avg_log2FC &gt;= fc_cutoff)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         deg_df &lt;- subset(deg_df, avg_log2FC &lt;= fc_cutoff)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         deg_df$avg_log2FC &lt;- -1 * deg_df$avg_log2FC</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         fc_cutoff &lt;- -1 * fc_cutoff</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     genome.size &lt;- nrow(seurat_obj)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df &lt;- do.call(rbind, lapply(mods, function(cur_mod) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_module_genes &lt;- modules %&gt;% subset(module == cur_mod) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             .$gene_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_overlap_df &lt;- do.call(rbind, lapply(cell_groups, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             function(cur_group) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_DEGs &lt;- deg_df %&gt;% subset(group == cur_group &amp; </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   p_val_adj &lt;= 0.05 &amp; avg_log2FC &gt; fc_cutoff) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   .$gene</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_overlap &lt;- testGeneOverlap(newGeneOverlap(cur_module_genes, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   cur_DEGs, genome.size = genome.size))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   length(cur_overlap@intersection))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             })) %&gt;% as.data.frame</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         colnames(cur_overlap_df) &lt;- c("odds_ratio", "pval", "Jaccard", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             "size_intersection")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_overlap_df$module &lt;- cur_mod</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_overlap_df$group &lt;- cell_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_overlap_df$color &lt;- modules %&gt;% subset(module == </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_mod) %&gt;% .$color %&gt;% unique</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_overlap_df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df$fdr &lt;- p.adjust(overlap_df$pval, method = "fdr")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df$Significance &lt;- gtools::stars.pval(overlap_df$fdr)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df$Significance &lt;- ifelse(overlap_df$Significance == </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         ".", "", overlap_df$Significance)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df$module &lt;- factor(overlap_df$module, levels = mods)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df &lt;- overlap_df %&gt;% dplyr::select(c(module, group, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         color, odds_ratio, pval, fdr, Significance, Jaccard, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         size_intersection))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     overlap_df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd4dbaf2ac0&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

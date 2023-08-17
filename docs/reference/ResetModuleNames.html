@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
       </span>
     </div>
 
@@ -118,7 +118,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ResetModuleNames</span><span class="op">(</span><span class="va">seurat_obj</span>, new_name <span class="op">=</span> <span class="st">"M"</span>, wgcna_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ResetModuleNames</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  new_name <span class="op">=</span> <span class="st">"M"</span>,
+  reset_levels <span class="op">=</span> <span class="cn">FALSE</span>,
+  wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">

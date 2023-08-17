@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.2.19
+Version: 0.2.20
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
@@ -15,7 +15,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://smorabit.github.io/hdWGCNA/
-Imports: WGCNA, Seurat, Matrix, harmony, igraph, ggplot2, dplyr
+Imports: WGCNA, Seurat, Matrix, harmony, igraph, ggplot2, dplyr, tester, qlcMatrix
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
       </span>
     </div>
 
@@ -168,6 +168,7 @@
 </ul>
 <p>An example of running the prerequisite data processing steps can be found in the <a href="https://satijalab.org/seurat/articles/pbmc3k_tutorial.html" class="external-link">Seurat Guided Clustering Tutorial</a>.</p>
 <p>Additionally, there are a lot of WGCNA-specific terminology and acronyms, which are all clarified in <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559/tables/1" class="external-link">this table</a>.</p>
+<p><strong><em>Important note:</em></strong> We do not re-generate these tutorial figures after each update of hdWGCNA, so the figures that you generate will be slightly different than what are shown here if you are following along with the same dataset.</p>
 <div class="section level3">
 <h3 id="download-the-tutorial-data">Download the tutorial data<a class="anchor" aria-label="anchor" href="#download-the-tutorial-data"></a>
 </h3>
@@ -240,9 +241,9 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <div class="section level2">
 <h2 id="construct-metacells">Construct metacells<a class="anchor" aria-label="anchor" href="#construct-metacells"></a>
 </h2>
-<p>After we have set up our Seurat object, the first step in running the hdWGCNA pipeine in hdWGCNA is to construct metacells from the single-cell dataset. Briefly, metacells are aggregates of small groups of similar cells originating from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to identify groups of similar cells to aggregate, and then the average or summed expression of these cells is computed, thus yielding a metacell gene expression matrix. The sparsity of the metacell expression matrix is considerably reduced when compared to the original expression matrix, and therefore it is preferable to use. We were originally motivated to use metacells in place of the original single cells because correlation network approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cell epigenomic approaches, such as <a href="https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1" class="external-link">Cicero</a>, employ a similar metacell aggregation approach prior to constructing co-accessibility networks.</p>
+<p>After we have set up our Seurat object, the first step in running the hdWGCNA pipeine in hdWGCNA is to construct metacells from the single-cell dataset. Briefly, metacells are aggregates of small groups of similar cells originating from the same biological sample of origin. The k-Nearest Neighbors (KNN) algorithm is used to identify groups of similar cells to aggregate, and then the average or summed expression of these cells is computed, thus yielding a metacell gene expression matrix. The sparsity of the metacell expression matrix is considerably reduced when compared to the original expression matrix, and therefore it is preferable to use. We were originally motivated to use metacells in place of the original single cells because correlation network approaches such as WGCNA are sensitive to data sparsity.</p>
 <p>hdWGCNA includes a function <code>MetacellsByGroups</code> to construct metacell expression matrices given a single-cell dataset. This function constructs a new Seurat object for the metacell dataset which is stored internally in the hdWGCNA experiment. The <code>group.by</code> parameter determines which groups metacells will be constructed in. We only want to construct metacells from cells that came from the same biological sample of origin, so it is critical to pass that information to hdWGCNA via the <code>group.by</code> parameter. Additionally, we usually construct metacells for each cell type separately. Thus, in this example, we are grouping by <code>Sample</code> and <code>cell_type</code> to achieve the desired result.</p>
-<p>The number of cells to be aggregated <code>k</code> should be tuned based on the size of the input dataset, in general a lower number for <code>k</code> can be used for small datasets. We generally use <code>k</code> values between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from 890 to 8,188 in each biological sample, and here we used <code>k=25</code>. The amount of allowable overlap between metacells can be tuned using the <code>max_shared</code> argument.</p>
+<p>The number of cells to be aggregated <code>k</code> should be tuned based on the size of the input dataset, in general a lower number for <code>k</code> can be used for small datasets. We generally use <code>k</code> values between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from 890 to 8,188 in each biological sample, and here we used <code>k=25</code>. The amount of allowable overlap between metacells can be tuned using the <code>max_shared</code> argument. There should be a range of K values that are suitable for reducing the sparsity while retaining cellular heterogeneity for a given dataset, rather than a single optimal value.</p>
 <p><strong><em>Note:</em></strong> we have found that the metacell aggregation approach does not yield good results for extremely underrepresented cell types. For example, in this dataset, the brain vascular cells (pericytes and endothelial cells) were the least represented, and we have excluded them from this analysis. <code>MetacellsByGroups</code> has a parameter <code>min_cells</code> to exclude groups that are smaller than a specified number of cells. Errors are likely to arise if the selected value for <code>min_cells</code> is too low.</p>
 <p>Here we construct metacells and normalize the resulting expression matrix using the following code:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -277,9 +278,7 @@ Optional: Process the Metacell Seurat Object
 
 <span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
 <p><img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600"></p>
-</details><summary>
-Optional: Process the Metacell Seurat Object
-</summary>
+</details><summary></summary>
 </div>
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>

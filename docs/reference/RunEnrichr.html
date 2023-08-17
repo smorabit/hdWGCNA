@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
       </span>
     </div>
 
@@ -123,6 +123,8 @@
   dbs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GO_Biological_Process_2021"</span>, <span class="st">"GO_Cellular_Component_2021"</span>,
     <span class="st">"GO_Molecular_Function_2021"</span><span class="op">)</span>,
   max_genes <span class="op">=</span> <span class="fl">100</span>,
+  wait <span class="op">=</span> <span class="cn">TRUE</span>,
+  wait_time <span class="op">=</span> <span class="fl">5</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -136,64 +138,14 @@
 <dd><p>character vector of EnrichR databases</p></dd>
 <dt>max_genes</dt>
 <dd><p>Max number of genes to include per module, ranked by kME.</p></dd>
+<dt>wait</dt>
+<dd><p>logical indicating whether or not to wait some time between sending requests to the EnrichR server.</p></dd>
+<dt>wait_time</dt>
+<dd><p>the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">RunEnrichr</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, dbs = c("GO_Biological_Process_2021", "GO_Cellular_Component_2021", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "GO_Molecular_Function_2021"), max_genes = 100, wait = TRUE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wait_time = 5, wgcna_name = NULL, ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.numeric(wait_time)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("wait_time must be a numeric."))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (wait_time &gt; 60 | wait_time &lt; 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid value selected for wait_time, must be greater than 0 and less than 60."))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     combined_output &lt;- data.frame()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:length(mods)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_mod &lt;- mods[i]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (max_genes != Inf) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_info &lt;- subset(modules, module == cur_mod)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_info &lt;- cur_info[, c("gene_name", paste0("kME_", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_mod))]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_genes &lt;- top_n(cur_info, max_genes) %&gt;% .$gene_name %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 as.character</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_genes &lt;- subset(modules, module == cur_mod) %&gt;% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 .$gene_name %&gt;% as.character</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         enriched &lt;- enrichR::enrichr(cur_genes, dbs)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (wait) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Sys.sleep(wait_time)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         for (db in names(enriched)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_df &lt;- enriched[[db]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             if (nrow(cur_df) &gt; 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_df$db &lt;- db</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 cur_df$module &lt;- cur_mod</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 combined_output &lt;- rbind(combined_output, cur_df)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetEnrichrTable(seurat_obj, combined_output, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd4a1389558&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

@@ -27,7 +27,4 @@ OverlapModulesDEGs(
 \description{
 Performs Fisher's Exact Test for overlap between DEGs and hdWGCNA modules.
 }
-\examples{
-OverlapModulesDEGs
-}
 \keyword{scRNA-seq}

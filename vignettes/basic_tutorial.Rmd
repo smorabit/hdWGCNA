@@ -34,6 +34,10 @@ the [Seurat Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pb
 Additionally, there are a lot of WGCNA-specific terminology and acronyms, which
 are all clarified in [this table](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559/tables/1).
 
+***Important note:*** We do not re-generate these tutorial figures after each update of hdWGCNA, so the 
+figures that you generate will be slightly different than what are shown here if you are following along with the same dataset. 
+
+
 ## Download the tutorial data
 
 For the purpose of this tutorial, we provide a processed Seurat object of the
@@ -139,9 +143,7 @@ is computed, thus yielding a metacell gene expression matrix. The sparsity of th
 metacell expression matrix is considerably reduced when compared to the original
 expression matrix, and therefore it is preferable to use. We were originally motivated
 to use metacells in place of the original single cells because correlation network
-approaches such as WGCNA are sensitive to data sparsity. Furthermore, single-cell
-epigenomic approaches, such as [Cicero](https://www.cell.com/molecular-cell/pdfExtended/S1097-2765(18)30547-1), employ a similar metacell aggregation approach prior to constructing co-accessibility
-networks.
+approaches such as WGCNA are sensitive to data sparsity.
 
 hdWGCNA includes a function `MetacellsByGroups` to construct metacell expression
 matrices given a single-cell dataset. This function constructs a new Seurat object for the metacell dataset
@@ -156,6 +158,8 @@ The number of cells to be aggregated `k` should be tuned based on the size of th
 dataset, in general a lower number for `k` can be used for small datasets. We generally use `k` values
 between 20 and 75. The dataset used for this tutorial has 40,039 cells, ranging from
 890 to 8,188 in each biological sample, and here we used `k=25`. The amount of allowable overlap between metacells can be tuned using the `max_shared` argument.
+There should be a range of K values that are suitable for reducing the sparsity while retaining cellular heterogeneity for a given dataset, 
+rather than a single optimal value. 
 
 ***Note:*** we have found that the metacell aggregation approach does not yield good results for
 extremely underrepresented cell types. For example, in this dataset, the brain vascular
@@ -216,7 +220,7 @@ p1 | p2
 
 <img src="figures/basic_tutorial/umap_metacells.png" width="600" height="600">
 
-</details> <summary> Optional: Process the Metacell Seurat Object </summary>
+</details> <summary> </summary>
 
 
 # Co-expression network analysis

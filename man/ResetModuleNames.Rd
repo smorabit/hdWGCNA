@@ -4,7 +4,12 @@
 \alias{ResetModuleNames}
 \title{ResetModuleNames}
 \usage{
-ResetModuleNames(seurat_obj, new_name = "M", wgcna_name = NULL)
+ResetModuleNames(
+  seurat_obj,
+  new_name = "M",
+  reset_levels = FALSE,
+  wgcna_name = NULL
+)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}

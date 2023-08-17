@@ -33,7 +33,7 @@ seurat_obj with the an updated modules table for the selected wgcna experiment
 Reassigns features to different modules
 }
 \details{
-ReassignModules reassigs features with negative kMEs in their assigned module to the
+ReassignModules reassigns features with negative kMEs in their assigned module to the
 module that had the highest kME for that feature. Alternatively, this function
 can manually assign features to different modules, which can be helpful if
 certain genes of interest are assigned to the grey module. We generally do not

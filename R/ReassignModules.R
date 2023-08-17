@@ -11,7 +11,7 @@
 #' @param ignore logical indicating whether or not to ignore error message about reassigning non-grey features
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
-#' ReassignModules reassigs features with negative kMEs in their assigned module to the
+#' ReassignModules reassigns features with negative kMEs in their assigned module to the
 #' module that had the highest kME for that feature. Alternatively, this function
 #' can manually assign features to different modules, which can be helpful if
 #' certain genes of interest are assigned to the grey module. We generally do not
