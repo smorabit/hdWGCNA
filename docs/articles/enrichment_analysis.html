@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.21</span>
       </span>
     </div>
 
@@ -199,7 +199,7 @@
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunEnrichr.html">RunEnrichr</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   dbs<span class="op">=</span><span class="va">dbs</span>, <span class="co"># character vector of enrichr databases to test</span>
-  max_genes <span class="op">=</span> <span class="fl">100</span> <span class="co"># number of genes per module to test</span>
+  max_genes <span class="op">=</span> <span class="fl">100</span> <span class="co"># number of genes per module to test. use max_genes = Inf to choose all genes!</span>
 <span class="op">)</span>
 
 <span class="co"># retrieve the output table</span>

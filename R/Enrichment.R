@@ -23,6 +23,9 @@ RunEnrichr <- function(
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
   # check wait_time 
   if(!is.numeric(wait_time)){

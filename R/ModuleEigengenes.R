@@ -185,6 +185,9 @@ ModuleEigengenes <- function(
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
   # are we going to run Harmony?
   harmonized = !is.null(group.by.vars)
@@ -327,6 +330,9 @@ ModuleExprScore <- function(
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -388,7 +394,10 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
+  
   # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
   mods <- levels(modules$module)

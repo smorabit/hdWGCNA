@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.20</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.21</span>
       </span>
     </div>
 
@@ -157,6 +157,7 @@
     
 <p>In this tutorial, we demonstrate how to perform differential module eigengene (DME) analysis, revealing modules that are up- or down-regulated in given groups of cells.</p>
 <p>First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.</p>
+<p>NOTE: ADD a loop for the findDMEs results!!! and maybe add the heatmap code?</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
@@ -182,7 +183,7 @@
 <div class="section level2">
 <h2 id="dme-analysis-comparing-two-groups">DME analysis comparing two groups<a class="anchor" aria-label="anchor" href="#dme-analysis-comparing-two-groups"></a>
 </h2>
-<p>Here we discuss how to perform DME testing between two different groups. We use the hdWGCNA function <code>FindDMEs</code>, which is a special case of the Seurat function <code>FindMarkers</code>. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user’s discretion with the <code>test.use</code> parameter.</p>
+<p>Here we discuss how to perform DME testing between two different groups. We use the hdWGCNA function <code>FindDMEs</code>, which is similar to the Seurat function <code>FindMarkers</code>. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user’s discretion with the <code>test.use</code> parameter.</p>
 <p>Since the tutorial dataset only contains control brain samples, we will use sex to define our two groups. <code>FindDMEs</code> requires a list of barcodes for group1 and for group2. Further, we are only going to compare cells from the INH cluster since that is the group that we performed network analysis on.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
@@ -229,7 +230,7 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
   comparison <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"group1_vs_control"</span>, <span class="st">"group2_vs_control"</span><span class="op">)</span>,  
   pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span>
 <span class="op">)</span> </code></pre></div>
-<p>Next we use <code>PlotDMEsVolcano</code> to make a volcano plot to show the effect size and the significance level together.</p>
+<p>Alternatively, we can use <code>PlotDMEsVolcano</code> to make a volcano plot to show the effect size and the significance level together.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/PlotDMEsVolcano.html">PlotDMEsVolcano</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -237,12 +238,93 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
   wgcna_name <span class="op">=</span> <span class="st">'INH'</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/DMEs/test_DME_volcano.png" width="800" height="900"></p>
+<div class="section level3">
+<h3 id="looping-through-multiple-clusters">Looping through multiple clusters<a class="anchor" aria-label="anchor" href="#looping-through-multiple-clusters"></a>
+</h3>
+<p>We can run DME analysis in a loop to perform the comparison in multiple groups. Here we will loop through the 5 INH subclusters and run <code>FindDMEs</code> in each cluster.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># list of clusters to loop through</span>
+<span class="va">clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"INH1 VIP+"</span>, <span class="st">"INH2 PVALB+"</span>, <span class="st">"INH3 SST+"</span>, <span class="st">'INH4 LAMP5+'</span>, <span class="st">"INH5 PVALB+"</span><span class="op">)</span>
+
+<span class="co"># set up an empty dataframe for the DMEs</span>
+<span class="va">DMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># loop through the clusters</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">cur_cluster</span> <span class="kw">in</span> <span class="va">clusters</span><span class="op">)</span><span class="op">{</span>
+
+  <span class="co"># identify barcodes for group1 and group2 in eadh cluster</span>
+  <span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">annotation</span> <span class="op">==</span> <span class="va">cur_cluster</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
+  <span class="va">group2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">annotation</span> <span class="op">==</span> <span class="va">cur_cluster</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
+
+  <span class="co"># run the DME test</span>
+  <span class="va">cur_DMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/FindDMEs.html">FindDMEs</a></span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    barcodes1 <span class="op">=</span> <span class="va">group1</span>,
+    barcodes2 <span class="op">=</span> <span class="va">group2</span>,
+    test.use<span class="op">=</span><span class="st">'wilcox'</span>,
+    pseudocount.use<span class="op">=</span><span class="fl">0.01</span>, <span class="co"># we can also change the pseudocount with this param</span>
+    wgcna_name <span class="op">=</span> <span class="st">'INH'</span>
+  <span class="op">)</span>
+
+  <span class="co"># add the cluster info to the table</span>
+  <span class="va">cur_DMEs</span><span class="op">$</span><span class="va">cluster</span> <span class="op">&lt;-</span> <span class="va">cur_cluster</span>
+
+  <span class="co"># append the table</span>
+  <span class="va">DMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">DMEs</span>, <span class="va">cur_DMEs</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
+<p>Here we will use ggplot2 to make a heatmap showing the DME effect sizes. Since we are just using ggplot2 here you can easily customize this heatmap to suit your needs.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the modules table:</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
+
+<span class="co"># make a copy of the DME table for plotting</span>
+<span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="va">DMEs</span>
+
+<span class="co"># set the factor level for the modules so they plot in the right order:</span>
+<span class="va">plot_df</span><span class="op">$</span><span class="va">module</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>, levels<span class="op">=</span><span class="va">mods</span><span class="op">)</span>
+
+<span class="co"># set a min/max threshold for plotting</span>
+<span class="va">maxval</span> <span class="op">&lt;-</span> <span class="fl">0.5</span>; <span class="va">minval</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.5</span>
+<span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span> <span class="op">&gt;</span> <span class="va">maxval</span>, <span class="va">maxval</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span><span class="op">)</span>
+<span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span> <span class="op">&lt;</span> <span class="va">minval</span>, <span class="va">minval</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span><span class="op">)</span>
+
+<span class="co"># add significance levels</span>
+<span class="va">plot_df</span><span class="op">$</span><span class="va">Significance</span> <span class="op">&lt;-</span> <span class="fu">gtools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gtools/man/stars.pval.html" class="external-link">stars.pval</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">p_val_adj</span><span class="op">)</span>
+
+<span class="co"># change the text color to make it easier to see </span>
+<span class="va">plot_df</span><span class="op">$</span><span class="va">textcolor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">avg_log2FC</span> <span class="op">&gt;</span> <span class="fl">0.2</span>, <span class="st">'black'</span>, <span class="st">'white'</span><span class="op">)</span>
+
+<span class="co"># make the heatmap with geom_tile</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">plot_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y<span class="op">=</span><span class="va">cluster</span>, x<span class="op">=</span><span class="va">module</span>, fill<span class="op">=</span><span class="va">avg_log2FC</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> 
+
+<span class="co"># add the significance levels</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">plot_df</span><span class="op">$</span><span class="va">Significance</span>, color<span class="op">=</span><span class="va">plot_df</span><span class="op">$</span><span class="va">textcolor</span><span class="op">)</span> 
+
+<span class="co"># customize the color and theme of the plot</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low<span class="op">=</span><span class="st">'purple'</span>, mid<span class="op">=</span><span class="st">'black'</span>, high<span class="op">=</span><span class="st">'yellow'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
+    panel.border <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill<span class="op">=</span><span class="cn">NA</span>, color<span class="op">=</span><span class="st">'black'</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,
+    axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
+    axis.line.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
+    plot.margin<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">margin</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/DMEs/test_DME_heatmap.png" width="800" height="400"></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="one-versus-all-dme-analysis">One-versus-all DME analysis<a class="anchor" aria-label="anchor" href="#one-versus-all-dme-analysis"></a>
 </h2>
 <p>Similar to the Seurat function <code>FindAllMarkers</code>, we can perform a one-versus-all DME test using the function <code>FindAllDMEs</code> when specifying a column to group cells. Here we will <code>group.by</code> each cell type for the one-versus-all test.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">group.by</span> <span class="op">=</span> <span class="st">'cell_type'</span>
 
 <span class="va">DMEs_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/FindAllDMEs.html">FindAllDMEs</a></span><span class="op">(</span>
@@ -261,7 +343,7 @@ EX.INH-M4     0   1.978553 0.910 0.246         0 INH-M4    EX
 EX.INH-M5     0   2.447565 0.865 0.185         0 INH-M5    EX
 EX.INH-M6     0   2.448315 0.877 0.209         0 INH-M6    EX</code></pre>
 <p>Now we can plot the results with <code>PlotDMEsVolcano</code></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotDMEsVolcano.html">PlotDMEsVolcano</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   <span class="va">DMEs_all</span>,

@@ -33,9 +33,14 @@ ModulePreservation <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(is.null(wgcna_name_ref)){wgcna_name_ref <- seurat_ref@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
-  print('Setup datasets')
+  if(is.null(wgcna_name_ref)){wgcna_name_ref <- seurat_ref@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_ref, wgcna_name_ref)){
+    stop(paste0("Invalid wgcna_name_ref supplied: ", wgcna_name_ref))
+  }  
 
   # get datExpr for reference and query:
   datExpr_ref <- GetDatExpr(seurat_ref, wgcna_name_ref)
@@ -59,13 +64,13 @@ ModulePreservation <- function(
   )
   ref_modules <- list(ref = GetModules(seurat_ref)$module)
 
-  print('ref:')
-  print(dim(datExpr_ref))
-  print('query:')
-  print(dim(datExpr_query))
+  # print('ref:')
+  # print(dim(datExpr_ref))
+  # print('query:')
+  # print(dim(datExpr_query))
 
-  print('Run Module Preservation')
-  print(ref_modules)
+  # print('Run Module Preservation')
+  # print(ref_modules)
 
   # run the module preservation test:
   mp <- WGCNA::modulePreservation(

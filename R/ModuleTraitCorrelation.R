@@ -27,6 +27,9 @@ ModuleTraitCorrelation <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
   # get MEs, module data from seurat object
   if(features == 'hMEs'){

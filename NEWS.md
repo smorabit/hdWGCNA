@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.21 (2023-08-31)
+## Added
+- Additional checks for wgcna_name in several functions.
+- New section to the DME tutorial to show how to run it in a loop for multiple clusters.
+
+## Changes
+- None.
+
 # hdWGCNA 0.2.20 (2023-08-17)
 ## Added
 - None.

@@ -73,7 +73,7 @@ dbs <- c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular
 seurat_obj <- RunEnrichr(
   seurat_obj,
   dbs=dbs, # character vector of enrichr databases to test
-  max_genes = 100 # number of genes per module to test
+  max_genes = 100 # number of genes per module to test. use max_genes = Inf to choose all genes!
 )
 
 # retrieve the output table

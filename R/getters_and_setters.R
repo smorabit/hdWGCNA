@@ -30,6 +30,24 @@ GetActiveWGCNA <- function(seurat_obj){
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]
 }
 
+#' GetActiveWGCNAName
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+GetActiveWGCNAName <- function(seurat_obj){
+  seurat_obj@misc$active_wgcna
+}
+
+#' CheckWGCNAName
+#'
+#' @param seurat_obj A Seurat object
+#' @keywords scRNA-seq
+#' @export
+CheckWGCNAName <- function(seurat_obj, wgcna_name){
+  wgcna_name %in% names(seurat_obj@misc)
+}
+
 # get any WGCNA data, but by default get the active
 GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 

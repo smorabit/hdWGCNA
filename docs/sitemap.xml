@@ -85,6 +85,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/reference/BinPseudotime.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/CheckWGCNAName.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/ComputeModuleEigengene.html</loc>
   </url>
   <url>
@@ -122,6 +125,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNA.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNAName.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetAvgModuleExpr.html</loc>

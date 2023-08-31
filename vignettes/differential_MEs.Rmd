@@ -13,6 +13,9 @@ In this tutorial, we demonstrate how to perform differential module eigengene (D
 
 First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.
 
+NOTE: ADD a loop for the findDMEs results!!! and maybe add the heatmap code?
+
+
 ```{r eval=FALSE}
 
 # single-cell analysis package
@@ -42,7 +45,7 @@ seurat_obj <- readRDS('Zhou_2020_hdWGCNA.rds')
 ## DME analysis comparing two groups
 
 Here we discuss how to perform DME testing between two different groups. We
-use the hdWGCNA function `FindDMEs`, which is a special case of the Seurat function
+use the hdWGCNA function `FindDMEs`, which is similar to the Seurat function
 `FindMarkers`. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user's discretion
 with the `test.use` parameter.
 
@@ -136,7 +139,7 @@ dev.off()
 ```
 
 
-Next we use `PlotDMEsVolcano` to make a volcano plot to show the effect size and the significance level together.
+Alternatively, we can use `PlotDMEsVolcano` to make a volcano plot to show the effect size and the significance level together.
 
 ```{r eval=FALSE}
 
@@ -162,6 +165,111 @@ dev.off()
 ```
 
 <img src="figures/DMEs/test_DME_volcano.png" width="800" height="900">
+
+
+### Looping through multiple clusters
+
+We can run DME analysis in a loop to perform the comparison in multiple groups. Here we will 
+loop through the 5 INH subclusters and run `FindDMEs` in each cluster. 
+
+```{r eval=FALSE}
+
+# list of clusters to loop through
+clusters <- c("INH1 VIP+", "INH2 PVALB+", "INH3 SST+", 'INH4 LAMP5+', "INH5 PVALB+")
+
+# set up an empty dataframe for the DMEs
+DMEs <- data.frame()
+
+# loop through the clusters
+for(cur_cluster in clusters){
+
+  # identify barcodes for group1 and group2 in eadh cluster
+  group1 <- seurat_obj@meta.data %>% subset(annotation == cur_cluster & msex == 0) %>% rownames
+  group2 <- seurat_obj@meta.data %>% subset(annotation == cur_cluster & msex != 0) %>% rownames
+
+  # run the DME test
+  cur_DMEs <- FindDMEs(
+    seurat_obj,
+    barcodes1 = group1,
+    barcodes2 = group2,
+    test.use='wilcox',
+    pseudocount.use=0.01, # we can also change the pseudocount with this param
+    wgcna_name = 'INH'
+  )
+
+  # add the cluster info to the table
+  cur_DMEs$cluster <- cur_cluster
+
+  # append the table
+  DMEs <- rbind(DMEs, cur_DMEs)
+}
+
+```
+
+Here we will use ggplot2 to make a heatmap showing the DME effect sizes.
+Since we are just using ggplot2 here you can easily customize this heatmap to 
+suit your needs.
+
+```{r eval=FALSE}
+
+# get the modules table:
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module); mods <- mods[mods != 'grey']
+
+# make a copy of the DME table for plotting
+plot_df <- DMEs
+
+# set the factor level for the modules so they plot in the right order:
+plot_df$module <- factor(as.character(plot_df$module), levels=mods)
+
+# set a min/max threshold for plotting
+maxval <- 0.5; minval <- -0.5
+plot_df$avg_log2FC <- ifelse(plot_df$avg_log2FC > maxval, maxval, plot_df$avg_log2FC)
+plot_df$avg_log2FC <- ifelse(plot_df$avg_log2FC < minval, minval, plot_df$avg_log2FC)
+
+# add significance levels
+plot_df$Significance <- gtools::stars.pval(plot_df$p_val_adj)
+
+# change the text color to make it easier to see 
+plot_df$textcolor <- ifelse(plot_df$avg_log2FC > 0.2, 'black', 'white')
+
+# make the heatmap with geom_tile
+p <- plot_df %>% 
+  ggplot(aes(y=cluster, x=module, fill=avg_log2FC)) +
+  geom_tile() 
+
+# add the significance levels
+p <- p + 
+  geom_text(label=plot_df$Significance, color=plot_df$textcolor) 
+
+# customize the color and theme of the plot
+p <- p + 
+  scale_fill_gradient2(low='purple', mid='black', high='yellow') +
+  RotatedAxis() +
+  theme(
+    panel.border = element_rect(fill=NA, color='black', size=1),
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    plot.margin=margin(0,0,0,0)
+  ) + xlab('') + ylab('') +
+  coord_equal()
+
+p
+
+```
+
+```{r eval=FALSE, echo=FALSE}
+
+# Plot the result
+png(paste0(fig_dir, 'test_DME_heatmap.png'),height=4, width=8, units='in', res=400)
+p 
+dev.off()
+
+```
+
+<img src="figures/DMEs/test_DME_heatmap.png" width="800" height="400">
+
+
 
 ## One-versus-all DME analysis
 
