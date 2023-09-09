@@ -2,13 +2,13 @@ citHeader("To cite hdWGCNA in publications, please use:")
 
 citEntry(
   entry    = "article",
-  title    = "High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems",
+  title    = "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.",
   author   = "Samuel Morabito, Fairlie Reese, Negin Rahimzadeh, Emily Miyoshi, Vivek Swarup",
-  journal  = "bioRxiv",
-  year     = "2022",
+  journal  = "Cell reports Methods",
+  year     = "2023",
   url      = "https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1",
   textVersion = paste(
-    "Morabito et al. High dimensional co-expression networks enable discovery of transcriptomic drivers in complex biological systems. bioRxiv (2022) [hdWGCNA]"
+    "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data. Cell Reports Methods (2023) [hdWGCNA]"
   )
 )
 
