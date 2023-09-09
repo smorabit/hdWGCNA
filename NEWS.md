@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.22 (2023-09-08)
+## Added
+- New tutorial for hdWGCNA with pseudobulk data, including some new functions like `ConstructPseudobulk`. 
+
+## Changes
+- Updated `SetDatExpr` and `SetMultiExpr` to use a pseudobulk expression matrix.
+
 # hdWGCNA 0.2.21 (2023-08-31)
 ## Added
 - Additional checks for wgcna_name in several functions.

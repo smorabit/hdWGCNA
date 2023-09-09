@@ -11,9 +11,11 @@ SetMultiExpr(
   group.by = NULL,
   multi.group.by = NULL,
   multi_groups = NULL,
-  wgcna_name = NULL,
   assay = NULL,
   slot = "data",
+  mat = NULL,
+  mat_group_delim = 3,
+  wgcna_name = NULL,
   ...
 )
 }
@@ -30,10 +32,16 @@ SetMultiExpr(
 
 \item{multi_groups}{A character vecrtor containing the names of groups to select}
 
+\item{assay}{The name of the assay in the Seurat object}
+
+\item{slot}{The name of the slot in the Seurat object (counts, data)}
+
+\item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
+
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }
 \description{
 This function sets up the expression matrix input for consensus WGCNA based on
-the metacell expression matrix, or from the full expression matrix.
+the metacell expression matrix, the full expression matrix, or a provided pseudobulk expression matrix.
 }
 \keyword{scRNA-seq}

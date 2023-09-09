@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.22</span>
       </span>
     </div>
 
@@ -70,6 +70,9 @@
     <li class="dropdown-header">Advanced topics</li>
     <li>
       <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
+    </li>
+    <li>
+      <a href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a>
     </li>
     <li>
       <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
@@ -126,9 +129,10 @@
   multi.group.by <span class="op">=</span> <span class="cn">NULL</span>,
   multi_group_name <span class="op">=</span> <span class="cn">NULL</span>,
   return_seurat <span class="op">=</span> <span class="cn">TRUE</span>,
-  wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"data"</span>,
+  mat <span class="op">=</span> <span class="cn">NULL</span>,
+  wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -147,9 +151,22 @@
 <dd><p>A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)</p></dd>
 <dt>multi_group_name</dt>
 <dd><p>A string containing the name of a group present in the multi.group.by column.</p></dd>
+<dt>assay</dt>
+<dd><p>The name of the assay in the Seurat object</p></dd>
+<dt>slot</dt>
+<dd><p>The name of the slot in the Seurat object (counts, data)</p></dd>
+<dt>mat</dt>
+<dd><p>A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data</p></dd>
 </dl></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession
+matrix that will be used for network analysis. We typically use this function to select a
+cell type or group of cell types for network analysis using the group.by parameter, but we provide
+additional parameters for further customization.</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -62,6 +62,8 @@ navbar:
     - text: Advanced topics
     - text: Consensus network analysis
       href: articles/consensus_wgcna.html
+    - text: hdWGCNA with pseudobulk data
+      href: articles/pseudobulk.html
     - text: Co-expression module dynamics with pseudotime
       href: articles/pseudotime.html
     - text: Motif analysis
@@ -85,11 +87,13 @@ reference:
   contents:
   - '`SetupForWGCNA`'
   - '`SelectNetworkGenes`'
+  - '`FindMajorIsoforms`'
 - title: Metacells and metaspots
   desc: Functions for constructing metacells from single-cell data and metaspots from ST data
   contents:
   - '`MetacellsByGroups`'
   - '`MetaspotsByGroups`'
+  - '`ConstructPseudobulk'
 - title: Network Analysis
   desc: Functions for constructing the co-expression network
   contents:
@@ -125,6 +129,7 @@ reference:
   desc: Functions for generating plots with hdWGCNA
   contents:
     - '`ModuleFeaturePlot`'
+    - '`PlotModuleTrajectory`'
 - title: Module Preservation
   desc: Functions for performing module preservation analysis
   contents:

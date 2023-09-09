@@ -149,7 +149,15 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 #' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_group_name A string containing the name of a group present in the multi.group.by column.
+#' @param assay The name of the assay in the Seurat object
+#' @param slot The name of the slot in the Seurat object (counts, data)
+#' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
+#' @details
+#' SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession 
+#' matrix that will be used for network analysis. We typically use this function to select a 
+#' cell type or group of cell types for network analysis using the group.by parameter, but we provide 
+#' additional parameters for further customization.
 #' @keywords scRNA-seq
 #' @export
 SetDatExpr <- function(
@@ -160,97 +168,154 @@ SetDatExpr <- function(
   multi.group.by = NULL,
   multi_group_name = NULL,
   return_seurat = TRUE,
-  wgcna_name=NULL,
   assay=NULL,
   slot = 'data',
+  mat=NULL,
+  wgcna_name=NULL,
   ...
 ){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
+
+  if(is.null(assay)){
+      assay <- DefaultAssay(s_obj)
+      warning(paste0('assay not specified, trying to use assay ', assay))
+  }
+
+  # check that selected assay is in the seurat object 
+  if(!(assay %in% Assays(seurat_obj))){
+    stop(paste0('Invalid choice of assay: ', assay, ' not found in Assays(seurat_obj).'))
+  }
+
+  # check that slot is valid 
+  if(!(slot %in% c('counts', 'data', 'scale.data'))){
+    stop('Invalid choice of slot. Valid choices are counts, data, or scale.data.')
+  }
+
+  # check that group.by is valid 
+  if(!(group.by %in% names(seurat_obj@meta.data))){
+    stop(paste0(group.by, ' not found in seurat_obj@meta.data.'))
+  }
+  if(!(class(seurat_obj@meta.data[,group.by]) %in% c('character', 'factor'))){
+    stop('Selected group.by must be a character or a factor, but ', group.by, ' is a ', class(seurat_obj@meta.data[,group.by]), '.')
+  }
+
+    # check that multi.group.by is valid 
+  if(!(multi.group.by %in% names(seurat_obj@meta.data))){
+    stop(paste0(multi.group.by, ' not found in seurat_obj@meta.data.'))
+  }
+  if(!(class(seurat_obj@meta.data[,multi.group.by]) %in% c('character', 'factor'))){
+    stop('Selected group.by must be a character or a factor, but ', group.by, ' is a ', class(seurat_obj@meta.data[,group.by]), '.')
+  }
 
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-  # get metacell object
-  m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+  # was a matrix supplied?
+  if(is.null(mat)){
+      
+    # get metacell object
+    m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
 
-  # use metacells or whole seurat object?
-  if(use_metacells & !is.null(m_obj)){
-    s_obj <- m_obj
+    # use metacells or whole seurat object?
+    if(use_metacells & !is.null(m_obj)){
+      s_obj <- m_obj
+    } else{
+      if(is.null(m_obj)){warning("Metacell Seurat object not found. Using full Seurat object instead.")}
+      s_obj <- seurat_obj
+    }
+
+    # get the metadata from the seurat object:
+    seurat_meta <- s_obj@meta.data
+
+    # check the group.by params
+    if(!is.null(group.by)){
+
+      # check that group.by is in the Seurat object & in the metacell object:
+      if(!(group.by %in% colnames(s_obj@meta.data))){
+        m_cell_message <- ""
+        if(use_metacells){m_cell_message <- "metacell"}
+        stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+      }
+
+      # check that the selected groups are in the Seurat object:
+      if(!all(group_name %in% s_obj@meta.data[[group.by]])){
+        groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
+        stop(
+          paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
+        )
+      }
+    }
+
+    # check the multi.group.by params
+    if(!is.null(multi.group.by)){
+
+      # check that group.by is in the Seurat object & in the metacell object:
+      if(!(multi.group.by %in% colnames(s_obj@meta.data))){
+        m_cell_message <- ""
+        if(use_metacells){m_cell_message <- "metacell"}
+        stop(paste0(multi.group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+      }
+
+      # check that the selected groups are in the Seurat object:
+      if(!all(multi_group_name %in% s_obj@meta.data[[multi.group.by]])){
+        groups_not_found <- multi_group_name[!(multi_group_name %in% s_obj@meta.data[[multi.group.by]])]
+        stop(
+          paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
+        )
+      }
+    }
+
+    # columns to group by for cluster/celltype
+    if(!is.null(group.by)){
+      seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
+    }
+
+
+    # subset further if multiExpr:
+    if(!is.null(multi.group.by)){
+      seurat_meta <- seurat_meta %>% subset(get(multi.group.by) %in% multi_group_name)
+    }
+
+    # get list of cells to use
+    cells <- rownames(seurat_meta)
+
+    # get expression data from seurat obj
+    datExpr <- as.data.frame(
+      Seurat::GetAssayData(
+        s_obj,
+        assay=assay,
+        slot=slot
+      )[genes_use,cells]
+    )
+
+    # transpose data
+    datExpr <- as.data.frame(t(datExpr))
   } else{
-    if(is.null(m_obj)){warning("Metacell Seurat object not found. Using full Seurat object instead.")}
-    s_obj <- seurat_obj
-  }
 
-  # get the metadata from the seurat object:
-  seurat_meta <- s_obj@meta.data
+    datExpr <- mat
 
-  if(is.null(assay)){
-    assay <- DefaultAssay(s_obj)
-    warning(paste0('assay not specified, trying to use assay ', assay))
-  }
-
-  # check the assay:
-  if(!(assay %in% names(s_obj@assays))){
-    stop("Assay not found. Check names(seurat_obj@assays) or names(GetMetacellObject(seurat_obj)@assays)")
-  }
-
-  if(!is.null(group.by)){
-
-    # check that group.by is in the Seurat object & in the metacell object:
-    if(!(group.by %in% colnames(s_obj@meta.data))){
-      m_cell_message <- ""
-      if(use_metacells){m_cell_message <- "metacell"}
-      stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
+    # cast it to a dataframe
+    if(any(class(datExpr) != 'data.frame')){
+      datExpr <- as.data.frame(datExpr)
     }
 
-    # check that the selected groups are in the Seurat object:
-    if(!all(group_name %in% s_obj@meta.data[[group.by]])){
-      groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
-      stop(
-        paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
-      )
+    # are the colnames genes?
+    if(!all(colnames(datExpr) %in% rownames(seurat_obj))){
+      stop("colnames of the provided matrix are invalid. Make sure that the colnames are features (genes), and that all of these features are in the seurat_obj")
     }
 
+    # subset the datExpr by the WGCNA genes:
+    datExpr <- datExpr[,genes_use]
+
   }
-
-  # columns to group by for cluster/celltype
-  if(!is.null(group.by)){
-    seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
-  }
-
-  # check that the group names are actually in the group.by column:
-
-  # subset further if multiExpr:
-  if(!is.null(multi.group.by)){
-    seurat_meta <- seurat_meta %>% subset(get(multi.group.by) %in% multi_group_name)
-  }
-
-  # get list of cells to use
-  cells <- rownames(seurat_meta)
-
-  # get expression data from seurat obj
-  datExpr <- as.data.frame(
-    Seurat::GetAssayData(
-      s_obj,
-      assay=assay,
-      slot=slot
-    )[genes_use,cells]
-  )
-
-  # transpose data
-  datExpr <- as.data.frame(t(datExpr))
-
-  # only get good genes:
-  # if(is.null(multi.group.by)){
-  #   gene_list = genes_use[WGCNA::goodGenes(datExpr, ...)]
-  #   datExpr <- datExpr[,gene_list]
-  # }
 
   if(return_seurat){
-
     gene_list <- genes_use[WGCNA::goodGenes(datExpr, ...)]
     datExpr <- datExpr[,gene_list]
 
@@ -265,6 +330,7 @@ SetDatExpr <- function(
   }
   out
 }
+
 
 
 #' GetDatExpr
@@ -286,7 +352,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' SetMultiExpr
 #'
 #' This function sets up the expression matrix input for consensus WGCNA based on
-#' the metacell expression matrix, or from the full expression matrix.
+#' the metacell expression matrix, the full expression matrix, or a provided pseudobulk expression matrix.
 #'
 #' @param seurat_obj A Seurat object
 #' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents.
@@ -294,6 +360,9 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_groups A character vecrtor containing the names of groups to select
+#' @param assay The name of the assay in the Seurat object
+#' @param slot The name of the slot in the Seurat object (counts, data)
+#' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
 #' @keywords scRNA-seq
 #' @export
@@ -304,9 +373,11 @@ SetMultiExpr <- function(
   group.by=NULL,
   multi.group.by = NULL,
   multi_groups = NULL,
-  wgcna_name=NULL,
   assay=NULL,
   slot='data',
+  mat=NULL,
+  mat_group_delim=3,
+  wgcna_name=NULL,
   ...
 ){
 
@@ -317,12 +388,7 @@ SetMultiExpr <- function(
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
   gene_names <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-  # use metacells or whole seurat object?
-  if(use_metacells){
-    s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
-  } else{
-    s_obj <- seurat_obj
-  }
+  s_obj <- seurat_obj
 
   # get assay
   if(is.null(assay)){
@@ -332,30 +398,50 @@ SetMultiExpr <- function(
 
   # get the different groups present if not specified by the user:
   if(is.null(multi_groups)){
-    multi_groups <- unique(s_obj@meta.data[[multi.group.by]])
+    multi_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
   } else{
-    seurat_groups <- unique(s_obj@meta.data[[multi.group.by]])
+    seurat_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
     if(sum(multi_groups %in% seurat_groups) != length(multi_groups)){
       stop('Some or all groups specified in multi_groups not found in seurat_obj@meta.data[,multi.group.by]')
     }
   }
 
-  # get the datExpr for each group
-  datExpr_list <- lapply(multi_groups, function(x){
-    SetDatExpr(
-      seurat_obj,
-      group_name = group_name,
-      group.by = group.by,
-      multi.group.by = multi.group.by,
-      multi_group_name = x,
-      return_seurat = FALSE,
-      use_metacells = use_metacells,
-      wgcna_name = wgcna_name,
-      assay = assay,
-      slot = slot
-    ) %>% as.matrix
-  })
-  datExpr_list
+  # was a matrix supplied?
+  if(is.null(mat)){
+
+      # use metacells or whole seurat object?
+    if(use_metacells){
+      s_obj <- GetMetacellObject(seurat_obj, wgcna_name)
+    } else{
+      s_obj <- seurat_obj
+    }
+
+    # get the datExpr for each group
+    datExpr_list <- lapply(multi_groups, function(cur_group){
+      cur_datExpr <- SetDatExpr(
+        seurat_obj,
+        group_name = group_name,
+        group.by = group.by,
+        multi.group.by = multi.group.by,
+        multi_group_name = cur_group,
+        return_seurat = FALSE,
+        use_metacells = use_metacells,
+        wgcna_name = wgcna_name,
+        assay = assay,
+        slot = slot
+      ) 
+      as.matrix(cur_datExpr)
+    })
+
+  } else{
+    sample_groups <- do.call(rbind, strsplit(rownames(mat), ':'))[,mat_group_delim]
+    datExpr_list <- list()
+    for(cur_group in multi_groups){
+      cur_datExpr <- as.data.frame(mat[which(sample_groups == cur_group),])
+      datExpr_list[[cur_group]]<- cur_datExpr
+    }
+
+  }
 
   # convert to multiExpr, get good genes:
   multiExpr <- WGCNA::list2multiData(datExpr_list)

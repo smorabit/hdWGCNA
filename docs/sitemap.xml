@@ -61,6 +61,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules_cross.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/articles/pseudobulk.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/articles/pseudotime.html</loc>
   </url>
   <url>
@@ -101,6 +104,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructNetwork.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructPseudobulk.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/DimPlotMetacells.html</loc>

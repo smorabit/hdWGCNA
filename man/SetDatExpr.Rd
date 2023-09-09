@@ -12,9 +12,10 @@ SetDatExpr(
   multi.group.by = NULL,
   multi_group_name = NULL,
   return_seurat = TRUE,
-  wgcna_name = NULL,
   assay = NULL,
   slot = "data",
+  mat = NULL,
+  wgcna_name = NULL,
   ...
 )
 }
@@ -31,9 +32,21 @@ SetDatExpr(
 
 \item{multi_group_name}{A string containing the name of a group present in the multi.group.by column.}
 
+\item{assay}{The name of the assay in the Seurat object}
+
+\item{slot}{The name of the slot in the Seurat object (counts, data)}
+
+\item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
+
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }
 \description{
 This function specifies the gene expression matrix for co-expression network analysis.
+}
+\details{
+SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession
+matrix that will be used for network analysis. We typically use this function to select a
+cell type or group of cell types for network analysis using the group.by parameter, but we provide
+additional parameters for further customization.
 }
 \keyword{scRNA-seq}
