@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.23 (2023-09-10)
+## Added
+- None 
+
+## Changes
+- Fixed bug in SetDatExpr
+
 # hdWGCNA 0.2.22 (2023-09-08)
 ## Added
 - New tutorial for hdWGCNA with pseudobulk data, including some new functions like `ConstructPseudobulk`. 

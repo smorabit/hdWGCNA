@@ -182,7 +182,7 @@ SetDatExpr <- function(
   }  
 
   if(is.null(assay)){
-      assay <- DefaultAssay(s_obj)
+      assay <- DefaultAssay(seurat_obj)
       warning(paste0('assay not specified, trying to use assay ', assay))
   }
 
@@ -194,22 +194,6 @@ SetDatExpr <- function(
   # check that slot is valid 
   if(!(slot %in% c('counts', 'data', 'scale.data'))){
     stop('Invalid choice of slot. Valid choices are counts, data, or scale.data.')
-  }
-
-  # check that group.by is valid 
-  if(!(group.by %in% names(seurat_obj@meta.data))){
-    stop(paste0(group.by, ' not found in seurat_obj@meta.data.'))
-  }
-  if(!(class(seurat_obj@meta.data[,group.by]) %in% c('character', 'factor'))){
-    stop('Selected group.by must be a character or a factor, but ', group.by, ' is a ', class(seurat_obj@meta.data[,group.by]), '.')
-  }
-
-    # check that multi.group.by is valid 
-  if(!(multi.group.by %in% names(seurat_obj@meta.data))){
-    stop(paste0(multi.group.by, ' not found in seurat_obj@meta.data.'))
-  }
-  if(!(class(seurat_obj@meta.data[,multi.group.by]) %in% c('character', 'factor'))){
-    stop('Selected group.by must be a character or a factor, but ', group.by, ' is a ', class(seurat_obj@meta.data[,group.by]), '.')
   }
 
   # get parameters from seurat object
