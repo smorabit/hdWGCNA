@@ -205,8 +205,8 @@ SetDatExpr <- function(
   }
 
     # check that multi.group.by is valid 
-  if(!(multi.group.by %in% names(seurat_obj@meta.data))){
-    stop(paste0(multi.group.by, ' not found in seurat_obj@meta.data.'))
+  if (!is.null(multi.group.by) && length(multi.group.by) > 0 && !(multi.group.by %in% names(seurat_obj@meta.data))) {
+    stop(paste0(multi.group.by, " not found in seurat_obj@meta.data."))
   }
   if(!(class(seurat_obj@meta.data[,multi.group.by]) %in% c('character', 'factor'))){
     stop('Selected group.by must be a character or a factor, but ', group.by, ' is a ', class(seurat_obj@meta.data[,group.by]), '.')
