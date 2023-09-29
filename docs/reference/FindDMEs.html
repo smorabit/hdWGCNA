@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.24</span>
       </span>
     </div>
 
@@ -171,9 +171,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!CheckWGCNAName(seurat_obj, wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!(all(barcodes1 %in% colnames(seurat_obj)))) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Some barcodes in barcodes1 not found in colnames(seurat_obj).")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -205,7 +202,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     DMEs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff6b4761b20&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96a8132df0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

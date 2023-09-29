@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.24</span>
       </span>
     </div>
 
@@ -168,9 +168,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!CheckWGCNAName(seurat_obj, wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groups &lt;- as.character(unique(seurat_obj@meta.data[[group.by]]))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- GetMEs(seurat_obj, harmonized, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- MEs[, colnames(MEs) != "grey"]</span>
@@ -204,7 +201,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     DMEs &lt;- do.call(rbind, DMEs_list)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     DMEs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff6b313d220&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96a54b51b0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

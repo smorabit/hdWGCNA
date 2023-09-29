@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.24</span>
       </span>
     </div>
 
@@ -158,9 +158,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, DMEs, plot_labels = TRUE, mod_point_size = 4, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     label_size = 4, show_cutoff = TRUE, wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     DMEs &lt;- na.omit(DMEs)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lowest &lt;- DMEs %&gt;% subset(p_val_adj != 0) %&gt;% top_n(-1, wt = p_val_adj) %&gt;% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         .$p_val_adj</span>
@@ -204,7 +201,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p + NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff6e860b6b8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96a7ef26e8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

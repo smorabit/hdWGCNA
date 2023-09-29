@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.24</span>
       </span>
     </div>
 
@@ -265,16 +265,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         return(g)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g, layout = as.matrix(selected_modules[, c("UMAP1", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         "UMAP2")]), edge.color = adjustcolor(igraph::E(g)$color_alpha, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         alpha.f = edge.alpha), vertex.size = igraph::V(g)$kME * </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         3, edge.curved = 0, edge.width = 0.5, vertex.color = igraph::V(g)$color, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = igraph::V(g)$label, vertex.label.dist = 1.1, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.degree = -pi/4, vertex.label.family = "Helvetica", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.font = 3, vertex.label.color = igraph::V(g)$fontcolor, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.cex = 0, vertex.frame.color = igraph::V(g)$framecolor, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         margin = 0)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         "UMAP2")]), edge.color = adjustcolor(E(g)$color_alpha, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         alpha.f = edge.alpha), vertex.size = V(g)$kME * 3, edge.curved = 0, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.width = 0.5, vertex.color = V(g)$color, vertex.label = V(g)$label, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.dist = 1.1, vertex.label.degree = -pi/4, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = V(g)$fontcolor, vertex.label.cex = 0, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = V(g)$framecolor, margin = 0)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff6b50c7968&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96a76a0aa0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

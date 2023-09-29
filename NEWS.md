@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.24 (2023-09-28)
+## Added
+- None 
+
+## Changes
+- Update call to Harmony in ModuleEigengenes function
+
 # hdWGCNA 0.2.23 (2023-09-10)
 ## Added
 - None 

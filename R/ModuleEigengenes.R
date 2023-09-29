@@ -90,7 +90,7 @@ ComputeModuleEigengene <- function(
     cur_harmony <- harmony::RunHarmony(
       seurat_obj,
       group.by.vars=group.by.vars,
-      reduction="ME", verbose=verbose, assay.use=assay, ...
+      reduction.use="ME", verbose=verbose, assay.use=assay, ...
     )@reductions$harmony
     ha <- cur_harmony@cell.embeddings[,pc_dim]
     ha_loadings <- cur_pca@feature.loadings[,pc_dim]
