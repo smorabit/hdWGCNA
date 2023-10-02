@@ -57,7 +57,7 @@ install.packages("BiocManager")
 BiocManager::install()
 
 # install additional packages:
-install.packages(c("Seurat", "WGCNA", "igraph", "devtools", "GeneOverlap))
+install.packages(c("Seurat", "WGCNA", "igraph", "devtools", "GeneOverlap"))
 
 ```
 
