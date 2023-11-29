@@ -57,7 +57,10 @@ install.packages("BiocManager")
 BiocManager::install()
 
 # install additional packages:
-install.packages(c("Seurat", "WGCNA", "igraph", "devtools", "GeneOverlap))
+install.packages(c("WGCNA", "igraph", "devtools", "GeneOverlap"))
+
+# install Seurat v4, hdWGCNA currently does not work with Seurat v5
+install.packages('Seurat', repos = c('https://satijalab.r-universe.dev', 'https://cloud.r-project.org'))
 
 ```
 

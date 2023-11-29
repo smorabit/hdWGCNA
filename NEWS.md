@@ -1,3 +1,10 @@
+# hdWGCNA 0.2.25 (2023-11-28)
+## Added
+- None 
+
+## Changes
+- Requires Seurat version 4. Will update to support v5 in the future.
+
 # hdWGCNA 0.2.24 (2023-09-28)
 ## Added
 - None 

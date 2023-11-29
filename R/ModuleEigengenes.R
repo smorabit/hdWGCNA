@@ -190,7 +190,7 @@ ModuleEigengenes <- function(
   }  
 
   # are we going to run Harmony?
-  harmonized = !is.null(group.by.vars)
+  harmonized <- !is.null(group.by.vars)
 
   if(harmonized & !any(grepl("ScaleData", seurat_obj@commands))){
       stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
@@ -206,7 +206,6 @@ ModuleEigengenes <- function(
 
   # exclude grey doesn't work yet:
   if(exclude_grey){exclude_grey <- FALSE}
-
 
   me_list <- list()
   harmonized_me_list <- list()
