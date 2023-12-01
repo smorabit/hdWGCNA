@@ -157,6 +157,9 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!CheckWGCNAName(seurat_obj, wgcna_name)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (features == "hMEs") {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         MEs &lt;- GetMEs(seurat_obj, TRUE, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -293,7 +296,7 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8d19de3968&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b937c0350&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -8,6 +8,7 @@
 [![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/smorabit/hdWGCNA)
 [![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
 
+
 hdWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) in high dimensional
 transcriptomics data such as single-cell RNA-seq or spatial transcriptomics.
 hdWGCNA is highly modular and can construct co-expression networks across multi-scale
@@ -57,7 +58,8 @@ install.packages("BiocManager")
 BiocManager::install()
 
 # install additional packages:
-install.packages(c("WGCNA", "igraph", "devtools", "GeneOverlap"))
+BiocManager::install(c("WGCNA", "igraph", "devtools", "GeneOverlap", 'ggrepel'))
+devtools::install_github("NightingaleHealth/ggforestplot")
 
 # install Seurat v4, hdWGCNA currently does not work with Seurat v5
 install.packages('Seurat', repos = c('https://satijalab.r-universe.dev', 'https://cloud.r-project.org'))
@@ -74,8 +76,10 @@ devtools::install_github('smorabit/hdWGCNA', ref='dev')
 
 Check out the paper describing hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data:
 
-* [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
-* [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z)
+* [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3) 
+
+* [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z) 
+
 
 
 For additional reading, we suggest the original WGCNA publication and papers describing

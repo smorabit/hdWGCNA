@@ -259,14 +259,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_graph) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         return(g)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g, layout = l, edge.color = adjustcolor(E(g)$color, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         alpha.f = edge.alpha), vertex.size = V(g)$size, edge.curved = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.width = 0.5, vertex.color = V(g)$color, vertex.frame.color = V(g)$color, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label = V(g)$label, vertex.label.family = "Helvetica", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.font = 3, vertex.label.color = V(g)$fontcolor, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.cex = vertex.label.cex, ...)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot(g, layout = l, edge.color = adjustcolor(igraph::E(g)$color, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         alpha.f = edge.alpha), vertex.size = igraph::V(g)$size, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         edge.curved = 0, edge.width = 0.5, vertex.color = igraph::V(g)$color, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.frame.color = igraph::V(g)$color, vertex.label = igraph::V(g)$label, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.font = 3, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = igraph::V(g)$fontcolor, vertex.label.cex = vertex.label.cex, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ...)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8d157e2958&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b8a1242a8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

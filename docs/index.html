@@ -188,7 +188,8 @@
 <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># install additional packages:</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WGCNA"</span>, <span class="st">"igraph"</span>, <span class="st">"devtools"</span>, <span class="st">"GeneOverlap"</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WGCNA"</span>, <span class="st">"igraph"</span>, <span class="st">"devtools"</span>, <span class="st">"GeneOverlap"</span>, <span class="st">'ggrepel'</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"NightingaleHealth/ggforestplot"</span><span class="op">)</span>
 
 <span class="co"># install Seurat v4, hdWGCNA currently does not work with Seurat v5</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'Seurat'</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'https://satijalab.r-universe.dev'</span>, <span class="st">'https://cloud.r-project.org'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -201,8 +202,8 @@
 </h2>
 <p>Check out the paper describing hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data:</p>
 <ul>
-<li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data</a></li>
-<li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease</a></li>
+<li><p><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data</a></p></li>
+<li><p><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease</a></p></li>
 </ul>
 <p>For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis:</p>
 <ul>

@@ -21,5 +21,4 @@ Config/testthat/edition: 3
 Depends: 
     R (>= 2.10),
     harmony (>= 1.0.1),
-    Seurat (>= 4.0.0),
-    Seurat (< 5.0.0)
+    Seurat (>= 4.0.0)
