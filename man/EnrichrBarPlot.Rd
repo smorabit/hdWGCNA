@@ -10,6 +10,8 @@ EnrichrBarPlot(
   n_terms = 25,
   plot_size = c(6, 15),
   logscale = FALSE,
+  plot_bar_color = NULL,
+  plot_text_color = NULL,
   wgcna_name = NULL,
   ...
 )
@@ -24,6 +26,10 @@ EnrichrBarPlot(
 \item{plot_size}{the size of the output .pdf files (width, height)}
 
 \item{logscale}{logical controlling whether to plot the enrichment on a log scale}
+
+\item{plot_bar_color}{The color of the bars in the bar plots. Default option (NULL) makes the bars colored using the module's assigned color.}
+
+\item{plot_text_color}{The color of the text labels on the bar plots}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }

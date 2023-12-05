@@ -129,10 +129,12 @@ ConstructNetwork <- function(
     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
     mergeCutHeight = mergeCutHeight,
     saveConsensusTOMs = saveConsensusTOMs,
-    consensusTOMFilePattern = "ConsensusTOM-block.%b.rda", ...)
+    consensusTOMFilePattern = paste0(tom_outdir, '/', tom_name, "_block.%b.rda"), 
+    ...
+    )
 
   # rename consensusTOM file:
-  file.rename('ConsensusTOM-block.1.rda', renamed)
+  file.rename(paste0(tom_outdir, '/', tom_name, '_block.1.rda'), renamed)
 
   # add network parameters to the Seurat object:
   params <- list(

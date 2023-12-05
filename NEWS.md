@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.26 (2023-12-05)
+## Added
+- None 
+
+## Changes
+- New options for changing colors in `EnrichrBarPlot`.
+- `ConstructNetwork` naming of temporary files updated.
+
 # hdWGCNA 0.2.25 (2023-11-28)
 ## Added
 - None 

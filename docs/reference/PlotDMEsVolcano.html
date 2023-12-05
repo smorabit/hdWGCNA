@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.25</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
       </span>
     </div>
 
@@ -192,8 +192,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p &lt;- p + geom_point(size = mod_point_size, pch = 21, color = "black")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (plot_labels) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- p + geom_text_repel(aes(label = anno), color = "black", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             min.segment.length = 0, max.overlaps = Inf, size = label_size)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         p &lt;- p + ggrepel::geom_text_repel(aes(label = anno), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             color = "black", min.segment.length = 0, max.overlaps = Inf, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             size = label_size)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p &lt;- p + scale_fill_manual(values = mod_colors) + scale_color_manual(values = mod_colors) + </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         xlim((-1 * xmax) - 0.1, xmax + 0.1) + xlab(bquote("Average log"[2] ~ </span>
@@ -204,7 +205,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p + NoLegend()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b94d622e8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f82ab32c438&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

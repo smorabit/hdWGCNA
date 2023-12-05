@@ -615,6 +615,8 @@ ModuleFeaturePlot<- function(
 #' @param n_terms the number of terms to plot in each barplot
 #' @param plot_size the size of the output .pdf files (width, height)
 #' @param logscale logical controlling whether to plot the enrichment on a log scale
+#' @param plot_bar_color The color of the bars in the bar plots. Default option (NULL) makes the bars colored using the module's assigned color.
+#' @param plot_text_color The color of the text labels on the bar plots
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
@@ -623,7 +625,11 @@ ModuleFeaturePlot<- function(
 EnrichrBarPlot <- function(
   seurat_obj, outdir = "enrichr_plots",
   n_terms = 25, plot_size = c(6,15),
-  logscale=FALSE, wgcna_name=NULL,  ...
+  logscale=FALSE, 
+  plot_bar_color=NULL,
+  plot_text_color=NULL,
+  wgcna_name=NULL,
+   ...
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -654,6 +660,9 @@ EnrichrBarPlot <- function(
 
     # get color for this module:
     cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique %>% as.character
+    if(!is.null(plot_bar_color)){
+      cur_color <- plot_bar_color
+    }
 
     # skip if there are not any terms for this module:
     if(nrow(cur_terms) == 0){next}
@@ -666,11 +675,16 @@ EnrichrBarPlot <- function(
       plot_df <- subset(cur_terms, db==cur_db) %>% top_n(n_terms, wt=Combined.Score)
 
       # text color:
-      if(cur_mod == 'black'){
-        text_color = 'grey'
-      } else {
-        text_color = 'black'
+      if(is.null(plot_text_color)){
+        if(cur_color == 'black'){
+            text_color = 'grey'
+          } else {
+            text_color = 'black'
+          }
+      } else{
+        text_color <- plot_text_color
       }
+ 
 
       # logscale?
       if(logscale){
@@ -1784,7 +1798,7 @@ PlotModulePreservation <- function(
 
 
     if(plot_labels){
-      cur_p <- cur_p + geom_text_repel(label = plot_df$module, size=label_size, max.overlaps=Inf, color='black')
+      cur_p <- cur_p + ggrepel::geom_text_repel(label = plot_df$module, size=label_size, max.overlaps=Inf, color='black')
     }
 
     plot_list[[statistic]] <- cur_p
@@ -2338,7 +2352,7 @@ PlotDMEsVolcano <- function(
 
   # label points?
   if(plot_labels){
-    p <- p + geom_text_repel(aes(label=anno), color='black', min.segment.length=0, max.overlaps=Inf, size=label_size)
+    p <- p + ggrepel::geom_text_repel(aes(label=anno), color='black', min.segment.length=0, max.overlaps=Inf, size=label_size)
   }
 
   p <- p +

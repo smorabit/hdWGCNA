@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.25</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
       </span>
     </div>
 
@@ -127,6 +127,8 @@
   n_terms <span class="op">=</span> <span class="fl">25</span>,
   plot_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">15</span><span class="op">)</span>,
   logscale <span class="op">=</span> <span class="cn">FALSE</span>,
+  plot_bar_color <span class="op">=</span> <span class="cn">NULL</span>,
+  plot_text_color <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -144,6 +146,10 @@
 <dd><p>the size of the output .pdf files (width, height)</p></dd>
 <dt>logscale</dt>
 <dd><p>logical controlling whether to plot the enrichment on a log scale</p></dd>
+<dt>plot_bar_color</dt>
+<dd><p>The color of the bars in the bar plots. Default option (NULL) makes the bars colored using the module's assigned color.</p></dd>
+<dt>plot_text_color</dt>
+<dd><p>The color of the text labels on the bar plots</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>
@@ -152,8 +158,8 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">EnrichrBarPlot</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, outdir = "enrichr_plots", n_terms = 25, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_size = c(6, 15), logscale = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_size = c(6, 15), logscale = FALSE, plot_bar_color = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_text_color = NULL, wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -175,6 +181,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         print(cur_mod)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_color &lt;- modules %&gt;% subset(module == cur_mod) %&gt;% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             .$color %&gt;% unique %&gt;% as.character</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!is.null(plot_bar_color)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_color &lt;- plot_bar_color</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (nrow(cur_terms) == 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             next</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
@@ -183,11 +192,16 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         for (cur_db in dbs) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             plot_df &lt;- subset(cur_terms, db == cur_db) %&gt;% top_n(n_terms, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 wt = Combined.Score)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             if (cur_mod == "black") {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color = "grey"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             if (is.null(plot_text_color)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 if (cur_color == "black") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   text_color = "grey"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   text_color = "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color = "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color &lt;- plot_text_color</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             if (logscale) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 plot_df$Combined.Score &lt;- log(plot_df$Combined.Score)</span>
@@ -216,7 +230,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dev.off()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8b8f536710&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f82a880d1c8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
