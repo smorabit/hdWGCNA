@@ -61,7 +61,7 @@ shuffle_points <- function(df){
 #' 
 #' Originally from 
 #' \url{http://stackoverflow.com/questions/5888287/running-cor-or-any-variant-over-a-sparse-matrix-in-r}
-#' and the qlcMatrix package.
+#' and the qlcMatrix & Signac packages.
 #' 
 #' @param X A matrix
 #' @param Y A matrix
