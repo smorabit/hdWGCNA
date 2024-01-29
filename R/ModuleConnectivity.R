@@ -82,11 +82,8 @@ ModuleConnectivity <- function(
   )[genes_use,cells.use]
 
   if(sparse){
-    if(!('qlcMatrix' %in% installed.packages())){
-      stop('Need to install package qlcMatrix if sparse=TRUE. Either set sparse=FALSE or install qlcMatrix package.')
-    }
     
-    kMEs <- qlcMatrix::corSparse(
+    kMEs <- corSparse(
       X = Matrix::t(exp_mat),
       Y = as.matrix(MEs)
     )
