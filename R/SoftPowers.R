@@ -7,6 +7,7 @@
 #' @param powers numeric vector specifying soft powers to test
 #' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
 #' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
+#' @param wgcna_name name of the WGCNA experiment
 #' @param ... additional parameters passed to WGCNA::pickSoftThreshold
 #'
 #' @details 
@@ -20,11 +21,14 @@ TestSoftPowers <- function(
   powers=c(seq(1,10,by=1), seq(12,30, by=2)),
   networkType="signed",
   corFnc='bicor',
+  wgcna_name = NULL,
   ...
 ){
 
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
   # get datExpr
-  datExpr <- GetDatExpr(seurat_obj)
+  datExpr <- GetDatExpr(seurat_obj, wgcna_name)
 
   # Call the network topology analysis function 
   powerTable = list(
@@ -39,7 +43,7 @@ TestSoftPowers <- function(
   );
 
   # set the power table in Seurat object:
-  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data)
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable$data, wgcna_name=wgcna_name)
   seurat_obj
 }
 
@@ -74,8 +78,11 @@ TestSoftPowersConsensus <- function(
   group.by=NULL, group_name=NULL,
   multi.group.by = NULL,
   multi_groups = NULL,
+  wgcna_name = NULL,
   ...
 ){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # add multiExpr if not already added:
   if(!("multiExpr" %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE){
@@ -119,6 +126,6 @@ TestSoftPowersConsensus <- function(
   powerTable <- do.call(rbind, powerTables)
 
   # set the power table in Seurat object:
-  seurat_obj <- SetPowerTable(seurat_obj, powerTable)
+  seurat_obj <- SetPowerTable(seurat_obj, powerTable, wgcna_name=wgcna_name)
   seurat_obj
 }
