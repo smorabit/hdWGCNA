@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+**Important note to the person writing this issue**
+GitHub issues use the [Markdown text language](https://www.markdownguide.org). If you are not familiar with Markdown, we strongly recommend consulting the [Markdown style guide](https://www.markdownguide.org/basic-syntax/) before writing your issue. It is easier for us to help you if your issue is properly formatted!
+
 **Describe the bug**
 Provide a clear and concise description of what the bug/error is. If there is an error message, please copy it here. **If you have more than one bug/error, please open separate GitHub issues.**
 
