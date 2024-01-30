@@ -18,7 +18,7 @@ for an explanation of the co-expression network analysis steps.
 
 # Download the tutorial data
 
-First, download [the .rds file from this Google Drive link](https://drive.google.com/file/d/1ZySn6UPA6erSMYNe8rzdT33SFhqJJcCQ/view?usp=share_link)
+First, download [the .rds file from this Google Drive link](https://drive.google.com/file/d/1hxOXQo1Qbo1PYvdxcl2lKiwwc-SVOAQF/view?usp=drive_link)
 containing the processed hematopoetic stem cell scRNA-seq Seurat object.
 
 Next, load the dataset into R and the necessary packages for hdWGCNA and Monocle3. 
@@ -132,10 +132,15 @@ p2 <- plot_cells(
   show_trajectory_graph = FALSE
 )
 
+p1 + p2
+
+
+```
+
+```{r eval=FALSE, echo=FALSE}
 png(paste0(fig_dir, 'umap_monocle.png'),  width=8, height=4, res=500, units='in')
 p1 + p2
 dev.off()
-
 ```
 
 <img src="figures/pseudotime/umap_monocle.png" width="900" height="900">
@@ -330,11 +335,9 @@ p <- DotPlot(
     panel.border = element_rect(colour = "black", fill=NA, size=1)
   )
 
-png(paste0(fig_dir, 'dotplot_MEs.png'), width=8, height=4, res=500, unit='in')
-p
-dev.off()
-
 seurat_obj@meta.data <- meta
+
+p
 
 ```
 
@@ -342,6 +345,10 @@ seurat_obj@meta.data <- meta
 
 
 ```{r eval=FALSE, echo=FALSE}
+
+png(paste0(fig_dir, 'dotplot_MEs.png'), width=8, height=4, res=500, unit='in')
+p
+dev.off()
 
 #######################################################################
 # DotPlot of MEs by clusters
@@ -405,6 +412,8 @@ Importantly, we note that module dynamics can be studied using different pseudot
 inference approaches, we simply chose to run Monocle3 as an example.
 
 ```{r eval=FALSE}
+
+seurat_obj$ery_pseudotime <- NA
 
 p  <- PlotModuleTrajectory(
     seurat_obj,

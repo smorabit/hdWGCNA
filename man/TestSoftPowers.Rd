@@ -9,6 +9,7 @@ TestSoftPowers(
   powers = c(seq(1, 10, by = 1), seq(12, 30, by = 2)),
   networkType = "signed",
   corFnc = "bicor",
+  wgcna_name = NULL,
   ...
 )
 }
@@ -20,6 +21,8 @@ TestSoftPowers(
 \item{networkType}{The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork}
 
 \item{corFnc}{Correlation function for the gene-gene correlation adjacency matrix.}
+
+\item{wgcna_name}{name of the WGCNA experiment}
 
 \item{...}{additional parameters passed to WGCNA::pickSoftThreshold}
 }

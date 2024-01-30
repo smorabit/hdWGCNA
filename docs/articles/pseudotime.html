@@ -162,7 +162,7 @@
 <div class="section level2">
 <h2 id="download-the-tutorial-data">Download the tutorial data<a class="anchor" aria-label="anchor" href="#download-the-tutorial-data"></a>
 </h2>
-<p>First, download <a href="https://drive.google.com/file/d/1ZySn6UPA6erSMYNe8rzdT33SFhqJJcCQ/view?usp=share_link" class="external-link">the .rds file from this Google Drive link</a> containing the processed hematopoetic stem cell scRNA-seq Seurat object.</p>
+<p>First, download <a href="https://drive.google.com/file/d/1hxOXQo1Qbo1PYvdxcl2lKiwwc-SVOAQF/view?usp=drive_link" class="external-link">the .rds file from this Google Drive link</a> containing the processed hematopoetic stem cell scRNA-seq Seurat object.</p>
 <p>Next, load the dataset into R and the necessary packages for hdWGCNA and Monocle3.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -228,9 +228,7 @@
   show_trajectory_graph <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'umap_monocle.png'</span><span class="op">)</span>,  width<span class="op">=</span><span class="fl">8</span>, height<span class="op">=</span><span class="fl">4</span>, res<span class="op">=</span><span class="fl">500</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span>
-<span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span>
-<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></code></pre></div>
 <p><img src="figures/pseudotime/umap_monocle.png" width="900" height="900"></p>
 <p>The Monocle3 <code>learn_graph</code> function builds a principal graph in a dimensionally reduced space of the dataset. Here we can see the principal graph overlaid on the UMAP. The principal graph will serve as the basis of the pseudotime trajectories. Next, we have to select the starting node, or principal node, of the graph as the origin of the pseudotime. We select node <code>Y_26</code> as the prinicipal node since that overlaps with the stem cell population.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -364,11 +362,9 @@ See DotPlot code
     panel.border <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"black"</span>, fill<span class="op">=</span><span class="cn">NA</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
   <span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'dotplot_MEs.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">8</span>, height<span class="op">=</span><span class="fl">4</span>, res<span class="op">=</span><span class="fl">500</span>, unit<span class="op">=</span><span class="st">'in'</span><span class="op">)</span>
-<span class="va">p</span>
-<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span>
 
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span></code></pre></div>
+<span class="va">p</span></code></pre></div>
 </details>
 </div>
 <div class="section level2">
@@ -377,7 +373,9 @@ See DotPlot code
 <p>In this section we use the hdWGCNA function <code>PlotModuleTrajectory</code> to visualize how the module eigengenes change throughout the pseudotime trajectories for each co-expression module. This function requires you to specify the name of the column in the Seurat object’s meta data where the pseudotime information is stored. Since we split our pseudotime into four different trajectories, first we will plot the ME trajectory dynamics for the erythrocytes.</p>
 <p>Importantly, we note that module dynamics can be studied using different pseudotime inference approaches, we simply chose to run Monocle3 as an example.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModuleTrajectory.html">PlotModuleTrajectory</a></span><span class="op">(</span>
+<code class="sourceCode R"><span class="va">seurat_obj</span><span class="op">$</span><span class="va">ery_pseudotime</span> <span class="op">&lt;-</span> <span class="cn">NA</span>
+
+<span class="va">p</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModuleTrajectory.html">PlotModuleTrajectory</a></span><span class="op">(</span>
     <span class="va">seurat_obj</span>,
     pseudotime_col <span class="op">=</span> <span class="st">'ery_pseudotime'</span>
 <span class="op">)</span>

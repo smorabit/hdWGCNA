@@ -126,6 +126,7 @@
   powers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">30</span>, by <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,
   networkType <span class="op">=</span> <span class="st">"signed"</span>,
   corFnc <span class="op">=</span> <span class="st">"bicor"</span>,
+  wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -140,6 +141,8 @@
 <dd><p>The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork</p></dd>
 <dt>corFnc</dt>
 <dd><p>Correlation function for the gene-gene correlation adjacency matrix.</p></dd>
+<dt>wgcna_name</dt>
+<dd><p>name of the WGCNA experiment</p></dd>
 <dt>...</dt>
 <dd><p>additional parameters passed to WGCNA::pickSoftThreshold</p></dd>
 </dl></div>

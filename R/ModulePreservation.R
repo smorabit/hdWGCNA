@@ -51,9 +51,6 @@ ModulePreservation <- function(
     gene_match <- match(colnames(datExpr_query), gene_mapping[,genome2_col])
     gene_mapping <- na.omit(gene_mapping[gene_match,])
     colnames(datExpr_query)  <- gene_mapping[,genome1_col]
-
-    print(head(colnames(datExpr_query)))
-    print(head(GetModules(seurat_obj)$gene_name))
   }
 
   # set up multiExpr:
@@ -62,15 +59,15 @@ ModulePreservation <- function(
     ref = list(data=datExpr_ref),
     query = list(data=datExpr_query)
   )
-  ref_modules <- list(ref = GetModules(seurat_ref)$module)
+  ref_modules <- list(ref = GetModules(seurat_ref, wgcna_name=wgcna_name)$module)
 
   # print('ref:')
-  # print(dim(datExpr_ref))
+  # print(dim(multiExpr$ref$data))
   # print('query:')
-  # print(dim(datExpr_query))
+  # print(dim(multiExpr$query$data))
 
-  # print('Run Module Preservation')
-  # print(ref_modules)
+  # # print('Run Module Preservation')
+  # print(length(ref_modules))
 
   # run the module preservation test:
   mp <- WGCNA::modulePreservation(

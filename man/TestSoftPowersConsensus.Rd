@@ -15,6 +15,7 @@ TestSoftPowersConsensus(
   group_name = NULL,
   multi.group.by = NULL,
   multi_groups = NULL,
+  wgcna_name = NULL,
   ...
 )
 }
