@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -375,7 +375,7 @@ See cluster labels
 <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span> <span class="op">&lt;-</span> <span class="va">annotations</span><span class="op">$</span><span class="va">annotation</span><span class="op">[</span><span class="va">ix</span><span class="op">]</span>
 
 <span class="co"># set idents</span>
-<span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span>
+<span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span>
 
 <span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>

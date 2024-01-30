@@ -639,8 +639,8 @@ GetHubGenes <- function(
     cur <- subset(modules, module == cur_mod)
     cur <- cur[,c('gene_name', 'module', paste0('kME_', cur_mod))]
     names(cur)[3] <- 'kME'
-    cur <- dplyr::arrange(cur, kME)
-    cur %>% dplyr::top_n(n_hubs, wt=kME)
+    cur <- dplyr::arrange(cur, desc(kME))
+    cur %>% dplyr::slice_max(n=n_hubs, order_by=kME)
   }))
   rownames(hub_df) <- 1:nrow(hub_df)
   hub_df

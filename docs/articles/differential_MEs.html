@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -160,7 +160,6 @@
     
 <p>In this tutorial, we demonstrate how to perform differential module eigengene (DME) analysis, revealing modules that are up- or down-regulated in given groups of cells.</p>
 <p>First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.</p>
-<p>NOTE: ADD a loop for the findDMEs results!!! and maybe add the heatmap code?</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
@@ -225,7 +224,7 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <p>This plot shows the fold-change for each of the modules, and the size of each dot corresponds to the number of genes in that module. An “X” is placed over each point that does not reach statistical significance.</p>
 <p>For <code>PlotDMEsLollipop</code>, if we have other self-defined columns in the DMEs data frame, we can use <code>group.by</code> parameter to supply the column names and comparison arguments for one comparison group or a list of comparison groups for plotting. For example:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">PlotDMEslollipop</span><span class="op">(</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/PlotDMEsLollipop.html">PlotDMEsLollipop</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>, 
   <span class="va">DMEs</span>, 
   wgcna_name<span class="op">=</span><span class="st">'INH'</span>, 

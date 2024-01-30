@@ -985,12 +985,17 @@ HubGeneNetworkPlot <- function(
   # get modules, MEs:
   MEs <- GetMEs(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
-
+  
   # using all modules?
-  if(mods == 'all'){
+  if(all('all' %in% mods)){
     mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
   } else{
+
+    # check that the modules are present 
+    if(!all(mods %in% unique(as.character(modules$module)))){
+      stop(paste0("Some selected modules are not found in wgcna_name: ", wgcna_name))
+    }
     modules <- modules %>% subset(module %in% mods)
   }
 
@@ -1025,8 +1030,6 @@ HubGeneNetworkPlot <- function(
   selected_modules$label <- ifelse(selected_modules$geneset == 'hub', as.character(selected_modules$gene_name), '')
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
-  print(table(selected_modules$module))
-
   # make sure all nodes have at least one edge!!
   edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i){max(subset_TOM[i,])}))
   edge_df <- reshape2::melt(subset_TOM) %>% subset(value >= edge_cutoff)
@@ -1050,7 +1053,7 @@ HubGeneNetworkPlot <- function(
   groups <- unique(edge_df$color)
   print(groups)
   if(sample_edges){
-    print('here')
+
     # randomly sample
     temp <- do.call(rbind, lapply(groups, function(cur_group){
       cur_df <- edge_df %>% subset(color == cur_group)
@@ -1069,8 +1072,6 @@ HubGeneNetworkPlot <- function(
   }
 
   edge_df <- temp
-  print(dim(edge_df))
-
 
   # scale edge values between 0 and 1 for each module
   edge_df <- edge_df %>% group_by(color) %>% mutate(value=scale01(value))

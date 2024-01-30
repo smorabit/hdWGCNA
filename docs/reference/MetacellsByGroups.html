@@ -18,7 +18,7 @@ on neighboring cells in provided groupings, such as cluster or cell type."><meta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -129,6 +129,7 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
   ident.group <span class="op">=</span> <span class="st">"seurat_clusters"</span>,
   k <span class="op">=</span> <span class="fl">25</span>,
   reduction <span class="op">=</span> <span class="st">"pca"</span>,
+  dims <span class="op">=</span> <span class="cn">NULL</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
   cells.use <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"counts"</span>,
@@ -152,6 +153,8 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <dd><p>Number of nearest neighbors to aggregate. Default = 50</p></dd>
 <dt>reduction</dt>
 <dd><p>A dimensionality reduction stored in the Seurat object. Default = 'pca'</p></dd>
+<dt>dims</dt>
+<dd><p>A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.</p></dd>
 <dt>assay</dt>
 <dd><p>Assay to extract data for aggregation. Default = 'RNA'</p></dd>
 <dt>slot</dt>

@@ -1,3 +1,11 @@
+# hdWGCNA 0.2.27 (2024-01-29)
+## Added
+- New option to `MetacellsByGroups` to specify `dims`.
+
+## Changes
+- Fixed `HubGeneNetworkPlot` to allow selecting specific modules.
+- `GetHubGenes` now returns genes in order from highest to lowest kME in each module.
+
 # hdWGCNA 0.2.26 (2023-12-05)
 ## Added
 - None 

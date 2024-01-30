@@ -13,9 +13,6 @@ In this tutorial, we demonstrate how to perform differential module eigengene (D
 
 First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.
 
-NOTE: ADD a loop for the findDMEs results!!! and maybe add the heatmap code?
-
-
 ```{r eval=FALSE}
 
 # single-cell analysis package
@@ -116,7 +113,7 @@ one comparison group or a list of comparison groups for plotting. For example:
 
 ```{r eval=FALSE}
 
-PlotDMEslollipop(
+PlotDMEsLollipop(
   seurat_obj, 
   DMEs, 
   wgcna_name='INH', 

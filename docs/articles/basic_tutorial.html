@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -270,8 +270,8 @@ Optional: Process the Metacell Seurat Object
 <p>Additionally, we have included a few wrapper functions to apply the Seurat workflow to the metacell object within the hdWGCNA experiment. Here we apply these wrapper functions to process the metacell object and visualize the aggregated expression profiles in two dimensions with UMAP.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ScaleMetacells.html">ScaleMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunPCAMetacells.html">RunPCAMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ScaleMetacells.html">ScaleMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunPCAMetacells.html">RunPCAMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunHarmonyMetacells.html">RunHarmonyMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by.vars<span class="op">=</span><span class="st">'Sample'</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunUMAPMetacells.html">RunUMAPMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span>, reduction<span class="op">=</span><span class="st">'harmony'</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span>
 
@@ -384,7 +384,7 @@ Output
 <p>hdWGCNA includes a function <code>ModuleEigengenes</code> to compute module eigengenes in single cells. Additionally, we allow the user to apply Harmony batch correction to the MEs, yielding <strong>harmonized module eigengenes (hMEs)</strong>. The following code performs the module eigengene computation harmonizing by the Sample of origin using the <code>group.by.vars</code> parameter.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># need to run ScaleData first or else harmony throws an error:</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># compute all MEs in the full single-cell dataset</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span>

@@ -6,6 +6,7 @@
 #' @param k Number of nearest neighbors to aggregate. Default = 50
 #' @param name A string appended to resulting metalcells. Default = 'agg'
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
+#' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
@@ -22,7 +23,9 @@
 #' ConstructMetacells
 ConstructMetacells <- function(
   seurat_obj, name='agg', ident.group='seurat_clusters', k=25,
-  reduction='umap', assay='RNA',
+  reduction='pca', 
+  dims = NULL,
+  assay='RNA',
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
   slot='counts',  meta=NULL, return_metacell=FALSE,
   mode = 'average', max_shared=15,
@@ -55,11 +58,31 @@ ConstructMetacells <- function(
     seurat_obj <- seurat_obj[,cells.use]
   }
 
-
+  # get the dim reduction
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
+  reduc_orig <- reduced_coordinates
+
+  # subset the dims?
+  if(!is.null(dims)){
+    # are these indices?
+    if(is.numeric(dims)){
+      if(!all(dims %in% 1:ncol(reduced_coordinates))){
+        stop("Invalid selection for dims. Check that the selected dims match the columns of the selected reduction.")
+      }
+    } else{
+      if(!all(dims %in% colnames(reduced_coordinates))){
+        stop("Invalid selection for dims. Check that the selected dims match the column names of the selected reduction.")
+      }
+    }
+    reduced_coordinates <- reduced_coordinates[,dims]
+  }
+
+  # run KNN on the chosen dim reduction
   nn_map <- FNN::knn.index(reduced_coordinates, k = (k - 1))
   row.names(nn_map) <- row.names(reduced_coordinates)
   nn_map <- cbind(nn_map, seq_len(nrow(nn_map)))
+  
+  # set up variables for loop
   good_choices <- seq_len(nrow(nn_map))
   choice <- sample(seq_len(length(good_choices)), size = 1,
       replace = FALSE)
@@ -70,6 +93,8 @@ ConstructMetacells <- function(
   get_shared <- function(other, this_choice) {
       k2 - length(union(cell_sample[other, ], this_choice))
   }
+
+  # loop to create metacells until convergencce
   while (length(good_choices) > 0 & length(chosen) < target_metacells & it < max_iter) {
       it <- it + 1
       choice <- sample(seq_len(length(good_choices)), size = 1,
@@ -88,9 +113,6 @@ ConstructMetacells <- function(
 
   shared_old <- shared
   cell_sample <- nn_map[chosen, ]
-
-  #
-  # combs <- combn(nrow(cell_sample), 2)
 
   # get a list of the cell barcodes that have been merged:
   cells_merged <- apply(cell_sample, 1, function(x){
@@ -125,8 +147,6 @@ ConstructMetacells <- function(
   # groups of cells to combine
   mask <- sapply(seq_len(nrow(cell_sample)), function(x) seq_len(ncol(exprs_old)) %in%
       cell_sample[x, , drop = FALSE])
-  # mask <- mask[,which(shared_old <= max_shared)]
-  # cell_sample <- cell_sample[which(shared_old <= max_shared),]
   mask <- Matrix::Matrix(mask)
 
   # average or sum expression?
@@ -156,7 +176,6 @@ ConstructMetacells <- function(
   metacell_obj$cells_merged <- as.character(cells_merged)
 
   # calculate stats:
-  # shared <- shared[shared <= max_shared]
   max_shared <- max(shared)
   median_shared <- median(shared)
   mean_shared <- mean(shared)
@@ -225,6 +244,7 @@ ConstructMetacells <- function(
 #' @param k Number of nearest neighbors to aggregate. Default = 50
 #' @param name A string appended to resulting metalcells. Default = 'agg'
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
+#' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
@@ -239,7 +259,10 @@ ConstructMetacells <- function(
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'),
   ident.group='seurat_clusters',
-  k=25, reduction='pca', assay=NULL,
+  k=25, 
+  reduction='pca', 
+  dims=NULL,
+  assay=NULL,
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
   slot='counts', mode = 'average', min_cells=100,
   max_shared=15,
@@ -353,6 +376,7 @@ MetacellsByGroups <- function(
     MoreArgs = list(
       k=k, 
       reduction=reduction, 
+      dims=dims,
       assay=assay, 
       slot=slot, 
       return_metacell=TRUE, 
@@ -365,7 +389,6 @@ MetacellsByGroups <- function(
     )
   )
   names(metacell_list) <- groupings
-
 
   # remove NULL
   remove <- which(sapply(metacell_list, is.null))

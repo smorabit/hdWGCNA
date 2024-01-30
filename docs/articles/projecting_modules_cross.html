@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -240,7 +240,7 @@ Code
 <p>In previous examples, the reference and query datasets were both transcriptomics datasets, but here we are trying to investigate co-expression modules in the epigenome using chromatin accessibility data. Here we use the <code>ProjectModules</code> function as we have done before, but we have to ensure that we are using the Gene Activity matrix from the snATAC-seq dataset rather than the chromatin accessibility matrix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set assay to RNA (Gene Activity matrix)</span>
-<span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span>
+<span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span>
 
 <span class="co"># project modules</span>
 <span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
@@ -601,7 +601,7 @@ Code
 <span class="co"># make a spatial "reduction"</span>
 <span class="va">image_emb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/proxy/man/dist.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">image_df</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'col'</span>, <span class="st">'row'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">image_emb</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Spatial_1"</span>, <span class="st">"Spatial_2"</span><span class="op">)</span>
-<span class="va">seurat_vis</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span>
+<span class="va">seurat_vis</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span>
   <span class="va">image_emb</span>,
   key <span class="op">=</span> <span class="st">'Spatial'</span>
 <span class="op">)</span>

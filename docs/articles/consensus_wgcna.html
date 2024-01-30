@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
       </span>
     </div>
 
@@ -390,7 +390,7 @@ Show table
 <span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="va">hg38_mm10_genes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">mm10_genes</span>, <span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span><span class="op">)</span>,<span class="op">]</span>
 
 <span class="co"># get the mouse counts matrix, keep only genes with a human ortholog</span>
-<span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
+<span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_mouse</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
 <span class="va">X_mouse</span> <span class="op">&lt;-</span> <span class="va">X_mouse</span><span class="op">[</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">hg38_mm10_genes</span><span class="op">$</span><span class="va">mm10_name</span>,<span class="op">]</span>
 
 <span class="co"># rename mouse genes to human ortholog</span>
@@ -400,7 +400,7 @@ Show table
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>, <span class="st">'_mouse'</span><span class="op">)</span>
 
 <span class="co"># get the human counts matrix</span>
-<span class="va">X_human</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
+<span class="va">X_human</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_obj</span>, slot<span class="op">=</span><span class="st">'counts'</span><span class="op">)</span>
 
 <span class="co"># what genes are in common?</span>
 <span class="va">genes_common</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_mouse</span><span class="op">)</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span><span class="op">)</span>
@@ -421,8 +421,8 @@ Show table
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">human_meta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_human</span><span class="op">)</span>
 
 <span class="co"># make mouse seurat obj</span>
-<span class="va">seurat_m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_mouse</span>, meta <span class="op">=</span> <span class="va">mouse_meta</span><span class="op">)</span>
-<span class="va">seurat_h</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_human</span>, meta <span class="op">=</span> <span class="va">human_meta</span><span class="op">)</span>
+<span class="va">seurat_m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_mouse</span>, meta <span class="op">=</span> <span class="va">mouse_meta</span><span class="op">)</span>
+<span class="va">seurat_h</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">X_human</span>, meta <span class="op">=</span> <span class="va">human_meta</span><span class="op">)</span>
 
 <span class="co"># merge:</span>
 <span class="va">seurat_m</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="st">'mouse'</span>
