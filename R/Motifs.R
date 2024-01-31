@@ -17,12 +17,19 @@ MotifScan <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
+  # TODO: add checks?
+  # check pfm
+  # check ensdb
+  
+  print('set up motif df')
+
   # get a dataframe of just the motif name and the motif ID:
   motif_df <- data.frame(
     motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
     motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
   )
 
+  print('get promoters from ensdb')
   # get promoters of protein coding genes from the given Ensdb
   # note: everything breaks if I try to use X & Y chromosomes.
   gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
@@ -30,23 +37,37 @@ MotifScan <- function(
   gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
     subset(seqnames %in% c(1:100))
 
+  print('add gene name to promoter')
+
   # add the gene name to the promoter object
-  gene.promoters$symbol <- gene.coords$symbol[match(gene.promoters$gene_id, names(gene.coords))]
+  gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
+
+  print('drop chromosomes')
+
 
   # drop unnecessary chromosomes
-  gene.promoters <- keepSeqlevels(gene.promoters, value= levels(droplevels(seqnames(gene.promoters))))
+  gene.promoters <- GenomeInfoDb::keepSeqlevels(
+    gene.promoters, 
+    value=levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
+  )
+
+  print('rename seqlevels')
 
   # rename seqlevels to add 'chr', remove X&Y chromosomes because they break everything
-  old_levels <- levels(seqnames(gene.promoters))
+  old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
   new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
-  gene.promoters <- renameSeqlevels(gene.promoters, new_levels)
+  gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
+
+  print('set the genome')
 
   # set the genome (not sure if we NEED to do this...)
-  genome(seqinfo(gene.promoters)) <- species_genome
+  GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
+
+  print('set up the promoters granges object')
 
   # set up promoters object that only has the necessary info for motifmatchr
   my_promoters <- GRanges(
-    seqnames =  droplevels(seqnames(gene.promoters)),
+    seqnames =  droplevels(GenomeInfoDb::seqnames(gene.promoters)),
     IRanges(
       start = start(gene.promoters),
       end = end(gene.promoters)
