@@ -33,14 +33,33 @@ MotifScan <- function(
 
   # get promoters of protein coding genes from the given Ensdb
   # note: everything breaks if I try to use X & Y chromosomes.
-  gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") 
-  gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100)]
-  length(gene.promoters)
-    subset(seqnames %in% c(1:100))
+ 
+  # get promoter and gene coords:
+  gene.promoters <- ensembldb::promoters(EnsDb)
+  gene.coords <- ensembldb::genes(EnsDb)
+  print('here')
+
+  # subset by protein coding
+  gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
+  gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
+  print('here')
+
+  # subset by chromosomes
+  gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100, 'X','Y')]
+  gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100, 'X', 'Y')]
+  print('here')
+
+
+  # gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") 
+  # gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100)]
   
-  gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding")
-  gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100)]
-  length(gene.coords)
+  
+  # gene.coords <- ensembldb::genes(EnsDb)
+
+  # gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding")
+  # print('here')
+
+  # gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100)]
 
   print('add gene name to promoter')
 
@@ -48,7 +67,6 @@ MotifScan <- function(
   gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
 
   print('drop chromosomes')
-
 
   # drop unnecessary chromosomes
   gene.promoters <- GenomeInfoDb::keepSeqlevels(
@@ -58,9 +76,10 @@ MotifScan <- function(
 
   print('rename seqlevels')
 
-  # rename seqlevels to add 'chr', remove X&Y chromosomes because they break everything
+  # rename seqlevels to add 'chr', 
   old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
-  new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
+  #new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
+  new_levels <- paste0('chr', old_levels)
   gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
 
   print('set the genome')
@@ -98,7 +117,7 @@ MotifScan <- function(
   tf_match <- tf_match[gene_list,]
 
   # get list of target genes for each TF:
-  print('Getting TF target genes...')
+  print('Getting putative TF target genes...')
   tfs <- motif_df$motif_name
   tf_targets <- list()
   n_targets <- list()
