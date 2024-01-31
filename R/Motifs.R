@@ -30,12 +30,17 @@ MotifScan <- function(
   )
 
   print('get promoters from ensdb')
+
   # get promoters of protein coding genes from the given Ensdb
   # note: everything breaks if I try to use X & Y chromosomes.
-  gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
+  gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") 
+  gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100)]
+  length(gene.promoters)
     subset(seqnames %in% c(1:100))
-  gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding") %>%
-    subset(seqnames %in% c(1:100))
+  
+  gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding")
+  gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100)]
+  length(gene.coords)
 
   print('add gene name to promoter')
 
