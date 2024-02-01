@@ -45,8 +45,8 @@ MotifScan <- function(
   print('here')
 
   # subset by chromosomes
-  gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100, 'X','Y')]
-  gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100, 'X', 'Y')]
+  gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X','Y')]
+  gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
   print('here')
 
 
