@@ -22,4 +22,17 @@ Depends:
     R (>= 2.10),
     harmony (>= 1.0.1),
     Seurat (>= 4.0.0),
-    ggrepel (>= 0.9.0)
+    ggrepel (>= 0.9.0),
+    WGCNA,
+    igraph,
+    devtools,
+    GeneOverlap,
+    ggforestplot,
+    Matrix,
+    harmony,
+    igraph,
+    ggplot2,
+    dplyr,
+    tester
+Remotes:
+    NightingaleHealth/ggforestplot
