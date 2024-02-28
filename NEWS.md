@@ -1,3 +1,12 @@
+# hdWGCNA 0.3.00 (2024-02-27)
+## Added
+- First version with support for Seurat v5.
+- Updated the network visualization tutorial with a tutorial for making custom networks.
+
+## Changes
+- Changed `FindDMEs` and `FindAllDMEs` to perform differential testing with module expression scores.
+
+
 # hdWGCNA 0.2.27 (2024-01-29)
 ## Added
 - New option to `MetacellsByGroups` to specify `dims`.

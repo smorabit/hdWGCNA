@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -533,14 +533,14 @@
 
 <span class="co"># set PCA reduction</span>
 <span class="va">seurat_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">pca</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span>
-  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/proxy/man/dist.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">X_pca</span><span class="op">)</span>,
+  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">X_pca</span><span class="op">)</span>,
   key<span class="op">=</span><span class="st">"PC"</span>,
   assay<span class="op">=</span><span class="st">"RNA"</span>
 <span class="op">)</span>
 
 <span class="co"># set UMAP reduction</span>
 <span class="va">seurat_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">umap</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span>
-  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/proxy/man/dist.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">umap</span><span class="op">)</span>,
+  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">umap</span><span class="op">)</span>,
   key<span class="op">=</span><span class="st">"UMAP"</span>,
   assay<span class="op">=</span><span class="st">"RNA"</span>
 <span class="op">)</span>

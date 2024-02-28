@@ -1,10 +1,11 @@
 
 #' FindAllDMEs
 #'
-#' Modification of the Seurat function FindMarkers used to perform iterative one-versus-all differential module eigengene testing given a group of cells (ie clusters, cell types, etc).
+#' Function to compare expression levels of co-expression modules between two sets of cell barcodes.
 #'
 #' @param seurat_obj A Seurat object
 #' @param group.by column in seurat_obj@meta.data containing cell grouping information
+#' @param features indicate whether to use "MEs" or "ModuleScores" for the comparison
 #' @param harmonized logical determining whether or not to use harmonized MEs
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param add_missing logical determining whether or not to add missing modules back into the resulting dataframe with NA values.
@@ -17,9 +18,10 @@
 FindAllDMEs <- function(
   seurat_obj,
   group.by,
+  features = 'MEs',
   harmonized=TRUE,
-  wgcna_name=NULL,
   add_missing=FALSE,
+  wgcna_name=NULL,
   test.use='wilcox',
   only.pos=FALSE,
   logfc.threshold = 0,
@@ -37,8 +39,16 @@ FindAllDMEs <- function(
   # get list of groups
   groups <- as.character(unique(seurat_obj@meta.data[[group.by]]))
 
-  # get module eigengenes, remove grey module
-  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  # what features are we using?
+  if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  } else if(features == 'ModuleScores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else{
+    stop('Invalid selection for features. Valid choices are MEs or ModuleScores.')
+  }
+
+  # remove grey module
   MEs <- MEs[, colnames(MEs) != 'grey']
 
   # set all negative values to zero
@@ -96,11 +106,12 @@ FindAllDMEs <- function(
 
 #' FindDMEs
 #'
-#' Modification of the Seurat function FindMarkers used to perform differential module eigengene testing between two sets of cell barcodes.
+#' Function to compare expression levels of co-expression modules between two sets of cell barcodes.
 #'
 #' @param seurat_obj A Seurat object
 #' @param barcodes1 character vector containing cell barcodes for the first group to test. Positive fold-change means up-regulated in this group.
 #' @param barcodes2 character vector containing cell barcodes for the second group to test. Negative fold-change means up-regulated in this group.
+#' @param features indicate whether to use "MEs" or "ModuleScores" for the comparison
 #' @param harmonized logical determining whether or not to use harmonized MEs
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param add_missing logical determining whether or not to add missing modules back into the resulting dataframe with NA values.
@@ -114,6 +125,7 @@ FindDMEs <- function(
   seurat_obj,
   barcodes1,
   barcodes2,
+  features = 'MEs',
   harmonized=TRUE,
   wgcna_name=NULL,
   add_missing=FALSE,
@@ -144,11 +156,17 @@ FindDMEs <- function(
     stop('Some barcodes overlap in barcodes1 and barcodes2')
   }
 
-  # get module eigengenes, remove grey module
-  MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  # what features are we using?
+  if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
+  } else if(features == 'ModuleScores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else{
+    stop('Invalid selection for features. Valid choices are MEs or ModuleScores.')
+  }
+
+  # remove grey module
   MEs <- MEs[, colnames(MEs) != 'grey']
-  print(dim(MEs))
-  print(colnames(MEs))
 
   # set all negative values to zero
   MEs[MEs < 0] <- 0

@@ -9,6 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Compiled: 27-02-2024
+
+Source: `vignettes/pseudobulk.Rmd`
+
 In this tutorial, we demonstrate how to run hdWGCNA using pseudobulk data instead of 
 using metacells or metaspots. Pseudobulk can be advantageous for very large datasets 
 where the metacell calculations can be slow. First we discuss why we would use pseudobulk instead of 
@@ -85,6 +89,14 @@ set `min_reps=10` so it does not give us an error message.
 
 ```{r eval=FALSE}
 
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "fraction", 
+  fraction = 0.05, 
+  wgcna_name = "pseudobulk"
+)
+length(GetWGCNAGenes(seurat_obj))
+
 # Construt the pseudobulk expression profiles
 datExpr <- ConstructPseudobulk(
   seurat_obj,
@@ -132,7 +144,7 @@ an example and was not run for this tutorial.
 cur_group <- 'ASC'
 
 # subset the matrix for just this cell type
-cur_cpm <- cpm[grepl(cur_group, rownames(cur_cpm)),]
+cur_cpm <- cpm[grepl(cur_group, rownames(cpm)),]
 
 seurat_obj <- SetDatExpr(
   seurat_obj,
@@ -163,18 +175,16 @@ PlotDendrogram(seurat_obj, main='pseudobulk dendrogram')
 
 ```
 
+```{r eval=FALSE, echo=FALSE}
+png(paste0(fig_dir, 'dendro_pseudobulk.png'), width=9, height=3,res=400, units='in')
+PlotDendrogram(seurat_obj, main='pseudobulk dendrogram')
+dev.off()
+```
+
 <img src="figures/pseudobulk/dendro_pseudobulk.png" width="900" height="600">
 
 We can see that this analysis has resulted in 36 co-expression modules across the 
 six cell types.
-
-```{r eval=FALSE, echo=FALSE}
-
-png(paste0(fig_dir, 'dendro_pseudobulk.png'), width=9, height=3,res=400, units='in')
-PlotDendrogram(seurat_obj, main='pseudobulk dendrogram')
-dev.off()
-
-```
 
 Next we compute the module eigengenes (MEs) and eigengene-based 
 connectivity (kMEs) at the single-cell level, and we can plot the 
@@ -191,10 +201,14 @@ MEs <- GetMEs(seurat_obj)
 mods <- colnames(MEs); mods <- mods[mods != 'grey']
 
 # add MEs to Seurat meta-data for plotting:
-seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
 
 # plot with Seurat's DotPlot function
 p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
+
+# reset the metadata
+seurat_obj@meta.data <- meta
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +
@@ -208,11 +222,9 @@ p
 ```
 
 ```{r eval=FALSE, echo=FALSE}
-
 png(paste0(fig_dir, 'dotplot_pseudobulk.png'), width=12, height=5,res=400, units='in')
 p 
 dev.off()
-
 ```
 
 <img src="figures/pseudobulk/dotplot_pseudobulk.png" width="900" height="600">
@@ -252,26 +264,24 @@ centroid_df <- umap_df %>%
 p <- p + geom_label(
   data = centroid_df, 
   label=as.character(centroid_df$module), 
-  fontface='bold', size=2
-)
+  fontface='bold', size=2) + 
+  theme(panel.background = element_rect(fill='black'))
 
 p
 
+```
+
+```{r eval=FALSE, echo=FALSE}
+png(paste0(fig_dir, 'pseudobulk_hubgene_umap_ggplot.png'), width=7, height=7,res=400, units='in')
+p
+dev.off()
 ```
 
 <img src="figures/pseudobulk/pseudobulk_hubgene_umap_ggplot.png" width="600" height="600">
 
-```{r eval=FALSE, echo=FALSE}
-
-png(paste0(fig_dir, 'pseudobulk_hubgene_umap_ggplot.png'), width=7, height=7,res=400, units='in')
-p
-dev.off()
-
-```
 
 As you can see, the co-expression network derived from pseudobulk data 
 can be used for the same downstream analysis as with the metacell/metaspot data.
-
 
 ## Consensus network analysis with pseudobulk data 
 
@@ -342,6 +352,13 @@ seurat_obj <- SetMultiExpr(
 For consensus network analysis, we need to perform the soft power threshold 
 testing for each group, so next we use `TestSoftPowersConsensus`.
 
+```{r eval=FALSE, echo=FALSE}
+
+seurat_obj@meta.data <- seurat_obj@meta.data[,1:36]
+
+
+```
+
 ```{r eval=FALSE}
 
 seurat_obj <- TestSoftPowersConsensus(seurat_obj)
@@ -408,24 +425,25 @@ modules in the 6 major cell types.
 seurat_obj <- ModuleEigengenes(seurat_obj)
 seurat_obj <- ModuleConnectivity(seurat_obj)
 
-seurat_obj@meta.data <- seurat_obj@meta.data[,1:36]
-
 # get MEs from seurat object
 MEs <- GetMEs(seurat_obj)
 mods <- colnames(MEs); mods <- mods[mods != 'grey']
 
 # add MEs to Seurat meta-data for plotting:
-seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
 
 # plot with Seurat's DotPlot function
 p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
+
+# reset the metadata to remove the MEs
+seurat_obj@meta.data <- meta
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +
   RotatedAxis() +
   scale_color_gradient(high='red', low='grey95') + 
   xlab('') + ylab('')
-
 
 p
 
@@ -445,3 +463,4 @@ dev.off()
 
 The tutorial ends here but the pseudobulk consensus modules can be further explored using our 
 [other tutorials](hdWGCNA.html).
+

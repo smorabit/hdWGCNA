@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -158,7 +158,9 @@
 
     
     
-<p>In this tutorial, we demonstrate how to perform differential module eigengene (DME) analysis, revealing modules that are up- or down-regulated in given groups of cells.</p>
+<p>Compiled: 27-02-2024</p>
+<p>Source: <code>vignettes/differential_MEs.Rmd</code></p>
+<p>In this tutorial, we demonstrate how to perform differential expression analysis for our co-expression network modules. We refer to this analysis as “differential module eigengene” (DME) analysis, which reveals modules that are up- or down-regulated in specified groups of cells. For this analysis we take advantage of Seurat’s <code>FindMarkers</code> function to perform differential testing, so we have access to all of the same options.</p>
 <p>First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -185,7 +187,7 @@
 <div class="section level2">
 <h2 id="dme-analysis-comparing-two-groups">DME analysis comparing two groups<a class="anchor" aria-label="anchor" href="#dme-analysis-comparing-two-groups"></a>
 </h2>
-<p>Here we discuss how to perform DME testing between two different groups. We use the hdWGCNA function <code>FindDMEs</code>, which is similar to the Seurat function <code>FindMarkers</code>. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user’s discretion with the <code>test.use</code> parameter.</p>
+<p>Here we discuss how to perform DME testing between two different groups. We use the hdWGCNA function <code>FindDMEs</code>, the syntax of which is similar to the Seurat function <code>FindMarkers</code>. Here we use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be specified with the <code>test.use</code> parameter.</p>
 <p>Since the tutorial dataset only contains control brain samples, we will use sex to define our two groups. <code>FindDMEs</code> requires a list of barcodes for group1 and for group2. Further, we are only going to compare cells from the INH cluster since that is the group that we performed network analysis on.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
@@ -357,6 +359,40 @@ EX.INH-M6     0   2.448315 0.877 0.209         0 INH-M6    EX</code></pre>
 <span class="co"># facet wrap by each cell type</span>
 <span class="va">p</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">group</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/DMEs/test_DME_volcano2.png" width="800" height="900"></p>
+</div>
+<div class="section level2">
+<h2 id="using-modulescores-instead-of-mes">Using ModuleScores instead of MEs<a class="anchor" aria-label="anchor" href="#using-modulescores-instead-of-mes"></a>
+</h2>
+<p>We can also perform differential analysis using module expression scores instead of module eigengenes. These must first be calculated using the function <code>ModuleExprScore</code>, as shown below.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleExprScore.html">ModuleExprScore</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_genes <span class="op">=</span> <span class="fl">25</span>,
+  method<span class="op">=</span><span class="st">'UCell'</span>
+<span class="op">)</span></code></pre></div>
+<p>Next we can perform differential analysis using these module scores by specifying <code>features = 'ModuleScores'</code> in the <code>FindDMEs</code> function.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
+<span class="va">group2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span>
+
+<span class="va">DMEs_scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/FindDMEs.html">FindDMEs</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  features <span class="op">=</span> <span class="st">'ModuleScores'</span>,
+  barcodes1 <span class="op">=</span> <span class="va">group1</span>,
+  barcodes2 <span class="op">=</span> <span class="va">group2</span>,
+  test.use<span class="op">=</span><span class="st">'wilcox'</span>,
+  wgcna_name<span class="op">=</span><span class="st">'tutorial'</span>
+<span class="op">)</span>
+
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotDMEsLollipop.html">PlotDMEsLollipop</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>, 
+  <span class="va">DMEs</span>, 
+  wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
+  pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span>
+<span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/DMEs/test_DMEscore_lollipop.png" width="800" height="900"></p>
 </div>
   </div>
 

@@ -8,7 +8,8 @@
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'counts'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param max_shared the maximum number of cells to be shared across two metacells
@@ -17,9 +18,7 @@
 #' @param max_shared the maximum number of cells to be shared across two metacells
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name name of the WGCNA experiment
-#' @keywords scRNA-seq
 #' @export
-#' @examples
 #' ConstructMetacells
 ConstructMetacells <- function(
   seurat_obj, name='agg', ident.group='seurat_clusters', k=25,
@@ -27,7 +26,9 @@ ConstructMetacells <- function(
   dims = NULL,
   assay='RNA',
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
-  slot='counts',  meta=NULL, return_metacell=FALSE,
+  slot='counts',  
+  layer='counts',
+  meta=NULL, return_metacell=FALSE,
   mode = 'average', max_shared=15,
   target_metacells=1000,
   max_iter=5000,
@@ -142,7 +143,11 @@ ConstructMetacells <- function(
   }
 
   # get original expression matrix
-  exprs_old <- GetAssayData(seurat_obj, assay=assay, slot=slot)
+  if(CheckSeurat5()){
+    exprs_old <- SeuratObject::LayerData(seurat_obj, assay=assay, layer=layer)
+  } else{
+    exprs_old <- Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot)
+  }
 
   # groups of cells to combine
   mask <- sapply(seq_len(nrow(cell_sample)), function(x) seq_len(ncol(exprs_old)) %in%
@@ -239,6 +244,9 @@ ConstructMetacells <- function(
 #'
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells in provided groupings, such as cluster or cell type.
+#' 
+#' @return seurat_obj with a metacell seurat_obj stored in the specified WGCNA experiment
+#' 
 #' @param seurat_obj A Seurat object
 #' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
 #' @param k Number of nearest neighbors to aggregate. Default = 50
@@ -246,7 +254,8 @@ ConstructMetacells <- function(
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'counts'
+#' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param min_cells the minimum number of cells in a particular grouping to construct metacells
 #' @param max_shared the maximum number of cells to be shared across two metacells
@@ -254,8 +263,20 @@ ConstructMetacells <- function(
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name name of the WGCNA experiment
+#' 
+#' @details 
+#' MetacellsByGroups merges transcriptomically similar cells into "metacells".
+#' Given a dimensionally-reduced representation of the input dataset, this algorithm 
+#' first uses KNN to identify similar cells. A bootstrapped sampling procedure is then 
+#' used to group together similar cells until convergence is reached. Importantly, 
+#' this procedure is done in a context-specific manner based on the provided group.by parameters.
+#' Typically this means that metacells will be constructed separately for each biological 
+#' replicate, cell type or cell state, disease condition, etc. The metacell representation is 
+#' considerably less sparse than the original single-cell dataset, which is preferable for 
+#' co-expression network analysis or othter analyses that rely on correlations. 
+#' 
+#' @import Seurat
 #' @export
-#' MetacellsByGroups
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'),
   ident.group='seurat_clusters',
@@ -263,14 +284,20 @@ MetacellsByGroups <- function(
   reduction='pca', 
   dims=NULL,
   assay=NULL,
-  cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
-  slot='counts', mode = 'average', min_cells=100,
+  slot='counts', 
+  layer='counts',
+  mode = 'average', 
+  cells.use = NULL, 
+  min_cells=100,
   max_shared=15,
   target_metacells=1000,
-  max_iter=5000, verbose=FALSE, wgcna_name=NULL
+  max_iter=5000, 
+  verbose=FALSE, 
+  wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # check group.by for invalid characters:
   if(any(grepl('#', group.by))){
@@ -299,13 +326,13 @@ MetacellsByGroups <- function(
     stop(paste0('Assay ', assay, ' not found in seurat_obj. Select a valid assay: ', paste0(names(seurat_obj@assays), collapse = ', ')))
   }
 
-  # check slot:
+  # check slot/layer:
   if(!(slot %in% c('counts', 'data', 'scale.data'))){
     stop('Invalid input for slot. Valid choices are counts, data, scale.data.')
   } else{
 
     # check the shape of the slot
-    slot_dim <- dim(GetAssayData(seurat_obj, assay=assay, slot=slot))
+    slot_dim <- dim(Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot))
     if(any(slot_dim) == 0){
       stop(paste(c("Selected slot ", slot, " not found in this assay.")))
     }
@@ -379,13 +406,14 @@ MetacellsByGroups <- function(
       dims=dims,
       assay=assay, 
       slot=slot, 
+      layer=layer,
       return_metacell=TRUE, 
       mode=mode,
-       max_shared=max_shared, 
-       max_iter=max_iter, 
-       target_metacells=target_metacells, 
-       verbose=verbose, 
-       wgcna_name=wgcna_name
+      max_shared=max_shared, 
+      max_iter=max_iter, 
+      target_metacells=target_metacells, 
+      verbose=verbose, 
+      wgcna_name=wgcna_name
     )
   )
   names(metacell_list) <- groupings
@@ -406,6 +434,11 @@ MetacellsByGroups <- function(
   # combine metacell objects
   if(length(metacell_list) > 1){
     metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
+    
+    # need to join layers if this is Seurat 5
+    if(CheckSeurat5()){
+      metacell_obj <- SeuratObject::JoinLayers(metacell_obj)
+    }
   } else{
     metacell_obj <- metacell_list[[1]]
   }
@@ -422,17 +455,24 @@ MetacellsByGroups <- function(
   seurat_obj <- SetMetacellObject(seurat_obj, metacell_obj, wgcna_name)
 
   # add other info
-  seurat_obj <- SetWGCNAParams(
-    seurat_obj, params = list(
-      'metacell_k' = k,
-      'metacell_reduction' = reduction,
-      'metacell_slot' = slot,
-      'metacell_assay' = assay,
-      'metacell_stats' = run_stats
-    ),
-    wgcna_name
+  param_list <- list(
+    'metacell_k' = k,
+    'metacell_reduction' = reduction,
+    'metacell_assay' = assay,
+    'metacell_stats' = run_stats
   )
 
+  if(CheckSeurat5()){
+    param_list['metacell_layer'] <- layer
+  } else{
+    param_list['metacell_slot'] <- slot
+  }
+
+  seurat_obj <- SetWGCNAParams(
+    seurat_obj, params = param_list, wgcna_name
+  )
+
+  # return the updated seurat object
   seurat_obj
 }
 

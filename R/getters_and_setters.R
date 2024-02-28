@@ -45,7 +45,9 @@ GetActiveWGCNAName <- function(seurat_obj){
 #' @keywords scRNA-seq
 #' @export
 CheckWGCNAName <- function(seurat_obj, wgcna_name){
-  wgcna_name %in% names(seurat_obj@misc)
+  if(! wgcna_name %in% names(seurat_obj@misc)){
+    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 }
 
 # get any WGCNA data, but by default get the active
@@ -150,7 +152,8 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_group_name A string containing the name of a group present in the multi.group.by column.
 #' @param assay The name of the assay in the Seurat object
-#' @param slot The name of the slot in the Seurat object (counts, data)
+#' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
 #' @details
@@ -170,6 +173,7 @@ SetDatExpr <- function(
   return_seurat = TRUE,
   assay=NULL,
   slot = 'data',
+  layer = 'data',
   mat=NULL,
   wgcna_name=NULL,
   ...
@@ -177,9 +181,7 @@ SetDatExpr <- function(
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   if(is.null(assay)){
       assay <- DefaultAssay(seurat_obj)
@@ -187,7 +189,7 @@ SetDatExpr <- function(
   }
 
   # check that selected assay is in the seurat object 
-  if(!(assay %in% Assays(seurat_obj))){
+  if(!(assay %in% names(seurat_obj))){
     stop(paste0('Invalid choice of assay: ', assay, ' not found in Assays(seurat_obj).'))
   }
 
@@ -198,6 +200,7 @@ SetDatExpr <- function(
 
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
+
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
   # was a matrix supplied?
@@ -270,14 +273,13 @@ SetDatExpr <- function(
     cells <- rownames(seurat_meta)
 
     # get expression data from seurat obj
-    datExpr <- as.data.frame(
-      Seurat::GetAssayData(
-        s_obj,
-        assay=assay,
-        slot=slot
-      )[genes_use,cells]
-    )
-
+    if(CheckSeurat5()){
+      exp <- SeuratObject::LayerData(s_obj, assay=assay, layer=layer)
+    } else{
+      exp <- Seurat::GetAssayData(s_obj, assay=assay, slot=slot)
+    }
+    datExpr <- as.data.frame(exp)[genes_use,cells]
+    
     # transpose data
     datExpr <- as.data.frame(t(datExpr))
   } else{
@@ -295,7 +297,8 @@ SetDatExpr <- function(
     }
 
     # subset the datExpr by the WGCNA genes:
-    datExpr <- datExpr[,genes_use]
+    genes_use <- colnames(datExpr)
+    #datExpr <- datExpr[,genes_use]
 
   }
 

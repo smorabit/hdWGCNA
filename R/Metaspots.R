@@ -7,15 +7,26 @@
 #' @param mode "sum" or "average"
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @export
+#' @import proxy
+#' @import Seurat 
+#' @import SeuratObject
+#' @import Matrix
 ConstructMetaspots <- function(
   cur_seurat,
   mode = 'sum',
   assay = 'Spatial',
-  slot = 'counts'
+  slot = 'counts',
+  layer = 'counts'
 ){
+
   # get expression matrix:
-  X <- GetAssayData(cur_seurat, slot='counts')
+  if(CheckSeurat5()){
+    X <- SeuratObject::LayerData(cur_seurat, assay=assay, layer=layer)
+  } else{
+    X <- Seurat::GetAssayData(cur_seurat, assay=assay, slot=slot)
+  }
 
   # check to make sure this is just one sample:
   if(sum(unlist(lapply(Images(cur_seurat), function(x){nrow(cur_seurat@images[[x]]@coordinates) != 0}))) != 1){
@@ -193,16 +204,22 @@ ConstructMetaspots <- function(
 #' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param min_spots the minimum number of spots in a particular grouping to construct metaspots
 #' @param wgcna_name name of the WGCNA experiment
 #' @export
+#' @import proxy
+#' @import Seurat 
+#' @import SeuratObject
+#' @import Matrix
 MetaspotsByGroups <- function(
   seurat_obj,
   group.by=c('seurat_clusters'),
   ident.group='seurat_clusters',
   assay = 'Spatial',
   slot = 'counts',
+  layer = 'counts',
   mode = 'sum',
   min_spots = 50,
   wgcna_name = NULL
@@ -247,7 +264,6 @@ MetaspotsByGroups <- function(
     }
   }
 
-
   # setup grouping variables
   if(length(group.by) > 1){
     seurat_meta <- seurat_obj@meta.data[,group.by]
@@ -280,7 +296,7 @@ MetaspotsByGroups <- function(
   metaspot_list <- mapply(
     ConstructMetaspots,
     cur_seurat = seurat_list,
-    MoreArgs = list(mode=mode, assay=assay, slot=slot)
+    MoreArgs = list(mode=mode, assay=assay, slot=slot, layer=layer)
   )
   names(metaspot_list) <- groupings
 
@@ -320,6 +336,12 @@ MetaspotsByGroups <- function(
   # combine metacell objects
   if(length(metaspot_list) > 1){
     metaspot_obj <- merge(metaspot_list[[1]], metaspot_list[2:length(metaspot_list)])
+  
+   # need to join layers if this is Seurat 5
+    if(CheckSeurat5()){
+      metaspot_obj <- SeuratObject::JoinLayers(metaspot_obj)
+    }
+
   } else{
     metaspot_obj <- metaspot_list[[1]]
   }

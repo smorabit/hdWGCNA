@@ -104,3 +104,14 @@ corSparse <- function(X, Y = NULL, cov = FALSE) {
     return(cormat)
   }
 }
+
+
+
+#' CheckSeurat5
+#'
+#' Function to check if Seurat version is v5
+#' 
+#' @export
+CheckSeurat5 <- function(){
+    startsWith(as.character(packageVersion('Seurat')), '5')
+}

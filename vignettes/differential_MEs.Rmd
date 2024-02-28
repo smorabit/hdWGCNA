@@ -9,7 +9,17 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In this tutorial, we demonstrate how to perform differential module eigengene (DME) analysis, revealing modules that are up- or down-regulated in given groups of cells.
+
+Compiled: 27-02-2024
+
+Source: `vignettes/differential_MEs.Rmd`
+
+In this tutorial, we demonstrate how to perform differential expression 
+analysis for our co-expression network modules. We refer to this analysis 
+as "differential module eigengene" (DME) analysis, which reveals
+modules that are up- or down-regulated in specified groups of cells. For this 
+analysis we take advantage of Seurat's `FindMarkers` function to perform 
+differential testing, so we have access to all of the same options.
 
 First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.
 
@@ -42,12 +52,13 @@ seurat_obj <- readRDS('Zhou_2020_hdWGCNA.rds')
 ## DME analysis comparing two groups
 
 Here we discuss how to perform DME testing between two different groups. We
-use the hdWGCNA function `FindDMEs`, which is similar to the Seurat function
-`FindMarkers`. We use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be used at the user's discretion
-with the `test.use` parameter.
+use the hdWGCNA function `FindDMEs`, the syntax of which is similar to the Seurat function
+`FindMarkers`. Here we use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, 
+but other tests can be specified with the `test.use` parameter.
 
 Since the tutorial dataset only contains control brain samples, we will use sex
-to define our two groups. `FindDMEs` requires a list of barcodes for group1 and for group2. Further, we are only going to compare cells from the INH cluster since that is the group that we performed network analysis on.
+to define our two groups. `FindDMEs` requires a list of barcodes for group1 and 
+for group2. Further, we are only going to compare cells from the INH cluster since that is the group that we performed network analysis on.
 
 ```{r eval=FALSE}
 
@@ -333,3 +344,55 @@ dev.off()
 ```
 
 <img src="figures/DMEs/test_DME_volcano2.png" width="800" height="900">
+
+
+## Using ModuleScores instead of MEs 
+
+We can also perform differential analysis using module expression scores 
+instead of module eigengenes. These must first be calculated using the function 
+`ModuleExprScore`, as shown below.
+
+```{r eval=FALSE}
+seurat_obj <- ModuleExprScore(
+  seurat_obj,
+  n_genes = 25,
+  method='UCell'
+)
+```
+
+Next we can perform differential analysis using these module scores by
+specifying `features = 'ModuleScores'` in the `FindDMEs` function. 
+
+```{r eval=FALSE}
+
+group1 <- seurat_obj@meta.data %>% subset(cell_type == 'INH' & msex == 0) %>% rownames
+group2 <- seurat_obj@meta.data %>% subset(cell_type == 'INH' & msex != 0) %>% rownames
+
+DMEs_scores <- FindDMEs(
+  seurat_obj,
+  features = 'ModuleScores',
+  barcodes1 = group1,
+  barcodes2 = group2,
+  test.use='wilcox',
+  wgcna_name='tutorial'
+)
+
+p <- PlotDMEsLollipop(
+  seurat_obj, 
+  DMEs, 
+  wgcna_name = 'tutorial',
+  pvalue = "p_val_adj"
+)
+
+p
+
+```
+
+```{r eval=FALSE, echo=FALSE}
+png(paste0(fig_dir, 'test_DMEscore_lollipop.png'), width=5, height=5, res=600, units='in')
+p
+dev.off()
+```
+
+<img src="figures/DMEs/test_DMEscore_lollipop.png" width="800" height="900">
+

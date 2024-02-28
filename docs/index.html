@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="hdWGCNA">
-<meta property="og:description" content="hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional data such as single-cell RNA-seq or spatial transcriptomics.">
+<meta property="og:description" content="hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional -omics such as single-cell RNA-seq or spatial transcriptomics.">
 <meta property="og:image" content="https://smorabit.github.io/hdWGCNA/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -150,10 +150,9 @@
 <div class="page-header"><h1 id="high-dimensional-wgcna-">high dimensional WGCNA <img src="reference/figures/logo.png" align="right" height="20%" width="20%"><a class="anchor" aria-label="anchor" href="#high-dimensional-wgcna-"></a>
 </h1></div>
 
-<p>hdWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">(WGCNA)</a> in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct co-expression networks across multi-scale cellular and spatial hierarchies. hdWGNCA identifies robust modules of inerconnected genes, and provides context for these modules through various biological knowledge sources. hdWGCNA requires data formatted as <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects, one of the most ubiquitous formats for single-cell data. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA in single-cell data tutorial</a> or the <a href="https://smorabit.github.io/hdWGCNA/articles/ST_basics.html">hdWGCNA in spatial transcriptomics data tutorial</a> to get started.</p>
-<p><strong>Note about package development:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to report bugs, ask for help, and to request potential enhancements.</p>
-<p><strong>Note about Seurat v5:</strong> We plan to test the compatibility of hdWGCNA with <a href="https://satijalab.org/seurat/articles/get_started_v5.html" class="external-link">Seurat version 5</a>, but we have currently not updated hdWGCNA to work with Seurat v5. We strongly suggest using Seurat v4 at this time, or use v5 at your own risk.</p>
-<p>If you use hdWGCNA in your research, please cite the following papers in addition to the original WGCNA publication:</p>
+<p>hdWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">(WGCNA)</a> in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct context-specific co-expression networks across cellular and spatial hierarchies. hdWGNCA identifies modules of highly co-expressed genes and provides context for these modules via statistical testing and biological knowledge sources. hdWGCNA uses datasets formatted as <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA in single-cell data tutorial</a> or the <a href="https://smorabit.github.io/hdWGCNA/articles/ST_basics.html">hdWGCNA in spatial transcriptomics data tutorial</a> to get started.</p>
+<p><strong>Seurat v5 compatibility</strong> As of hdWGCNA v0.3.00 <a href="https://satijalab.org/seurat/articles/get_started_v5.html" class="external-link">Seurat version 5</a> is now supported in addition to Seurat v4.</p>
+<p>If you use hdWGCNA in your research, please cite the following papers in addition to the <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">original WGCNA publication</a>:</p>
 <ul>
 <li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">Morabito et al., Cell Reports Methods (2023)</a></li>
 <li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito &amp; Miyoshi et al., Nature Genetics (2021)</a></li>
@@ -167,7 +166,7 @@
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># activate conda environment</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate hdWGCNA</span></code></pre></div>
-<p>Next, open up R and install the required dependencies:</p>
+<p>Next open R and install the required dependencies:</p>
 <ul>
 <li>
 <a href="https://www.bioconductor.org/" class="external-link">Bioconductor</a>, an R-based software ecosystem for bioinformatics and biostatistics.</li>
@@ -188,11 +187,14 @@
 <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># install additional packages:</span>
-<span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WGCNA"</span>, <span class="st">"igraph"</span>, <span class="st">"devtools"</span>, <span class="st">"GeneOverlap"</span>, <span class="st">'ggrepel'</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WGCNA"</span>, <span class="st">"igraph"</span>, <span class="st">"devtools"</span>, <span class="st">"GeneOverlap"</span>, <span class="st">"ggrepel"</span>, <span class="st">"UCell"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"NightingaleHealth/ggforestplot"</span><span class="op">)</span>
 
-<span class="co"># install Seurat v4, hdWGCNA currently does not work with Seurat v5</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'Seurat'</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'https://satijalab.r-universe.dev'</span>, <span class="st">'https://cloud.r-project.org'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="co"># install Seurat v5 </span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span>
+
+<span class="co"># alternatively, install Seurat v4</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Seurat"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://satijalab.r-universe.dev', 'https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Now you can install the hdWGCNA package using <code>devtools</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'smorabit/hdWGCNA'</span>, ref<span class="op">=</span><span class="st">'dev'</span><span class="op">)</span></code></pre></div>
@@ -213,6 +215,7 @@
 <li><a href="https://doi.org/10.1371/journal.pcbi.1000117" class="external-link">Geometric Interpretation of Gene Coexpression Network Analysis</a></li>
 <li><a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">Is My Network Module Preserved and Reproducible?</a></li>
 </ul>
+<p><strong>Note about package development:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to report bugs, ask for help, and to request potential enhancements.</p>
 </div>
 </div>
   </div>

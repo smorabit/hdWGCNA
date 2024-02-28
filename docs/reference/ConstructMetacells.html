@@ -18,7 +18,7 @@ on neighboring cells."><meta property="og:image" content="https://smorabit.githu
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -180,7 +180,7 @@ on neighboring cells.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ConstructMetacells</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, name = "agg", ident.group = "seurat_clusters", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 25, reduction = "pca", dims = NULL, assay = "RNA", cells.use = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     k = 25, reduction = "umap", assay = "RNA", cells.use = NULL, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     slot = "counts", meta = NULL, return_metacell = FALSE, mode = "average", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     max_shared = 15, target_metacells = 1000, max_iter = 5000, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     verbose = FALSE, wgcna_name = NULL) </span>
@@ -204,20 +204,6 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, cells.use]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reduced_coordinates &lt;- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     reduc_orig &lt;- reduced_coordinates</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(dims)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (is.numeric(dims)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             if (!all(dims %in% 1:ncol(reduced_coordinates))) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 stop("Invalid selection for dims. Check that the selected dims match the columns of the selected reduction.")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             if (!all(dims %in% colnames(reduced_coordinates))) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 stop("Invalid selection for dims. Check that the selected dims match the column names of the selected reduction.")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         reduced_coordinates &lt;- reduced_coordinates[, dims]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     nn_map &lt;- FNN::knn.index(reduced_coordinates, k = (k - 1))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     row.names(nn_map) &lt;- row.names(reduced_coordinates)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     nn_map &lt;- cbind(nn_map, seq_len(nrow(nn_map)))</span>
@@ -321,7 +307,7 @@ on neighboring cells.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fbab4ad63a0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f80a711e0c0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

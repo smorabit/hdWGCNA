@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -158,7 +158,7 @@
 
     
     
-<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a> for hdWGCNA. This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>. This tutorial also assumes that you are familiar with the <a href="https://github.com/satijalab/sctransform" class="external-link">SCTransform R package</a> and the [SCTransform methods paper(<a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1</a>). We generally do not advise using SCTransform unless you are fully aware of how the method works and the underlying assumptions that it makes about gene expression distributions etc.</p>
+<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a> for hdWGCNA. Overall we do not recommend using SCTransform with hdWGCNA, however we have included this tutorial due to numerous user requests. This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>. This tutorial also assumes that you are familiar with the <a href="https://github.com/satijalab/sctransform" class="external-link">SCTransform R package</a> and the <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link">SCTransform methods paper</a>. Once again, we do not advise using SCTransform with hdWGCNA so proceed with caution. If you have made it past these warnings, at least make sure you are fully aware of how SCTransform works and the underlying assumptions that it makes about gene expression distributions etc.</p>
 <p>First we load the required R libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>

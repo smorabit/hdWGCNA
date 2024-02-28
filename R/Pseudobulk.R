@@ -66,6 +66,10 @@ ConstructPseudobulk <- function(
     stop('Selected replicate_col must be a character or a factor, but ', replicate_col, ' is a ', class(seurat_obj@meta.data[,replicate_col]), '.')
   }
 
+  if(is.null(label_col)){
+    label_col <- replicate_col
+  }
+
   # check that label_col is valid
   if(!(class(seurat_obj@meta.data[,label_col]) %in% c('character', 'factor'))){
     stop('Selected label_col must be a character or a factor, but ', label_col, ' is a ', class(seurat_obj@meta.data[,label_col]), '.')

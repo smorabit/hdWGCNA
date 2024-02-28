@@ -818,25 +818,34 @@ EnrichrDotPlot <- function(
 
 #' ModuleNetworkPlot
 #'
-#' Visualizes the top hub genes for selected modules as a circular network plot
+#' Visualizes the top hub genes for selected modules as a circular network plot with one 
+#' inner circle and one outer circle.
 #'
 #' @param seurat_obj A Seurat object
+#' @param n_inner Number of genes to plot on the inner circle 
+#' @param n_outer Number of genes to plot on the outer circle.
+#' @param n_conns Number of gene-gene co-expression connections to plot, sorted by the strongest connections.
 #' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
 #' @param outdir The directory where the plots will be stored.
-#' @param plot_size A vector containing the width and height of the network plots.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
+#' @param plot_size A vector containing the width and height of the network plots. example: c(5,5)
+#' @param edge.alpha value between 0 and 1 determining the alpha (transparency) scaling factor for the network edges
+#' @param edge.width value determining the width of the network edges
+#' @param vertex.label.cex vertex label font size
+#' @param vertex.size vertex size
+#' @import igraph 
 #' @export
-#' @examples
-#' ModuleNetworkPlot
 ModuleNetworkPlot <- function(
   seurat_obj,
+  n_inner = 10,
+  n_outer = 15,
+  n_conns = 500,
   mods="all",
   outdir="ModuleNetworks",
-  plot_size = c(6,6),
   wgcna_name=NULL,
-  label_center = FALSE, # only label the genes in the middle?
+  plot_size = c(6,6),
   edge.alpha=0.25,
+  edge.width=1,
   vertex.label.cex=1,
   vertex.size=6, ...
 ){
@@ -845,10 +854,7 @@ ModuleNetworkPlot <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # get modules, MEs:
-  MEs <- GetMEs(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
-
-
 
   # using all modules?
   if(mods == 'all'){
@@ -869,62 +875,69 @@ ModuleNetworkPlot <- function(
 
   # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- levels(modules$module); mods <- mods[mods != 'grey']
 
   # get hub genes:
-  n_hubs <- 25
-  hub_list <- lapply(mods, function(cur_mod){
-    cur <- subset(modules, module == cur_mod)
-    cur <- cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(n_hubs)
-    colnames(cur)[2] <- 'var'
-    cur %>% arrange(desc(var)) %>% .$gene_name
-  })
-  names(hub_list) <- mods
+  n_hubs <- n_inner + n_outer
+  hub_df <- GetHubGenes(seurat_obj, n_hubs=n_hubs, wgcna_name=wgcna_name)
 
   # loop over modules
   for(cur_mod in mods){
-    print(cur_mod)
     cur_color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+    cur_genes <- subset(hub_df, module == cur_mod) %>% .$gene_name
+    n_genes <- length(cur_genes)
 
-    # number of genes, connections
-    # might make a setting to change this later but I will also have to change
-    # how the graph layout works
-    n_genes = 25;
-    n_conns = 500;
+    # skip if there's too few genes:
+    if(n_genes < (n_inner+1)){
+      print(paste0('Skipping ', cur_mod, ', too few genes to plot.'))
+      next
+    } 
+    print(cur_mod)
 
     # name of column with current kME info
     cur_kME <- paste0('kME_', cur_mod)
 
-    cur_genes <- hub_list[[cur_mod]]
-
     # Identify the columns in the TOM that correspond to these hub genes
     matchind <- match(cur_genes, colnames(TOM))
-    reducedTOM = TOM[matchind,matchind]
+    reducedTOM <- TOM[matchind,matchind]
     orderind <- order(reducedTOM,decreasing=TRUE)
 
+    if(n_conns > ncol(reducedTOM)**2){
+      cur_n_conns <- ncol(reducedTOM)**2
+    } else{
+      cur_n_conns <- n_conns
+    }
+
     # only  keep top connections
-    connections2keep <- orderind[1:n_conns];
-    reducedTOM <- matrix(0,nrow(reducedTOM),ncol(reducedTOM));
-    reducedTOM[connections2keep] <- 1;
+    connections2keep <- orderind[1:cur_n_conns];
+    connections2drop <- orderind[n_conns+1:length(orderind)]
+    reducedTOM[connections2drop] <- 0
 
-    # print('here')
-    # print(dim(reducedTOM))
-    # print(n_genes)
+    # scale between 0 and 1 
+    reducedTOM <- scale01(reducedTOM)
 
-    # only label the top 10 genes?
-    if(label_center){cur_genes[11:25] <- ''}
+    # melt TOM into long format
+    edge_df <- reducedTOM %>% reshape2::melt()
+    edge_df$color_alpha <- alpha(cur_color, alpha=edge_df$value)
 
     # top 10 as center
-    gA <- graph.adjacency(as.matrix(reducedTOM[1:10,1:10]),mode="undirected",weighted=TRUE,diag=FALSE)
-    gB <- graph.adjacency(as.matrix(reducedTOM[11:n_genes,11:n_genes]),mode="undirected",weighted=TRUE,diag=FALSE)
+    gA <- graph.adjacency(as.matrix(reducedTOM[1:n_inner,1:n_inner]),mode="undirected",weighted=TRUE,diag=FALSE)
+    gB <- graph.adjacency(as.matrix(reducedTOM[(n_inner + 1):n_genes,(n_inner+1):n_genes]),mode="undirected",weighted=TRUE,diag=FALSE)
     layoutCircle <- rbind(layout.circle(gA)/2,layout.circle(gB))
 
-    g1 <- graph.adjacency(as.matrix(reducedTOM),mode="undirected",weighted=TRUE,diag=FALSE)
+    g1 <- igraph::graph_from_data_frame(
+        edge_df,
+        directed=FALSE
+      )
 
     pdf(paste0(outdir, '/', cur_mod,'.pdf'), width=plot_size[1], height=plot_size[2], useDingbats=FALSE);
     plot(g1,
-      edge.color=adjustcolor(cur_color, alpha.f=0.25),
-      edge.alpha=edge.alpha,
+      edge.color=adjustcolor(igraph::E(g1)$color_alpha, alpha.f=edge.alpha),
+      edge.curved=0,
+      edge.width=edge.width,
+      #edge.color=adjustcolor(cur_color, alpha.f=0.25),
+      #edge.alpha=edge.alpha,
       vertex.color=cur_color,
       vertex.label=as.character(cur_genes),
       vertex.label.dist=1.1,
@@ -1277,15 +1290,15 @@ ModuleUMAPPlot <- function(
     vertices=selected_modules
   )
 
-  print('making net')
-  print(head(edge_df))
-  print(head(selected_modules))
+  # print('making net')
+  # print(head(edge_df))
+  # print(head(selected_modules))
 
   if(return_graph){return(g)}
 
   plot(
     g,
-    layout=  as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
+    layout= as.matrix(selected_modules[,c('UMAP1', 'UMAP2')]),
     # edge.color=adjustcolor(igraph::E(g)$color, alpha.f=edge.alpha),
     edge.color=adjustcolor(igraph::E(g)$color_alpha, alpha.f=edge.alpha),
     vertex.size=igraph::V(g)$kME * 3,

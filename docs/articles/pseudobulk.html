@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -158,6 +158,8 @@
 
     
     
+<p>Compiled: 27-02-2024</p>
+<p>Source: <code>vignettes/pseudobulk.Rmd</code></p>
 <p>In this tutorial, we demonstrate how to run hdWGCNA using pseudobulk data instead of using metacells or metaspots. Pseudobulk can be advantageous for very large datasets where the metacell calculations can be slow. First we discuss why we would use pseudobulk instead of metacells / metaspots, and what considerations must be made. We will then perform a co-expression network analysis in the Zhou et al 2020 human brain dataset using six major cell types together. This tutorial assumes that you are already familiar with hdWGCNA from our other tutorials.</p>
 <div class="section level2">
 <h2 id="considerations-and-motivation-for-pseudobulk-hdwgcna">Considerations and motivation for pseudobulk hdWGCNA<a class="anchor" aria-label="anchor" href="#considerations-and-motivation-for-pseudobulk-hdwgcna"></a>
@@ -201,7 +203,15 @@
 <p>Here we make the pseudobulk data matrix using the hdWGCNA function <code>ConstructPseudobulk</code>. This function adds up the UMI counts for all cells in a given group based on <code>group.by</code> in each biological replicate based on <code>replicate_col</code>, which should be metadata columns in <code>seurat_obj@meta.data</code>. We will then compute a log CPM normalization of this matrix, but other normalization methods can be used instead if desired. Finally we allow hdWGCNA to use this matrix for downstream processing by passing the matrix directly to the <code>SetDatExpr</code> function. After setting up the pseudobulk matrix, we can continue to use the other hdWGCNA functions as we normally would.</p>
 <p>Since we recommend having at least 20 replicates for this analysis, <code>ConstructPseudobulk</code> has a parameter called <code>min_reps</code> to control the minimum number of allowed replicates. Here we will set <code>min_reps=10</code> so it does not give us an error message.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Construt the pseudobulk expression profiles</span>
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  gene_select <span class="op">=</span> <span class="st">"fraction"</span>, 
+  fraction <span class="op">=</span> <span class="fl">0.05</span>, 
+  wgcna_name <span class="op">=</span> <span class="st">"pseudobulk"</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># Construt the pseudobulk expression profiles</span>
 <span class="va">datExpr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructPseudobulk.html">ConstructPseudobulk</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   group.by <span class="op">=</span> <span class="st">'cell_type'</span>,
@@ -233,7 +243,7 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span class="va">cur_group</span> <span class="op">&lt;-</span> <span class="st">'ASC'</span>
 
 <span class="co"># subset the matrix for just this cell type</span>
-<span class="va">cur_cpm</span> <span class="op">&lt;-</span> <span class="va">cpm</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="va">cur_group</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cur_cpm</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span>
+<span class="va">cur_cpm</span> <span class="op">&lt;-</span> <span class="va">cpm</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="va">cur_group</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cpm</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span>
 
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -270,10 +280,14 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">MEs</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
 
 <span class="co"># add MEs to Seurat meta-data for plotting:</span>
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">MEs</span><span class="op">)</span>
+<span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">meta</span>, <span class="va">MEs</span><span class="op">)</span>
 
 <span class="co"># plot with Seurat's DotPlot function</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span><span class="op">)</span>
+
+<span class="co"># reset the metadata</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span>
 
 <span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span>
@@ -316,8 +330,8 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_label</a></span><span class="op">(</span>
   data <span class="op">=</span> <span class="va">centroid_df</span>, 
   label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">centroid_df</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>, 
-  fontface<span class="op">=</span><span class="st">'bold'</span>, size<span class="op">=</span><span class="fl">2</span>
-<span class="op">)</span>
+  fontface<span class="op">=</span><span class="st">'bold'</span>, size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">'black'</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">p</span></code></pre></div>
 <p><img src="figures/pseudobulk/pseudobulk_hubgene_umap_ggplot.png" width="600" height="600"></p>
@@ -400,24 +414,25 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">36</span><span class="op">]</span>
-
 <span class="co"># get MEs from seurat object</span>
 <span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">MEs</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
 
 <span class="co"># add MEs to Seurat meta-data for plotting:</span>
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">MEs</span><span class="op">)</span>
+<span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">meta</span>, <span class="va">MEs</span><span class="op">)</span>
 
 <span class="co"># plot with Seurat's DotPlot function</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span><span class="op">)</span>
+
+<span class="co"># reset the metadata to remove the MEs</span>
+<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">meta</span>
 
 <span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span>
   <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient</a></span><span class="op">(</span>high<span class="op">=</span><span class="st">'red'</span>, low<span class="op">=</span><span class="st">'grey95'</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span>
-
 
 <span class="va">p</span></code></pre></div>
 <p><img src="figures/pseudobulk/dotplot_consensus_pseudobulk.png" width="900" height="600"></p>

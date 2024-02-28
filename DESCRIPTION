@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.2.27
+Version: 0.3.00
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
@@ -8,18 +8,20 @@ Authors@R: c(
           comment = c(ORCID = "0000-0002-2844-5816")),
     person("Swarup Lab", role = "fnd")
   )
-Description: hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional data such as single-cell RNA-seq or spatial transcriptomics.
+Description: hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional -omics such as single-cell RNA-seq or spatial transcriptomics.
 License: GNU GPLv3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://smorabit.github.io/hdWGCNA/
-Imports: WGCNA, Seurat, Matrix, harmony, igraph, ggplot2, dplyr, tester
+Imports: WGCNA, Seurat, Matrix, harmony, igraph, ggplot2, dplyr, tester, UCell, proxy
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10),
     harmony (>= 1.0.1),
     Seurat (>= 4.0.0),
-    ggrepel (>= 0.9.0)
+    ggrepel (>= 0.9.0),
+    WGCNA, 
+    igraph

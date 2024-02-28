@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
       </span>
     </div>
 
@@ -158,7 +158,12 @@
 
     
     
-<p>In this tutorial, we demonstrate several ways of visualizing the co-expression networks made with hdWGCNA. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">hdWGCNA basics</a>. This tutorial covers the three main network visualizations within hdWGCNA:</p>
+<p>Compiled: 27-02-2024</p>
+<p>Source: <code>vignettes/network_visualizations.Rmd</code></p>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>In this tutorial, we demonstrate several ways of visualizing the co-expression networks made with hdWGCNA. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">single-cell tutorial</a> or the <a href="articles/ST_basics.Rmd">spatial transcriptomics</a>. This tutorial covers three main network visualizations functions within hdWGCNA:</p>
 <ul>
 <li>
 <code>ModuleNetworkPlot</code>, visualizes a separate network plot for each module, showing the top 25 genes by kME.</li>
@@ -167,6 +172,7 @@
 <li>
 <code>ModuleUMAPPlot</code>, visualizes all of the genes in the co-expression simultaneously using the UMAP dimensionality reduction algorithm.</li>
 </ul>
+<p>Finally, we provide guidance for making custom network visualizations using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> packages.</p>
 <p>Before we visualize anything, we first need to load the data and the required libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -176,6 +182,7 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span>
 
 <span class="co"># co-expression network analysis packages:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
@@ -192,12 +199,16 @@
 
 <span class="co"># load the Zhou et al snRNA-seq dataset</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="individual-module-network-plots">Individual module network plots<a class="anchor" aria-label="anchor" href="#individual-module-network-plots"></a>
 </h2>
 <p>Here we demonstrate using the ModuleNetworkPlot function to visualize the network underlying the top 25 hub genes for each module. By default, this function creates a new folder called “ModuleNetworks”, and generates a .pdf figure for each module. There are a few parameters that you can adjust for this function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  outdir <span class="op">=</span> <span class="st">'ModuleNetworks'</span>
+<span class="op">)</span></code></pre></div>
 <p>Here we can see what one of these network plots looks like:</p>
 <p><img src="figures/network_vis/INH-M12.png" width="500" height="500"></p>
 <p>In this network, each node represents a gene, and each edge represents the co-expression relationship between two genes in the network. Each of these module network plots are colored based on the <code>color</code> column in the hdWGCNA module assignment table <code>GetModules(seurat_obj)</code>. The top 10 hub genes by kME are placed in the center of the plot, while the remaining 15 genes are placed in the outer circle.</p>
@@ -210,12 +221,24 @@
 <li>
 <code>vertex.label.cex</code>: determines the font size of the gene label</li>
 </ul>
+<p>Here we run this function again with some of the options changed to show more genes:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span>
+    <span class="va">seurat_obj</span>, 
+    outdir<span class="op">=</span><span class="st">'ModuleNetworks2'</span>, <span class="co"># new folder name</span>
+    n_inner <span class="op">=</span> <span class="fl">20</span>, <span class="co"># number of genes in inner ring</span>
+    n_outer <span class="op">=</span> <span class="fl">30</span>, <span class="co"># number of genes in outer ring</span>
+    n_conns <span class="op">=</span> <span class="cn">Inf</span>, <span class="co"># show all of the connections</span>
+    plot_size<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span>, <span class="co"># larger plotting area</span>
+    vertex.label.cex<span class="op">=</span><span class="fl">1</span> <span class="co"># font size</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/INH-M12_big.png" width="500" height="500"></p>
 </div>
 <div class="section level2">
 <h2 id="combined-hub-gene-network-plots">Combined hub gene network plots<a class="anchor" aria-label="anchor" href="#combined-hub-gene-network-plots"></a>
 </h2>
 <p>Here we will make a network plot combining all of the modules together using the <code>HubGeneNetworkPlot</code> function. This function takes the top <em>n</em> hub genes as specified by the user, and other randomly selected genes, and constructs a joint network using the <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing" class="external-link">force-directed graph drawing algorithm</a>. For visual clarity, the number of edges in the network can be downsampled using the <code>edge_prop</code> parameter. In the following example, we visualize the top 3 hub genes and 6 other genes per module.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># hubgene network</span>
 <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -225,8 +248,22 @@
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hub_net.png" width="600" height="600"></p>
 <p>As in the previous network plot, each node represents a gene and each edge represents a co-expression relationship. In this network, we color intramodular edges with the module’s color, and intermodular edges gray. The opacity of edges in this network is scaled by the strength of the co-expression relationship. Additional network layout settings can be passed to the <a href="https://www.rdocumentation.org/packages/igraph/versions/1.2.11/topics/layout_with_fr" class="external-link"><code>layout_with_fr</code></a> function in igraph. The user can also specify <code>return_graph = TRUE</code> to return the igraph object to plot using their own custom code.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<p>Here we run <code>HubGeneNetworkPlot</code> again, this time only selecting 5 specific modules:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the list of modules:</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
+
+<span class="co"># hubgene network</span>
+<span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  n_hubs <span class="op">=</span> <span class="fl">10</span>, n_other<span class="op">=</span><span class="fl">20</span>,
+  edge_prop <span class="op">=</span> <span class="fl">0.75</span>,
+  mods <span class="op">=</span> <span class="va">mods</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="co"># only select 5 modules</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/hub_net_5mods.png" width="600" height="600"></p>
 </div>
 <div class="section level2">
 <h2 id="applying-umap-to-co-expression-networks">Applying UMAP to co-expression networks<a class="anchor" aria-label="anchor" href="#applying-umap-to-co-expression-networks"></a>
@@ -234,7 +271,7 @@
 <p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the hdWGCNA network in a low-dimensional manifold.</p>
 <p>hdWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the hdWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R package, so additional UMAP parameters for the <code><a href="https://rdrr.io/pkg/uwot/man/umap.html" class="external-link">uwot::umap</a></code> function such as <code>min_dist</code> or <code>spread</code> can be included in <code>RunModuleUMAP</code>.</p>
 <p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   n_hubs <span class="op">=</span> <span class="fl">10</span>, <span class="co"># number of hub genes to include for the UMAP embedding</span>
@@ -242,7 +279,7 @@
   min_dist<span class="op">=</span><span class="fl">0.1</span> <span class="co"># min distance between points in UMAP space</span>
 <span class="op">)</span></code></pre></div>
 <p>Next we will make a simple visualization of the UMAP using ggplot2:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the hub gene UMAP table from the seurat object</span>
 <span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 
@@ -255,7 +292,7 @@
   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap.png" width="600" height="600"></p>
 <p>In this plot, each point represents a single gene. The size of each dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is sufficient to visualize the genes in the module UMAP, but here we are not visualizing the underlying network. We can use the function <code>ModuleUMAPPlot</code> to plot the genes and their co-expression relationships.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
   edge.alpha<span class="op">=</span><span class="fl">0.25</span>,
@@ -266,8 +303,8 @@
 
 <span class="op">)</span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_igraph.png" width="600" height="600"></p>
-<p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 20% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 10% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="section level3">
 <h3 id="varying-the-number-of-hub-genes">Varying the number of hub genes<a class="anchor" aria-label="anchor" href="#varying-the-number-of-hub-genes"></a>
@@ -275,7 +312,7 @@
 <p>The number of hub genes that we include in the UMAP calculation influences the downstream visualization. Here we use <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a> to visually compare the UMAPs that are computed with different numbers of hub genes.</p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># different label weights to test</span>
 <span class="va">n_hubs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">*</span><span class="fl">5</span><span class="op">)</span>
 
@@ -324,7 +361,7 @@ Code
 </h3>
 <p>UMAP is often used as an unsupervised approach to project data points into a dimensionally-reduced spaced, but we can also supply UMAP with known labels to perform a supervised analysis. In principal, UMAP can better distinguish between different groups of data points in the embedding if the algorithm is aware of these groupings. Therefore, we allow the user to run a supervised UMAP using the RunModuleUMAP function, where each gene’s module assignment is supplied as the label.</p>
 <p>To perform a supervised UMAP analysis, we set <code>supervised=TRUE</code>, and we can optionally use the <code>target_weight</code> parameter to determine how much influnce the labels will have on the final embedding. A <code>target_weight</code> closer to 0 weights based on the structure of the data while a <code>target_weight</code> closer to 1 weights based on the labels. The following code shows how to run and visualize the supervised UMAP:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run supervised UMAP:</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
   <span class="va">seurat_obj</span>,
@@ -345,11 +382,11 @@ Code
    size<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">kME</span><span class="op">*</span><span class="fl">2</span> <span class="co"># size of each point based on intramodular connectivity</span>
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p><img src="figures/network_vis/hubgene_umap_supervised.png" width="600" height="600"></p>
+<p><img src="figures/network_vis/hubgene_umap_supervise.png" width="600" height="600"></p>
 <p>To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
 <details><summary>
 Code
-</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># different label weights to test</span>
 <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span><span class="op">/</span><span class="fl">10</span>
 
@@ -393,6 +430,389 @@ Code
 
 <span class="fu"><a href="https://gganimate.com/reference/animate.html" class="external-link">animate</a></span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></code></pre></div>
 </details><p><img src="figures/network_vis/umap_animation.gif"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="customized-network-plots">Customized network plots<a class="anchor" aria-label="anchor" href="#customized-network-plots"></a>
+</h2>
+<p>There are many different packages within R and beyond for making network visualizations aside from the functions that are included in hdWGCNA. Here we provide a guided example of creating a customized network plot using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> R packages. Making a custom network plot to suit your specific needs will likely require writing custom code, so we consider this part an optional advanced topic.</p>
+<p>In this example, our goal is to make a custom network plot showing only the genes that are involved in “nervous system development” based on Gene Ontology. We start with a simple example and we gradually different customization options, which is the typical process of making a customized network plot. In principal this approach can be applied to any custom list of genes.</p>
+<div class="section level3">
+<h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
+</h3>
+<p>First, we need to install <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a>. We also need to install <a href="https://bioconductor.org/packages/release/bioc/html/fgsea.html" class="external-link">fgsea</a> in order to load the Gene Ontology lists from the EnrichR website.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># install fgsea:</span>
+<span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">'fgsea'</span><span class="op">)</span>
+
+<span class="co"># install tidygraph and ggraph</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ggraph"</span>, <span class="st">"tidygraph"</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># load the packages:</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidygraph.data-imaginist.com" class="external-link">tidygraph</a></span><span class="op">)</span></code></pre></div>
+<p>Next we need to get the genes associated with nervous system development and subset our co-expression network by these genes. <strong>Please follow <a href="https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&amp;libraryName=GO_Biological_Process_2021" class="external-link">this link</a> to download the GO Biological Process 2021 database from the EnrichR website.</strong></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get modules and TOM from the seurat obj</span>
+<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>module <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
+<span class="va">TOM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTOM.html">GetTOM</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+
+<span class="co"># get module colors for plotting </span>
+<span class="va">mod_colors</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">modules</span>, <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">mod_cp</span> <span class="op">&lt;-</span> <span class="va">mod_colors</span><span class="op">$</span><span class="va">color</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">mod_colors</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
+
+<span class="co"># load the GO Biological Pathways file (donwloaded from EnrichR website)</span>
+<span class="va">pathways</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">gmtPathways</span><span class="op">(</span><span class="st">'GO_Biological_Process_2021.txt'</span><span class="op">)</span>
+
+<span class="co"># remove GO Term ID for simplicity:</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html" class="external-link">str_replace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span>, <span class="st">" \\s*\\([^\\)]+\\)"</span>, <span class="st">""</span><span class="op">)</span>
+
+<span class="co"># selected pathway </span>
+<span class="va">cur_pathway</span> <span class="op">&lt;-</span> <span class="st">'nervous system development'</span>
+
+<span class="co"># get genes in this pathway </span>
+<span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">pathways</span><span class="op">[[</span><span class="va">cur_pathway</span><span class="op">]</span><span class="op">]</span>
+<span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">[</span><span class="va">cur_genes</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">modules</span><span class="op">$</span><span class="va">gene_name</span><span class="op">]</span>
+
+<span class="co"># subset the TOM </span>
+<span class="va">cur_TOM</span> <span class="op">&lt;-</span> <span class="va">TOM</span><span class="op">[</span><span class="va">cur_genes</span>,<span class="va">cur_genes</span><span class="op">]</span> </code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="basic-network-plot-with-ggraph">Basic network plot with ggraph<a class="anchor" aria-label="anchor" href="#basic-network-plot-with-ggraph"></a>
+</h3>
+<p>We now have a co-expression network which only contains our 136 genes of interest. Next we create a graph object with <code>igraph</code> and <code>tidygraph</code>, and then we make our network plot with <code>ggraph</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set up the graph object with igraph &amp; tidygraph</span>
+<span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_TOM</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_adjacency_matrix.html" class="external-link">graph_from_adjacency_matrix</a></span><span class="op">(</span>mode<span class="op">=</span><span class="st">'undirected'</span>, weighted<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">as_tbl_graph</span><span class="op">(</span>directed<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">activate</span><span class="op">(</span><span class="va">nodes</span><span class="op">)</span> 
+
+<span class="co"># make the plot with ggraph</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span>color<span class="op">=</span><span class="st">'grey'</span>, alpha<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span>color<span class="op">=</span><span class="st">'black'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">name</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> 
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net1.png" width="600" height="600"></p>
+<p>Here we have our first custom network plot showing 136 genes. Each node (dot) represents a gene, and the edges (lines) represent co-expression between two genes. There are a few problems with this plot that make it less meaningful.</p>
+<ul>
+<li>There are too many edges, we are showing all 136*136 co-expression links, so the resulting graph looks like a hairball.</li>
+<li>All of the links have the same thickness, color, and opacity, so we cannot tell which links are stronger or weaker.</li>
+<li>All of the nodes are colored the same, so we cannot tell which come from each module.</li>
+<li>All of the nodes are labeled, so this may be too much information to effectively display at once.</li>
+</ul>
+<p>Let’s try to fix some of these problems. Next we will set the edges opacity (alpha) by the co-expression strength using <code>geom_edge_link</code> and we will color the nodes by each gene’s assigned module using <code>geom_node_point</code>. With <code>igrah</code>, we can use <code>V(graph)</code> to set attributes for the network’s nodes, in order to add the module information to the graph.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set up the graph object with igraph &amp; tidygraph</span>
+<span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_TOM</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_adjacency_matrix.html" class="external-link">graph_from_adjacency_matrix</a></span><span class="op">(</span>mode<span class="op">=</span><span class="st">'undirected'</span>, weighted<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">as_tbl_graph</span><span class="op">(</span>directed<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">activate</span><span class="op">(</span><span class="va">nodes</span><span class="op">)</span> 
+
+<span class="co"># add the module name to the graph:</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">module</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,<span class="st">'module'</span><span class="op">]</span>
+
+<span class="co"># make the plot with gggraph</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'grey'</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">name</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span>  
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net2.png" width="600" height="600"></p>
+<p>This plot is a little bit more informative than the last one, however there are still some issues.</p>
+</div>
+<div class="section level3">
+<h3 id="manipulating-the-network">Manipulating the network<a class="anchor" aria-label="anchor" href="#manipulating-the-network"></a>
+</h3>
+<p>In the previous plot, there are so many edges here that it is still hard to interpret the plot. There are also still too many genes labeled so the plot is very crowded. To solve these problems, we can make some simple manipulations to the graph to make the plots much more interpretable. Next we make a new plot where we reduce the number of edges by keeping only the strongest connections. We will also color the edges based on if the genes are in the same module, and we will only label genes if they are in the top 25 hub genes of each module.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># only keep the upper triangular part of the TOM:</span>
+<span class="va">cur_TOM</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">cur_TOM</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>
+
+<span class="co"># cast the network from wide to long format</span>
+<span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="va">cur_TOM</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">reshape2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/melt.html" class="external-link">melt</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>gene1 <span class="op">=</span> <span class="va">Var1</span>, gene2 <span class="op">=</span> <span class="va">Var2</span>, weight<span class="op">=</span><span class="va">value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">weight</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># get the module &amp; color info for gene1</span>
+<span class="va">temp1</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span>
+  <span class="va">cur_network</span>,
+  <span class="va">modules</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">gene_name</span>, <span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>gene1 <span class="op">=</span> <span class="va">gene_name</span>, module1<span class="op">=</span><span class="va">module</span>, color1<span class="op">=</span><span class="va">color</span><span class="op">)</span>,
+  by <span class="op">=</span> <span class="st">'gene1'</span>
+<span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module1</span>, <span class="va">color1</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># get the module &amp; color info for gene2</span>
+<span class="va">temp2</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span>
+  <span class="va">cur_network</span>,
+  <span class="va">modules</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">gene_name</span>, <span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>gene2 <span class="op">=</span> <span class="va">gene_name</span>, module2<span class="op">=</span><span class="va">module</span>, color2<span class="op">=</span><span class="va">color</span><span class="op">)</span>,
+  by <span class="op">=</span> <span class="st">'gene2'</span>
+<span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module2</span>, <span class="va">color2</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># add the module &amp; color info </span>
+<span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">cur_network</span>, <span class="va">temp1</span>, <span class="va">temp2</span><span class="op">)</span>
+
+<span class="co"># set the edge color to the module's color if they are the two genes are in the same module </span>
+<span class="va">cur_network</span><span class="op">$</span><span class="va">edge_color</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span>
+  <span class="va">cur_network</span><span class="op">$</span><span class="va">module1</span> <span class="op">==</span> <span class="va">cur_network</span><span class="op">$</span><span class="va">module2</span>, 
+  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">cur_network</span><span class="op">$</span><span class="va">module1</span><span class="op">)</span>,
+  <span class="st">'grey'</span>
+<span class="op">)</span>
+
+<span class="co"># keep this network before subsetting</span>
+<span class="va">cur_network_full</span> <span class="op">&lt;-</span> <span class="va">cur_network</span> 
+
+<span class="co"># keep the top 10% of edges </span>
+<span class="va">edge_percent</span> <span class="op">&lt;-</span> <span class="fl">0.1</span>
+<span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span>
+    order_by <span class="op">=</span> <span class="va">weight</span>, 
+    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cur_network</span><span class="op">)</span><span class="op">*</span><span class="va">edge_percent</span><span class="op">)</span>
+  <span class="op">)</span>
+
+<span class="co"># make the graph object with tidygraph</span>
+<span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_network</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">as_tbl_graph</span><span class="op">(</span>directed<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">activate</span><span class="op">(</span><span class="va">nodes</span><span class="op">)</span>
+
+<span class="co"># add the module name to the graph:</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">module</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,<span class="st">'module'</span><span class="op">]</span>
+
+<span class="co"># get the top 25 hub genes for each module</span>
+<span class="va">hub_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetHubGenes.html">GetHubGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, n_hubs<span class="op">=</span><span class="fl">25</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">hub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">hub_genes</span>, <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">""</span><span class="op">)</span>
+
+<span class="co"># make the plot with gggraph</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> 
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net3.png" width="600" height="600"></p>
+<p>We can also make a similar plot where we only keep edges between genes in the same module instead of just keeping the strongest edges.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># subset to only keep edges between genes in the same module</span>
+<span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module1</span> <span class="op">==</span> <span class="va">module2</span><span class="op">)</span>
+
+<span class="co"># make the graph object with tidygraph</span>
+<span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_network</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">as_tbl_graph</span><span class="op">(</span>directed<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">activate</span><span class="op">(</span><span class="va">nodes</span><span class="op">)</span>
+
+<span class="co"># add the module name to the graph:</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">module</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,<span class="st">'module'</span><span class="op">]</span>
+
+<span class="co"># get the top 25 hub genes for each module</span>
+<span class="va">hub_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetHubGenes.html">GetHubGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, n_hubs<span class="op">=</span><span class="fl">25</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">hub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">hub_genes</span>, <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">""</span><span class="op">)</span>
+
+<span class="co"># make the plot with gggraph</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net4.png" width="600" height="600"></p>
+<p>With the default settings, it seems that the layout of the nodes in this graph is making a very squished plot, partially because each of the modules are fully disconnected from one another.</p>
+</div>
+<div class="section level3">
+<h3 id="specifying-network-layouts">Specifying network layouts<a class="anchor" aria-label="anchor" href="#specifying-network-layouts"></a>
+</h3>
+<p>Under the hood, <code>ggraph</code> determines the 2D layout of the points on the graph. Next we will try some different layouts other than the default. Please consult <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">this documentation page</a> to learn more about <code>ggraph</code> layouts.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># randomly sample 50% of the edges within the same module</span>
+<span class="va">cur_network1</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module1</span> <span class="op">==</span> <span class="va">module2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">module1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_frac</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># keep the top 10% of other edges </span>
+<span class="va">edge_percent</span> <span class="op">&lt;-</span> <span class="fl">0.10</span>
+<span class="va">cur_network2</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module1</span> <span class="op">!=</span> <span class="va">module2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span>
+    order_by <span class="op">=</span> <span class="va">weight</span>, 
+    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cur_network</span><span class="op">)</span><span class="op">*</span><span class="va">edge_percent</span><span class="op">)</span>
+  <span class="op">)</span>
+
+<span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">cur_network1</span>, <span class="va">cur_network2</span><span class="op">)</span>
+
+<span class="co"># set factor levels for edges:</span>
+<span class="va">cur_network</span><span class="op">$</span><span class="va">edge_color</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">cur_network</span><span class="op">$</span><span class="va">edge_color</span><span class="op">)</span>,
+  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mods</span>, <span class="st">'grey'</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="co"># rearrange so grey edges are on the bottom:</span>
+<span class="va">cur_network</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/compound.html" class="external-link">%&lt;&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># make the graph object with tidygraph</span>
+<span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_network</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">as_tbl_graph</span><span class="op">(</span>directed<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu">activate</span><span class="op">(</span><span class="va">nodes</span><span class="op">)</span>
+
+<span class="co"># add the module name to the graph:</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">module</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,<span class="st">'module'</span><span class="op">]</span>
+
+<span class="co"># get the top 25 hub genes for each module</span>
+<span class="va">hub_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetHubGenes.html">GetHubGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, n_hubs<span class="op">=</span><span class="fl">25</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">$</span><span class="va">gene_name</span>
+<span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">hub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">hub_genes</span>, <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">""</span><span class="op">)</span>
+
+<span class="co"># 1. default layout</span>
+<span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout = 'stress' (auto)"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># 2. Kamada Kawai (kk) layout</span>
+<span class="va">graph2</span> <span class="op">&lt;-</span> <span class="va">graph</span>; <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">weight</span> <span class="op">+</span> <span class="fl">0.0001</span>
+<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span>, layout<span class="op">=</span><span class="st">'kk'</span>, maxiter<span class="op">=</span><span class="fl">100</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout = 'kk'"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># 3. igraph layout_with_fr</span>
+<span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span>, layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/layout_with_fr.html" class="external-link">layout_with_fr</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout_with_fr()"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># 4. igraph layout_as_tree</span>
+<span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span>, layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/layout_as_tree.html" class="external-link">layout_as_tree</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout_as_tree()"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># 5. igraph layout_nicely</span>
+<span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span>, layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/layout_nicely.html" class="external-link">layout_nicely</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout_nicely()"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># 6. igraph layout_in_circle</span>
+<span class="va">p6</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">graph</span>, layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/layout_in_circle.html" class="external-link">layout_in_circle</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout_in_circle()"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+
+<span class="co"># make a combined plot</span>
+<span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span> <span class="op">|</span> <span class="va">p3</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p4</span> <span class="op">|</span> <span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> </code></pre></div>
+<p><img src="figures/network_vis/custom_net5.png" width="800" height="800"></p>
+<p>Here we show a combined plot of six different layouts of the same exact network. We can appreciate how different the results are when using different layout algorithms, and we encourage trying out different layouts which best suit your particular needs. The <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">ggraph documentation page</a> shows many more options for different graph layouts that you can use.</p>
+<p>We can also provide a “custom” layout, which can be any set of 2D coordinates for each of the nodes. Here we show how we can use the co-expression UMAP layout that we computed previously. We also make a few additional modifications.</p>
+<ul>
+<li>Make the size of each node scaled by the kME.</li>
+<li>Highlight hub genes by giving them a black outline and plotting them on top.</li>
+</ul>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the UMAP df and subset by genes that are in our graph</span>
+<span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="va">umap_layout</span> <span class="op">&lt;-</span> <span class="va">umap_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y <span class="op">=</span> <span class="va">UMAP2</span>, name<span class="op">=</span><span class="va">gene</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">umap_layout</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">umap_layout</span><span class="op">)</span>
+
+<span class="co"># create the layout</span>
+<span class="va">lay</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="fu">::</span><span class="fu">create_layout</span><span class="op">(</span><span class="va">graph</span>, <span class="va">umap_layout</span><span class="op">)</span>
+<span class="va">lay</span><span class="op">$</span><span class="va">hub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">hub</span>
+
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">lay</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">==</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">!=</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, shape<span class="op">=</span><span class="fl">21</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+
+<span class="va">p</span> </code></pre></div>
+<p><img src="figures/network_vis/custom_net_umap.png" width="800" height="800"></p>
+<p>We can easily modify this plot to add a background layer showing all of the other genes in our co-expression network. We will also change the shape of the selected genes to better differentiate them from the background.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">lay</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>inherit.aes<span class="op">=</span><span class="cn">FALSE</span>, data<span class="op">=</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span>, color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,
+    dpi<span class="op">=</span><span class="fl">500</span>
+   <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">==</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, shape<span class="op">=</span><span class="fl">21</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">!=</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, shape<span class="op">=</span><span class="fl">23</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net_umap2.png" width="800" height="800"></p>
+<p>In this plot, we show the hub genes as diamonds, non-hub genes as circles, and all genes not in our pathway of interest in the background.</p>
+<p>Since <code>ggraph</code> is based on <code>ggplot2</code>, we can easily add further customizations. In this final example, we change the gene label colors to match the assigned modules, we change the plot background to black, and we add a title in the upper right corner.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggraph</span><span class="op">(</span><span class="va">lay</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>inherit.aes<span class="op">=</span><span class="cn">FALSE</span>, data<span class="op">=</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span>, color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,
+    dpi<span class="op">=</span><span class="fl">500</span>
+   <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_edge_link</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>alpha<span class="op">=</span><span class="va">weight</span>, color<span class="op">=</span><span class="va">edge_color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">==</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, shape<span class="op">=</span><span class="fl">21</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">geom_node_point</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lay</span>, <span class="va">hub</span> <span class="op">!=</span> <span class="st">''</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">module</span>, size<span class="op">=</span><span class="va">kME</span><span class="op">)</span>, color<span class="op">=</span><span class="st">'black'</span>, shape<span class="op">=</span><span class="fl">23</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_edge_colour_manual</span><span class="op">(</span>values<span class="op">=</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_node_label</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span>, color<span class="op">=</span><span class="va">module</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
+    panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">'black'</span><span class="op">)</span>,
+    plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html" class="external-link">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x<span class="op">=</span><span class="cn">Inf</span>, y<span class="op">=</span><span class="cn">Inf</span>, label<span class="op">=</span><span class="st">"Nervous system development"</span>, 
+  vjust<span class="op">=</span><span class="fl">2</span>, hjust<span class="op">=</span><span class="fl">1.1</span>, color<span class="op">=</span><span class="st">'white'</span>, fontface<span class="op">=</span><span class="st">'bold'</span>, size<span class="op">=</span><span class="fl">5</span><span class="op">)</span>
+
+<span class="va">p</span></code></pre></div>
+<p><img src="figures/network_vis/custom_net_umap3.png" width="800" height="800"></p>
+<p>We encourage users to learn from this example, and to leverage these powerful plotting libraries to create custom network visualizations that suit their particular study.</p>
 </div>
 </div>
   </div>

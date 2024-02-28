@@ -21,52 +21,26 @@ MotifScan <- function(
   # check pfm
   # check ensdb
   
-  print('set up motif df')
-
   # get a dataframe of just the motif name and the motif ID:
   motif_df <- data.frame(
     motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
     motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
   )
 
-  print('get promoters from ensdb')
-
-  # get promoters of protein coding genes from the given Ensdb
-  # note: everything breaks if I try to use X & Y chromosomes.
- 
   # get promoter and gene coords:
   gene.promoters <- ensembldb::promoters(EnsDb)
   gene.coords <- ensembldb::genes(EnsDb)
-  print('here')
 
   # subset by protein coding
   gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
   gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
-  print('here')
 
-  # subset by chromosomes
+  # subset by main chromosomes
   gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X','Y')]
   gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
-  print('here')
-
-
-  # gene.promoters <- ensembldb::promoters(EnsDb, filter = ~ gene_biotype == "protein_coding") 
-  # gene.promoters <- gene.promoters[GenomeInfoDb::seqnames(gene.promoters) %in% c(1:100)]
-  
-  
-  # gene.coords <- ensembldb::genes(EnsDb)
-
-  # gene.coords <- ensembldb::genes(EnsDb, filter = ~ gene_biotype == "protein_coding")
-  # print('here')
-
-  # gene.coords <- gene.coords[GenomeInfoDb::seqnames(gene.coords) %in% c(1:100)]
-
-  print('add gene name to promoter')
 
   # add the gene name to the promoter object
   gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
-
-  print('drop chromosomes')
 
   # drop unnecessary chromosomes
   gene.promoters <- GenomeInfoDb::keepSeqlevels(
@@ -74,20 +48,14 @@ MotifScan <- function(
     value=levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
   )
 
-  print('rename seqlevels')
-
   # rename seqlevels to add 'chr', 
   old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
   #new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
   new_levels <- paste0('chr', old_levels)
   gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
 
-  print('set the genome')
-
   # set the genome (not sure if we NEED to do this...)
   GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
-
-  print('set up the promoters granges object')
 
   # set up promoters object that only has the necessary info for motifmatchr
   my_promoters <- GRanges(

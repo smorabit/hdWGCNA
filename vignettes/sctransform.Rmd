@@ -10,10 +10,12 @@ vignette: >
 ---
 
 In this tutorial, we briefly cover how to use data normalized with [`SCTransform`](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1) for hdWGCNA.
-This tutorial assumes that you are familiar with the [basics of the hdWGCNA workflow](basic_tutorial.html). This tutorial also assumes that you are familiar with
-the [SCTransform R package](https://github.com/satijalab/sctransform) and the [SCTransform methods paper(https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). We generally do
-not advise using SCTransform unless you are fully aware of how the method works 
-and the underlying assumptions that it makes about gene expression distributions etc.
+Overall we do not recommend using SCTransform with hdWGCNA, however we have included this tutorial 
+due to numerous user requests. This tutorial assumes that you are familiar with the [basics of the hdWGCNA workflow](basic_tutorial.html). 
+This tutorial also assumes that you are familiar with the [SCTransform R package](https://github.com/satijalab/sctransform) 
+and the [SCTransform methods paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). 
+Once again, we do not advise using SCTransform with hdWGCNA so proceed with caution. 
+If you have made it past these warnings, at least make sure you are fully aware of how SCTransform works and the underlying assumptions that it makes about gene expression distributions etc.
 
 First we load the required R libraries.
 ```{r eval=FALSE}

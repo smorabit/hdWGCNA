@@ -9,8 +9,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Compiled: 27-02-2024
+
+Source: `vignettes/basic_tutorial.Rmd`
+
+## Introduction
+
 This tutorial covers the basics of using hdWGCNA to perform co-expression network
-analysis on single-cell data. Here, we demonstrate hdWGCNA using a processed
+analysis on single-cell data. Here, we start with a processed
 single-nucleus RNA-seq (snRNA-seq) dataset of human cortical samples from
 [this publication](https://www.nature.com/articles/s41591-019-0695-9). This
 dataset has already been fully processed using a standard single-cell
@@ -36,7 +42,6 @@ are all clarified in [this table](https://bmcbioinformatics.biomedcentral.com/ar
 
 ***Important note:*** We do not re-generate these tutorial figures after each update of hdWGCNA, so the 
 figures that you generate will be slightly different than what are shown here if you are following along with the same dataset. 
-
 
 ## Download the tutorial data
 
@@ -222,7 +227,6 @@ p1 | p2
 
 </details> <summary> </summary>
 
-
 # Co-expression network analysis
 
 In this section we discuss how to perform co-expression network analysis with
@@ -326,13 +330,13 @@ head(power_table)
 
 <details> <summary> Output </summary>
 ```
-Power    SFT.R.sq      slope truncated.R.sq   mean.k. median.k.    max.k.
-1     1 0.192964167 10.1742363      0.9508966 5887.9290 5901.7852 6501.0283
-2     2 0.001621749  0.4801145      0.9828730 3092.6379 3092.7878 3835.2202
-3     3 0.150812707 -3.2345892      0.9918393 1657.6198 1646.6169 2349.6967
-4     4 0.407513393 -4.5383131      0.9898440  905.8402  890.9431 1486.7695
-5     5 0.585949838 -4.8303680      0.9917528  504.4288  490.2683  968.1157
-6     6 0.677668481 -4.6749295      0.9935437  286.1585  274.3233  646.6741
+  Power   SFT.R.sq     slope truncated.R.sq   mean.k. median.k.    max.k.
+1     1 0.26110351 11.889729      0.9546294 6525.7417 6532.2923 7219.7053
+2     2 0.01631495  1.375111      0.9935408 3434.0090 3421.8601 4293.1289
+3     3 0.04178826 -1.487314      0.9784280 1840.1686 1817.2352 2651.0575
+4     4 0.29769630 -3.249674      0.9588046 1003.7962  978.3657 1719.7194
+5     5 0.55846894 -4.060086      0.9617106  557.3639  533.2201 1157.0353
+6     6 0.70513240 -4.195496      0.9696135  315.0681  295.1368  804.1011
 
 ```
 </details>
@@ -354,8 +358,7 @@ selected above:
 
 # construct co-expression network:
 seurat_obj <- ConstructNetwork(
-  seurat_obj, soft_power=9,
-  setDatExpr=FALSE,
+  seurat_obj,
   tom_name = 'INH' # name of the topoligical overlap matrix written to disk
 )
 
@@ -414,7 +417,7 @@ by the Sample of origin using the `group.by.vars` parameter.
 ```{r eval=FALSE}
 
 # need to run ScaleData first or else harmony throws an error:
-seurat_obj <- ScaleData(seurat_obj, features=VariableFeatures(seurat_obj))
+#seurat_obj <- ScaleData(seurat_obj, features=VariableFeatures(seurat_obj))
 
 # compute all MEs in the full single-cell dataset
 seurat_obj <- ModuleEigengenes(
@@ -497,7 +500,7 @@ have additional columns for the *kME* of each module.
 ```{r eval=FALSE}
 
 # get the module assignment table:
-modules <- GetModules(seurat_obj)
+modules <- GetModules(seurat_obj) %>% subset(module != 'grey')
 
 # show the first 6 columns:
 head(modules[,1:6])
@@ -506,14 +509,13 @@ head(modules[,1:6])
 
 <details> <summary> Output</summary>
 ```
-gene_name  module color   kME_INH-M1   kME_INH-M2    kME_INH-M3
-AL627309.1 AL627309.1    grey  grey -0.032349090  0.029917426  0.0379323320
-LINC01409   LINC01409 INH-M19 brown -0.045140924 -0.013473381  0.0102194168
-LINC01128   LINC01128    grey  grey  0.050793988  0.109578251  0.1153173093
-NOC2L           NOC2L    grey  grey  0.032490535  0.164524557  0.1699131451
-AGRN             AGRN INH-M19 brown -0.008488577  0.035558532  0.0379326966
-C1orf159     C1orf159    grey  grey -0.015618737  0.002235229 -0.0003824554
-
+          gene_name module     color   kME_grey  kME_INH-M1 kME_INH-M2
+LINC01409 LINC01409 INH-M1       red 0.06422496  0.14206189 0.02146438
+INTS11       INTS11 INH-M2      blue 0.19569750  0.04996486 0.22687525
+CCNL2         CCNL2 INH-M3     green 0.21124081  0.04668528 0.20013727
+GNB1           GNB1 INH-M4 lightcyan 0.24093763  0.03203763 0.20114899
+TNFRSF14   TNFRSF14 INH-M5    yellow 0.01315166  0.02388175 0.02342308
+TPRG1L       TPRG1L INH-M6 turquoise 0.10138479 -0.05137751 0.12394048
 ```
 </details>
 
@@ -530,14 +532,13 @@ head(hub_df)
 
 <details> <summary> Output</summary>
 ```
-gene_name module       kME
-1   SEPTIN2 INH-M1 0.3019739
-2     MICU2 INH-M1 0.3140922
-3     WDR37 INH-M1 0.3204428
-4   UBE2Q2L INH-M1 0.3297472
-5   HSD17B4 INH-M1 0.3399253
-6      ASB3 INH-M1 0.3417400
-
+ gene_name module       kME
+1 ANKRD30BL INH-M1 0.3711414
+2   CACNA1B INH-M1 0.3694937
+3     GRIN1 INH-M1 0.3318094
+4   BMS1P14 INH-M1 0.3304103
+5 LINC00342 INH-M1 0.3252982
+6 LINC01278 INH-M1 0.3100343
 ```
 </details>
 
@@ -552,23 +553,11 @@ saveRDS(seurat_obj, file='hdWGCNA_object.rds')
 ### Compute hub gene signature scores
 
 Gene scoring analysis is a popular method in single-cell transcriptomics for computing
-a score for the overall signature of a set of genes. Seurat implements their own
-gene scoring technique using the `AddModuleScore` function, but there are also
-alternative approaches such as [UCell](https://github.com/carmonalab/UCell).
-hdWGCNA includes the function `ModuleExprScore` to compute gene scores for
-a give number of genes for each module, using either the Seurat or UCell algorithm.
-Gene scoring is an alternative way of summarizing the expression of a module from
-computing the module eigengene.
+a score for the overall signature of a set of genes. We can use these methods as alternatives
+to module eigengenes. hdWGCNA includes the function `ModuleExprScore` to compute gene scores for
+a give number of genes for each module, using either the UCell or Seurat algorithm.
 
 ```{r eval=FALSE}
-
-# compute gene scoring for the top 25 hub genes by kME for each module
-# with Seurat method
-seurat_obj <- ModuleExprScore(
-  seurat_obj,
-  n_genes = 25,
-  method='Seurat'
-)
 
 # compute gene scoring for the top 25 hub genes by kME for each module
 # with UCell method
@@ -619,7 +608,7 @@ We can also plot the hub gene signature score using the same function:
 plot_list <- ModuleFeaturePlot(
   seurat_obj,
   features='scores', # plot the hub gene scores
-  order='shuffle' # order so cells are shuffled
+  order='shuffle', # order so cells are shuffled
   ucell = TRUE # depending on Seurat vs UCell for gene scoring
 )
 
@@ -643,35 +632,22 @@ ModuleCorrelogram(seurat_obj)
 
 <img src="figures/basic_tutorial/ME_correlogram.png" width="800" height="800">
 
-<!--
-While hdWGCNA includes the `ModuleCorrelogram` function as shown above, we note that R has a rich ecosystem of statistical analysis tools that can be leveraged to understand
-the relationship between different modules, and we encourage users to explore
-their data beyond the functions that we provide here. Here is an example of
-inspecting the correlation structure of the hMEs using an alternative approach,
-[GGally](rdocumentation.org/packages/GGally/versions/1.5.0):
 
-```{r eval=FALSE}
+## Plotting beyond the hdWGCNA package
 
-# use GGally to investigate 6 selected modules:
-GGally::ggpairs(GetMEs(seurat_obj)[,c(1:3,12:15)])
-
-```
-
-<img src="figures/basic_tutorial/ME_correlation_GGally.png" width="800" height="800">
- -->
-
-## Seurat plotting functions
-
-The base Seurat plotting functions are also great for visualizing hdWGCNA outputs.
-Here we demonstrate plotting hMEs using `DotPlot` and `VlnPlot`. The key to using
-Seurat's plotting functions to visualize the hdWGCNA data is to add it into the
-Seurat object's `@meta.data` slot:
+Sometimes we want to make a custom visualization that may not be included in hdWGCNA. 
+Fortunately, R has an incredible amount of different data visualization packages to take 
+advantage of. The base Seurat plotting functions are also great for visualizing hdWGCNA outputs.
+Here is a simple example where we visualize the MEs using the Seurat `DotPlot` function. 
+The key to using Seurat's plotting functions to visualize the hdWGCNA data is to add it into the
+Seurat object's `@meta.data` slot.
 
 ```{r eval=FALSE}
 
 # get hMEs from seurat object
 MEs <- GetMEs(seurat_obj, harmonized=TRUE)
-mods <- colnames(MEs); mods <- mods[mods != 'grey']
+modules <- GetModules(seurat_obj)
+mods <- levels(modules$module); mods <- mods[mods != 'grey']
 
 # add hMEs to Seurat meta-data:
 seurat_obj@meta.data <- cbind(seurat_obj@meta.data, MEs)
@@ -687,7 +663,6 @@ p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
 
 # flip the x/y axes, rotate the axis labels, and change color scheme:
 p <- p +
-  coord_flip() +
   RotatedAxis() +
   scale_color_gradient2(high='red', mid='grey95', low='blue')
 
@@ -696,17 +671,17 @@ p
 
 ```
 
-<img src="figures/basic_tutorial/ME_dootploot.png" width="700" height="700">
+<img src="figures/basic_tutorial/ME_dotplot.png" width="700" height="700">
 
 
-Here is another example where we use Seurat's `VlnPlot` function:
+<!-- Here is another example where we use Seurat's `VlnPlot` function:
 
 ```{r eval=FALSE}
 
 # Plot INH-M4 hME using Seurat VlnPlot function
 p <- VlnPlot(
   seurat_obj,
-  features = 'INH-M12',
+  features = 'INH-M13',
   group.by = 'cell_type',
   pt.size = 0 # don't show actual data points
 )
@@ -720,13 +695,13 @@ p <- p + xlab('') + ylab('hME') + NoLegend()
 # plot output
 p
 
-
 ```
 
-<img src="figures/basic_tutorial/ME_vlnplot.png" width="600" height="600">
+<img src="figures/basic_tutorial/ME_vlnplot.png" width="600" height="600"> -->
 
 # Next steps
 
 In this tutorial we went over the core functions for performing co-expression
 network analysis in single-cell transcriptomics data. We encourage you to explore
+the [network visualization tutorial](network_visualizations.html) and 
 our [other tutorials](hdWGCNA.html) for downstream analysis of these hdWGCNA results.

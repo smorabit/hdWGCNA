@@ -20,7 +20,8 @@ articles:
   pseudobulk: pseudobulk.html
   pseudotime: pseudotime.html
   sctransform: sctransform.html
-last_built: 2024-01-30T23:20Z
+  tf_net: tf_net.html
+last_built: 2024-02-28T05:33Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles
