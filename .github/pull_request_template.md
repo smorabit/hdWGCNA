@@ -15,7 +15,7 @@ Write a short summary about your PR.
 
 **Rationale** 
 
-Explin the reason why you are making this PR. Does this add a new feature? Add new options to an existing function?
+Briefly explain the reason why you are making this PR. Does this add a new feature? Add new options to an existing function? Can you referene an existing issue?
 
 **Implementation**
 
