@@ -139,19 +139,25 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }) %&gt;% unlist, motif_ID = purrr::map(1:length(pfm), function(i) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         pfm[[i]]@ID</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }) %&gt;% unlist)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- ensembldb::promoters(EnsDb, filter = ~gene_biotype == </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         "protein_coding") %&gt;% subset(seqnames %in% c(1:100))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.coords &lt;- ensembldb::genes(EnsDb, filter = ~gene_biotype == </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         "protein_coding") %&gt;% subset(seqnames %in% c(1:100))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters$symbol &lt;- gene.coords$symbol[match(gene.promoters$gene_id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- ensembldb::promoters(EnsDb)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.coords &lt;- ensembldb::genes(EnsDb)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- gene.promoters[gene.promoters$tx_biotype == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         "protein_coding"]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.coords &lt;- gene.coords[gene.coords$gene_biotype == "protein_coding"]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         c(1:100, "X", "Y")]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.coords &lt;- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         c(1:100, "X", "Y")]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters$symbol &lt;- gene.coords$symbol[base::match(gene.promoters$gene_id, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         names(gene.coords))]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- keepSeqlevels(gene.promoters, value = levels(droplevels(seqnames(gene.promoters))))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     old_levels &lt;- levels(seqnames(gene.promoters))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     new_levels &lt;- ifelse(old_levels %in% c("X", "Y"), old_levels, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         paste0("chr", old_levels))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- renameSeqlevels(gene.promoters, new_levels)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     genome(seqinfo(gene.promoters)) &lt;- species_genome</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     my_promoters &lt;- GRanges(seqnames = droplevels(seqnames(gene.promoters)), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- GenomeInfoDb::keepSeqlevels(gene.promoters, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         value = levels(droplevels(GenomeInfoDb::seqnames(gene.promoters))))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     old_levels &lt;- levels(GenomeInfoDb::seqnames(gene.promoters))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     new_levels &lt;- paste0("chr", old_levels)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gene.promoters &lt;- GenomeInfoDb::renameSeqlevels(gene.promoters, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         new_levels)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) &lt;- species_genome</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     my_promoters &lt;- GRanges(seqnames = droplevels(GenomeInfoDb::seqnames(gene.promoters)), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         IRanges(start = start(gene.promoters), end = end(gene.promoters)), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         symbol = gene.promoters$symbol, genome = species_genome)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print("Matching motifs...")</span>
@@ -162,7 +168,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene_list &lt;- rownames(seurat_obj)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene_list &lt;- gene_list[gene_list %in% rownames(tf_match)]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     tf_match &lt;- tf_match[gene_list, ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print("Getting TF target genes...")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     print("Getting putative TF target genes...")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     tfs &lt;- motif_df$motif_name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     tf_targets &lt;- list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     n_targets &lt;- list()</span>
@@ -179,7 +185,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetPFMList(seurat_obj, pfm)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8094692f08&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc9674c4e68&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

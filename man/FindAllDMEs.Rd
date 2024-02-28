@@ -7,9 +7,10 @@
 FindAllDMEs(
   seurat_obj,
   group.by,
+  features = "MEs",
   harmonized = TRUE,
-  wgcna_name = NULL,
   add_missing = FALSE,
+  wgcna_name = NULL,
   test.use = "wilcox",
   only.pos = FALSE,
   logfc.threshold = 0,
@@ -24,11 +25,13 @@ FindAllDMEs(
 
 \item{group.by}{column in seurat_obj@meta.data containing cell grouping information}
 
+\item{features}{indicate whether to use "MEs" or "ModuleScores" for the comparison}
+
 \item{harmonized}{logical determining whether or not to use harmonized MEs}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
-
 \item{add_missing}{logical determining whether or not to add missing modules back into the resulting dataframe with NA values.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
 \item{...}{Additional parameters for the FindMarkers function}
 }
@@ -36,7 +39,7 @@ FindAllDMEs(
 A dataframe contaning differential ME results
 }
 \description{
-Modification of the Seurat function FindMarkers used to perform iterative one-versus-all differential module eigengene testing given a group of cells (ie clusters, cell types, etc).
+Function to compare expression levels of co-expression modules between two sets of cell barcodes.
 }
 \examples{
 FindAllDMEs

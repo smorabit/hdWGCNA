@@ -131,9 +131,10 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
   reduction <span class="op">=</span> <span class="st">"pca"</span>,
   dims <span class="op">=</span> <span class="cn">NULL</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
-  cells.use <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"counts"</span>,
+  layer <span class="op">=</span> <span class="st">"counts"</span>,
   mode <span class="op">=</span> <span class="st">"average"</span>,
+  cells.use <span class="op">=</span> <span class="cn">NULL</span>,
   min_cells <span class="op">=</span> <span class="fl">100</span>,
   max_shared <span class="op">=</span> <span class="fl">15</span>,
   target_metacells <span class="op">=</span> <span class="fl">1000</span>,
@@ -158,7 +159,9 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <dt>assay</dt>
 <dd><p>Assay to extract data for aggregation. Default = 'RNA'</p></dd>
 <dt>slot</dt>
-<dd><p>Slot to extract data for aggregation. Default = 'counts'</p></dd>
+<dd><p>Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.</p></dd>
+<dt>layer</dt>
+<dd><p>Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.</p></dd>
 <dt>mode</dt>
 <dd><p>determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".</p></dd>
 <dt>min_cells</dt>
@@ -176,6 +179,22 @@ on neighboring cells in provided groupings, such as cluster or cell type.</p>
 <dt>name</dt>
 <dd><p>A string appended to resulting metalcells. Default = 'agg'</p></dd>
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    <p>seurat_obj with a metacell seurat_obj stored in the specified WGCNA experiment</p>
+    </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>MetacellsByGroups merges transcriptomically similar cells into "metacells".
+Given a dimensionally-reduced representation of the input dataset, this algorithm
+first uses KNN to identify similar cells. A bootstrapped sampling procedure is then
+used to group together similar cells until convergence is reached. Importantly,
+this procedure is done in a context-specific manner based on the provided group.by parameters.
+Typically this means that metacells will be constructed separately for each biological
+replicate, cell type or cell state, disease condition, etc. The metacell representation is
+considerably less sparse than the original single-cell dataset, which is preferable for
+co-expression network analysis or othter analyses that rely on correlations.</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

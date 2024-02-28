@@ -8,6 +8,7 @@ FindDMEs(
   seurat_obj,
   barcodes1,
   barcodes2,
+  features = "MEs",
   harmonized = TRUE,
   wgcna_name = NULL,
   add_missing = FALSE,
@@ -27,6 +28,8 @@ FindDMEs(
 
 \item{barcodes2}{character vector containing cell barcodes for the second group to test. Negative fold-change means up-regulated in this group.}
 
+\item{features}{indicate whether to use "MEs" or "ModuleScores" for the comparison}
+
 \item{harmonized}{logical determining whether or not to use harmonized MEs}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
@@ -39,7 +42,7 @@ FindDMEs(
 A dataframe contaning differential ME results
 }
 \description{
-Modification of the Seurat function FindMarkers used to perform differential module eigengene testing between two sets of cell barcodes.
+Function to compare expression levels of co-expression modules between two sets of cell barcodes.
 }
 \examples{
 FindDMEs

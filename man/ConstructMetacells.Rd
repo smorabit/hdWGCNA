@@ -14,6 +14,7 @@ ConstructMetacells(
   assay = "RNA",
   cells.use = NULL,
   slot = "counts",
+  layer = "counts",
   meta = NULL,
   return_metacell = FALSE,
   mode = "average",
@@ -37,7 +38,9 @@ ConstructMetacells(
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+\item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{return_metacell}{Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.}
 
@@ -57,7 +60,3 @@ ConstructMetacells(
 This function takes a Seurat object and constructs averaged 'metacells' based
 on neighboring cells.
 }
-\examples{
-ConstructMetacells
-}
-\keyword{scRNA-seq}

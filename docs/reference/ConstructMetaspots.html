@@ -127,7 +127,8 @@ This function is called by MetaspotsByGroups and should NOT be run directly!</p>
   <span class="va">cur_seurat</span>,
   mode <span class="op">=</span> <span class="st">"sum"</span>,
   assay <span class="op">=</span> <span class="st">"Spatial"</span>,
-  slot <span class="op">=</span> <span class="st">"counts"</span>
+  slot <span class="op">=</span> <span class="st">"counts"</span>,
+  layer <span class="op">=</span> <span class="st">"counts"</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -141,6 +142,8 @@ This function is called by MetaspotsByGroups and should NOT be run directly!</p>
 <dd><p>Assay to extract data for aggregation. Default = 'Spatial'</p></dd>
 <dt>slot</dt>
 <dd><p>Slot to extract data for aggregation. Default = 'counts'</p></dd>
+<dt>layer</dt>
+<dd><p>Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.</p></dd>
 </dl></div>
 
   </div>

@@ -11,7 +11,8 @@
 #' @param replicate_col column in seurat_obj@meta.data denoting each replicate / sample
 #' @param label_col column in seurat_obj@meta.data denoting an additional label of interest, for example disease status or biological sex. This is not a required argument and is typically only used for consensus WGCNA
 #' @param assay Assay in seurat_obj containing isoform expression information.
-#' @param slot Slot in seurat_obj, default to counts slot and we generally recommend using counts here.
+#' @param slot Slot to extract data for aggregation. Default = 'counts'
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param min_reps The minimum number of different biological replicates allowed. Error will be thrown if the number of reps is too low. 
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
@@ -33,15 +34,16 @@ ConstructPseudobulk <- function(
   label_col = NULL,
   assay = 'RNA',
   slot = 'counts',
+  layer = 'counts',
   min_reps = 20,
   wgcna_name = NULL
 ){
 
-    # get data from active assay if wgcna_name is not given
-    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-        if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-            stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-    }  
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+      if(!CheckWGCNAName(seurat_obj, wgcna_name)){
+          stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
+  }  
 
   # check that selected assay is in the seurat object 
   if(!(assay %in% Assays(seurat_obj))){
@@ -92,8 +94,12 @@ ConstructPseudobulk <- function(
     # get the WGCNA genes:
     genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-    # get counts matrix
-    X <- Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot)
+    # get expression matrix:
+    if(CheckSeurat5()){
+      X <- SeuratObject::LayerData(cur_seurat, assay=assay, layer=layer)
+    } else{
+      X <- Seurat::GetAssayData(cur_seurat, assay=assay, slot=slot)
+    }
 
     # get pseudobulk replicates
     pseudobulk_list <- to_pseudobulk(

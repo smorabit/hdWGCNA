@@ -10,6 +10,7 @@ MetaspotsByGroups(
   ident.group = "seurat_clusters",
   assay = "Spatial",
   slot = "counts",
+  layer = "counts",
   mode = "sum",
   min_spots = 50,
   wgcna_name = NULL
@@ -21,6 +22,8 @@ MetaspotsByGroups(
 \item{assay}{Assay to extract data for aggregation. Default = 'Spatial'}
 
 \item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
 

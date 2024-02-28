@@ -158,8 +158,8 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">EnrichrBarPlot</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, outdir = "enrichr_plots", n_terms = 25, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_size = c(6, 15), logscale = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_size = c(6, 15), logscale = FALSE, plot_bar_color = NULL, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_text_color = NULL, wgcna_name = NULL, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -181,6 +181,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         print(cur_mod)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_color &lt;- modules %&gt;% subset(module == cur_mod) %&gt;% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             .$color %&gt;% unique %&gt;% as.character</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!is.null(plot_bar_color)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_color &lt;- plot_bar_color</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (nrow(cur_terms) == 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             next</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
@@ -189,11 +192,16 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         for (cur_db in dbs) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             plot_df &lt;- subset(cur_terms, db == cur_db) %&gt;% top_n(n_terms, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 wt = Combined.Score)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             if (cur_mod == "black") {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color = "grey"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             if (is.null(plot_text_color)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 if (cur_color == "black") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   text_color = "grey"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   text_color = "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color = "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 text_color &lt;- plot_text_color</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             if (logscale) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 plot_df$Combined.Score &lt;- log(plot_df$Combined.Score)</span>
@@ -222,7 +230,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dev.off()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f809192e9d0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc9804e20b0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

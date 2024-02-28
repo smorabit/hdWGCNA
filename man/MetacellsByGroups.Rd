@@ -12,9 +12,10 @@ MetacellsByGroups(
   reduction = "pca",
   dims = NULL,
   assay = NULL,
-  cells.use = NULL,
   slot = "counts",
+  layer = "counts",
   mode = "average",
+  cells.use = NULL,
   min_cells = 100,
   max_shared = 15,
   target_metacells = 1000,
@@ -36,7 +37,9 @@ MetacellsByGroups(
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+\item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
 
@@ -54,7 +57,21 @@ MetacellsByGroups(
 
 \item{name}{A string appended to resulting metalcells. Default = 'agg'}
 }
+\value{
+seurat_obj with a metacell seurat_obj stored in the specified WGCNA experiment
+}
 \description{
 This function takes a Seurat object and constructs averaged 'metacells' based
 on neighboring cells in provided groupings, such as cluster or cell type.
+}
+\details{
+MetacellsByGroups merges transcriptomically similar cells into "metacells".
+Given a dimensionally-reduced representation of the input dataset, this algorithm
+first uses KNN to identify similar cells. A bootstrapped sampling procedure is then
+used to group together similar cells until convergence is reached. Importantly,
+this procedure is done in a context-specific manner based on the provided group.by parameters.
+Typically this means that metacells will be constructed separately for each biological
+replicate, cell type or cell state, disease condition, etc. The metacell representation is
+considerably less sparse than the original single-cell dataset, which is preferable for
+co-expression network analysis or othter analyses that rely on correlations.
 }

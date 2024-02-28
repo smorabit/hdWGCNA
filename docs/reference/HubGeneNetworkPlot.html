@@ -177,11 +177,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- GetMEs(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     modules &lt;- GetModules(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (mods == "all") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (all("all" %in% mods)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         mods &lt;- levels(modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!all(mods %in% unique(as.character(modules$module)))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             stop(paste0("Some selected modules are not found in wgcna_name: ", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 wgcna_name))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         modules &lt;- modules %&gt;% subset(module %in% mods)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     TOM &lt;- GetTOM(seurat_obj, wgcna_name)</span>
@@ -205,7 +209,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "hub", as.character(selected_modules$gene_name), "")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     selected_modules$fontcolor &lt;- ifelse(selected_modules$color == </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "black", "gray50", "black")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(table(selected_modules$module))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_cutoff &lt;- min(sapply(1:nrow(subset_TOM), function(i) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         max(subset_TOM[i, ])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }))</span>
@@ -230,7 +233,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     groups &lt;- unique(edge_df$color)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     print(groups)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (sample_edges) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print("here")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         temp &lt;- do.call(rbind, lapply(groups, function(cur_group) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             cur_df &lt;- edge_df %&gt;% subset(color == cur_group)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             n_edges &lt;- nrow(cur_df)</span>
@@ -247,7 +249,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- temp</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     print(dim(edge_df))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df &lt;- edge_df %&gt;% group_by(color) %&gt;% mutate(value = scale01(value))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     edge_df$color &lt;- sapply(1:nrow(edge_df), function(i) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         a = edge_df$value[i]</span>
@@ -267,7 +268,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.color = igraph::V(g)$fontcolor, vertex.label.cex = vertex.label.cex, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         ...)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f809ae94438&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc97c961260&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

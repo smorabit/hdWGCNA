@@ -131,6 +131,7 @@
   return_seurat <span class="op">=</span> <span class="cn">TRUE</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"data"</span>,
+  layer <span class="op">=</span> <span class="st">"data"</span>,
   mat <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -154,7 +155,9 @@
 <dt>assay</dt>
 <dd><p>The name of the assay in the Seurat object</p></dd>
 <dt>slot</dt>
-<dd><p>The name of the slot in the Seurat object (counts, data)</p></dd>
+<dd><p>Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.</p></dd>
+<dt>layer</dt>
+<dd><p>Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.</p></dd>
 <dt>mat</dt>
 <dd><p>A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.</p></dd>
 <dt>wgcna_name</dt>

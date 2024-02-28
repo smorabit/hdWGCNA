@@ -218,7 +218,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>             ylab(statistic) + xlab("Module Size") + ggtitle(statistic) + </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             NoLegend() + theme(plot.title = element_text(hjust = 0.5))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (plot_labels) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_p &lt;- cur_p + geom_text_repel(label = plot_df$module, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             cur_p &lt;- cur_p + ggrepel::geom_text_repel(label = plot_df$module, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 size = label_size, max.overlaps = Inf, color = "black")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         plot_list[[statistic]] &lt;- cur_p</span>
@@ -228,7 +228,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_list</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8078e17610&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc96b0cd270&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

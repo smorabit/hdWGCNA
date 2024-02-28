@@ -8,7 +8,8 @@ ConstructMetaspots(
   cur_seurat,
   mode = "sum",
   assay = "Spatial",
-  slot = "counts"
+  slot = "counts",
+  layer = "counts"
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ ConstructMetaspots(
 \item{assay}{Assay to extract data for aggregation. Default = 'Spatial'}
 
 \item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 }
 \description{
 Computes metaspots in a given Seurat object containing spatial transcriptomics data.
