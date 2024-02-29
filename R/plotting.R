@@ -857,9 +857,16 @@ ModuleNetworkPlot <- function(
   modules <- GetModules(seurat_obj, wgcna_name)
 
   # using all modules?
-  if(mods == 'all'){
+  if(all('all' %in% mods)){
     mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
+  } else{
+
+    # check that the modules are present 
+    if(!all(mods %in% unique(as.character(modules$module)))){
+      stop(paste0("Some selected modules are not found in wgcna_name: ", wgcna_name))
+    }
+    modules <- modules %>% subset(module %in% mods)
   }
 
   # check if we have eigengene-based connectivities:
@@ -875,8 +882,6 @@ ModuleNetworkPlot <- function(
 
   # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
-  modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- levels(modules$module); mods <- mods[mods != 'grey']
 
   # get hub genes:
   n_hubs <- n_inner + n_outer
