@@ -45,7 +45,8 @@ GetActiveWGCNAName <- function(seurat_obj){
 #' @keywords scRNA-seq
 #' @export
 CheckWGCNAName <- function(seurat_obj, wgcna_name){
-  if(! wgcna_name %in% names(seurat_obj@misc)){
+  check <- wgcna_name %in% names(seurat_obj@misc) 
+  if(!check){
     stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
   }  
 }

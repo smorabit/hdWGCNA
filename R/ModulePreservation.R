@@ -33,15 +33,11 @@ ModulePreservation <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   if(is.null(wgcna_name_ref)){wgcna_name_ref <- seurat_ref@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_ref, wgcna_name_ref)){
-    stop(paste0("Invalid wgcna_name_ref supplied: ", wgcna_name_ref))
-  }  
-
+  CheckWGCNAName(seurat_ref, wgcna_name_ref)
+  
   # get datExpr for reference and query:
   datExpr_ref <- GetDatExpr(seurat_ref, wgcna_name_ref)
   datExpr_query <- GetDatExpr(seurat_obj, wgcna_name)

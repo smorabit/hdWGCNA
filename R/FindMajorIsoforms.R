@@ -44,9 +44,7 @@ FindMajorIsoforms <- function(
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # check that selected assay is in the seurat object 
   if(!(assay %in% Assays(seurat_obj))){

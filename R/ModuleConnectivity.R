@@ -47,6 +47,7 @@ ModuleConnectivity <- function(
   harmonized=TRUE,
   assay = NULL,
   slot = 'data',
+  layer = 'data',
   sparse = TRUE,
   reassign_modules = TRUE,
   wgcna_name = NULL,
@@ -55,9 +56,7 @@ ModuleConnectivity <- function(
 
   # set as active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
   
   # get module df, wgcna genes, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -75,11 +74,17 @@ ModuleConnectivity <- function(
   }
 
   # get expression data:
-  exp_mat <- GetAssayData(
-    seurat_obj,
-    assay=assay,
-    slot=slot
-  )[genes_use,cells.use]
+  if(CheckSeurat5()){
+    exp_mat <- SeuratObject::LayerData(
+      seurat_obj, assay=assay, layer=layer
+    )[genes_use,cells.use]
+  } else{
+    exp_mat <- GetAssayData(
+      seurat_obj,
+      assay=assay,
+      slot=slot
+    )[genes_use,cells.use]
+  }
 
   if(sparse){
     

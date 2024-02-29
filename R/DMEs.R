@@ -32,9 +32,7 @@ FindAllDMEs <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get list of groups
   groups <- as.character(unique(seurat_obj@meta.data[[group.by]]))
@@ -139,9 +137,7 @@ FindDMEs <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  if(!CheckWGCNAName(seurat_obj, wgcna_name)){
-    stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))
-  }  
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # ensure that selected barcodes are in the seurat obj
   if(!(all(barcodes1 %in% colnames(seurat_obj)))){
