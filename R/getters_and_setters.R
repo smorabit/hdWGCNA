@@ -350,6 +350,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @param multi_groups A character vecrtor containing the names of groups to select
 #' @param assay The name of the assay in the Seurat object
 #' @param slot The name of the slot in the Seurat object (counts, data)
+#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
 #' @keywords scRNA-seq
@@ -363,6 +364,7 @@ SetMultiExpr <- function(
   multi_groups = NULL,
   assay=NULL,
   slot='data',
+  layer = 'data',
   mat=NULL,
   mat_group_delim=3,
   wgcna_name=NULL,
@@ -416,7 +418,8 @@ SetMultiExpr <- function(
         use_metacells = use_metacells,
         wgcna_name = wgcna_name,
         assay = assay,
-        slot = slot
+        slot = slot,
+        layer = layer
       ) 
       as.matrix(cur_datExpr)
     })

@@ -64,6 +64,7 @@ ModuleConnectivity <- function(
   genes_use <- as.character(modules$gene_name)
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
+  # get the assay
   if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
 
   if(!is.null(group.by)){
@@ -79,10 +80,8 @@ ModuleConnectivity <- function(
       seurat_obj, assay=assay, layer=layer
     )[genes_use,cells.use]
   } else{
-    exp_mat <- GetAssayData(
-      seurat_obj,
-      assay=assay,
-      slot=slot
+    exp_mat <- Seurat::GetAssayData(
+      seurat_obj, assay=assay, slot=slot
     )[genes_use,cells.use]
   }
 

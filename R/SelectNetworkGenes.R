@@ -6,8 +6,10 @@
 #' @param seurat_obj A Seurat object
 #' @param type How to select genes? Select "variable", "fraction", "all", or "custom".
 #' @param fraction A numeric that determines the minimum cells that a gene must be expressed in order to be included. For example, fraction = 0.05 means that 5% of cells must express a gene (count > 0) for it to be included.
+#' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param gene_list A character string of gene names, only used if type = "custom"
-#' 
+#' @param wgcna_name name of the WGCNA experiment
+#'
 #' @details 
 #' SelectNetworkGenes allows us to specify the genes that will be used for co-expression network analysis.
 #' This function is called by SetupForWGCNA. By default, the variable features in VariableFeatures(seurat_obj) are used.
@@ -17,35 +19,38 @@
 #' For example, by setting fraction=0.1 and group.by='seurat_clusters', this function will identify the set of genes 
 #' that are expressed in 10% of cells in at least one of the clusters.
 #' 
-#' 
 #' @export
 SelectNetworkGenes <- function(
   seurat_obj,
   gene_select="variable", fraction=0.05,
   group.by=NULL, # should be a column in the Seurat object, eg clusters
   gene_list=NULL,
+  assay = NULL,
   wgcna_name=NULL
  ){
+
+  # set as active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
   # validate inputs:
   if(!(gene_select %in% c("variable", "fraction", "all", "custom"))){
     stop(paste0("Invalid selection gene_select: ", gene_select, '. Valid gene_selects are variable, fraction, all, or custom.'))
   }
   
-
-  # get assay
-  assay <- DefaultAssay(seurat_obj)
-  tryCatch(
-   tmp <- dim(seurat_obj[[assay]]@counts),
-   error = function(e){
-     print("Assay must contain counts slot.")
-   })
+  # get the assay
+  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
+  
+  # get the expression matrix
+  if(CheckSeurat5()){
+    expr_mat <- SeuratObject::LayerData(seurat_obj, layer='counts', assay=assay)
+  } else{
+    expr_mat <- Seurat::GetAssayData(seurat_obj, slot='counts', assay=assay)
+  }
 
   # handle different selection strategies
   if(gene_select == "fraction"){
 
     # binarize counts matrix in chunks to save memory
-    expr_mat <- GetAssayData(seurat_obj, slot='counts')
     n_chunks <- ceiling(ncol(expr_mat) / 10000)
 
     if(n_chunks == 1){

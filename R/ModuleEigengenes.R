@@ -32,25 +32,35 @@ ComputeModuleEigengene <- function(
 
   # get the assay
   if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
-  if(dim(seurat_obj@assays[[assay]]@data)[1] == 0){
-    stop(paste0("Normalized data slot not found in selected assay ", assay))
-  }
 
   # get genes in this module:
   cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name %>% as.character()
 
-  # subset seurat object by these genes only:
-  X_dat <- GetAssayData(seurat_obj, slot='data', assay = assay)[cur_genes,]
-  if(dim(seurat_obj@assays[[assay]]@counts)[1] == 0){
-    X <- X_dat
+  # get the expression matrix:
+  if(CheckSeurat5()){
+    X <- SeuratObject::LayerData(seurat_obj, layer='counts', assay=assay)[cur_genes,]
+    X_dat <- SeuratObject::LayerData(seurat_obj, layer='data', assay=assay)[cur_genes,]
   } else{
-    X <- GetAssayData(seurat_obj, slot='counts', assay = assay)[cur_genes,]
+    X <- Seurat::GetAssayData(seurat_obj, slot='counts', assay=assay)[cur_genes,]
+    X_dat <- Seurat::GetAssayData(seurat_obj, slot='data', assay=assay)[cur_genes,]
   }
+
+  # subset seurat object by these genes only:
+  # X_dat <- GetAssayData(seurat_obj, slot='data', assay = assay)[cur_genes,]
+  # if(dim(seurat_obj@assays[[assay]]@counts)[1] == 0){
+  #   X <- X_dat
+  # } else{
+  #   X <- GetAssayData(seurat_obj, slot='counts', assay = assay)[cur_genes,]
+  # }
 
   # create seurat obj with just these genes
   cur_seurat <- CreateSeuratObject(X, assay = assay, meta.data = seurat_obj@meta.data)
-  cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
-
+  
+  if(CheckSeurat5()){
+    cur_seurat <- SetAssayData(cur_seurat, layer='data', new.data=X_dat, assay=assay)
+  } else{
+    cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
+  }
   # scale the subsetted expression dataset:
   if(is.null(vars.to.regress)){
     cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use)
@@ -61,7 +71,11 @@ ComputeModuleEigengene <- function(
   }
 
   # compute average expression of each gene
-  cur_expr <- GetAssayData(cur_seurat, slot='data')
+  if(CheckSeurat5()){
+    cur_expr <- SeuratObject::GetAssayData(cur_seurat, layer='data')
+  } else{
+    cur_expr <- Seurat::GetAssayData(cur_seurat, slot='data')
+  }
   expr <- Matrix::t(cur_expr)
   averExpr <- Matrix::rowSums(expr) / ncol(expr)
 
@@ -152,7 +166,6 @@ ComputeModuleEigengene <- function(
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
-#' @param exclude_grey logical determining whether to compute MEs for the grey module
 #' @param wgcna_name name of the WGCNA experiment
 #'
 #' @details
@@ -179,7 +192,6 @@ ModuleEigengenes <- function(
   verbose=TRUE,
   assay = NULL,
   pc_dim = 1,
-  exclude_grey = FALSE,
   wgcna_name=NULL, ...
 ){
 
@@ -196,14 +208,6 @@ ModuleEigengenes <- function(
 
   # get the assay
   if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
-
-  # check for the data slot in this assay
-  if(dim(seurat_obj@assays[[assay]]@data)[1] == 0){
-    stop(paste0("Normalized data slot not found in selected assay ", assay))
-  }
-
-  # exclude grey doesn't work yet:
-  if(exclude_grey){exclude_grey <- FALSE}
 
   me_list <- list()
   harmonized_me_list <- list()
@@ -235,11 +239,6 @@ ModuleEigengenes <- function(
   # get list of modules:
   mods <- levels(modules$module)
   mods_loop <- mods
-
-  # exclude grey:
-  if(exclude_grey){
-    mods_loop <- mods[mods != 'grey']
-  }
 
   # loop over modules:
   for(cur_mod in mods_loop){
