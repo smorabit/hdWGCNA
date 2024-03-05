@@ -7,7 +7,7 @@
 #' @param seurat_obj A Seurat object
 #' @param harmonized logical indicating whether or not to use harmonized MEs
 #' @param features character vector containing features for manual module reassignment,
-#' @param new_modules character vector containing modules to ,
+#' @param new_modules character vector containing modules to reassign the genes
 #' @param ignore logical indicating whether or not to ignore error message about reassigning non-grey features
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
@@ -40,44 +40,50 @@ ReassignModules <- function(
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-  if(!is.null(features) & !is.null(new_modules)){
-
-    ##############################
-    # Manual reassignment
-    ##############################
-
+  if(!is.null(features)){
+ 
     # check validity of input features
     if(!all(features %in% genes_use)){
       stop('Some features are not found in GetWGCNAGenes(seurat_obj).')
     }
 
-    # check validity of modules
-    if(!all(new_modules %in% levels(modules$module))){
-      stop('Some module names in new_modules are invalid. Features must be reassigned to existing modules found in GetModules(seurat_obj)')
+     ##############################
+    # Manual reassignment
+    ##############################
+
+    if(!is.null(new_modules)){
+
+      # check validity of modules
+      if(!all(new_modules %in% levels(modules$module))){
+        stop('Some module names in new_modules are invalid. Features must be reassigned to existing modules found in GetModules(seurat_obj)')
+      }
+
+      # get original modules
+      orig_mods <- subset(modules, gene_name %in% features) %>% .$module %>% as.character()
+      if(!all(orig_mods == 'grey') & !ignore){
+        stop('Attempting to reassign non-grey genes to new modules. Proceed with caution. If you wish to reassign these genes, re-run this function and set ignore=TRUE')
+      }
+
+      # set up table for new module assignments
+      reassign_df <- data.frame(
+        gene_name = as.character(features),
+        module = as.character(new_modules)
+      )
+      reassign_df$module <- factor(as.character(reassign_df$module), levels = levels(modules$module))
+
+      # new colors:
+      reassign_df$color <- as.character(mod_cp[as.character(reassign_df$module)])
+
+      # reassign modules and colors
+      modules[reassign_df$gene_name,'module'] <- reassign_df$module
+      modules[reassign_df$gene_name,'color'] <- reassign_df$color
+
+      # set the modules table
+      seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
+      return(seurat_obj)
+
     }
-
-    # get original modules
-    orig_mods <- subset(modules, gene_name %in% features) %>% .$module %>% as.character()
-    if(!all(orig_mods == 'grey') & !ignore){
-      stop('Attempting to reassign non-grey genes to new modules. Proceed with caution. If you wish to reassign these genes, re-run this function and set ignore=TRUE')
-    }
-
-    # set up table for new module assignments
-    reassign_df <- data.frame(
-      gene_name = as.character(features),
-      module = as.character(new_modules)
-    )
-    reassign_df$module <- factor(as.character(reassign_df$module), levels = levels(modules$module))
-
-    # new colors:
-    reassign_df$color <- as.character(mod_cp[as.character(reassign_df$module)])
-
-    # reassign modules and colors
-    modules[reassign_df$gene_name,'module'] <- reassign_df$module
-    modules[reassign_df$gene_name,'color'] <- reassign_df$color
-
   } else{
-
 
     ##############################
     # reassignment by kME
@@ -91,39 +97,40 @@ ReassignModules <- function(
       cur %>% subset(kME < 0)
     }))
     if(nrow(neg_df) == 0){
-      # warning('No genes to reassign, all kMEs of assigned modules are greater than 0.')
       return(seurat_obj)
     }
     rownames(neg_df) <- 1:nrow(neg_df)
-
-
-    # get just the kME values from the modules table
-    kMEs <- modules[,4:ncol(modules)]
-    kMEs <- kMEs[,colnames(kMEs) != "kME_grey"]
-
-    # for each gene with negative kME values in the assigned module,
-    # identify the module that had the highest kME
-    reassigned <- sapply(neg_df$gene_name, function(cur_gene){
-      cur_kMEs <- kMEs[cur_gene,]
-      max_kME <- max(cur_kMEs)
-      if(max_kME < 0){
-        return('kME_grey')
-      }
-      colnames(kMEs)[which(cur_kMEs == max_kME)]
-    })
-
-    # add the reassigned modules to the modules table
-    reassigned <- do.call(rbind, strsplit(reassigned, 'kME_'))[,2]
-    reassigned <- factor(as.character(reassigned), levels=levels(modules$module))
-
-    # new colors:
-    reassigned_colors <- as.character(mod_cp[as.character(reassigned)])
-
-    # reassign modules and colors
-    modules[neg_df$gene_name,'module'] <- reassigned
-    modules[neg_df$gene_name,'color'] <- reassigned_colors
+    features <- neg_df$gene_name
 
   }
+
+  # get just the kME values from the modules table
+  kMEs <- modules[,4:ncol(modules)]
+  kMEs <- kMEs[,colnames(kMEs) != "kME_grey"]
+
+  # for each gene with negative kME values in the assigned module,
+  # identify the module that had the highest kME
+  reassigned <- sapply(features, function(cur_gene){
+    cur_kMEs <- kMEs[cur_gene,]
+    max_kME <- max(cur_kMEs)
+    if(max_kME < 0){
+      return('kME_grey')
+    }
+    colnames(kMEs)[which(cur_kMEs == max_kME)]
+  })
+
+  # add the reassigned modules to the modules table
+  reassigned <- do.call(rbind, strsplit(reassigned, 'kME_'))[,2]
+  reassigned <- factor(as.character(reassigned), levels=levels(modules$module))
+
+  # new colors:
+  reassigned_colors <- as.character(mod_cp[as.character(reassigned)])
+
+  # reassign modules and colors
+  modules[features,'module'] <- reassigned
+  modules[features,'color'] <- reassigned_colors
+
+
 
   # set the modules table
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)

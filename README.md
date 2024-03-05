@@ -34,7 +34,7 @@ conda activate hdWGCNA
 Next open R and install the required dependencies:
 
 * [Bioconductor](https://www.bioconductor.org/), an R-based software ecosystem for bioinformatics and biostatistics.
-* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science. We do not recommend using hdWGCNA with Seurat v5 at this time.
+* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science.
 * [WGCNA](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/), a package for co-expression network analysis.
 * [igraph](https://igraph.org/r/), a package for general network analysis and visualization.
 * [devtools](https://devtools.r-lib.org/), a package for package development in R.
