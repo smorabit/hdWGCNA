@@ -8,6 +8,7 @@
 #' @param text_size the size of the text in the plot
 #' @param plot_connectivity logical indicating whether to plot the connectivity in addition to the scale free topplogy fit.
 #' @param wgcna_name The name of the WGCNA experiment in seurat_obj
+#' @importFrom dplyr %>%
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -755,7 +756,7 @@ EnrichrDotPlot <- function(
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
   # add color to enrich_table
-  mod_colors <- select(modules, c(module, color)) %>% distinct
+  mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct
   enrichr_df$color <- mod_colors[match(enrichr_df$module, mod_colors$module), 'color']
 
   # helper function to wrap text
@@ -2243,8 +2244,8 @@ PlotKMEs <- function(
   modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   mod_colors <- modules %>% subset(module %in% mods) %>%
-    select(c(module, color)) %>%
-    distinct
+    dplyr::select(c(module, color)) %>%
+    dplyr::distinct
 
 
   #get hub genes:
