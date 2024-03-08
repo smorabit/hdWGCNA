@@ -1,3 +1,11 @@
+# hdWGCNA 0.3.01 (2024-03-07)
+## Added
+- None
+
+## Changes
+- Bugfix in `ModulePreservation`
+- Update to module preservation tutorial and project modules tutorial.
+
 # hdWGCNA 0.3.00 (2024-02-27)
 ## Added
 - First version with support for Seurat v5.

@@ -9,16 +9,22 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In this tutorial, we begin to analyze the co-expresion modules detected in one
+Compiled: 07-03-2024
+
+Source: `vignettes/basic_tutorial.Rmd`
+
+In this tutorial, we show how to investigate co-expresion modules detected in one
 dataset in external datasets. Rather than building a new co-expression network
 from scratch in a new dataset, we can take the modules from one dataset and project
-them into the new dataset. Before starting this tutorial, make sure that you
-have constructed the co-expression network as in the [hdWGCNA basics](articles/basics_tutorial.html). The main hdWGCNA tutorials have been using the control
+them into the new dataset. A prerequisite for this tutorial is constructing a
+co-expression network in a single-cell or spatial transcritpomic dataset,
+see the [single-cell basics](articles/basics_tutorial.html) or the [spatial basics](articles/ST_basics.html) 
+tutorial before proceeding. The main hdWGCNA tutorials have been using the control
 brain samples from [this publication](https://www.nature.com/articles/s41591-019-0695-9),
 and now we will project the inhibitory neruon modules from Zhou et al into the
-control brain samples from [Morabito and Miyoshi 2021](https://doi.org/10.1038/s41588-021-00894-z).
+control brain snRNA-seq dataset from [Morabito and Miyoshi 2021](https://doi.org/10.1038/s41588-021-00894-z).
 
-First we must load the data and the required libraries:
+First we load the datasets and the required libraries:
 ```{r eval=FALSE}
 
 # single-cell analysis package
@@ -56,7 +62,7 @@ In this section we project the modules from the Zhou et al inhibitory neuron
 hdWGCNA experiment into the Morabito & Miyoshi et al control brain dataset. We
 refer to the Zhou et al dataset as the "reference" dataset, and the Morabito & Miyoshi
 et al dataset as the "query" dataset. Just [as we had done before](basic_tutorial.html) when building the co-expression network from scratch, the basic single-cell pipeline
-has to be 0done on the query dataset (normalization, scaling, variable features, PCA, batch correction, UMAP, clustering).
+has to be done on the query dataset (normalization, scaling, variable features, PCA, batch correction, UMAP, clustering).
 First we make a UMAP plot to visualize the two datasets to ensure they have both
 been processed.
 
@@ -101,7 +107,7 @@ seurat_query <- ProjectModules(
   seurat_ref = seurat_ref,
   # vars.to.regress = c(), # optionally regress covariates when running ScaleData
   group.by.vars = "Batch", # column in seurat_query to run harmony on
-  wgcna_name_proj="Zhou_projected", # name of the new hdWGCNA experiment in the query dataset
+  wgcna_name_proj="projected", # name of the new hdWGCNA experiment in the query dataset
   wgcna_name = "tutorial" # name of the hdWGCNA experiment in the ref dataset
 )
 
@@ -116,21 +122,22 @@ the *kME* values in the module assignment table `GetModules(seurat_query)` are t
 
 
 ```{r eval=FALSE}
-# compute module hub gene expression scores for projected modules:
-seurat_query <- ModuleExprScore(
+
+seurat_query <- ModuleConnectivity(
   seurat_query,
-  n_genes = 25,
-  method='Seurat'
+  group.by = 'cell_type', group_name = 'INH'
 )
 
-# compute intramodular connectivity
-seurat_query <- ModuleConnectivity(seurat_query, assay="RNA", slot="data")
+seurat_query <- ModuleExprScore(
+  seurat_query,
+  method='UCell'
+)
 
 ```
 
-Save the query Seurat object after projecting modules.
+```{r eval=FALSE, echo=FALSE}
+# Save the query Seurat object after projecting modules.
 
-```{r eval=FALSE}
 saveRDS(seurat_query, file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds'))
 
 seurat_query <- readRDS(paste0(data_dir, 'Swarup2021_control_hdWGCNA_modpres.rds'))
@@ -164,7 +171,8 @@ function to visualizes the hMEs on the UMAP:
 plot_list <- ModuleFeaturePlot(
   seurat_query,
   features='hMEs',
-  order=TRUE
+  order=TRUE,
+  restrict_range=FALSE
 )
 
 # stitch together with patchwork
@@ -178,19 +186,19 @@ Next we will make a dot plot for each of the modules grouped by cell type identi
 
 ```{r eval=FALSE}
 
-# get the projected hMEs
-projected_hMEs <-  GetMEs(seurat_query, harmonized=TRUE)
+# get the projected MEs
+projected_MEs <-  GetMEs(seurat_query)
 
-# add hMEs to Seurat meta-data:
+# add MEs to Seurat meta-data:
 seurat_query@meta.data <- cbind(
   seurat_query@meta.data,
-  projected_hMEs
+  projected_MEs
 )
 
 # plot with Seurat's DotPlot function
 p <- DotPlot(
     seurat_query,
-    features = colnames(projected_hMEs),
+    features = colnames(projected_MEs),
     group.by = 'cell_type'
 )
 

@@ -49,13 +49,19 @@ ModulePreservation <- function(
     colnames(datExpr_query)  <- gene_mapping[,genome1_col]
   }
 
+  genes_keep <- intersect(colnames(datExpr_ref), colnames(datExpr_query))
+  datExpr_ref <- datExpr_ref[,genes_keep]
+  datExpr_query <- datExpr_query[,genes_keep]
+
   # set up multiExpr:
   setLabels <- c("ref", "query")
   multiExpr <- list(
     ref = list(data=datExpr_ref),
     query = list(data=datExpr_query)
   )
-  ref_modules <- list(ref = GetModules(seurat_ref, wgcna_name=wgcna_name)$module)
+  ref_modules <- GetModules(seurat_ref, wgcna_name=wgcna_name_ref)
+  ref_modules <- ref_modules[genes_keep,]
+  ref_modules <- list(ref = ref_modules$module)
 
   # print('ref:')
   # print(dim(multiExpr$ref$data))

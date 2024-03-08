@@ -35,6 +35,7 @@ ProjectModules <- function(
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
+  CheckWGCNAName(seurat_ref, wgcna_name)
 
   # get modules to be projected:
   if(is.null(modules)){

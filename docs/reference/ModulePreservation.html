@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
       </span>
     </div>
 
@@ -171,15 +171,11 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!CheckWGCNAName(seurat_obj, wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid wgcna_name supplied: ", wgcna_name))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     CheckWGCNAName(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name_ref)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name_ref &lt;- seurat_ref@misc$active_wgcna</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!CheckWGCNAName(seurat_ref, wgcna_name_ref)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste0("Invalid wgcna_name_ref supplied: ", wgcna_name_ref))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     CheckWGCNAName(seurat_ref, wgcna_name_ref)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_ref &lt;- GetDatExpr(seurat_ref, wgcna_name_ref)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_query &lt;- GetDatExpr(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(gene_mapping)) {</span>
@@ -188,9 +184,14 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         gene_mapping &lt;- na.omit(gene_mapping[gene_match, ])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         colnames(datExpr_query) &lt;- gene_mapping[, genome1_col]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     genes_keep &lt;- intersect(colnames(datExpr_ref), colnames(datExpr_query))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_ref &lt;- datExpr_ref[, genes_keep]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_query &lt;- datExpr_query[, genes_keep]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     setLabels &lt;- c("ref", "query")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     multiExpr &lt;- list(ref = list(data = datExpr_ref), query = list(data = datExpr_query))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- list(ref = GetModules(seurat_ref, wgcna_name = wgcna_name)$module)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- GetModules(seurat_ref, wgcna_name = wgcna_name_ref)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- ref_modules[genes_keep, ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- list(ref = ref_modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mp &lt;- WGCNA::modulePreservation(multiExpr, ref_modules, referenceNetworks = 1, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         nPermutations = n_permutations, randomSeed = seed, quickCor = 0, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         parallelCalculation = parallel, ...)</span>
@@ -206,7 +207,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         name, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fc97bb6aec8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fca8c32a948&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -1725,8 +1725,6 @@ DoHubGeneHeatmap <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' PlotModulePreservation
 PlotModulePreservation <- function(
   seurat_obj,
   name,
@@ -1847,8 +1845,6 @@ PlotModulePreservation <- function(
 #' @param combine logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' PlotModulePreservation
 PlotModuleTraitCorrelation <- function(
   seurat_obj,
   high_color = 'red',

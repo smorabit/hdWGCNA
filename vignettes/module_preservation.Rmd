@@ -10,17 +10,20 @@ vignette: >
 ---
 
 
-Data-driven models are thought to be useful when they are generalizable across
-different datasets. If we think about co-expression networks from this perspective,
-we need a way to statistically quantify the conservation of co-expression modules
-that were identified in one datasets across external datasets. This is a common theme
-in machine learning, where a model is learned on a training dataset but evaluated
-using an external validation dataset.
+Compiled: 07-03-2024
 
-In the [previous tutorial](projecting_modules.html), we projected the co-expression
-modules from a reference to a query dataset, but we did not quantify the degree
-to which these modules were preserved across datasets. In this tutorial, we perform statistical tests to estimate the conservation of
-projected modules.
+Source: `vignettes/basic_tutorial.Rmd`
+
+
+Data-driven models are most useful when they are generalizable across
+different datasets. Thinking about co-expression networks from this perspective,
+we need a way to quantify and test the conservation of co-expression patterns
+identified in one dataset across external datasets. In this tutorial, we 
+demonstrate **module preservation analysis** with hdWGCNA, a statistical 
+framewoerk that allows us to test the degree to which co-expression modules identified in 
+one dataset are "preserved" in another dataset. This tutorial builds off of 
+a [previous tutorial](projecting_modules.html), where we projected the co-expression
+modules from a reference dataset to a query dataset.
 
 First we must load the data and the required libraries:
 ```{r eval=FALSE}
@@ -57,8 +60,9 @@ seurat_query <- readRDS(file=paste0(data_dir, 'Morabito_Miyoshi_2021_control.rds
 ## Module preservation analysis
 
 In their 2011 paper titled
-["Is My Network Module Preserved and Reproducible?"](https://doi.org/10.1371/journal.pcbi.1001057), Langfelder et al discuss statistical methods for
-module preservation analysis in co-expression network analysis.  Notably, module preservation analysis can be used
+["Is My Network Module Preserved and Reproducible?"](https://doi.org/10.1371/journal.pcbi.1001057), 
+Langfelder et al discuss statistical methods for module preservation analysis in co-expression network 
+analysis.  Notably, module preservation analysis can be used
 to assess the reproducibility of co-expression networks, but it can also be used
 for specific biological analyses, for example to identify which modules are
 significantly preserved across different disease conditions, tissues, developmental
@@ -71,8 +75,8 @@ The first step in module preservation analysis is to project modules from a refe
 seurat_query <- ProjectModules(
   seurat_obj = seurat_query,
   seurat_ref = seurat_ref,
-  wgcna_name = "INH",
-  wgcna_name_proj="INH_projected",
+  wgcna_name = "tutorial",
+  wgcna_name_proj="projected",
   assay="RNA" # assay for query dataset
 )
 
@@ -81,7 +85,27 @@ seurat_query <- ProjectModules(
 Next, we set up the expression matrices for the query and reference datasets. Either the 
 single-cell or the metacell gene expression matrices can be used here by setting the `use_metacells` 
 flag in `SetDatExpr`. In general we recommend using the same matrix that was used to construct the network 
-for the reference (in this case, the metacell matrix). 
+for the reference (in this case, the metacell matrix). If you have not already constructed 
+metacells in the query dataset, you can do that prior to module preservation analysis.
+
+<details> <summary> See code to consruct metacells in the query dataset </summary>
+```{r eval=FALSE}
+
+# construct metacells:
+seurat_query <- MetacellsByGroups(
+  seurat_obj = seurat_query,
+  group.by = c("cell_type", "Sample"),
+  k = 25,
+  max_shared = 12,
+  reduction = 'harmony',
+  ident.group = 'cell_type'
+)
+seurat_query <- NormalizeMetacells(seurat_query)
+
+
+```
+</details>
+
 
 
 ```{r eval=FALSE}
@@ -97,41 +121,20 @@ seurat_ref <- SetDatExpr(
 seurat_query <- SetDatExpr(
   seurat_query,
   group_name = "INH",
-  group.by = "cell_type",
-  use_metacells = FALSE
-)
-
-```
-
-<details> <summary> ** Using the metacell expression matrix for the query dataset ** </summary>
-
-If you choose to use the metacell expression matrix for the query dataset, you have to first run `MetacellsByGroups` on the query dataset.
-
-```{r eval=FALSE}
-
-# compute metacells
-seurat_query <- MetacellsByGroups(
-  seurat_obj = seurat_query,
-  group.by = c("cell_type", "Sample"), 
-  reduction = 'harmony',
-  k = 25,
-  max_shared = 10, 
-  ident.group = 'cell_type'
-)
-seurat_query <- NormalizeMetacells(seurat_query)
-
-# set expression matrix for query dataset:
-seurat_query <- SetDatExpr(
-  seurat_query,
-  group_name = "INH",
   group.by = "cell_type"
 )
 
 ```
 
-</details>
+Now we can run the `ModulePreservation` function. Note that this 
+function does take a while to run since it is a permutation test, 
+but it can be sped up by lowering the `n_permutations` parameter,
+but we do not recommend any lower than 100 permutations. Also note 
+that the `parallel` option currently does not work. For demonstration purposes, we ran the code for this tutorial using 
+only 20 permutations so it would run quickly.
 
-Now we can run the `ModulePreservation` function. Note that this function does take a while to run since it is permutation based, but it can be sped up by lowering the `n_permutations` parameter, but we do not recommend any lower than 100 permutations. Also note that the `parallel` option currently does not work.
+`ModulePreservation` takes a `name` parameter, which is used to store 
+the results of this module perturbation test. 
 
 ```{r eval=FALSE}
 
@@ -141,29 +144,40 @@ seurat_query <- ModulePreservation(
   seurat_ref = seurat_ref,
   name="Zhou-INH",
   verbose=3,
-  n_permutations=250
+  n_permutations=250 # n_permutations=20 used for the tutorial
 )
 
-# getthe module preservation table
-mod_pres <- GetModulePreservation(seurat_query, "Zhou-INH")$Z
-obs_df <- GetModulePreservation(seurat_query, "Zhou-INH")$obs
-
-grep('summary', colnames(mod_pres))
-grep('summary', colnames(obs))
 
 ```
 
-Please consult [this tutorial](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/)
+<!-- Previously we recommended  [this tutorial](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/)
 for an explanation of the different stats. Currently working on writing up a
 description of the stats on this page. The visualizations are inspired by
-those included in the [original WGCNA module preservation tutorials](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf).
+those included in the [original WGCNA module preservation tutorials](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf). -->
 
 
 ## Visualize preservation stats
 
-In this section, we use the function `PlotModulePreservation` to visualize the
+The module perturbation test produces a number of different preservation statistics, which you 
+can inspect in the following tables.
+
+```{r eval=FALSE}
+# get the module preservation table
+mod_pres <- GetModulePreservation(seurat_query, "Zhou-INH")$Z
+obs_df <- GetModulePreservation(seurat_query, "Zhou-INH")$obs
+```
+
+In the past we linked to the original WGCNA documentation website for 
+more detailed explanations of thes statistics, but unfortunately at the 
+time of writing this tutorial the website has been taken offline. 
+Please refer to the original publication in [PLOS Computational Biology](https://doi.org/10.1371/journal.pcbi.1001057)
+for further explanations.
+
+hdWGCNA includes the function `PlotModulePreservation` to visualize the
 statistics we computed in the previous section. This function generates a scatter
-plot showing the module size versus the module preservation stats.
+plot showing the module size versus the module preservation stats. The summary 
+statistics aggregate the individual preservation and quality statistics into a single metric 
+so we generally recommend primarily interpreting the results with these plots.
 
 ```{r eval=FALSE}
 
@@ -180,7 +194,15 @@ wrap_plots(plot_list, ncol=2)
 
 <img src="figures/projection/module_preservation_summary.png" width="700" height="700">
 
-Plot the ranking stats
+Here we can see three different shades in the background. These represent 
+cutoff values for interpreting the Z summary statistics. The following 
+guidelines help us understand the preservation of these modules.
+
+* Z > 2, the module is not preserved in the query dataset.
+* 10 > Z > 2, the module is moderately preserved in the query dataset.
+* Z > 10, the module is highly preserved in the query dataset.
+
+The following code shows how to plot additional module preservation stats.
 
 ```{r eval=FALSE}
 
@@ -192,11 +214,17 @@ plot_list <- PlotModulePreservation(
 )
 
 
+wrap_plots(plot_list, ncol=2)
+
+```
+
+```{r eval=FALSE, echo=FALSE}
 png(paste0(fig_dir, 'module_preservation_rank.png'), width=10, height=10, res=400, units='in')
 wrap_plots(plot_list, ncol=2)
 dev.off()
 
 ```
+
 
 <img src="figures/projection/module_preservation_rank.png" width="700" height="700">
 

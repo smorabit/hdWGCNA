@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.00</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
       </span>
     </div>
 
@@ -158,8 +158,9 @@
 
     
     
-<p>Data-driven models are thought to be useful when they are generalizable across different datasets. If we think about co-expression networks from this perspective, we need a way to statistically quantify the conservation of co-expression modules that were identified in one datasets across external datasets. This is a common theme in machine learning, where a model is learned on a training dataset but evaluated using an external validation dataset.</p>
-<p>In the <a href="projecting_modules.html">previous tutorial</a>, we projected the co-expression modules from a reference to a query dataset, but we did not quantify the degree to which these modules were preserved across datasets. In this tutorial, we perform statistical tests to estimate the conservation of projected modules.</p>
+<p>Compiled: 07-03-2024</p>
+<p>Source: <code>vignettes/basic_tutorial.Rmd</code></p>
+<p>Data-driven models are most useful when they are generalizable across different datasets. Thinking about co-expression networks from this perspective, we need a way to quantify and test the conservation of co-expression patterns identified in one dataset across external datasets. In this tutorial, we demonstrate <strong>module preservation analysis</strong> with hdWGCNA, a statistical framewoerk that allows us to test the degree to which co-expression modules identified in one dataset are “preserved” in another dataset. This tutorial builds off of a <a href="projecting_modules.html">previous tutorial</a>, where we projected the co-expression modules from a reference dataset to a query dataset.</p>
 <p>First we must load the data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -197,12 +198,25 @@
 <code class="sourceCode R"><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
   seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
-  wgcna_name <span class="op">=</span> <span class="st">"INH"</span>,
-  wgcna_name_proj<span class="op">=</span><span class="st">"INH_projected"</span>,
+  wgcna_name <span class="op">=</span> <span class="st">"tutorial"</span>,
+  wgcna_name_proj<span class="op">=</span><span class="st">"projected"</span>,
   assay<span class="op">=</span><span class="st">"RNA"</span> <span class="co"># assay for query dataset</span>
 <span class="op">)</span></code></pre></div>
-<p>Next, we set up the expression matrices for the query and reference datasets. Either the single-cell or the metacell gene expression matrices can be used here by setting the <code>use_metacells</code> flag in <code>SetDatExpr</code>. In general we recommend using the same matrix that was used to construct the network for the reference (in this case, the metacell matrix).</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>Next, we set up the expression matrices for the query and reference datasets. Either the single-cell or the metacell gene expression matrices can be used here by setting the <code>use_metacells</code> flag in <code>SetDatExpr</code>. In general we recommend using the same matrix that was used to construct the network for the reference (in this case, the metacell matrix). If you have not already constructed metacells in the query dataset, you can do that prior to module preservation analysis.</p>
+<details><summary>
+See code to consruct metacells in the query dataset
+</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># construct metacells:</span>
+<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
+  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
+  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,
+  k <span class="op">=</span> <span class="fl">25</span>,
+  max_shared <span class="op">=</span> <span class="fl">12</span>,
+  reduction <span class="op">=</span> <span class="st">'harmony'</span>,
+  ident.group <span class="op">=</span> <span class="st">'cell_type'</span>
+<span class="op">)</span>
+<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></code></pre></div>
+</details><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set expression matrix for reference dataset</span>
 <span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_ref</span>,
@@ -214,31 +228,10 @@
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   group_name <span class="op">=</span> <span class="st">"INH"</span>,
-  group.by <span class="op">=</span> <span class="st">"cell_type"</span>,
-  use_metacells <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span></code></pre></div>
-<details><summary>
-** Using the metacell expression matrix for the query dataset **
-</summary><p>If you choose to use the metacell expression matrix for the query dataset, you have to first run <code>MetacellsByGroups</code> on the query dataset.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># compute metacells</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
-  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
-  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>, 
-  reduction <span class="op">=</span> <span class="st">'harmony'</span>,
-  k <span class="op">=</span> <span class="fl">25</span>,
-  max_shared <span class="op">=</span> <span class="fl">10</span>, 
-  ident.group <span class="op">=</span> <span class="st">'cell_type'</span>
-<span class="op">)</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span>
-
-<span class="co"># set expression matrix for query dataset:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  group_name <span class="op">=</span> <span class="st">"INH"</span>,
   group.by <span class="op">=</span> <span class="st">"cell_type"</span>
 <span class="op">)</span></code></pre></div>
-</details><p>Now we can run the <code>ModulePreservation</code> function. Note that this function does take a while to run since it is permutation based, but it can be sped up by lowering the <code>n_permutations</code> parameter, but we do not recommend any lower than 100 permutations. Also note that the <code>parallel</code> option currently does not work.</p>
+<p>Now we can run the <code>ModulePreservation</code> function. Note that this function does take a while to run since it is a permutation test, but it can be sped up by lowering the <code>n_permutations</code> parameter, but we do not recommend any lower than 100 permutations. Also note that the <code>parallel</code> option currently does not work. For demonstration purposes, we ran the code for this tutorial using only 20 permutations so it would run quickly.</p>
+<p><code>ModulePreservation</code> takes a <code>name</code> parameter, which is used to store the results of this module perturbation test.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run module preservation function</span>
 <span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservation.html">ModulePreservation</a></span><span class="op">(</span>
@@ -246,22 +239,24 @@
   seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
   verbose<span class="op">=</span><span class="fl">3</span>,
-  n_permutations<span class="op">=</span><span class="fl">250</span>
-<span class="op">)</span>
-
-<span class="co"># getthe module preservation table</span>
-<span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>
-<span class="va">obs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">obs</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">'summary'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mod_pres</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">'summary'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">obs</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Please consult <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/" class="external-link">this tutorial</a> for an explanation of the different stats. Currently working on writing up a description of the stats on this page. The visualizations are inspired by those included in the <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf" class="external-link">original WGCNA module preservation tutorials</a>.</p>
+  n_permutations<span class="op">=</span><span class="fl">250</span> <span class="co"># n_permutations=20 used for the tutorial</span>
+<span class="op">)</span></code></pre></div>
+<!-- Previously we recommended  [this tutorial](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/)
+for an explanation of the different stats. Currently working on writing up a
+description of the stats on this page. The visualizations are inspired by
+those included in the [original WGCNA module preservation tutorials](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/MiniTutorial-MouseLiver.pdf). -->
 </div>
 <div class="section level2">
 <h2 id="visualize-preservation-stats">Visualize preservation stats<a class="anchor" aria-label="anchor" href="#visualize-preservation-stats"></a>
 </h2>
-<p>In this section, we use the function <code>PlotModulePreservation</code> to visualize the statistics we computed in the previous section. This function generates a scatter plot showing the module size versus the module preservation stats.</p>
+<p>The module perturbation test produces a number of different preservation statistics, which you can inspect in the following tables.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the module preservation table</span>
+<span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>
+<span class="va">obs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">obs</span></code></pre></div>
+<p>In the past we linked to the original WGCNA documentation website for more detailed explanations of thes statistics, but unfortunately at the time of writing this tutorial the website has been taken offline. Please refer to the original publication in <a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">PLOS Computational Biology</a> for further explanations.</p>
+<p>hdWGCNA includes the function <code>PlotModulePreservation</code> to visualize the statistics we computed in the previous section. This function generates a scatter plot showing the module size versus the module preservation stats. The summary statistics aggregate the individual preservation and quality statistics into a single metric so we generally recommend primarily interpreting the results with these plots.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
@@ -270,8 +265,14 @@
 
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/module_preservation_summary.png" width="700" height="700"></p>
-<p>Plot the ranking stats</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Here we can see three different shades in the background. These represent cutoff values for interpreting the Z summary statistics. The following guidelines help us understand the preservation of these modules.</p>
+<ul>
+<li>Z &gt; 2, the module is not preserved in the query dataset.</li>
+<li>10 &gt; Z &gt; 2, the module is moderately preserved in the query dataset.</li>
+<li>Z &gt; 10, the module is highly preserved in the query dataset.</li>
+</ul>
+<p>The following code shows how to plot additional module preservation stats.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot ranking stats</span>
 <span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
@@ -280,12 +281,10 @@
 <span class="op">)</span>
 
 
-<span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">fig_dir</span>, <span class="st">'module_preservation_rank.png'</span><span class="op">)</span>, width<span class="op">=</span><span class="fl">10</span>, height<span class="op">=</span><span class="fl">10</span>, res<span class="op">=</span><span class="fl">400</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span>
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/projection/module_preservation_rank.png" width="700" height="700"></p>
 <p>Plot all of the different stats:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
   <span class="va">seurat_query</span>,
   name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
