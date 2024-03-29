@@ -84,7 +84,8 @@ ComputeModuleEigengene <- function(
     cur_seurat,
     features = cur_genes,
     reduction.key=paste0('pca', cur_mod),
-    verbose=verbose, ...
+    verbose=verbose, 
+    npcs = 15, ...
   )@reductions$pca
   pc <- cur_pca@cell.embeddings[,pc_dim]
   pc_loadings <- cur_pca@feature.loadings[,pc_dim]
