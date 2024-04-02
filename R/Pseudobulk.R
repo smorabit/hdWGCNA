@@ -94,9 +94,9 @@ ConstructPseudobulk <- function(
 
     # get expression matrix:
     if(CheckSeurat5()){
-      X <- SeuratObject::LayerData(cur_seurat, assay=assay, layer=layer)
+      X <- SeuratObject::LayerData(seurat_obj, assay=assay, layer=layer)
     } else{
-      X <- Seurat::GetAssayData(cur_seurat, assay=assay, slot=slot)
+      X <- Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot)
     }
 
     # get pseudobulk replicates

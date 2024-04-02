@@ -13,7 +13,7 @@ Compiled: 07-03-2024
 
 Source: `vignettes/basic_tutorial.Rmd`
 
-In this tutorial, we show how to investigate co-expresion modules detected in one
+In this tutorial we show how to investigate co-expresion modules detected in one
 dataset in external datasets. Rather than building a new co-expression network
 from scratch in a new dataset, we can take the modules from one dataset and project
 them into the new dataset. A prerequisite for this tutorial is constructing a
