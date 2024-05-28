@@ -12,8 +12,8 @@ ModulePreservation(
   parallel = FALSE,
   seed = 12345,
   gene_mapping = NULL,
-  genome1_col = NULL,
-  genome2_col = NULL,
+  genome_ref_col = NULL,
+  genome_query_col = NULL,
   return_raw = FALSE,
   wgcna_name = NULL,
   wgcna_name_ref = NULL,
@@ -33,6 +33,12 @@ ModulePreservation(
 
 \item{seed}{random seed for the permutation analysis.}
 
+\item{gene_mapping}{a dataframe containing gene name mappings between the query and the reference dataset. One column should have the gene name in the query dataset, and anotehr column should have the corresponding gene name in the reference dataset.}
+
+\item{genome_ref_col}{the column name containing the gene names for the reference dataset}
+
+\item{genome_query_col}{the column name containing the gene names for the query dataset}
+
 \item{return_raw}{if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
@@ -42,7 +48,10 @@ ModulePreservation(
 \description{
 Computes module preservation statistics in a query dataset for a given reference dataset
 }
-\examples{
-ModulePreservation
+\details{
+ModulePreservation performs a statistical test to assess the preservation of co-expression modules identified
+in one dataset in an independent dataset. This method is originally described by Langfelder et al.
+in the 2011 paper "Is My Network Module Preserved and Reproducible?". This method can be used to
+assess biological differences in networks, as well as technical differences / reproducibility across different
+batches.
 }
-\keyword{scRNA-seq}

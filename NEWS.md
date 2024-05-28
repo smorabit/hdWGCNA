@@ -1,3 +1,14 @@
+# hdWGCNA 0.3.02 (2024-05-28)
+## Added
+New functionality and methods for module preservation analysis using the [NetRep method from Ritchie et al 2016](https://github.com/sritchie73/NetRep).
+- `ModuleTopologyHeatmap` function.
+- `ModuleTopologyBarplot` function.
+- `ModulePreservationNetrep` function.
+- `PlotModulePreservationLollipop` function.
+
+## Changes
+- Update to module preservation tutorial to demonstrate how to perform module preservation analysis using NetRep.
+
 # hdWGCNA 0.3.01 (2024-03-07)
 ## Added
 - None

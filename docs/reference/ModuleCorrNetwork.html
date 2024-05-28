@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -201,7 +201,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cor_df &lt;- cor_df %&gt;% subset(!(Var1 == Var2))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     cor_df &lt;- cor_df %&gt;% subset(abs(value) &gt;= cor_cutoff)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     v_df &lt;- data.frame(name = mods, cluster = as.character(top_clusters))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     unique_mods &lt;- distinct(modules[, c("module", "color")])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     unique_mods &lt;- dplyr::distinct(modules[, c("module", "color")])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rownames(unique_mods) &lt;- unique_mods$module</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     v_df$color &lt;- unique_mods[v_df$name, "color"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     v_df$x &lt;- red_av[v_df$cluster, 1]</span>
@@ -237,7 +237,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.color = "black", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.cex = 0.5, vertex.size = vertex_size)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f77b7b1f6e8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f83dadbbb58&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -18,7 +18,7 @@ feature expression in selected cell populations / spatial regions."><meta proper
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -132,8 +132,10 @@ feature expression in selected cell populations / spatial regions.</p>
   harmonized <span class="op">=</span> <span class="cn">TRUE</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
   slot <span class="op">=</span> <span class="st">"data"</span>,
+  layer <span class="op">=</span> <span class="st">"data"</span>,
   sparse <span class="op">=</span> <span class="cn">TRUE</span>,
   reassign_modules <span class="op">=</span> <span class="cn">TRUE</span>,
+  TOM_use <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -161,6 +163,8 @@ feature expression in selected cell populations / spatial regions.</p>
 <dd><p>logical indicating whether or not to run the correlation using a sparse matrix.</p></dd>
 <dt>reassign_modules</dt>
 <dd><p>logical indicating whether or not to reassign genes to different co-expression modules if their kME value in the assigned module is negative.</p></dd>
+<dt>TOM_use</dt>
+<dd><p>name of the hdWGCNA experiment that contains the TOM which will be used to compute the intramodular degree of each gene. If the TOM is not found, this calculation will be skipped.</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>The name of the hdWGCNA experiment in the seurat_obj@misc slot</p></dd>
 </dl></div>

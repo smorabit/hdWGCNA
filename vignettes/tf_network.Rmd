@@ -1,0 +1,155 @@
+---
+title: "Transcription factor (TF) regulatory network analysis"
+output: rmarkdown::html_vignette
+description: >
+  Tutorial for using hdWGCNA for trans.
+vignette: >
+  %\VignetteIndexEntry{TF regulatory network analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Compiled: 11-03-2024
+
+## Introduction
+
+In this tutorial we show how to perform transcription factor (TF)
+regulatory network analysis with hdWGCNA. This is an additional 
+type of network analysis that is complementary
+to the standard co-expression network analysis included in hdWGCNA.
+While hdWGCNA co-expression networks are *undirected networks*, where 
+we do not have explicit information about which genes regulate each other,
+TF regulatory networks leverage TF binding motif information to build 
+*directed networks* of TFs and their downstream target genes. Here 
+we demonstrate this analysis on a dataset of the *human* prefrontal 
+cortex, but keep in mind that this analysis must be modified appropriately 
+for different species.
+
+Importantly, this approach was not included in the original hdWGCNA paper 
+[Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3),
+and we first described this method in our paper 
+[Childs & Morabito et al., Cell Reports (2024)](https://www.cell.com/cell-reports/fulltext/S2211-1247(24)00284-5).
+If you use the TF regulatory network analysis in your research, please cite both of these papers.
+
+```{r eval=FALSE}
+
+# single-cell analysis package
+library(Seurat)
+
+# plotting and data science packages
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+library(magrittr)
+
+# co-expression network analysis packages:
+library(WGCNA)
+library(hdWGCNA)
+
+# network analysis & visualization package:
+library(igraph)
+
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# re-load the Zhou et al snRNA-seq dataset
+seurat_obj <- readRDS('data/Zhou_control.rds')
+
+```
+
+## Install additional packages
+
+For this analysis, we need to install some additional R packages 
+to work with TF binding motifs. These broadly fall in two categories,
+tools for working TF motifs and genomic coordinates, and database tools 
+to provide us information on TF motifs and genomic features. Two of the 
+databases that we are using are specific to *human* data 
+(`EnsDb.Hsapiens.v86`, `BSgenome.Hsapiens.UCSC.hg38`), and the JASPAR 
+database includes motif information for multiple species. We also need to 
+install `xgboost`, which includes an algorithm that we use to model 
+TF regulation for each gene. 
+
+```{r eval=FALSE}
+
+# install packages for dealing with TF motifs and genomic coordinates
+BiocManager::install(c(
+  'motifmatchr',
+  'TFBSTools',
+  'GenomicRanges'
+))
+
+# install database packages for human motifs & genomic features
+BiocManager::install(c(
+  'JASPAR2020',
+  'EnsDb.Hsapiens.v86',
+  'BSgenome.Hsapiens.UCSC.hg38'
+)) 
+
+# install xgboost 
+install('xgboost')
+
+# load these packages into R:
+library(JASPAR2020)
+library(motifmatchr)
+library(TFBSTools)
+library(EnsDb.Hsapiens.v86)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(GenomicRanges)
+library(xgboost)
+
+```
+
+## Identify TFs in promoter regions 
+
+The first main step in our TF regulatory network analysis is to 
+determine which genes are potentially regulated by each TF. We provide 
+a function `MotifScan` which uses the algorithm [`motifmatchr`](https://www.bioconductor.org/packages/release/bioc/html/motifmatchr.html)
+to search for occurrences of different TF motifs within gene promoter 
+regions. This function will store information in the `seurat_obj` 
+about which TF motifs are present in each gene's promoter.
+
+```{r eval=FALSE}
+
+seurat_obj <- readRDS(file='/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/zhou_tutorial.rds')
+
+# use TFBSTools to get the motif position weight matrices 
+# for the JASPAR 2020 database
+pfm_core <- TFBSTools::getMatrixSet(
+  x = JASPAR2020,
+  opts = list(collection = "CORE", tax_group = 'vertebrates', all_versions = FALSE)
+)
+
+# run the motif scan
+seurat_obj <- MotifScan(
+  seurat_obj,
+  species_genome = 'hg38',
+  pfm = pfm_core,
+  EnsDb = EnsDb.Hsapiens.v86
+)
+
+```
+
+## Construct TF Regulatory Network 
+
+```{r eval=FALSE}
+
+# get the motif df:
+motif_df <- GetMotifs(seurat_obj)
+head(motif_df)
+
+# keep all TFs, and then keep all non-grey genes 
+tf_genes <- unique(motif_df$gene_name)
+modules <- GetModules(seurat_obj)
+nongrey_genes <- subset(modules, module != 'grey') %>% .$gene_name
+genes_use <- c(tf_genes, nongrey_genes)
+
+# should I make a way to directly give features to setdatexpr instead of doing this?
+seurat_obj <- SetWGCNAGenes(seurat_obj, genes_use)
+seurat_obj <- SetDatExpr(seurat_obj, group.by = 'cell_type', group_name='INH')
+datExpr <- GetDatExpr(seurat_obj)
+dim(datExpr)
+
+```

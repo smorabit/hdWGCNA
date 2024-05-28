@@ -16,4 +16,3 @@ SetAvgModuleExpr(seurat_obj, avg_mods, wgcna_name = NULL)
 \description{
 SetAvgModuleExpr
 }
-\keyword{scRNA-seq}

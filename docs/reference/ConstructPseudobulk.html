@@ -19,7 +19,7 @@ replicate.'><meta property="og:image" content="https://smorabit.github.io/hdWGCN
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -132,6 +132,7 @@ replicate.</p>
   label_col <span class="op">=</span> <span class="cn">NULL</span>,
   assay <span class="op">=</span> <span class="st">"RNA"</span>,
   slot <span class="op">=</span> <span class="st">"counts"</span>,
+  layer <span class="op">=</span> <span class="st">"counts"</span>,
   min_reps <span class="op">=</span> <span class="fl">20</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
@@ -150,7 +151,9 @@ replicate.</p>
 <dt>assay</dt>
 <dd><p>Assay in seurat_obj containing isoform expression information.</p></dd>
 <dt>slot</dt>
-<dd><p>Slot in seurat_obj, default to counts slot and we generally recommend using counts here.</p></dd>
+<dd><p>Slot to extract data for aggregation. Default = 'counts'</p></dd>
+<dt>layer</dt>
+<dd><p>Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.</p></dd>
 <dt>min_reps</dt>
 <dd><p>The minimum number of different biological replicates allowed. Error will be thrown if the number of reps is too low.</p></dd>
 <dt>wgcna_name</dt>

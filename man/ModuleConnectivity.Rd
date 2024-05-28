@@ -13,8 +13,10 @@ ModuleConnectivity(
   harmonized = TRUE,
   assay = NULL,
   slot = "data",
+  layer = "data",
   sparse = TRUE,
   reassign_modules = TRUE,
+  TOM_use = NULL,
   wgcna_name = NULL,
   ...
 )
@@ -39,6 +41,8 @@ ModuleConnectivity(
 \item{sparse}{logical indicating whether or not to run the correlation using a sparse matrix.}
 
 \item{reassign_modules}{logical indicating whether or not to reassign genes to different co-expression modules if their kME value in the assigned module is negative.}
+
+\item{TOM_use}{name of the hdWGCNA experiment that contains the TOM which will be used to compute the intramodular degree of each gene. If the TOM is not found, this calculation will be skipped.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }

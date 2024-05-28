@@ -16,6 +16,7 @@ SetDatExpr(
   slot = "data",
   layer = "data",
   mat = NULL,
+  features = NULL,
   wgcna_name = NULL,
   ...
 )
@@ -40,6 +41,8 @@ SetDatExpr(
 \item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
+
+\item{features}{A list of features to use to override the features that have been previously set.}
 
 \item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
 }

@@ -10,6 +10,7 @@ SelectNetworkGenes(
   fraction = 0.05,
   group.by = NULL,
   gene_list = NULL,
+  assay = NULL,
   wgcna_name = NULL
 )
 }
@@ -19,6 +20,10 @@ SelectNetworkGenes(
 \item{fraction}{A numeric that determines the minimum cells that a gene must be expressed in order to be included. For example, fraction = 0.05 means that 5\% of cells must express a gene (count > 0) for it to be included.}
 
 \item{gene_list}{A character string of gene names, only used if type = "custom"}
+
+\item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
+
+\item{wgcna_name}{name of the WGCNA experiment}
 
 \item{type}{How to select genes? Select "variable", "fraction", "all", or "custom".}
 }

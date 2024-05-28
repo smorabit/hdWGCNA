@@ -32,7 +32,7 @@ PlotModulePreservation(
 \description{
 Plotting function for Module Preservation statistics
 }
-\examples{
-PlotModulePreservation
+\details{
+This function creates a scatter plot showing the module preservation statistics for each module
+compared to the size of the module (number of genes).
 }
-\keyword{scRNA-seq}

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -130,7 +130,6 @@
   verbose <span class="op">=</span> <span class="cn">TRUE</span>,
   assay <span class="op">=</span> <span class="cn">NULL</span>,
   pc_dim <span class="op">=</span> <span class="fl">1</span>,
-  exclude_grey <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -154,8 +153,6 @@
 <dd><p>Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)</p></dd>
 <dt>pc_dim</dt>
 <dd><p>Which PC to use as the module eigengene? Default to 1.</p></dd>
-<dt>exclude_grey</dt>
-<dd><p>logical determining whether to compute MEs for the grey module</p></dd>
 <dt>wgcna_name</dt>
 <dd><p>name of the WGCNA experiment</p></dd>
 </dl></div>

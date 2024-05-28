@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -129,8 +129,8 @@
   parallel <span class="op">=</span> <span class="cn">FALSE</span>,
   seed <span class="op">=</span> <span class="fl">12345</span>,
   gene_mapping <span class="op">=</span> <span class="cn">NULL</span>,
-  genome1_col <span class="op">=</span> <span class="cn">NULL</span>,
-  genome2_col <span class="op">=</span> <span class="cn">NULL</span>,
+  genome_ref_col <span class="op">=</span> <span class="cn">NULL</span>,
+  genome_query_col <span class="op">=</span> <span class="cn">NULL</span>,
   return_raw <span class="op">=</span> <span class="cn">FALSE</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name_ref <span class="op">=</span> <span class="cn">NULL</span>,
@@ -152,6 +152,12 @@
 <dd><p>logical determining whether to run preservation analysis in parallel</p></dd>
 <dt>seed</dt>
 <dd><p>random seed for the permutation analysis.</p></dd>
+<dt>gene_mapping</dt>
+<dd><p>a dataframe containing gene name mappings between the query and the reference dataset. One column should have the gene name in the query dataset, and anotehr column should have the corresponding gene name in the reference dataset.</p></dd>
+<dt>genome_ref_col</dt>
+<dd><p>the column name containing the gene names for the reference dataset</p></dd>
+<dt>genome_query_col</dt>
+<dd><p>the column name containing the gene names for the query dataset</p></dd>
 <dt>return_raw</dt>
 <dd><p>if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.</p></dd>
 <dt>wgcna_name</dt>
@@ -159,58 +165,15 @@
 <dt>wgcna_name_ref</dt>
 <dd><p>The name of the hdWGCNA experiment in the seurat_ref@misc slot</p></dd>
 </dl></div>
-
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModulePreservation</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, seurat_ref, name, n_permutations = 500, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     parallel = FALSE, seed = 12345, gene_mapping = NULL, genome1_col = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     genome2_col = NULL, return_raw = FALSE, wgcna_name = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     wgcna_name_ref = NULL, ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     CheckWGCNAName(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name_ref)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name_ref &lt;- seurat_ref@misc$active_wgcna</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     CheckWGCNAName(seurat_ref, wgcna_name_ref)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_ref &lt;- GetDatExpr(seurat_ref, wgcna_name_ref)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_query &lt;- GetDatExpr(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(gene_mapping)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         gene_match &lt;- match(colnames(datExpr_query), gene_mapping[, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             genome2_col])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         gene_mapping &lt;- na.omit(gene_mapping[gene_match, ])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         colnames(datExpr_query) &lt;- gene_mapping[, genome1_col]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     genes_keep &lt;- intersect(colnames(datExpr_ref), colnames(datExpr_query))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_ref &lt;- datExpr_ref[, genes_keep]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     datExpr_query &lt;- datExpr_query[, genes_keep]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     setLabels &lt;- c("ref", "query")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     multiExpr &lt;- list(ref = list(data = datExpr_ref), query = list(data = datExpr_query))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- GetModules(seurat_ref, wgcna_name = wgcna_name_ref)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- ref_modules[genes_keep, ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref_modules &lt;- list(ref = ref_modules$module)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mp &lt;- WGCNA::modulePreservation(multiExpr, ref_modules, referenceNetworks = 1, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         nPermutations = n_permutations, randomSeed = seed, quickCor = 0, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parallelCalculation = parallel, ...)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_raw) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         return(mp)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ref &lt;- 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     test &lt;- 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     statsObs &lt;- cbind(mp$quality$observed[[ref]][[test]], mp$preservation$observed[[ref]][[test]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     statsZ &lt;- cbind(mp$quality$Z[[ref]][[test]], mp$preservation$Z[[ref]][[test]])</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mod_pres &lt;- list(obs = statsObs, Z = statsZ)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj &lt;- SetModulePreservation(seurat_obj, mod_pres, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         name, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f77cd7f5f20&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
-</code></pre></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>ModulePreservation performs a statistical test to assess the preservation of co-expression modules identified
+in one dataset in an independent dataset. This method is originally described by Langfelder et al.
+in the 2011 paper "Is My Network Module Preserved and Reproducible?". This method can be used to
+assess biological differences in networks, as well as technical differences / reproducibility across different
+batches.</p>
     </div>
+
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

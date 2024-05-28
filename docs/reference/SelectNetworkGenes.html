@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -127,6 +127,7 @@
   fraction <span class="op">=</span> <span class="fl">0.05</span>,
   group.by <span class="op">=</span> <span class="cn">NULL</span>,
   gene_list <span class="op">=</span> <span class="cn">NULL</span>,
+  assay <span class="op">=</span> <span class="cn">NULL</span>,
   wgcna_name <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -139,6 +140,10 @@
 <dd><p>A numeric that determines the minimum cells that a gene must be expressed in order to be included. For example, fraction = 0.05 means that 5% of cells must express a gene (count &gt; 0) for it to be included.</p></dd>
 <dt>gene_list</dt>
 <dd><p>A character string of gene names, only used if type = "custom"</p></dd>
+<dt>assay</dt>
+<dd><p>Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)</p></dd>
+<dt>wgcna_name</dt>
+<dd><p>name of the WGCNA experiment</p></dd>
 <dt>type</dt>
 <dd><p>How to select genes? Select "variable", "fraction", "all", or "custom".</p></dd>
 </dl></div>

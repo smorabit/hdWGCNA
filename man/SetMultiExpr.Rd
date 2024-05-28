@@ -13,6 +13,7 @@ SetMultiExpr(
   multi_groups = NULL,
   assay = NULL,
   slot = "data",
+  layer = "data",
   mat = NULL,
   mat_group_delim = 3,
   wgcna_name = NULL,
@@ -35,6 +36,8 @@ SetMultiExpr(
 \item{assay}{The name of the assay in the Seurat object}
 
 \item{slot}{The name of the slot in the Seurat object (counts, data)}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
 

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
       </span>
     </div>
 
@@ -166,7 +166,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     enrichr_df &lt;- GetEnrichrTable(seurat_obj, wgcna_name)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     mod_colors &lt;- select(modules, c(module, color)) %&gt;% distinct</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     mod_colors &lt;- dplyr::select(modules, c(module, color)) %&gt;% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         dplyr::distinct</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     enrichr_df$color &lt;- mod_colors[match(enrichr_df$module, mod_colors$module), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         "color"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     wrapText &lt;- function(x, len) {</span>
@@ -202,7 +203,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 fill = NA, size = 1))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f77d5425788&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f83c5ea9230&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

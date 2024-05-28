@@ -403,7 +403,7 @@ ModuleCorrNetwork <- function(
   )
 
   # add module colors:
-  unique_mods <- distinct(modules[,c('module', 'color')])
+  unique_mods <- dplyr::distinct(modules[,c('module', 'color')])
   rownames(unique_mods) <- unique_mods$module
   v_df$color <- unique_mods[v_df$name,'color']
 
@@ -755,7 +755,7 @@ EnrichrDotPlot <- function(
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
   # add color to enrich_table
-  mod_colors <- select(modules, c(module, color)) %>% distinct
+  mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct
   enrichr_df$color <- mod_colors[match(enrichr_df$module, mod_colors$module), 'color']
 
   # helper function to wrap text
@@ -1604,7 +1604,7 @@ DoHubGeneHeatmap <- function(
   }
 
   # get table of module names & colors
-  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
 
   # get hub genes:
   # hub_list <- lapply(mods, function(cur_mod){
@@ -1723,7 +1723,11 @@ DoHubGeneHeatmap <- function(
 #' @param label_size the size of the module labels
 #' @param mod_point_size the size of the points in each plot
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
+#' 
+#' @details
+#' This function creates a scatter plot showing the module preservation statistics for each module 
+#' compared to the size of the module (number of genes). 
+#' 
 #' @export
 PlotModulePreservation <- function(
   seurat_obj,
@@ -1744,7 +1748,7 @@ PlotModulePreservation <- function(
 
   # get module colors:
   modules <- GetModules(seurat_obj, wgcna_name)
-  module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
   mods <- rownames(Z_df)
   mod_colors <- module_colors$color[match(mods, module_colors$module)]
   mod_colors = ifelse(is.na(mod_colors), 'gold', mod_colors)
@@ -1876,8 +1880,8 @@ PlotModuleTraitCorrelation <- function(
   modules <- GetModules(seurat_obj, wgcna_name)
   module_colors <- modules %>%
     dplyr::select(c(module, color)) %>%
-    distinct %>% subset(module != 'grey') %>%
-    arrange(module)
+    dplyr::distinct %>% subset(module != 'grey') %>%
+    dplyr::arrange(module)
   mod_colors <- module_colors$color
 
   # dummy variable
@@ -2243,8 +2247,8 @@ PlotKMEs <- function(
   modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   mod_colors <- modules %>% subset(module %in% mods) %>%
-    select(c(module, color)) %>%
-    distinct
+    dplyr::select(c(module, color)) %>%
+    dplyr::distinct
 
 
   #get hub genes:
@@ -2336,7 +2340,7 @@ PlotDMEsVolcano <- function(
 
   # get modules and module colors
   modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey') %>% mutate(module=droplevels(module))
-  module_colors <- modules %>% dplyr::select(c(module, color)) %>% distinct
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
 
   # module names
   mods <- levels(modules$module)
@@ -2537,14 +2541,14 @@ PlotLollipop <- function(
 
     # set plotting attributes for shape
     cur_DMEs$shape <- ifelse(cur_DMEs[[pvalue]] < 0.05, 21, 4) # 21 cicle; 4 X
-    cur_DMEs <- cur_DMEs %>% arrange(avg_log2FC, descending=TRUE)
+    cur_DMEs <- cur_DMEs %>% dplyr::arrange(avg_log2FC, descending=TRUE)
     cur_DMEs$module <- factor(as.character(cur_DMEs$module), levels=as.character(cur_DMEs$module))
 
     # add number of genes per module
     n_genes <- table(modules$module)
     cur_DMEs$n_genes <- as.numeric(n_genes[as.character(cur_DMEs$module)])
 
-    mod_colors <- dplyr::select(modules, c(module, color)) %>% distinct
+    mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct
     cp <- mod_colors$color; names(cp) <- mod_colors$module
 
     p <- cur_DMEs %>%
@@ -2565,3 +2569,480 @@ PlotLollipop <- function(
     return(p)
 
 }
+
+
+
+
+
+#' ModuleTopologyHeatmap
+#'
+#' Plots a heatmap of the co-expression network topology of a given module.
+#'
+#' @return ggplot object containing the ModuleTopologyHeatmap
+#'
+#' @param seurat_obj A Seurat object
+#' @param mod the name of the co-expression module to plot
+#' @param matrix specify which matrix to plot, use 'TOM' (topological overlap matrix) or 'Cor' (correlation matrix), or pass a custom square matrix where the rownames and colnames match the genes in this module
+#' @param matrix_name name of the matrix plotted that will be used as the label in the plot legend
+#' @param order_by order genes in this module by 'kME' (default) or by 'degree' (sum of all connections to this gene in the co-expression network)
+#' @param high_color color used for high values in the heatmap, default is the module's unique color
+#' @param low_color color used for low values in the heatmap, default is 'white'
+#' @param raster logical indicating whether or not to rasterise the plot
+#' @param raster_dpi dpi used for a rasterised plot
+#' @param plot_max maximum value to plot on the heatmap, can pass a numeric value or a string indicating the quantile ('q99' would be the 99th percentile)
+#' @param plot_min minimum value to plot on the heatmap, can pass a numeric value or a string indicating the quantile ('q1' would be the 1st percentile)
+#' @param return_genes logical indicating whether or not to return 
+#' @param genes_order a character vector of genes to plot in this specific order, this option will override the order_by parameter
+#' @param TOM_use  The name of the hdWGCNA experiment containing the TOM that will be used for plotting
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @details
+#' ModuleTopologyHeatmap generates a triangular heatmap plot showing the network "topology" of a 
+#' specific co-expression module. Each cell in the heatmap represents a gene-gene pair, and the 
+#' the heatmap is colored by the strength of the connection between these two genes. By default 
+#' the genes in this heatmap are ordered in both the rows and the columns based on their importance 
+#' in the module, ranked either by eigengene-based connectivity (kME) or by network degree.  
+#'
+#' @import Seurat
+#' @export
+ModuleTopologyHeatmap <- function(
+    seurat_obj,
+    mod,
+    matrix = 'TOM',
+    matrix_name = NULL,
+    order_by = 'kME',
+    high_color = NULL,
+    low_color = 'white',
+    raster=TRUE,
+    raster_dpi=200,
+    plot_max = 'q99',
+    plot_min = 0,
+    return_genes=FALSE,
+    genes_order = NULL,
+    TOM_use = NULL,
+    wgcna_name=NULL,
+    ... # pass to WGCNA::adjacency
+){
+
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
+    if(is.null(TOM_use)){TOM_use <- wgcna_name}
+
+    # get the modules table
+    modules <- GetModules(seurat_obj, wgcna_name)
+    cur_genes <- subset(modules, module == mod) %>% .$gene_name
+    hub_df <- GetHubGenes(seurat_obj, mods = mod, n_hubs=Inf, wgcna_name=wgcna_name)
+
+    if(is.null(high_color)){
+        high_color <- subset(modules, module == mod) %>% .$color %>% unique
+    }
+
+    # get the degree table, and subset for this module 
+    degrees <- GetDegrees(seurat_obj, wgcna_name) %>% 
+        subset(module == mod)
+
+    if(!is.null(genes_order)){
+        genes_order <- genes_order[genes_order %in% cur_genes]
+        cur_genes <- genes_order
+    }
+
+    # get the Matrix to plot:
+    if(any(class(matrix) == 'matrix')){
+        mat <- matrix 
+
+        if(is.null(matrix_name)){
+            stop("Must provide matrix_name if you supply a matrix (Instead of 'TOM' or 'Cor') to the matrix argument.")
+        }
+        
+        # check that it's a square matrix.
+        if(! ncol(mat) == nrow(mat)){
+            stop("Invalid matrix. Must be a square matrix.")
+        }
+
+        # check that the rownames and colnames are all in the Seurat obj 
+        if(! all(rownames(mat) %in% rownames(seurat_obj) & all(colnames(mat) %in% rownames(seurat_obj)))){
+            stop("Invalid matrix. rownames and colnames must be found in the rownames(seurat_obj).")
+        }
+
+    } else if(matrix == 'TOM'){
+        # Get the TOM
+        mat <- GetTOM(seurat_obj, TOM_use)
+        matrix_name <- matrix
+    } else if(matrix == 'Cor'){
+        # get the expression matrix:
+        datExpr <- as.matrix(GetDatExpr(seurat_obj, wgcna_name))
+
+        # calculate the unsigned adjacency matrix
+        mat <- WGCNA::adjacency(
+            datExpr, 
+            power=1,
+            ...
+        )
+        matrix_name <- matrix
+    } else{
+        stop("Invalid selection for matrix. Must choose 'TOM' or 'Cor', or provide a square matrix.")
+    }
+
+    # only keep the genes that are present in the matrix:
+    cur_genes <- cur_genes[cur_genes %in% colnames(mat)]
+
+    # subset tables to match the cur genes:
+    hub_df <- hub_df %>% subset(gene_name %in% cur_genes)
+    degrees <- degrees %>% subset(gene_name %in% cur_genes)
+
+    # select the method to order genes:
+    if(order_by == 'degree'){
+        cur_genes <- as.character(degrees$gene_name)
+    } else if(order_by == 'kME'){
+        cur_genes <- as.character(hub_df$gene_name)
+    }
+
+    # format the matrix for plotting
+    tmp <- mat[cur_genes,cur_genes]
+    tmp[lower.tri(tmp)] <- 0
+    plot_df <- reshape2::melt(tmp) %>% subset(Var1 != Var2)
+
+    # set the order for the genes
+    plot_df$Var1 <- factor(plot_df$Var1, levels = cur_genes)
+    plot_df$Var2 <- factor(plot_df$Var2, levels = cur_genes)
+    
+    # maximum plot values
+    if(class(plot_max) == 'character'){
+        maxquant <- as.numeric(gsub('q', '', plot_max ))/100
+        plot_max <- as.numeric(quantile(plot_df$value, maxquant))
+    } 
+    plot_df$value <- ifelse(plot_df$value > plot_max, plot_max, plot_df$value)
+
+    # minimum plot values
+    if(class(plot_min) == 'character'){
+        minquant <- as.numeric(gsub('q', '', plot_min ))/100
+        plot_min <- as.numeric(quantile(plot_df$value, minquant))
+    } 
+    plot_df$value <- ifelse(plot_df$value < plot_min, plot_min, plot_df$value)
+
+    # assemble the ggplot
+    p <- plot_df %>%
+        ggplot(aes(x=Var1, y=Var2, fill=value))
+
+    # rasterise?
+    if(raster){
+        p <- p + ggrastr::rasterise(geom_tile(), dpi=raster_dpi)
+    } else{
+        p <- p + geom_tile()
+    }
+
+    # set color 
+    # should I allow for gradient2?
+    p <- p +    
+        scale_fill_gradient(low=low_color, high=high_color, limits=c(plot_min, plot_max))
+
+    # theme 
+    p <- p + theme(
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust=0.5)
+    ) + coord_equal() + ylab('') + xlab('') 
+
+    # default plot title:
+    p <- p + labs(fill = matrix_name)
+
+    if(return_genes){
+        outs <- list()
+        outs[['plot']] <- p 
+        outs[['genes']] <- as.character(cur_genes)
+        outs[['plot_max']] <- plot_max 
+        outs[['plot_min']] <- plot_min
+        return(outs)
+    }
+
+    # return plot 
+    p
+
+}
+
+#' ModuleTopologyBarplot
+#'
+#' Plots a ranked barplot of genes in a co-expression module by intramodular connectivity
+#'
+#' @return ggplot object containing the ModuleTopologyBarplot
+#'
+#' @param seurat_obj A Seurat object
+#' @param mod the name of the co-expression module to plot
+#' @param features specify the features to use in the barplot, 'kME' or 'degree' or 'weighted_degree' (degree scaled to 0 or 1)
+#' @param plot_color color used for the bar plot, default is the module's unique color
+#' @param alpha logical indicating whether or not to add opacity to the barplot based on the strength (kME or degree) 
+#' @param genes_order a character vector of genes to plot in this specific order, this option will override the order_by parameter
+#' @param return_genes logical indicating whether or not to return 
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @details
+#' ModuleTopologyBarplot generates a barplot showing the intramodular connectivity of each gene 
+#' in a specific co-expression module. Each bar in this plot represents a single gene, and they are
+#' ranked based on the strength of their connections within that particular module. A custom gene 
+#' ordering can be supplied, which is helpful when comparing the module topologies side by side with 
+#' more than one dataset.
+#' 
+#' @import Seurat
+#' @export
+ModuleTopologyBarplot <- function(
+    seurat_obj,
+    mod,
+    features = 'kME', # or 'degree', or 'weighted_degree',
+    plot_color = NULL, # to use the module color
+    alpha=TRUE,
+    genes_order = NULL,
+    return_genes = FALSE,
+    wgcna_name=NULL
+){
+
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
+
+    # get the modules table
+    modules <- GetModules(seurat_obj, wgcna_name)
+    cur_genes <- subset(modules, module == mod) %>% .$gene_name
+    hub_df <- GetHubGenes(seurat_obj, mods = mod, n_hubs=Inf, wgcna_name=wgcna_name)
+    
+    if(is.null(plot_color)){
+        plot_color <- subset(modules, module == mod) %>% .$color %>% unique
+    }
+
+    # get the degree table, and subset for this module 
+    degrees <- GetDegrees(seurat_obj, wgcna_name) %>% 
+        subset(module == mod)
+
+    if(features == 'kME'){
+        plot_df <- hub_df %>% dplyr::rename(value = kME)
+        label <- 'kME'
+        plot_limits <- c(-1, 1)
+    } else if(features == 'degree'){
+        plot_df <- degrees %>% dplyr::rename(value = degree)
+        label <- 'Degree'
+        plot_limits <- c(0, max(plot_df$value))
+    } else if(features == 'weighted_degree'){
+        plot_df <- degrees %>% dplyr::rename(value = weighted_degree)
+        label <- 'Degree'
+        plot_limits <- c(0,1)
+    } else{
+        stop("Invalid selection for features. Must select 'kME' or 'degree'")
+    }
+
+    # set factor levels:
+    if(!is.null(genes_order)){
+        genes_order <- genes_order[genes_order %in% plot_df$gene_name]
+        plot_df <- subset(plot_df, gene_name %in% genes_order)
+        plot_df$gene_name <- factor(as.character(plot_df$gene_name), levels=genes_order)
+        plot_df <- plot_df %>% dplyr::arrange(gene_name)
+    } else{
+         plot_df$gene_name <- factor(as.character(plot_df$gene_name), levels=as.character(plot_df$gene_name))
+    }
+
+    p <- plot_df %>% 
+        ggplot(aes(x=gene_name, y=value)) 
+
+    if(alpha){
+        p <- p + 
+            geom_bar(aes(alpha=value), stat='identity', width=1, fill=plot_color) 
+    } else{
+        p <- p + geom_bar(stat='identity', width=1, fill=plot_color) 
+    }
+
+    p <- p + 
+        ylab(label) + 
+        scale_y_continuous(expand = c(0, 0), limits = plot_limits) +
+        theme(
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_blank(),
+            axis.line.x = element_blank(),
+            plot.title = element_text(hjust=0.5),
+            axis.title.x = element_blank()
+        )
+    
+    if(return_genes){
+        return(list(p, as.character(plot_df$gene_name)))
+    }
+
+    p
+
+}
+
+
+#' PlotModulePreservationLollipop
+#'
+#' Plots a ranked lollipop plot of co-expression modules based on the results of module preservation analysis.
+#'
+#' @return ggplot object containing the PlotModulePreservationLollipop
+#'
+#' @param seurat_obj A Seurat object
+#' @param name The name to give the module preservation analysis.
+#' @param features The name of the module preservation features to plot. 
+#' @param fdr logical indicating whether or not to plot FDR-corrected p-values
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @details
+#' PlotModulePreservationLollipop generates a lollipop plot showing module preservation results. If the module
+#' preservation test was performed using the WGCNA method, the statistic that will be shown is the Z-summary 
+#' preservation statistic. If the analysis was performed using NetRep, then the statistic that will be shown is 
+#' the FDR corrected averaged p-values from the module preservation permutation test.
+#' 
+#' @import Seurat
+#' @export
+PlotModulePreservationLollipop <- function(
+    seurat_obj,
+    name,
+    features = NULL,
+    fdr = TRUE,
+    wgcna_name = NULL
+){
+
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
+
+    # get the module info
+    modules <- GetModules(seurat_obj, wgcna_name)
+    mod_colors <- modules %>% dplyr::select(module, color) %>% dplyr::distinct()
+    mod_cp <- mod_colors$color; names(mod_cp) <- mod_colors$module
+
+    # get the module preservation stats:
+    mod_pres <- GetModulePreservation(seurat_obj, name, wgcna_name)
+
+    # was this made with NetRep or WGCNA?
+    if(all(names(mod_pres) %in% c('nulls', 'observed', 'p.values', 'nVarsPresent', 'propVarsPresent', 'totalSize', 'alternative'))){
+        netrep_used <- TRUE
+    } else{
+        netrep_used <- FALSE
+    }
+
+    if(netrep_used){
+
+        if(is.null(features)){features <- 'average'}
+
+        # check for valid features
+        if(! features %in% c('average', colnames(mod_pres$p.value))){
+          stop(paste0('Invalid selection for features. Valid selections are: ', paste(c('average', colnames(mod_pres$p.value)), collapse=', ')))
+        }
+
+        # pvals
+        plot_df <- reshape2::melt(mod_pres$p.value)
+        plot_df$Var2 <- paste0('pval.', plot_df$Var2)
+        plot_df$type <- 'pval'
+        plot_df1 <- plot_df
+
+        # compute FDR:
+        fdrs <- p.adjust(plot_df1$value,'fdr')
+        plot_df_fdrs <- plot_df1 
+        plot_df_fdrs$value <- fdrs
+        plot_df_fdrs$type <- 'fdr'
+
+        # observed stats
+        plot_df <- reshape2::melt(mod_pres$observed)
+        plot_df$type <- 'observation'
+        plot_df2 <- plot_df
+
+        plot_df <- rbind(plot_df1,  plot_df_fdrs, plot_df2) %>% 
+            dplyr::rename(module = Var1, stat = Var2)
+
+        # compute the average p-vals:
+        if(features == 'average'){
+          plot_title <- "Summary"
+          if(fdr){
+            plot_df <- plot_df %>% 
+                    subset(type == 'fdr') %>%
+                    group_by(module) %>% 
+                    summarise(value = mean(value)) 
+            label <- bquote("-log"[10]~"(Avg. FDR)")
+          } else{
+            plot_df <- plot_df %>% 
+                    subset(type == 'pval') %>%
+                    group_by(module) %>% 
+                    summarise(value = mean(value)) 
+            label <- bquote("-log"[10]~"(Avg. P-value)")
+          }
+        } else{
+          plot_title <- features
+          plot_df <- plot_df %>% subset(stat == paste0('pval.',features))
+          if(fdr){
+            plot_df <- plot_df %>% subset(type == 'fdr')
+            label <- bquote("-log"[10]~"(FDR)")
+          } else{
+            plot_df <- plot_df %>% subset(type == 'pval')
+            label <- bquote("-log"[10]~"(P-value)")
+          }
+        }
+
+        # add info about the module size (number of genes)
+        mod_sizes <- mod_pres$nVarsPresent 
+        plot_df$mod_size <- mod_sizes[plot_df$module]
+
+        # order by p-val 
+        plot_df <- plot_df %>% dplyr::arrange(desc(value))
+        plot_df$module <- factor(as.character(plot_df$module), levels=as.character(plot_df$module))
+
+        p <- plot_df %>%
+        ggplot(aes(y=module, x=-log10(value), size= mod_size, color=module, fill=module)) + 
+            geom_rect(
+                data = plot_df[1,],
+                aes(xmin=-Inf, ymax=Inf, ymin=-Inf, xmax=-log10(0.05)), fill='grey90', alpha=0.8, color=NA) +
+        #geom_vline(xintercept=2, linewidth=0.5, linetype='dashed') +
+        geom_segment(aes(y=module, yend=module, x=0, xend=-log10(value)), size=0.5, alpha=0.5) +
+        geom_point(shape=21, color='black') +
+        scale_color_manual(values=mod_cp, guide='none') +
+        scale_fill_manual(values=mod_cp, guide='none') +
+        ylab('') + labs(size=bquote("N"[genes])) +
+        xlab(label) +
+        theme(
+            panel.border = element_rect(size=1, color='black', fill=NA),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            plot.title = element_text(hjust=0.5, face='bold')
+        ) + ggtitle(plot_title)
+
+    } else{
+
+        mod_pres <- mod_pres$Z
+
+        if(is.null(features)){
+          features <- 'Zsummary.pres'
+        }
+
+        # check for valid features
+        if(! features %in% colnames(mod_pres)){
+          stop(paste0('Invalid selection for features. Valid selections are: ', paste(c('average', colnames(mod_pres), collapse=', '))))
+        }
+
+        plot_df <- mod_pres[,c('moduleSize', features)]
+        colnames(plot_df)[2] <- 'value'
+        plot_df$module <- rownames(plot_df)
+        plot_df <- plot_df %>%subset(! module %in% c('gold', 'grey'))
+        plot_df <-plot_df %>% dplyr::arrange(value, descending=TRUE)
+        plot_df$module <- factor(as.character(plot_df$module), levels=as.character(plot_df$module))
+
+        p <- plot_df %>%
+        ggplot(aes(y=module, x=value, size= moduleSize, color=module, fill=module)) + 
+        geom_rect(
+                data = plot_df[1,],
+                aes(xmin=-Inf, ymax=Inf, ymin=-Inf, xmax=2), fill='grey75', alpha=0.8, color=NA) +
+            geom_rect(
+            data=plot_df[1,],
+            aes(ymin=-Inf, ymax=Inf, xmin=2, xmax=10), fill='grey92', alpha=0.8, color=NA) + 
+        geom_segment(aes(y=module, yend=module, x=0, xend=value), size=0.5, alpha=0.5) +
+        geom_point(shape=21, color='black') +
+        scale_color_manual(values=mod_cp, guide='none') +
+        scale_fill_manual(values=mod_cp, guide='none') +
+        ylab('') + xlab('') +
+        ggtitle(features) +
+        theme(
+            panel.border = element_rect(size=1, color='black', fill=NA),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            plot.title = element_text(hjust=0.5, face='bold')
+        ) + RotatedAxis()
+    }
+
+    # return the plot
+    p
+
+}
+
+

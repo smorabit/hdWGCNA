@@ -11,6 +11,7 @@ ConstructPseudobulk(
   label_col = NULL,
   assay = "RNA",
   slot = "counts",
+  layer = "counts",
   min_reps = 20,
   wgcna_name = NULL
 )
@@ -26,7 +27,9 @@ ConstructPseudobulk(
 
 \item{assay}{Assay in seurat_obj containing isoform expression information.}
 
-\item{slot}{Slot in seurat_obj, default to counts slot and we generally recommend using counts here.}
+\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{min_reps}{The minimum number of different biological replicates allowed. Error will be thrown if the number of reps is too low.}
 

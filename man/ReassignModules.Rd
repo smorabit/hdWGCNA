@@ -20,7 +20,7 @@ ReassignModules(
 
 \item{features}{character vector containing features for manual module reassignment,}
 
-\item{new_modules}{character vector containing modules to ,}
+\item{new_modules}{character vector containing modules to reassign the genes}
 
 \item{ignore}{logical indicating whether or not to ignore error message about reassigning non-grey features}
 

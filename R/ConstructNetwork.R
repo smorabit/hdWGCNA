@@ -72,14 +72,14 @@ ConstructNetwork <- function(
   # constructing network on multiple datasets (consensus WGCNA)
   if(consensus){
 
-    multiExpr <- GetMultiExpr(seurat_obj)
+    multiExpr <- GetMultiExpr(seurat_obj, wgcna_name)
     checkSets(multiExpr) # check data size
 
   # constructing network on a single dataset
   } else{
 
     # get datExpr from seurat object
-    datExpr <- GetDatExpr(seurat_obj)
+    datExpr <- GetDatExpr(seurat_obj, wgcna_name)
 
     if(is.null(wgcna_name)){
       wgcna_name <- 'all'

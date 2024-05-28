@@ -51,16 +51,17 @@ CheckWGCNAName <- function(seurat_obj, wgcna_name){
   }  
 }
 
-# get any WGCNA data, but by default get the active
-GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 
-  # test if wgcna_name is valid (TODO)
+# # get any WGCNA data, but by default get the active
+# GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 
-  # get data from active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+#   # test if wgcna_name is valid (TODO)
 
-  seurat_obj@misc[[wgcna_name]]
-}
+#   # get data from active assay if wgcna_name is not given
+#   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+
+#   seurat_obj@misc[[wgcna_name]]
+# }
 
 ############################
 # metacell object
@@ -76,6 +77,7 @@ GetWGCNA <- function(seurat_obj, wgcna_name=NULL){
 SetMetacellObject <- function(seurat_obj, metacell_obj, wgcna_name=NULL){
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # add metacell obj to Seurat obj
   seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj <- metacell_obj
@@ -92,6 +94,8 @@ GetMetacellObject <- function(seurat_obj,  wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  
   input_class <- class(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj)
   if(input_class == "Seurat"){
     return(seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj)
@@ -116,9 +120,9 @@ GetMetacellObject <- function(seurat_obj,  wgcna_name=NULL){
 #' @export
 SetWGCNAGenes <- function(seurat_obj, gene_list, wgcna_name=NULL){
 
-  # test if wgcna_name is valid (TODO)
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # add gene list to Seurat obj
   seurat_obj@misc[[wgcna_name]]$wgcna_genes <- gene_list
@@ -134,6 +138,8 @@ SetWGCNAGenes <- function(seurat_obj, gene_list, wgcna_name=NULL){
 GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$wgcna_genes
 }
 
@@ -156,6 +162,7 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
 #' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
+#' @param features A list of features to use to override the features that have been previously set.
 #' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
 #' @details
 #' SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession 
@@ -176,6 +183,7 @@ SetDatExpr <- function(
   slot = 'data',
   layer = 'data',
   mat=NULL,
+  features=NULL,
   wgcna_name=NULL,
   ...
 ){
@@ -202,7 +210,16 @@ SetDatExpr <- function(
   # get parameters from seurat object
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
-  genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  if(is.null(features)){
+    genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  }
+  else{
+    if(all(features %in% rownames(seurat_obj))){
+      genes_use <- features 
+    } else{
+      stop('Some features not found in rownames(seurat_obj).')
+    }
+  }
 
   # was a matrix supplied?
   if(is.null(mat)){
@@ -263,7 +280,6 @@ SetDatExpr <- function(
     if(!is.null(group.by)){
       seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
     }
-
 
     # subset further if multiExpr:
     if(!is.null(multi.group.by)){
@@ -332,6 +348,8 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  
   seurat_obj@misc[[wgcna_name]]$datExpr
 
 }
@@ -373,6 +391,7 @@ SetMultiExpr <- function(
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get the WGCNA genes:
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
@@ -467,6 +486,8 @@ GetMultiExpr <- function(seurat_obj, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$multiExpr
 
 }
@@ -484,13 +505,10 @@ GetMultiExpr <- function(seurat_obj, wgcna_name=NULL){
 #' @export
 SetWGCNAParams <- function(seurat_obj, params, wgcna_name=NULL){
 
-  if(is.null(GetActiveWGCNA(seurat_obj)$wgcna_params)){
-    seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params <- params
-  } else{
-    for(i in 1:length(params)){
-      seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_params[[names(params)[i]]] <- params[[i]]
-    }
-  }
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$wgcna_params <- params
   seurat_obj
 }
 
@@ -501,10 +519,11 @@ SetWGCNAParams <- function(seurat_obj, params, wgcna_name=NULL){
 #' @keywords scRNA-seq
 #' @export
 GetWGCNAParams <- function(seurat_obj, wgcna_name=NULL){
-  # test if wgcna_name is valid (TODO)
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$wgcna_params
 }
 
@@ -522,6 +541,7 @@ GetWGCNAParams <- function(seurat_obj, wgcna_name=NULL){
 SetPowerTable <- function(seurat_obj, power_table, wgcna_name=NULL){
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # add power table to Seurat obj
   seurat_obj@misc[[wgcna_name]]$wgcna_powerTable <- power_table
@@ -535,9 +555,10 @@ SetPowerTable <- function(seurat_obj, power_table, wgcna_name=NULL){
 #' @keywords scRNA-seq
 #' @export
 GetPowerTable <- function(seurat_obj, wgcna_name=NULL){
-  # get data from active assay if wgcna_name is not given
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  
   seurat_obj@misc[[wgcna_name]]$wgcna_powerTable
 }
 
@@ -555,6 +576,7 @@ GetPowerTable <- function(seurat_obj, wgcna_name=NULL){
 SetNetworkData <- function(seurat_obj, net, wgcna_name=NULL){
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # add network data to Seurat obj
   seurat_obj@misc[[wgcna_name]]$wgcna_net <- net
@@ -572,6 +594,7 @@ GetNetworkData <- function(seurat_obj, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
   seurat_obj@misc[[wgcna_name]]$wgcna_net
 }
 
@@ -587,13 +610,14 @@ GetNetworkData <- function(seurat_obj, wgcna_name=NULL){
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-SetModules <- function(seurat_obj, mod_df, wgcna_name=NULL){
+SetModules <- function(seurat_obj, modules, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # set module df
-  seurat_obj@misc[[wgcna_name]]$wgcna_modules <- mod_df
+  seurat_obj@misc[[wgcna_name]]$wgcna_modules <- modules
   seurat_obj
 }
 
@@ -601,13 +625,48 @@ SetModules <- function(seurat_obj, mod_df, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
 #' @export
 GetModules <- function(seurat_obj, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$wgcna_modules
+}
+
+
+
+
+
+#' SetDegrees
+#'
+#' @param seurat_obj A Seurat object
+#' @param degree_df dataframe containing gene module assignments
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @export
+SetDegrees <- function(seurat_obj, degree_df, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # set module df
+  seurat_obj@misc[[wgcna_name]]$wgcna_degrees <- degree_df
+  seurat_obj
+}
+
+#' GetDegrees
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @export
+GetDegrees <- function(seurat_obj, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$wgcna_degrees
 }
 
 
@@ -631,6 +690,9 @@ GetHubGenes <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # get the modules table
   modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
 
   if(is.null(mods)){
@@ -671,6 +733,7 @@ SetMEs <- function(seurat_obj, MEs, harmonized=TRUE, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # harmonized MEs?
   if(harmonized){
@@ -694,6 +757,7 @@ GetMEs <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get harmonized MEs?
   if(harmonized == TRUE && !is.null(seurat_obj@misc[[wgcna_name]]$hMEs)){
@@ -717,6 +781,7 @@ SetMELoadings <- function(seurat_obj, loadings, harmonized=TRUE, wgcna_name=NULL
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # harmonized MEs?
   if(harmonized){
@@ -740,6 +805,7 @@ GetMELoadings <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get harmonized MEs?
   if(harmonized == TRUE && !is.null(seurat_obj@misc[[wgcna_name]]$hME_loadings)){
@@ -766,6 +832,7 @@ SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # set enrichr table
   seurat_obj@misc[[wgcna_name]]$enrichr_table <- enrich_table
@@ -782,6 +849,8 @@ SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name=NULL){
 #' @export
 GetEnrichrTable <- function(seurat_obj,  wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$enrichr_table
 }
 
@@ -796,12 +865,13 @@ GetEnrichrTable <- function(seurat_obj,  wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param mod_scores dataframe storing the module expression scores
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
 #' @export
 SetModuleScores <- function(seurat_obj, mod_scores, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$module_scores <- mod_scores
   seurat_obj
 }
@@ -810,10 +880,11 @@ SetModuleScores <- function(seurat_obj, mod_scores, wgcna_name=NULL){
 #'
 #' @param seurat_obj A Seurat object
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
 #' @export
 GetModuleScores <- function(seurat_obj,  wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$module_scores
 }
 
@@ -826,12 +897,13 @@ GetModuleScores <- function(seurat_obj,  wgcna_name=NULL){
 #' @param seurat_obj A Seurat object
 #' @param avg_mods dataframe storing the average expression of all genes in the same module
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
 #' @export
 SetAvgModuleExpr <- function(seurat_obj, avg_mods, wgcna_name=NULL){
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$avg_modules <- avg_mods
   seurat_obj
 }
@@ -844,6 +916,8 @@ SetAvgModuleExpr <- function(seurat_obj, avg_mods, wgcna_name=NULL){
 #' @export
 GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$avg_modules
 }
 
@@ -859,6 +933,7 @@ GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
 #' @export
 GetTOM <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get WGCNA genes:
   gene_names <- GetWGCNAGenes(seurat_obj, wgcna_name)
@@ -1025,6 +1100,8 @@ GetMotifTargets <- function(seurat_obj){
 SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name=NULL){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$motif_module_overlaps <- overlap_df
   seurat_obj
 }
@@ -1038,6 +1115,8 @@ SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name=NULL){
 #' @export
 GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$motif_module_overlaps
 }
 
@@ -1056,6 +1135,8 @@ GetMotifOverlap <- function(seurat_obj, wgcna_name=NULL){
 #' @export
 SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$motif_target_scores <- tf_scores
   seurat_obj
 }
@@ -1069,6 +1150,8 @@ SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name=NULL){
 #' @export
 GetMotifScores <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$motif_target_scores
 }
 
@@ -1086,6 +1169,8 @@ GetMotifScores <- function(seurat_obj, wgcna_name=NULL){
 SetModuleUMAP <- function(seurat_obj, umap_df, wgcna_name=NULL){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$module_umap <- umap_df
   seurat_obj
 }
@@ -1098,6 +1183,8 @@ SetModuleUMAP <- function(seurat_obj, umap_df, wgcna_name=NULL){
 #' @export
 GetModuleUMAP <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$module_umap
 }
 
@@ -1115,6 +1202,8 @@ GetModuleUMAP <- function(seurat_obj, wgcna_name=NULL){
 #' @export
 SetModuleTraitCorrelation <- function(seurat_obj, mt_cor, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$mt_cor <- mt_cor
   seurat_obj
 }
@@ -1127,6 +1216,8 @@ SetModuleTraitCorrelation <- function(seurat_obj, mt_cor, wgcna_name=NULL){
 #' @export
 GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   seurat_obj@misc[[wgcna_name]]$mt_cor
 }
 
@@ -1145,6 +1236,7 @@ GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name=NULL){
 #' @export
 SetModulePreservation <- function(seurat_obj, mod_pres, mod_name, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # make an empty list if module preservation hasn't been called yet
   if(is.null(seurat_obj@misc[[wgcna_name]]$module_preservation)){
@@ -1166,6 +1258,8 @@ SetModulePreservation <- function(seurat_obj, mod_pres, mod_name, wgcna_name=NUL
 #' @export
 GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
   if(is.null(seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]])){
     stop("Invalid module preservation name.")
   }
@@ -1195,6 +1289,7 @@ ResetModuleNames <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -1352,11 +1447,12 @@ ResetModuleColors <- function(
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
   mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
-    distinct %>% arrange(module)
+    dplyr::distinct %>% dplyr::arrange(module)
   mod_colors <- mod_colors_df$color
   if('grey' %in% modules$mod){
     grey_ind <- which(mod_colors == 'grey')

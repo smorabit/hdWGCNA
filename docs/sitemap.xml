@@ -76,6 +76,9 @@
     <loc>https://smorabit.github.io/hdWGCNA/articles/tf_net.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/articles/tf_network.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/authors.html</loc>
   </url>
   <url>
@@ -146,6 +149,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetDatExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/GetDegrees.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/GetEnrichrTable.html</loc>
@@ -253,7 +259,16 @@
     <loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservation.html</loc>
   </url>
   <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservationNetRep.html</loc>
+  </url>
+  <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTFNetwork.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyBarplot.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyHeatmap.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTraitCorrelation.html</loc>
@@ -302,6 +317,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservation.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservationLollipop.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTraitCorrelation.html</loc>
@@ -356,6 +374,9 @@
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/SetDatExpr.html</loc>
+  </url>
+  <url>
+    <loc>https://smorabit.github.io/hdWGCNA/reference/SetDegrees.html</loc>
   </url>
   <url>
     <loc>https://smorabit.github.io/hdWGCNA/reference/SetEnrichrTable.html</loc>

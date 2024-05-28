@@ -16,4 +16,3 @@ SetModuleScores(seurat_obj, mod_scores, wgcna_name = NULL)
 \description{
 SetModuleScores
 }
-\keyword{scRNA-seq}

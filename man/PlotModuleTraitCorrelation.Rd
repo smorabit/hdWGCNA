@@ -45,7 +45,4 @@ PlotModuleTraitCorrelation(
 \description{
 Plotting function for Module Preservation statistics
 }
-\examples{
-PlotModulePreservation
-}
 \keyword{scRNA-seq}
