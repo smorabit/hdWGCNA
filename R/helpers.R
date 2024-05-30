@@ -5,9 +5,8 @@
 #' Function to scale a numeric vector between 0 and 1.
 #'
 #' @param x numeric vector
-#' @keywords scRNA-seq
+#' @keywords helper
 #' @export
-#' @examples scale01
 scale01 <- function(x){
   y <- min(x); z <- max(x);
   (x-y) / (z-y)
@@ -19,9 +18,8 @@ scale01 <- function(x){
 #'
 #' ggplot theme to remove axes etc.
 #'
-#' @keywords scRNA-seq
+#' @keywords helper
 #' @export
-#' @examples umap_theme
 umap_theme <- function(){
   theme(
     axis.line=element_blank(),
@@ -46,9 +44,8 @@ umap_theme <- function(){
 #' Function to shuffle the rows of a dataframe.
 #'
 #' @param df dataframe
-#' @keywords scRNA-seq
+#' @keywords helper
 #' @export
-#' @examples shuffle_points
 shuffle_points <- function(df){
   return(df[sample(1:dim(df)[1], dim(df)[1]),])
 }

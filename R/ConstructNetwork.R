@@ -169,11 +169,11 @@ ConstructNetwork <- function(
   # set the modules df in the Seurat object
   mods <- GetNetworkData(seurat_obj)$colors
   seurat_obj <- SetModules(
-    seurat_obj, mod_df = data.frame(
+    seurat_obj, modules = data.frame(
       "gene_name" = names(mods),
       "module" = factor(mods, levels=unique(mods)),
       "color" = mods
-    )
+    ), wgcna_name
   )
 
   seurat_obj
