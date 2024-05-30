@@ -8,6 +8,8 @@
 #' @param text_size the size of the text in the plot
 #' @param plot_connectivity logical indicating whether to plot the connectivity in addition to the scale free topplogy fit.
 #' @param wgcna_name The name of the WGCNA experiment in seurat_obj
+#' @importFrom dplyr %>%
+#' @import ggplot2
 #' @keywords scRNA-seq
 #' @export
 #' @examples
