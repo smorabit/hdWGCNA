@@ -755,7 +755,7 @@ EnrichrDotPlot <- function(
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
   # add color to enrich_table
-  mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct
+  mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct()
   enrichr_df$color <- mod_colors[match(enrichr_df$module, mod_colors$module), 'color']
 
   # helper function to wrap text
@@ -1604,7 +1604,7 @@ DoHubGeneHeatmap <- function(
   }
 
   # get table of module names & colors
-  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
+  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
 
   # get hub genes:
   # hub_list <- lapply(mods, function(cur_mod){
@@ -1748,7 +1748,7 @@ PlotModulePreservation <- function(
 
   # get module colors:
   modules <- GetModules(seurat_obj, wgcna_name)
-  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
   mods <- rownames(Z_df)
   mod_colors <- module_colors$color[match(mods, module_colors$module)]
   mod_colors = ifelse(is.na(mod_colors), 'gold', mod_colors)
@@ -2248,7 +2248,7 @@ PlotKMEs <- function(
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   mod_colors <- modules %>% subset(module %in% mods) %>%
     dplyr::select(c(module, color)) %>%
-    dplyr::distinct
+    dplyr::distinct()
 
 
   #get hub genes:
@@ -2340,7 +2340,7 @@ PlotDMEsVolcano <- function(
 
   # get modules and module colors
   modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey') %>% mutate(module=droplevels(module))
-  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct
+  module_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
 
   # module names
   mods <- levels(modules$module)
@@ -2548,7 +2548,7 @@ PlotLollipop <- function(
     n_genes <- table(modules$module)
     cur_DMEs$n_genes <- as.numeric(n_genes[as.character(cur_DMEs$module)])
 
-    mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct
+    mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct()
     cp <- mod_colors$color; names(cp) <- mod_colors$module
 
     p <- cur_DMEs %>%

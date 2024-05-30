@@ -35,7 +35,7 @@ ReassignModules <- function(
   # get modules and MEs from seurat object
   modules <- GetModules(seurat_obj, wgcna_name)
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
-  mod_colors <- dplyr::select(modules, c(module, color)) %>% distinct()
+  mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct()
   mod_cp <- mod_colors$color; names(mod_cp) <- as.character(mod_colors$module)
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)

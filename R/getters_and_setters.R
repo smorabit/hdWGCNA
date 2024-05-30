@@ -1452,7 +1452,7 @@ ResetModuleColors <- function(
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
   mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
-    dplyr::distinct %>% dplyr::arrange(module)
+    dplyr::distinct() %>% dplyr::arrange(module)
   mod_colors <- mod_colors_df$color
   if('grey' %in% modules$mod){
     grey_ind <- which(mod_colors == 'grey')
