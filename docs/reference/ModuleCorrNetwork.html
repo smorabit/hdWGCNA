@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
       </span>
     </div>
 
@@ -146,10 +146,10 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ModuleCorrNetwork</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, wgcna_name = NULL, cluster_col = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     exclude_grey = TRUE, features = "hMEs", reduction = "umap", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cor_cutoff = 0.2, label_vertices = FALSE, edge_scale = 5, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vertex_size = 15, niter = 100, vertex_frame = FALSE) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, cluster_col = NULL, exclude_grey = TRUE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     features = "hMEs", reduction = "umap", cor_cutoff = 0.2, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     label_vertices = FALSE, edge_scale = 5, vertex_size = 15, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     niter = 100, vertex_frame = FALSE, wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -237,7 +237,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.family = "Helvetica", vertex.label.color = "black", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         vertex.label.cex = 0.5, vertex.size = vertex_size)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f83dadbbb58&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff0d21d5208&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

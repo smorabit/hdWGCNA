@@ -316,10 +316,10 @@ ModuleCorrelogram <- function(
 #' @examples
 #' ModuleCorrNetwork
 ModuleCorrNetwork <- function(
-  seurat_obj, wgcna_name=NULL, cluster_col=NULL, exclude_grey=TRUE,
+  seurat_obj, cluster_col=NULL, exclude_grey=TRUE,
   features = 'hMEs',
   reduction='umap', cor_cutoff=0.2, label_vertices=FALSE, edge_scale=5,
-  vertex_size=15, niter=100, vertex_frame=FALSE
+  vertex_size=15, niter=100, vertex_frame=FALSE, wgcna_name=NULL
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -1880,7 +1880,7 @@ PlotModuleTraitCorrelation <- function(
   modules <- GetModules(seurat_obj, wgcna_name)
   module_colors <- modules %>%
     dplyr::select(c(module, color)) %>%
-    dplyr::distinct %>% subset(module != 'grey') %>%
+    dplyr::distinct() %>% subset(module != 'grey') %>%
     dplyr::arrange(module)
   mod_colors <- module_colors$color
 
@@ -3046,3 +3046,128 @@ PlotModulePreservationLollipop <- function(
 }
 
 
+
+#' ModuleRadarPlot
+#'
+#' Plots the expression level (module eigengene) of each co-expression module 
+#' for different groups as a radar plot.
+#'
+#' @return ggplot object containing the ModuleRadarPlot
+#'
+#' @param seurat_obj A Seurat object
+#' @param group.by the column name of the selected comparison in the DMEs dataframe
+#' @param barcodes A list of barcodes from colnames(seurat_obj) which will be used to subset the data before plotting. 
+#' @param combine logical indicating whether or not to combine plots using patchwork
+#' @param ncol The number of columns for the combined plot if patchwork is being used
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... additional parameters for ggradar
+#' @details
+#' ModuleRadarPlot visualizes the expression level (module eigengene, ME) of each co-expression module for different 
+#' groups in a radial coordinate system. The ME for each module is averaged for each group, scaled, and then 
+#' is plotted radially. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are 
+#' expressing each module.
+#' 
+#' @import Seurat
+#' @export
+ModuleRadarPlot <- function(
+  seurat_obj,
+  group.by = NULL,
+  barcodes = NULL,
+  combine = TRUE,
+  ncol=4, 
+  wgcna_name = NULL,
+  fill=TRUE,
+  draw.points=FALSE,
+  ... # additional params for ggradar
+){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  if (!require("ggradar")) {
+    print('Missing package: ggradar')
+    print('Installing package: ggradar')
+    devtools::install_github("ricardo-bion/ggradar", dependencies = TRUE)
+  }
+
+  # get seurat metadata
+  meta <- seurat_obj@meta.data 
+
+  # use idents as the group
+  if(is.null(group.by)){
+    cell_grouping <- Idents(seurat_obj)
+  } else{
+    cell_grouping <- seurat_obj@meta.data[,group.by]
+    names(cell_grouping) <- colnames(seurat_obj)
+  }
+
+  # get the module info
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
+  mods <- levels(modules$module); mods <- mods[mods != 'grey']
+
+  # get the MEs
+  MEs <- GetMEs(seurat_obj)
+  MEs <- MEs[,colnames(MEs) != 'grey']
+
+  # are we subsetting?
+  if(!is.null(barcodes)){
+    if(!(all(barcodes %in% colnames(seurat_obj)))){
+      stop('Invalid selection for barcodes, some are not found in the colnames(seurat_obj)')
+    }
+
+    # subset:
+    MEs <- MEs[barcodes,]
+    meta <- meta[barcodes,]
+    cell_grouping <- cell_grouping[barcodes]
+  }
+
+  MEs$cluster <- cell_grouping
+  clusters <- as.character(unique(cell_grouping))
+
+  # calculate the mean ME for each group
+  plot_df <- MEs %>% 
+    dplyr::group_by(cluster) %>% 
+    dplyr::summarise_all(mean) %>%
+    as.data.frame() 
+
+  # re-format the dataframe
+  rownames(plot_df) <- plot_df$cluster
+  plot_df <- dplyr::select(plot_df, -cluster) 
+  plot_df <- t(plot_df) %>% as.data.frame()
+  plot_df[plot_df < 0] <- 0 
+  plot_df$group <- rownames(plot_df)
+  plot_df <- plot_df[,c('group', clusters)]
+  head(plot_df)
+
+  # set module factor levels
+  plot_df$group <- factor(as.character(plot_df$group), levels=mods)
+  plot_df <- plot_df %>% dplyr::arrange(group) %>% as.data.frame()
+  colnames(plot_df) <- c('group', clusters)
+
+  # make the radar plots for each module
+  plot_list <- list()
+  for(i in 1:nrow(plot_df)){
+    cur_mod <- as.character(plot_df[i,'group'])
+    cur_color <- subset(mod_colors, module == cur_mod) %>% .$color
+    plot_list[[cur_mod]] <- ggradar::ggradar(
+      plot_df[i,], group.colours=cur_color,
+      draw.points=draw.points,
+      fill=fill, ...
+      ) + 
+      Seurat::NoLegend() + 
+      ggtitle(cur_mod) + 
+      theme(
+        plot.title = element_text(face='bold', hjust=0.5)
+      )
+  }
+
+  # combine plots with patchwork ?
+  if(combine){
+    patch <- wrap_plots(plot_list, ncol)
+    return(patch)
+  } else{
+    return(plot_list)
+  }
+
+}

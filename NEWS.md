@@ -1,3 +1,11 @@
+# hdWGCNA 0.3.03 (2024-06-07)
+## Added
+- `ModuleRadarPlot` function to visualize expression levels of each module.
+
+## Changes
+- Bugfix in `PlotModuleTraitCorrelation`
+- Update to basics to tutorial to include `ModuleRadarPlot`
+
 # hdWGCNA 0.3.02 (2024-05-28)
 ## Added
 New functionality and methods for module preservation analysis using the [NetRep method from Ritchie et al 2016](https://github.com/sritchie73/NetRep).

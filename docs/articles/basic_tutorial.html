@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
       </span>
     </div>
 
@@ -158,7 +158,7 @@
 
     
     
-<p>Compiled: 27-02-2024</p>
+<p>Compiled: 07-06-2024</p>
 <p>Source: <code>vignettes/basic_tutorial.Rmd</code></p>
 <div class="section level3">
 <h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
@@ -514,21 +514,33 @@ Output
 <span class="co"># stitch together with patchwork</span>
 <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_featureplot_scores.png" width="800" height="800"></p>
-</div>
-<div class="section level3">
-<h3 id="module-correlations">Module Correlations<a class="anchor" aria-label="anchor" href="#module-correlations"></a>
-</h3>
-<p>hdWGCNA includes the <code>ModuleCorrelogram</code> function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package <a href="https://rpubs.com/melike/corrplot" class="external-link">corrplot</a>.</p>
+<p>We can also use a radar plot to visualize the relative expression level of each module across different cell groupings. Here we use the function <code>ModuleRadarPlot</code> to visualize the expression of these modules in the INH subclusters.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span><span class="op">$</span><span class="va">cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span>, <span class="st">' '</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>
+
+<span class="fu">ModuleRadarPlot</span><span class="op">(</span>
+  <span class="va">seurat_obj</span>,
+  group.by <span class="op">=</span> <span class="st">'cluster'</span>,
+  barcodes <span class="op">=</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="op">)</span>,
+  axis.label.size<span class="op">=</span><span class="fl">4</span>,
+  grid.label.size<span class="op">=</span><span class="fl">4</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="figures/basic_tutorial/ggradar_avg.png" width="800" height="800"></p>
+<p>Here we can easily visualize which modules are shared across different INH subtypes, like module INH-M1, as well as modules that are expressed more specifically in one subtype like module INH-M18. For this type of plot we do not recommend trying to visualize too many cell groups at once.</p>
+<details><summary>
+Expand to see Module Correlogram
+</summary><p>hdWGCNA includes the <code>ModuleCorrelogram</code> function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package <a href="https://rpubs.com/melike/corrplot" class="external-link">corrplot</a>.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot module correlagram</span>
 <span class="fu"><a href="../reference/ModuleCorrelogram.html">ModuleCorrelogram</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
 <p><img src="figures/basic_tutorial/ME_correlogram.png" width="800" height="800"></p>
+</details>
 </div>
 <div class="section level3">
 <h3 id="plotting-beyond-the-hdwgcna-package">Plotting beyond the hdWGCNA package<a class="anchor" aria-label="anchor" href="#plotting-beyond-the-hdwgcna-package"></a>
 </h3>
 <p>Sometimes we want to make a custom visualization that may not be included in hdWGCNA. Fortunately, R has an incredible amount of different data visualization packages to take advantage of. The base Seurat plotting functions are also great for visualizing hdWGCNA outputs. Here is a simple example where we visualize the MEs using the Seurat <code>DotPlot</code> function. The key to using Seurat’s plotting functions to visualize the hdWGCNA data is to add it into the Seurat object’s <code>@meta.data</code> slot.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get hMEs from seurat object</span>
 <span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span>, harmonized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
@@ -537,7 +549,7 @@ Output
 <span class="co"># add hMEs to Seurat meta-data:</span>
 <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">MEs</span><span class="op">)</span></code></pre></div>
 <p>Now we can easily use Seurat’s <code>DotPlot</code> function:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot with Seurat's DotPlot function</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span><span class="op">)</span>
 

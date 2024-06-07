@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Compiled: 27-02-2024
+Compiled: 07-06-2024
 
 Source: `vignettes/basic_tutorial.Rmd`
 
@@ -619,7 +619,32 @@ wrap_plots(plot_list, ncol=6)
 
 <img src="figures/basic_tutorial/ME_featureplot_scores.png" width="800" height="800">
 
-## Module Correlations
+We can also use a radar plot to visualize the relative expression level of each module 
+across different cell groupings. Here we use the function `ModuleRadarPlot` to 
+visualize the expression of these modules in the INH subclusters. 
+
+```{r eval=FALSE}
+
+seurat_obj$cluster <- do.call(rbind, strsplit(as.character(seurat_obj$annotation), ' '))[,1]
+
+ModuleRadarPlot(
+  seurat_obj,
+  group.by = 'cluster',
+  barcodes = seurat_obj@meta.data %>% subset(cell_type == 'INH') %>% rownames(),
+  axis.label.size=4,
+  grid.label.size=4
+)
+
+```
+
+<img src="figures/basic_tutorial/ggradar_avg.png" width="800" height="800">
+
+Here we can easily visualize which modules are shared across different INH subtypes,
+like module INH-M1, as well as modules that are expressed more specifically in 
+one subtype like module INH-M18. For this type of plot we do not recommend trying to 
+visualize too many cell groups at once.
+
+<details> <summary> Expand to see Module Correlogram </summary>
 
 hdWGCNA includes the `ModuleCorrelogram` function to visualize the correlation between each module based on their hMEs, MEs, or hub gene scores using the R package [corrplot](https://rpubs.com/melike/corrplot).
 
@@ -632,6 +657,7 @@ ModuleCorrelogram(seurat_obj)
 
 <img src="figures/basic_tutorial/ME_correlogram.png" width="800" height="800">
 
+</details>
 
 ## Plotting beyond the hdWGCNA package
 

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.02</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
       </span>
     </div>
 
@@ -161,7 +161,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mod_colors &lt;- modules %&gt;% subset(module %in% mods) %&gt;% dplyr::select(c(module, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         color)) %&gt;% dplyr::distinct</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         color)) %&gt;% dplyr::distinct()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     hub_df &lt;- do.call(rbind, lapply(mods, function(cur_mod) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         print(cur_mod)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur &lt;- subset(modules, module == cur_mod)</span>
@@ -196,7 +196,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     })</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     wrap_plots(plot_list, ncol = ncol)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f83e1463778&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7ff0eabbf320&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>
