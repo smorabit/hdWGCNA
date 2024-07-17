@@ -163,7 +163,7 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>In this tutorial we show how to perform transcription factor (TF) regulatory network analysis with hdWGCNA. This is an additional type of network analysis that is complementary to the standard co-expression network analysis included in hdWGCNA. While hdWGCNA co-expression networks are <em>undirected networks</em>, where we do not have explicit information about which genes regulate each other, TF regulatory networks leverage TF binding motif information to build <em>directed networks</em> of TFs and their downstream target genes. Here we demonstrate this analysis on a dataset of the <em>human</em> prefrontal cortex, but keep in mind that this analysis must be modified appropriately for different species.</p>
+<p>In this tutorial we show how to perform transcription factor (TF) regulatory network analysis with hdWGCNA. This is an additional type of network analysis that is complementary to the standard co-expression network analysis included in hdWGCNA. While hdWGCNA co-expression networks are <em>undirected networks</em>, where we do not have explicit information about which genes regulate each other, TF regulatory networks leverage TF binding motif information to build <em>directed networks</em> of TFs and their downstream target genes. Some of this analysis and the concepts used here are similar to another network analysis package called <a href="https://github.com/aertslab/SCENIC" class="external-link">SCENIC</a>, but this TF regulatory network analysis included in hdWGCNA is a distinct approach with key differences. Here, we demonstrate this analysis on a dataset of the <em>human</em> prefrontal cortex, but keep in mind that this analysis must be modified appropriately for different species.</p>
 <p>Importantly, this approach was not included in the original hdWGCNA paper <a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">Morabito et al., Cell Reports Methods (2023)</a>, and we first described this method in our paper <a href="https://www.cell.com/cell-reports/fulltext/S2211-1247(24)00284-5" class="external-link">Childs &amp; Morabito et al., Cell Reports (2024)</a>. If you use the TF regulatory network analysis in your research, please cite both of these papers.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># single-cell analysis package</span>
@@ -247,22 +247,89 @@
 <div class="section level2">
 <h2 id="construct-tf-regulatory-network">Construct TF Regulatory Network<a class="anchor" aria-label="anchor" href="#construct-tf-regulatory-network"></a>
 </h2>
+<p>Now that we have information about which TFs potentially regulate each gene based on TF motif presence, we have a basis for constructing a TF regulatory network. In this section, we use the function <code>ConstructTFNetwork</code> to construct a network of TFs and their putative target genes. This function leverages the <a href="https://xgboost.readthedocs.io/en/stable/R-package/xgboostPresentation.html" class="external-link">extreme gradient boosting (XGBoost) algorithm</a>, a powerful ensemble learning approach that we use to predict the expression of a given gene based on the expression of all TFs with a matching motif in that gene’s promoter. This analysis will reveal a ranking of which TFs are best at predicting the expression of the target gene, which we consider the most likely regulators of that particular gene. <a href="https://www.sciencedirect.com/science/article/pii/S2211124724002845#sec4" class="external-link">Please read the methods section of our paper for more information.</a></p>
+<p>Similar to the standard hdWGCNA co-expression network analysis, we need to define the set of genes that will be used for this analysis, and we need to explicitly define the expression matrix that will be used with the function <code>SetDatExpr</code>.</p>
+<p>The user may decide which genes that they want to use for this analysis, but here we will use all of the genes that were assigned to a co-expression module based on the co-expression network analysis, and all genes corresponding to a TF.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get the motif df:</span>
 <span class="va">motif_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMotifs.html">GetMotifs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">head</a></span><span class="op">(</span><span class="va">motif_df</span><span class="op">)</span>
 
-<span class="co"># keep all TFs, and then keep all non-grey genes </span>
+<span class="co"># keep all TFs, and then remove all genes from the grey module</span>
 <span class="va">tf_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">motif_df</span><span class="op">$</span><span class="va">gene_name</span><span class="op">)</span>
 <span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
 <span class="va">nongrey_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">modules</span>, <span class="va">module</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">$</span><span class="va">gene_name</span>
 <span class="va">genes_use</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="va">tf_genes</span>, <span class="va">nongrey_genes</span><span class="op">)</span>
 
-<span class="co"># should I make a way to directly give features to setdatexpr instead of doing this?</span>
+<span class="co"># update the gene list and re-run SetDatExpr</span>
 <span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetWGCNAGenes.html">SetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">genes_use</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name<span class="op">=</span><span class="st">'INH'</span><span class="op">)</span>
-<span class="va">datExpr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetDatExpr.html">GetDatExpr</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">datExpr</span><span class="op">)</span></code></pre></div>
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name<span class="op">=</span><span class="st">'INH'</span><span class="op">)</span></code></pre></div>
+<p>Now we are ready to run <code>ConstructTFNetwork</code>. Since this function models each gene, the runtime will scale wth the number of genes selected from the previous step, and it will scale with the number of metacells / metaspots that are used for this analysis.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dmlc/xgboost" class="external-link">xgboost</a></span><span class="op">)</span>
+
+<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">ConstructTFNetwork</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
+<p>This function results in a table showing information about each potential TF-gene pair, which we can access using <code>GetTFNetwork</code>.</p>
+<p>TODO: explain the results table</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tfnet_df</span> <span class="op">&lt;-</span> <span class="fu">GetTFNetwork</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tfnet_df</span><span class="op">)</span></code></pre></div>
+<details><summary>
+Expand to see example with different XGBoost parameters
+</summary><p>We can use the parameter <code>model_params</code> to pass a list of arguments for XGBoost. <a href="https://xgboost.readthedocs.io/en/latest/parameter.html" class="external-link">See this webpage for the full list of parameters</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">ConstructTFNetwork</span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    model_params<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+        objective <span class="op">=</span> <span class="st">'reg:squarederror'</span>,
+        max_depth <span class="op">=</span> <span class="fl">1</span>,
+        eta <span class="op">=</span> <span class="fl">0.1</span>,
+        nthread<span class="op">=</span><span class="fl">16</span>,
+        alpha<span class="op">=</span><span class="fl">0.5</span>
+    <span class="op">)</span>
+<span class="op">)</span></code></pre></div>
+</details>
+</div>
+<div class="section level2">
+<h2 id="define-tf-regulons">Define TF Regulons<a class="anchor" aria-label="anchor" href="#define-tf-regulons"></a>
+</h2>
+<p>In this step, we use the whole TF network from the previous step to define “regulons” for each TF. As discussed by <a href="https://www.nature.com/articles/nmeth.4463" class="external-link">Aibar et al in the SCENIC paper</a>, regulons are similar to co-expression modules, but the genes in each regulon are comprised of highly confident target genes for each TF. Essentially, this step is pruning the TF regulatory network to only keep the strongest TF-gene connections. Here we offer several strategies for defining TF regulons.</p>
+<ul>
+<li>Strategy “A” selects the top TFs for each gene.</li>
+<li>Strategy “B” selects the top genes for each TF.</li>
+<li>Strategy “C” retains all TF-gene pairs above a certain regulatory score (<code>reg_thresh</code>).</li>
+</ul>
+<p>For this analysis, we employ Strategy “A”, selecting the top 10 TFs for each gene.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">AssignTFRegulons</span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    strategy <span class="op">=</span> <span class="st">"A"</span>,
+    reg_thresh <span class="op">=</span> <span class="fl">0.01</span>,
+    n_tfs <span class="op">=</span> <span class="fl">10</span>
+<span class="op">)</span></code></pre></div>
+<details><summary>
+Expand to see example of Strategy “B”
+</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">AssignTFRegulons</span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    strategy <span class="op">=</span> <span class="st">"B"</span>,
+    reg_thresh <span class="op">=</span> <span class="fl">0.01</span>,
+    n_genes <span class="op">=</span> <span class="fl">50</span>
+<span class="op">)</span></code></pre></div>
+</details><details><summary>
+Expand to see example of Strategy “C”
+</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">AssignTFRegulons</span><span class="op">(</span>
+    <span class="va">seurat_obj</span>,
+    strategy <span class="op">=</span> <span class="st">"C"</span>,
+    reg_thresh <span class="op">=</span> <span class="fl">0.1</span>
+<span class="op">)</span></code></pre></div>
+</details>
+</div>
+<div class="section level2">
+<h2 id="calculate-regulon-expression-signatures">Calculate regulon expression signatures<a class="anchor" aria-label="anchor" href="#calculate-regulon-expression-signatures"></a>
+</h2>
+<p>In the hdWGCNA co-expression analysis, we compute aggregated expression scores for each module, called Module Eigengenes. In TF regulatory network analysis, we also have groups of genes (regulons) for which we can calculate gene expression scores. This will inform us which cells express genes which are likely regulated by specific TFs. Here we use the function <code>RegulonScores</code> to compute scores for each TF regulon.</p>
+<p>Importantly, in our TF network analysis, there are some TF-gene pairs with positive co-expression, and some TF-gene pairs with negative co-expression. For regulon scoring, we provide the option <code>target_type</code> to select ‘positive’, ‘negative’, or ‘both’, making it possible to separately analyze the signatures for genes that are activated or repressed by a given TF.</p>
 </div>
   </div>
 

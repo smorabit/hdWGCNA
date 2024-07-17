@@ -12,7 +12,4 @@ scale01(x)
 \description{
 Function to scale a numeric vector between 0 and 1.
 }
-\examples{
-scale01
-}
-\keyword{scRNA-seq}
+\keyword{helper}

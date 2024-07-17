@@ -12,7 +12,4 @@ shuffle_points(df)
 \description{
 Function to shuffle the rows of a dataframe.
 }
-\examples{
-shuffle_points
-}
-\keyword{scRNA-seq}
+\keyword{helper}

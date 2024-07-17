@@ -9,7 +9,4 @@ umap_theme()
 \description{
 ggplot theme to remove axes etc.
 }
-\examples{
-umap_theme
-}
-\keyword{scRNA-seq}
+\keyword{helper}

@@ -21,10 +21,13 @@ to the standard co-expression network analysis included in hdWGCNA.
 While hdWGCNA co-expression networks are *undirected networks*, where 
 we do not have explicit information about which genes regulate each other,
 TF regulatory networks leverage TF binding motif information to build 
-*directed networks* of TFs and their downstream target genes. Here 
-we demonstrate this analysis on a dataset of the *human* prefrontal 
-cortex, but keep in mind that this analysis must be modified appropriately 
-for different species.
+*directed networks* of TFs and their downstream target genes.
+Some of this analysis and the concepts used here are similar to another 
+network analysis package called [SCENIC](https://github.com/aertslab/SCENIC), 
+but this TF regulatory network analysis included in hdWGCNA is a distinct 
+approach with key differences. Here, we demonstrate this analysis on a dataset
+of the *human* prefrontal cortex, but keep in mind that this analysis must be 
+modified appropriately for different species.
 
 Importantly, this approach was not included in the original hdWGCNA paper 
 [Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3),
@@ -135,22 +138,151 @@ seurat_obj <- MotifScan(
 
 ## Construct TF Regulatory Network 
 
+Now that we have information about which TFs potentially regulate each gene based on 
+TF motif presence, we have a basis for constructing a TF regulatory network. In this 
+section, we use the function `ConstructTFNetwork` to construct a network of TFs and their 
+putative target genes. This function leverages the [extreme gradient boosting (XGBoost) algorithm](https://xgboost.readthedocs.io/en/stable/R-package/xgboostPresentation.html),
+a powerful ensemble learning approach that we use to predict the expression of a given gene 
+based on the expression of all TFs with a matching motif in that gene's promoter. This analysis 
+will reveal a ranking of which TFs are best at predicting the expression of the target gene,
+which we consider the most likely regulators of that particular gene. [Please read the methods 
+section of our paper for more information.](https://www.sciencedirect.com/science/article/pii/S2211124724002845#sec4)
+
+Similar to the standard hdWGCNA co-expression network analysis, we need to define the 
+set of genes that will be used for this analysis, and we need to explicitly 
+define the expression matrix that will be used with the function `SetDatExpr`.
+
+The user may decide which genes that they want to use for this analysis, but here we 
+will use all of the genes that were assigned to a co-expression module based on the 
+co-expression network analysis, and all genes corresponding to a TF.
+
 ```{r eval=FALSE}
 
 # get the motif df:
 motif_df <- GetMotifs(seurat_obj)
-head(motif_df)
 
-# keep all TFs, and then keep all non-grey genes 
+# keep all TFs, and then remove all genes from the grey module
 tf_genes <- unique(motif_df$gene_name)
 modules <- GetModules(seurat_obj)
 nongrey_genes <- subset(modules, module != 'grey') %>% .$gene_name
 genes_use <- c(tf_genes, nongrey_genes)
 
-# should I make a way to directly give features to setdatexpr instead of doing this?
+# update the gene list and re-run SetDatExpr
 seurat_obj <- SetWGCNAGenes(seurat_obj, genes_use)
 seurat_obj <- SetDatExpr(seurat_obj, group.by = 'cell_type', group_name='INH')
-datExpr <- GetDatExpr(seurat_obj)
-dim(datExpr)
 
 ```
+
+Now we are ready to run `ConstructTFNetwork`. Since this function models each gene, 
+the runtime will scale wth the number of genes selected from the previous step, and it 
+will scale with the number of metacells / metaspots that are used for this analysis. 
+
+```{r eval=FALSE}
+
+library(xgboost)
+
+seurat_obj <- ConstructTFNetwork(seurat_obj)
+
+```
+
+This function results in a table showing information about each potential TF-gene pair,
+which we can access using `GetTFNetwork`.
+
+TODO: explain the results table 
+
+```{r eval=FALSE}
+tfnet_df <- GetTFNetwork(seurat_obj)
+head(tfnet_df)
+```
+
+<details> <summary> Expand to see example with different XGBoost parameters </summary>
+
+We can use the parameter `model_params` to pass a list of arguments for XGBoost. 
+[See this webpage for the full list of parameters](https://xgboost.readthedocs.io/en/latest/parameter.html). 
+
+```{r eval=FALSE}
+seurat_obj <- ConstructTFNetwork(
+    seurat_obj,
+    model_params=list(
+        objective = 'reg:squarederror',
+        max_depth = 1,
+        eta = 0.1,
+        nthread=16,
+        alpha=0.5
+    )
+)
+```
+
+</details>
+
+
+
+## Define TF Regulons 
+
+In this step, we use the whole TF network from the previous step to define "regulons" 
+for each TF. As discussed by [Aibar et al in the SCENIC paper](https://www.nature.com/articles/nmeth.4463), 
+regulons are similar to co-expression modules, but the genes in each regulon are comprised of 
+highly confident target genes for each TF. Essentially, this step is pruning the 
+TF regulatory network to only keep the strongest TF-gene connections. Here we offer 
+several strategies for defining TF regulons.
+
+* Strategy "A" selects the top TFs for each gene.
+* Strategy "B" selects the top genes for each TF.
+* Strategy "C" retains all TF-gene pairs above a certain regulatory score (`reg_thresh`). 
+
+For this analysis, we employ Strategy "A", selecting the top 10 TFs for each gene.
+
+```{r eval=FALSE}
+
+seurat_obj <- AssignTFRegulons(
+    seurat_obj,
+    strategy = "A",
+    reg_thresh = 0.01,
+    n_tfs = 10
+)
+
+```
+
+<details> <summary> Expand to see example of Strategy "B" </summary>
+
+```{r eval=FALSE}
+
+seurat_obj <- AssignTFRegulons(
+    seurat_obj,
+    strategy = "B",
+    reg_thresh = 0.01,
+    n_genes = 50
+)
+
+```
+
+</details>
+
+
+<details> <summary> Expand to see example of Strategy "C" </summary>
+
+```{r eval=FALSE}
+
+seurat_obj <- AssignTFRegulons(
+    seurat_obj,
+    strategy = "C",
+    reg_thresh = 0.1
+)
+
+```
+
+</details>
+
+## Calculate regulon expression signatures 
+
+In the hdWGCNA co-expression analysis, we compute aggregated expression scores for each 
+module, called Module Eigengenes. In TF regulatory network analysis, we also have groups 
+of genes (regulons) for which we can calculate gene expression scores. This will inform 
+us which cells express genes which are likely regulated by specific TFs. Here we 
+use the function `RegulonScores` to compute scores for each TF regulon. 
+
+Importantly, in our TF network analysis, there are some TF-gene pairs with positive 
+co-expression, and some TF-gene pairs with negative co-expression. For regulon scoring, 
+we provide the option `target_type` to select 'positive', 'negative', or 'both',
+making it possible to separately analyze the signatures for genes that are 
+activated or repressed by a given TF.

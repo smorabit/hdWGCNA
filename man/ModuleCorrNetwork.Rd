@@ -6,7 +6,6 @@
 \usage{
 ModuleCorrNetwork(
   seurat_obj,
-  wgcna_name = NULL,
   cluster_col = NULL,
   exclude_grey = TRUE,
   features = "hMEs",
@@ -16,7 +15,8 @@ ModuleCorrNetwork(
   edge_scale = 5,
   vertex_size = 15,
   niter = 100,
-  vertex_frame = FALSE
+  vertex_frame = FALSE,
+  wgcna_name = NULL
 )
 }
 \arguments{

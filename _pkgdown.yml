@@ -129,6 +129,7 @@ reference:
   desc: Functions for generating plots with hdWGCNA
   contents:
     - '`ModuleFeaturePlot`'
+    - '`ModuleRadarPlot`'
     - '`PlotModuleTrajectory`'
 - title: Module Preservation
   desc: Functions for performing module preservation analysis
