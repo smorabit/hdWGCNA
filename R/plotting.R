@@ -2298,21 +2298,31 @@ PlotKMEs <- function(
 }
 
 
+
 #' PlotDMEsVolcano
 #'
-#' Plotting function for the results of FindDMEs and FindAllDMEs
+#' Plotting function for the results of FindDMEs and FindAllDMEs.
 #'
-#' @param DMEs dataframe output from FindDMEs or FindAllDMEs
-#' @param plot_labels logical determining whether to plot the module labels
-#' @param label_size the size of the module labels
-#' @param mod_point_size the size of the points in each plot
-#' @param show_cutoff logical determining whether to plot the significance cutoff. Should set this to FALSE if using facet_wrap.
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
+#' This function generates a volcano plot for differential module expression (DME) analysis results. 
+#' It can handle both two-group comparisons (using the output of `FindDMEs`) and one-vs-all comparisons 
+#' (using the output of `FindAllDMEs`).
+#'
+#' @param seurat_obj A Seurat object containing the WGCNA analysis in the @misc slot.
+#' @param DMEs A dataframe output from FindDMEs or FindAllDMEs containing DME results.
+#' @param plot_labels Logical, determines whether to plot the module labels on the volcano plot. Default is TRUE.
+#' @param label_size Numeric, the size of the module labels on the plot. Default is 4.
+#' @param mod_point_size Numeric, the size of the points on the volcano plot. Default is 4.
+#' @param show_cutoff Logical, determines whether to plot the significance cutoff. Set this to FALSE if using facet_wrap. Default is TRUE.
+#' @param wgcna_name Character, the name of the hdWGCNA experiment in the `seurat_obj@misc` slot. Default is NULL, in which case it pulls the active WGCNA experiment from `seurat_obj@misc$active_wgcna`.
+#' @param xlim_range A numeric vector of length 2 specifying the x-axis limits for the log2 fold change. Default is NULL, which automatically calculates limits based on the data.
+#' @param ylim_range A numeric vector of length 2 specifying the y-axis limits for the -log10(p-value). Default is NULL, which automatically calculates limits based on the data.
+#' @keywords scRNA-seq, volcano plot, differential expression, WGCNA
 #' @export
-#' @return A ggplot object
+#' @return A ggplot object containing the volcano plot for the DME results.
 #' @examples
-#' PlotDMEsVolcano
+#' # Example usage:
+#' # Assuming `seurat_obj` is your Seurat object and `DMEs` is the output from FindDMEs
+#' PlotDMEsVolcano(seurat_obj, DMEs, wgcna_name = "MG")
 PlotDMEsVolcano <- function(
   seurat_obj,
   DMEs,
@@ -2320,7 +2330,9 @@ PlotDMEsVolcano <- function(
   mod_point_size=4,
   label_size=4,
   show_cutoff = TRUE,
-  wgcna_name=NULL
+  wgcna_name=NULL,
+  xlim_range=NULL,  # New parameter to control x-axis limits
+  ylim_range=NULL   # New parameter to control y-axis limits
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -2350,8 +2362,17 @@ PlotDMEsVolcano <- function(
   # annotate modules with significant DME
   DMEs$anno <- ifelse(DMEs$p_val_adj < 0.05, DMEs$module, '')
 
-  # set x-axis limit
-  xmax <- max_fc
+  # set default x-axis limit if not provided
+  if(is.null(xlim_range)){
+    xmax <- max_fc
+    xlim_range <- c((-1*xmax)-0.1, xmax+0.1)  # Adjust as needed
+  }
+
+  # set default y-axis limit if not provided
+  if(is.null(ylim_range)){
+    ymax <- max(-log10(DMEs$p_val_adj))
+    ylim_range <- c(0, ymax + 1)  # Adjust as needed
+  }
 
   # plot basics
   p <- DMEs %>%
@@ -2377,7 +2398,8 @@ PlotDMEsVolcano <- function(
   p <- p +
     scale_fill_manual(values=mod_colors) +
     scale_color_manual(values=mod_colors) +
-     xlim((-1*xmax)-0.1, xmax+0.1) +
+    xlim(xlim_range) +  # Apply new xlim range
+    ylim(ylim_range) +  # Apply new ylim range
     xlab(bquote("Average log"[2]~"(Fold Change)")) +
     ylab(bquote("-log"[10]~"(Adj. P-value)")) +
     theme(
@@ -2388,9 +2410,9 @@ PlotDMEsVolcano <- function(
      legend.position='bottom'
    ) + NoLegend()
 
-   p + NoLegend()
-
+   return(p)
 }
+
 
              
              
