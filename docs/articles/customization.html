@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Module customization • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
@@ -12,148 +12,93 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
-<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Module customization">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Module customization">
+<meta name="description" content="Tutorial for customizing module colors and module names in hdWGCNA.
+">
 <meta property="og:description" content="Tutorial for customizing module colors and module names in hdWGCNA.
 ">
 <meta property="og:image" content="https://smorabit.github.io/hdWGCNA/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
-    
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
-    <div class="container template-article">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
-      </span>
-    </div>
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/hdWGCNA.html">Get started</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Core functionality</li>
-    <li>
-      <a href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
-    </li>
-    <li>
-      <a href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
-    </li>
-    <li>
-      <a href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a>
-    </li>
-    <li>
-      <a href="../articles/network_visualizations.html">Network visualization</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Biological context for co-expression modules</li>
-    <li>
-      <a href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a>
-    </li>
-    <li>
-      <a href="../articles/module_trait_correlation.html">Module trait correlation</a>
-    </li>
-    <li>
-      <a href="../articles/enrichment_analysis.html">Enrichment analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Exploring modules in external datasets</li>
-    <li>
-      <a href="../articles/projecting_modules.html">Projecting modules to new datasets</a>
-    </li>
-    <li>
-      <a href="../articles/module_preservation.html">Module preservation and reproducibility</a>
-    </li>
-    <li>
-      <a href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Advanced topics</li>
-    <li>
-      <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
-    </li>
-    <li>
-      <a href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a>
-    </li>
-    <li>
-      <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
-    </li>
-    <li>
-      <a href="../articles/motif_analysis.html">Motif analysis</a>
-    </li>
-    <li>
-      <a href="../articles/other_metacells.html">Alternative metacell algorithms</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Other</li>
-    <li>
-      <a href="../articles/customization.html">Module customization</a>
-    </li>
-    <li>
-      <a href="../articles/sctransform.html">Using SCTransform normalized data</a>
-    </li>
-    <li class="divider">
-    </li>
-<li>
-      <a href="../articles/index.html">All vignettes</a>
-    </li>
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
+    <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/basic_tutorial.html">Get started</a></li>
+<li class="active nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-vignettes" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Vignettes</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-vignettes">
+<li><h6 class="dropdown-header" data-toc-skip>Core functionality</h6></li>
+    <li><a class="dropdown-item" href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a></li>
+    <li><a class="dropdown-item" href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a></li>
+    <li><a class="dropdown-item" href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a></li>
+    <li><a class="dropdown-item" href="../articles/network_visualizations.html">Network visualization</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Biological context for co-expression modules</h6></li>
+    <li><a class="dropdown-item" href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/module_trait_correlation.html">Module trait correlation</a></li>
+    <li><a class="dropdown-item" href="../articles/enrichment_analysis.html">Enrichment analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Exploring modules in external datasets</h6></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules.html">Projecting modules to new datasets</a></li>
+    <li><a class="dropdown-item" href="../articles/module_preservation.html">Module preservation and reproducibility</a></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced topics</h6></li>
+    <li><a class="dropdown-item" href="../articles/tf_network.html">Transcription factor regulatory network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/consensus_wgcna.html">Consensus network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
+    <li><a class="dropdown-item" href="../articles/customization.html">Module customization</a></li>
+    <li><a class="dropdown-item" href="../articles/other_metacells.html">Alternative metacell algorithms</a></li>
+    <li><a class="dropdown-item" href="../articles/sctransform.html">Using SCTransform normalized data</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">All vignettes</a></li>
   </ul>
 </li>
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/hdWGCNA/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+      </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
+</nav><div class="container template-article">
 
-      
 
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Module customization</h1>
+
+
+<div class="row">
+  <main id="main" class="col-md-9"><div class="page-header">
+      <img src="../logo.png" class="logo" alt=""><h1>Module customization</h1>
             
       
-      
-      <div class="hidden name"><code>customization.Rmd</code></div>
-
+      <small class="dont-index">Source: <a href="https://github.com/smorabit/hdWGCNA/blob/HEAD/vignettes/customization.Rmd" class="external-link"><code>vignettes/customization.Rmd</code></a></small>
+      <div class="d-none name"><code>customization.Rmd</code></div>
     </div>
 
     
@@ -161,76 +106,76 @@
 <p>By default, hdWGCNA (and WGCNA) assign each module a unique color, and often modules are referred to by this color. In this tutorial, we show how we can rename the hdWGCNA modules, and assign a new color to the hdWGCNA modules.</p>
 <p>First, we load the required libraries and the dataset.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
-
-<span class="co"># plotting and data science packages</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
-
-<span class="co"># co-expression network analysis packages:</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span>
-
-<span class="co"># using the cowplot theme for ggplot</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set random seed for reproducibility</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
-
-<span class="co"># load the Zhou et al snRNA-seq dataset</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plotting and data science packages</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># co-expression network analysis packages:</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># using the cowplot theme for ggplot</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set random seed for reproducibility</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="renaming-hdwgcna-modules">Renaming hdWGCNA modules<a class="anchor" aria-label="anchor" href="#renaming-hdwgcna-modules"></a>
 </h2>
 <p>hdWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire hdWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the hdWGCNA modules.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  new_name <span class="op">=</span> <span class="st">"Renamed-M"</span> <span class="co"># the base name for the new modules</span>
-<span class="op">)</span>
-
-<span class="co"># print out the new module names</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  new_name <span class="op">=</span> <span class="st">"Renamed-M"</span> <span class="co"># the base name for the new modules</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># print out the new module names</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "Renamed-M1"  "Renamed-M2"  "Renamed-M3"  "Renamed-M4"  "Renamed-M5"
 [6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
 [11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
 [16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
 <p>Alternatively, we can supply a named list to rename selected modules.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">rename_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
-  <span class="st">"Renamed-M1"</span> <span class="op">=</span> <span class="st">'Charlie'</span>, <span class="co"># "old_module_name" = "new_module_name"</span>
-  <span class="st">"Renamed-M2"</span> <span class="op">=</span> <span class="st">"Mac"</span>,
-  <span class="st">"Renamed-M3"</span> <span class="op">=</span> <span class="st">"Dennis"</span>
-<span class="op">)</span>
-
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  new_name <span class="op">=</span> <span class="va">rename_list</span>
-<span class="op">)</span>
-
-<span class="co"># print out the new module names</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">rename_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Renamed-M1"</span> <span class="op">=</span> <span class="st">'Charlie'</span>, <span class="co"># "old_module_name" = "new_module_name"</span></span>
+<span>  <span class="st">"Renamed-M2"</span> <span class="op">=</span> <span class="st">"Mac"</span>,</span>
+<span>  <span class="st">"Renamed-M3"</span> <span class="op">=</span> <span class="st">"Dennis"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  new_name <span class="op">=</span> <span class="va">rename_list</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># print out the new module names</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "Charlie"     "Mac"         "Dennis"      "Renamed-M4"  "Renamed-M5"
 [6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
 [11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
 [16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
 <p>Finally, we can supply a character vector with a new name for each module rather than a named list.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># how many non-grey modules are there?</span>
-<span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>
-
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  new_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_mods</span><span class="op">)</span>
-<span class="op">)</span>
-
-<span class="co"># print out the new module names</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># how many non-grey modules are there?</span></span>
+<span><span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
+<span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  new_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_mods</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># print out the new module names</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "1"    "2"    "3"    "4"    "5"    "6"    "7"    "8"    "9"    "10"
 [11] "grey" "11"   "12"   "13"   "14"   "15"   "16"   "17"   "18"</code></pre>
 <p>In the next section, we will re-make some of the hdWGCNA visualizations so we can see that the module names have been updated.</p>
@@ -244,17 +189,17 @@
 </h3>
 <p>In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules. First, we can make a table to show the original module-color pairings.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get the module table</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>
-
-<span class="co"># make a table of the module-color pairings</span>
-<span class="va">mod_colors_df</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">modules</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span>
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mod_colors_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">mod_colors_df</span><span class="op">$</span><span class="va">module</span>
-
-<span class="co"># print the dataframe</span>
-<span class="va">mod_colors_df</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># get the module table</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make a table of the module-color pairings</span></span>
+<span><span class="va">mod_colors_df</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">modules</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mod_colors_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">mod_colors_df</span><span class="op">$</span><span class="va">module</span></span>
+<span></span>
+<span><span class="co"># print the dataframe</span></span>
+<span><span class="va">mod_colors_df</span></span></code></pre></div>
 <details><summary>
 Output
 </summary><pre><code>module        color
@@ -281,47 +226,47 @@ INH-M19 INH-M19         pink
 INH-M20 INH-M20    royalblue</code></pre>
 </details><p>Next, we will use <code>ResetModuleColors</code> to change all of the module-color pairings.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># load MetBrewer color scheme pakckage</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span>
-
-<span class="co"># get a table of just the module and it's unique color</span>
-<span class="va">mod_color_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span>
-
-<span class="co"># the number of unique modules (subtract 1 because the grey module stays grey):</span>
-<span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_color_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>
-
-<span class="co"># using the "Signac" palette from metbrewer, selecting for the number of modules</span>
-<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MetBrewer/man/met.brewer.html" class="external-link">met.brewer</a></span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># reset the module colors</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># load MetBrewer color scheme pakckage</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get a table of just the module and it's unique color</span></span>
+<span><span class="va">mod_color_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">module</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="va">distinct</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">module</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># the number of unique modules (subtract 1 because the grey module stays grey):</span></span>
+<span><span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_color_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
+<span></span>
+<span><span class="co"># using the "Signac" palette from metbrewer, selecting for the number of modules</span></span>
+<span><span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># reset the module colors</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></span></code></pre></div>
 <p>Now we will test some of the different visualization functions to check that the colors were successfully modified.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Recolored Dendrogram'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Recolored Dendrogram'</span><span class="op">)</span></span></code></pre></div>
 </details><p><img src="figures/customization/dendro.png" width="700" height="700"></p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># make a featureplot of hMEs for each module</span>
-<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-
-<span class="co"># stitch together with patchwork</span>
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># make a featureplot of hMEs for each module</span></span>
+<span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># stitch together with patchwork</span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 </details><p><img src="figures/customization/featureplot.png" width="700" height="700"></p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  edge.alpha<span class="op">=</span><span class="fl">0.15</span>,
-  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
-  edge_prop<span class="op">=</span><span class="fl">0.2</span>,
-  label_hubs<span class="op">=</span><span class="fl">2</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  edge.alpha<span class="op">=</span><span class="fl">0.15</span>,</span>
+<span>  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>  edge_prop<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span>  label_hubs<span class="op">=</span><span class="fl">2</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </details><p><img src="figures/customization/module_umap.png" width="700" height="700"></p>
 </div>
 <div class="section level3">
@@ -329,51 +274,42 @@ Code
 </h3>
 <p>In this example, we will change the colors of only two modules rather than all of them. We need to supply <code>ResetModuleColors</code> with a named list detailing which modules we want to change, and which color to change them to. We will make a FeaturePlot before and after changing the colors to test if they were properly changed.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># make a featureplot before changing colors</span>
-<span class="va">pl1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set new colors</span>
-<span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'INH-M12'</span> <span class="op">=</span> <span class="st">'darksalmon'</span>, <span class="st">'INH-M5'</span> <span class="op">=</span> <span class="st">'deeppink'</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span>
-
-<span class="co"># make a featureplot after changing colors</span>
-<span class="va">pl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># stitch together with patchwork</span>
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pl1</span>, <span class="va">pl2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># make a featureplot before changing colors</span></span>
+<span><span class="va">pl1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set new colors</span></span>
+<span><span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'INH-M12'</span> <span class="op">=</span> <span class="st">'darksalmon'</span>, <span class="st">'INH-M5'</span> <span class="op">=</span> <span class="st">'deeppink'</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make a featureplot after changing colors</span></span>
+<span><span class="va">pl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># stitch together with patchwork</span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pl1</span>, <span class="va">pl2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/customization/selected_featureplot.png" width="700" height="700"></p>
 <p>We successfully changed the color of modules INH-M5 and INH-M12, while leaving all of the other module colors as they were.</p>
 </div>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
-
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
 
-  
 
 
-  
+
 
   </body>
 </html>

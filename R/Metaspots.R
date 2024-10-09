@@ -27,10 +27,19 @@ ConstructMetaspots <- function(
   } else{
     X <- Seurat::GetAssayData(cur_seurat, assay=assay, slot=slot)
   }
+  
+  # what is the image class?
+  image_class <- class(seurat_obj@images[[1]])
 
   # check to make sure this is just one sample:
-  if(sum(unlist(lapply(Images(cur_seurat), function(x){nrow(cur_seurat@images[[x]]@coordinates) != 0}))) != 1){
-    stop("More than one sample present in grouping. Please specify a metadata column with group.by indicating different ST samples.")
+  if(image_class == 'VisiumV2'){
+    if(length(Images(cur_seurat)) > 1){
+      stop("More than one sample present in grouping. Please specify a metadata column with group.by indicating different ST samples.")
+    }
+  } else{
+    if(sum(unlist(lapply(Images(cur_seurat), function(x){nrow(cur_seurat@images[[x]]@coordinates) != 0}))) != 1){
+      stop("More than one sample present in grouping. Please specify a metadata column with group.by indicating different ST samples.")
+    }    
   }
 
   # boundaries

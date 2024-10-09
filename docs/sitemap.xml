@@ -1,489 +1,189 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/404.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/ST_basics.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/consensus_wgcna.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/customization.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/differential_MEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/encirhment_analysis.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/enrichment_analysis.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/hdWGCNA.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/isoform_pbmcs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/module_preservation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/module_trait_correlation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/motif_analysis.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/network_visualizations.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/other_metacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules_cross.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/pseudobulk.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/pseudotime.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/scWGCNA.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/sctransform.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/tf_net.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/articles/tf_network.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/index.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/AvgModuleExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/BinPseudotime.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/CheckSeurat5.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/CheckWGCNAName.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ComputeModuleEigengene.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ComputeROC.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructMetaspots.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructNetwork.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ConstructPseudobulk.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/DimPlotMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/DoHubGeneHeatmap.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/EnrichrBarPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/EnrichrDotPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/FindAllDMEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/FindDMEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/FindMajorIsoforms.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNA.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNAName.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetAvgModuleExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetDatExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetDegrees.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetEnrichrTable.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetHubGenes.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMELoadings.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMetacellObject.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetModulePreservation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleScores.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleTraitCorrelation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleUMAP.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetModules.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifMatrix.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifOverlap.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifScores.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifTargets.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetMultiExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetNetworkData.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetPFMList.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetPowerTable.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetROCData.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetTOM.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAGenes.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAGroup.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAParams.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/HubGeneNetworkPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/MetacellsByGroups.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/MetaspotsByGroups.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleConnectivity.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleCorrNetwork.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleCorrelogram.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleEigengenes.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleExprScore.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleFeaturePlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleNetworkPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservationNetRep.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleRadarPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTFNetwork.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyBarplot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyHeatmap.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTraitCorrelation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ModuleUMAPPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/MotifOverlapBarPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/MotifScan.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/MotifTargetScore.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/NormalizeMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/OverlapBarPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/OverlapDotPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/OverlapModulesDEGs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/OverlapModulesMotifs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotDMEsLollipop.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotDMEsVolcano.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotDendrogram.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotKMEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotLollipop.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservationLollipop.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTraitCorrelation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTrajectory.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/PlotSoftPowers.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ProjectModules.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ROCCurves.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ReassignModules.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ResetModuleColors.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ResetModuleNames.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/RunEnrichr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/RunHarmonyMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/RunModuleUMAP.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/RunPCAMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/RunUMAPMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/ScaleMetacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SelectNetworkGenes.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetActiveWGCNA.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetAvgModuleExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetDatExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetDegrees.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetEnrichrTable.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMELoadings.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMEs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMetacellObject.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetModulePreservation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleScores.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleTraitCorrelation.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleUMAP.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetModules.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifMatrix.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifOverlap.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifScores.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifTargets.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetMultiExpr.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetNetworkData.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetPFMList.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetPowerTable.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetROCData.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAGenes.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAGroup.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAParams.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/SetupForWGCNA.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/TestSoftPowers.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/TestSoftPowersConsensus.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/TransferModuleGenome.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/check_inputs.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/construct_metacells.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/corSparse.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/metacells_by_groups.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/scale01.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/shuffle_points.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/to_pseudobulk.html</loc>
-  </url>
-  <url>
-    <loc>https://smorabit.github.io/hdWGCNA/reference/umap_theme.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://smorabit.github.io/hdWGCNA/404.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/LICENSE-text.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/LICENSE.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/ST_basics.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/consensus_wgcna.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/customization.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/differential_MEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/encirhment_analysis.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/enrichment_analysis.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/hdWGCNA.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/index.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/isoform_pbmcs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/module_preservation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/module_trait_correlation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/motif_analysis.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/network_visualizations.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/other_metacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/projecting_modules_cross.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/pseudobulk.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/pseudotime.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/scWGCNA.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/sctransform.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/tf_net.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/articles/tf_network.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/authors.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/index.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/news/index.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/AssignTFRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/AvgModuleExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/BinPseudotime.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/CheckSeurat5.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/CheckWGCNAName.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ComputeModuleEigengene.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ComputeROC.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ConstructMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ConstructMetaspots.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ConstructNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ConstructPseudobulk.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ConstructTFNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/DimPlotMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/DoHubGeneHeatmap.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/EnrichrBarPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/EnrichrDotPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/FindAllDMEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/FindDMEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/FindDifferentialRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/FindMajorIsoforms.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNA.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetActiveWGCNAName.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetAvgModuleExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetDatExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetDegrees.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetEnrichrRegulonTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetEnrichrTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetHubGenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMELoadings.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMetacellObject.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMetacellParams.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetModulePreservation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleTraitCorrelation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetModuleUMAP.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetModules.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifMatrix.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifOverlap.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifTargets.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMotifs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetMultiExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetNetworkData.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetPFMList.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetPowerTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetROCData.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetRegulonScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetTFEval.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetTFNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetTFRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetTFTargetGenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetTOM.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAGenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAGroup.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/GetWGCNAParams.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/HubGeneNetworkPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/MetacellsByGroups.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/MetaspotsByGroups.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleConnectivity.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleCorrNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleCorrelogram.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleEigengenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleExprScore.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleFeaturePlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleNetworkPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModulePreservationNetRep.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleRadarPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleRegulatoryHeatmap.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleRegulatoryNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleRegulatoryNetworkPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTFNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyBarplot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTopologyHeatmap.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleTraitCorrelation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ModuleUMAPPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifOverlapBarPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifScan.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifTargetScore.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/NormalizeMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapBarPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapDotPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapModulesDEGs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapModulesMotifs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotDMEsLollipop.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotDMEsVolcano.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotDendrogram.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotDifferentialRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotKMEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotLollipop.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotModulePreservationLollipop.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTraitCorrelation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotModuleTrajectory.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/PlotSoftPowers.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ProjectModules.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ROCCurves.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ReassignModules.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RegulonBarPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RegulonScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ResetModuleColors.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ResetModuleNames.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunEnrichr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunEnrichrRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunHarmonyMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunModuleUMAP.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunPCAMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/RunUMAPMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/ScaleMetacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SelectNetworkGenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetActiveWGCNA.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetAvgModuleExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetDatExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetDegrees.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetEnrichrRegulonTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetEnrichrTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMELoadings.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMEs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMetacellObject.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMetacellParams.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetModulePreservation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleTraitCorrelation.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetModuleUMAP.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetModules.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifMatrix.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifOverlap.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifTargets.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMotifs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetMultiExpr.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetNetworkData.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetPFMList.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetPowerTable.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetROCData.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetRegulonScores.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetTFEval.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetTFNetwork.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetTFRegulons.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAGenes.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAGroup.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetWGCNAParams.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/SetupForWGCNA.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/TFNetworkPlot.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/TestSoftPowers.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/TestSoftPowersConsensus.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/TransferModuleGenome.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/check_inputs.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/construct_metacells.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/corSparse.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/index.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/metacells_by_groups.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/scale01.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/shuffle_points.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/to_pseudobulk.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/umap_theme.html</loc></url>
 </urlset>
+

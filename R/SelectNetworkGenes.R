@@ -72,7 +72,6 @@ SelectNetworkGenes <- function(
 
         # subset expression matrix by this group
         cur_expr <- expr_mat[,seurat_obj@meta.data[[group.by]] == cur_group]
-        print(dim(cur_expr))
 
         gene_filter <- Matrix::rowSums(cur_expr) >= round(fraction*ncol(cur_expr));
         group_gene_list[[cur_group]] <- rownames(seurat_obj)[gene_filter]

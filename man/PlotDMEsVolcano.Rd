@@ -11,29 +11,49 @@ PlotDMEsVolcano(
   mod_point_size = 4,
   label_size = 4,
   show_cutoff = TRUE,
-  wgcna_name = NULL
+  wgcna_name = NULL,
+  xlim_range = NULL,
+  ylim_range = NULL
 )
 }
 \arguments{
-\item{DMEs}{dataframe output from FindDMEs or FindAllDMEs}
+\item{seurat_obj}{A Seurat object containing the WGCNA analysis in the @misc slot.}
 
-\item{plot_labels}{logical determining whether to plot the module labels}
+\item{DMEs}{A dataframe output from FindDMEs or FindAllDMEs containing DME results.}
 
-\item{mod_point_size}{the size of the points in each plot}
+\item{plot_labels}{Logical, determines whether to plot the module labels on the volcano plot. Default is TRUE.}
 
-\item{label_size}{the size of the module labels}
+\item{mod_point_size}{Numeric, the size of the points on the volcano plot. Default is 4.}
 
-\item{show_cutoff}{logical determining whether to plot the significance cutoff. Should set this to FALSE if using facet_wrap.}
+\item{label_size}{Numeric, the size of the module labels on the plot. Default is 4.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{show_cutoff}{Logical, determines whether to plot the significance cutoff. Set this to FALSE if using facet_wrap. Default is TRUE.}
+
+\item{wgcna_name}{Character, the name of the hdWGCNA experiment in the \code{seurat_obj@misc} slot. Default is NULL, in which case it pulls the active WGCNA experiment from \code{seurat_obj@misc$active_wgcna}.}
+
+\item{xlim_range}{A numeric vector of length 2 specifying the x-axis limits for the log2 fold change. Default is NULL, which automatically calculates limits based on the data.}
+
+\item{ylim_range}{A numeric vector of length 2 specifying the y-axis limits for the -log10(p-value). Default is NULL, which automatically calculates limits based on the data.}
 }
 \value{
-A ggplot object
+A ggplot object containing the volcano plot for the DME results.
 }
 \description{
-Plotting function for the results of FindDMEs and FindAllDMEs
+Plotting function for the results of FindDMEs and FindAllDMEs.
+}
+\details{
+This function generates a volcano plot for differential module expression (DME) analysis results.
+It can handle both two-group comparisons (using the output of \code{FindDMEs}) and one-vs-all comparisons
+(using the output of \code{FindAllDMEs}).
 }
 \examples{
-PlotDMEsVolcano
+# Example usage:
+# Assuming `seurat_obj` is your Seurat object and `DMEs` is the output from FindDMEs
+PlotDMEsVolcano(seurat_obj, DMEs, wgcna_name = "MG")
 }
-\keyword{scRNA-seq}
+\keyword{WGCNA}
+\keyword{differential}
+\keyword{expression,}
+\keyword{plot,}
+\keyword{scRNA-seq,}
+\keyword{volcano}

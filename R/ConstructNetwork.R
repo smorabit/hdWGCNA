@@ -45,14 +45,15 @@ ConstructNetwork <- function(
   wgcna_name = NULL,
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
-  TOMDenom = "min", scaleTOMs = TRUE, scaleQuantile = 0.8,
-  sampleForScaling = TRUE, sampleForScalingFactor = 1000,
+  TOMDenom = "min", scaleTOMs = TRUE, calibrationQuantile = 0.8,
+  sampleForCalibration = TRUE, sampleForCalibrationFactor = 1000,
   useDiskCache = TRUE, chunkSize = NULL,
   deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
 ){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # suffix for the tom
   if(is.null(tom_name)){
@@ -121,8 +122,8 @@ ConstructNetwork <- function(
     networkType = networkType,
     TOMType = TOMType,
     TOMDenom = TOMDenom,
-    scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
-    sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+    scaleTOMs = scaleTOMs, calibrationQuantile = calibrationQuantile,
+    sampleForCalibration = sampleForCalibration, sampleForCalibrationFactor = sampleForCalibrationFactor,
     useDiskCache = useDiskCache, chunkSize = chunkSize,
     deepSplit = deepSplit,
     pamStage=pamStage,
@@ -147,8 +148,8 @@ ConstructNetwork <- function(
     networkType = networkType,
     TOMType = TOMType,
     TOMDenom = TOMDenom,
-    scaleTOMs = scaleTOMs, scaleQuantile = scaleQuantile,
-    sampleForScaling = sampleForScaling, sampleForScalingFactor = sampleForScalingFactor,
+    scaleTOMs = scaleTOMs, calibrationQuantile = calibrationQuantile,
+    sampleForCalibration = sampleForCalibration, sampleForCalibrationFactor = sampleForCalibrationFactor,
     useDiskCache = useDiskCache, chunkSize = chunkSize,
     deepSplit = deepSplit,
     pamStage=pamStage,
@@ -158,7 +159,7 @@ ConstructNetwork <- function(
   )
 
   # add parameters:
-  seurat_obj <- SetWGCNAParams(seurat_obj, params)
+  seurat_obj <- SetWGCNAParams(seurat_obj, params, wgcna_name)
 
   # append working directory to the TOM file so it has the full path:
   net$TOMFiles <- paste0(getwd(), '/', renamed)

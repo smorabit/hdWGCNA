@@ -496,6 +496,38 @@ GetMultiExpr <- function(seurat_obj, wgcna_name=NULL){
 # WGCNA params
 ###########################
 
+
+#' SetMetacellParams
+#'
+#' @param seurat_obj A Seurat object
+#' @param params list of WGCNA parameters
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetMetacellParams <- function(seurat_obj, params, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$metacell_params <- params
+  seurat_obj
+}
+
+#' GetMetacellParams
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetMetacellParams <- function(seurat_obj, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$metacell_params
+}
+
 #' SetWGCNAParams
 #'
 #' @param seurat_obj A Seurat object
@@ -824,7 +856,7 @@ GetMELoadings <- function(seurat_obj, harmonized=TRUE, wgcna_name=NULL){
 #' SetEnrichrTable
 #'
 #' @param seurat_obj A Seurat object
-#' @param enrichr_table dataframe storing the results of running enrichr
+#' @param enrich_table dataframe storing the results of running enrichr
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
@@ -853,6 +885,41 @@ GetEnrichrTable <- function(seurat_obj,  wgcna_name=NULL){
 
   seurat_obj@misc[[wgcna_name]]$enrichr_table
 }
+
+
+#' SetEnrichRegulonTable
+#'
+#' @param seurat_obj A Seurat object
+#' @param enrich_table dataframe storing the results of running enrichr
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetEnrichrRegulonTable <- function(seurat_obj, enrich_table, wgcna_name=NULL){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # set enrichr table
+  seurat_obj@misc[[wgcna_name]]$enrichr_regulon_table <- enrich_table
+  seurat_obj
+}
+
+
+
+#' GetEnrichrRegulonTable
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetEnrichrRegulonTable <- function(seurat_obj,  wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$enrichr_regulon_table
+}
+
 
 
 ############################
@@ -935,8 +1002,9 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get WGCNA genes:
-  gene_names <- GetWGCNAGenes(seurat_obj, wgcna_name)
+  # get modules 
+  modules <- GetModules(seurat_obj, wgcna_name)
+  gene_names <- modules$gene_name
 
   # load TOM
   tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
@@ -1267,162 +1335,137 @@ GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name=NULL){
 }
 
 
-############################
-# Reset module names:
-###########################
 
 
-#' ResetModuleNames
-#'
-#' Reset the uname of each hdWGCNA module
+#' SetRegulonScores
 #'
 #' @param seurat_obj A Seurat object
-#' @param new_name string containing the base name to re-name the modules
+#' @param regulon_scores dataframe storing the TF regulon scores 
+#' @param target_type dataframe storing the TF regulon scores 
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-ResetModuleNames <- function(
-  seurat_obj,
-  new_name = "M",
-  reset_levels = FALSE,
-  wgcna_name=NULL
-){
+SetRegulonScores <- function(seurat_obj, regulon_scores, target_type, wgcna_name=NULL){
+
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
+
+
+    # if regulon scores have not been set, make a list to store them
+    if(is.null(seurat_obj@misc[[wgcna_name]]$regulon_scores)){
+        tmp <- list(regulon_scores); names(tmp) <- target_type
+        seurat_obj@misc[[wgcna_name]]$regulon_scores <- tmp
+    } else{
+        seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]] <- regulon_scores
+    }
+    seurat_obj
+}
+
+#' GetRegulonScores
+#'
+#' @param seurat_obj A Seurat object
+#' @param target_type dataframe storing the TF regulon scores 
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetRegulonScores <- function(seurat_obj, target_type, wgcna_name=NULL){
+
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
+    
+    # get the regulon scores
+    seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]] 
+}
+
+
+############################
+# getters and setters
+###########################
+
+#' SetTFNetwork
+#'
+#' @param seurat_obj A Seurat object
+#' @param tf_net dataframe storing the TF network info in ConstructTFNetwork
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetTFNetwork <- function(seurat_obj, tf_net, wgcna_name=NULL){
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get modules
-  modules <- GetModules(seurat_obj, wgcna_name)
-  old_mods <- levels(modules$module)
-  if('grey' %in% modules$module){
-    nmods <- length(old_mods) - 1
-  } else{
-      nmods <- length(old_mods)
-  }
-
-  # if it's a named list:
-  if(class(new_name) == 'list'){
-    if(all(names(new_name) %in% old_mods)){
-      ix <- match(names(new_name), old_mods)
-      new_names <- old_mods
-      new_names[ix] <- as.character(new_name)
-      new_names <- new_names[new_names != 'grey']
-    } else{
-      stop("Some module names present in new_name are not found in this hdWGCNA experiment.")
-    }
-  } else if(length(new_name) == 1){
-    new_names <- paste0(new_name, 1:nmods)
-  } else if(length(new_name) == nmods){
-    new_names <- new_name
-  } else{
-    stop("Invalid input for new_name.")
-  }
-
-  if('grey' %in% modules$module){
-
-    grey_ind <- which(old_mods == 'grey')
-
-    # account for when grey is first / last
-    if(grey_ind == 1){
-      new_names <- c('grey', new_names)
-    } else if(grey_ind == length(old_mods)){
-      new_names <- c(new_names, 'grey')
-    } else{
-      new_names <- c(new_names[1:(grey_ind-1)], 'grey', new_names[grey_ind:length(new_names)])
-    }
-
-  }
-
-  # update kMEs
-  new_kMEs <- paste0('kME_', new_names)
-  colnames(modules) <- c(colnames(modules)[1:3], new_kMEs)
-
-  # update module names
-  new_mod_df <- data.frame(
-    old = old_mods ,
-    new = new_names
-  )
-
-  modules$module <- factor(
-    new_mod_df[match(modules$module, new_mod_df$old),'new'],
-    levels = as.character(new_mod_df$new)
-  )
-
-  # set module table
-  seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
-
-  # update hME table:
-  hMEs <- GetMEs(seurat_obj, harmonized=TRUE, wgcna_name)
-  if(!is.null(hMEs)){
-    me_colnames <- colnames(hMEs)
-    ix <- match(me_colnames, new_mod_df$old)
-    colnames(hMEs) <- new_mod_df$new[ix]
-    seurat_obj <- SetMEs(seurat_obj, hMEs, harmonized=TRUE, wgcna_name)
-  }
-
-  # update ME table
-  MEs <- GetMEs(seurat_obj, harmonized=FALSE, wgcna_name)
-  if(!is.null(MEs)){
-    me_colnames <- colnames(MEs)
-    ix <- match(me_colnames, new_mod_df$old)
-    colnames(MEs) <- new_mod_df$new[ix]
-    seurat_obj <- SetMEs(seurat_obj, MEs, harmonized=FALSE, wgcna_name)
-  }
-
-  # update module scores:
-  module_scores <- GetModuleScores(seurat_obj, wgcna_name)
-  if(!is.null(module_scores)){
-    if(!("grey" %in% colnames(module_scores))){
-      colnames(module_scores) <- new_mod_df$new[new_mod_df$new != 'grey']
-    } else {
-      colnames(module_scores) <- new_mod_df$new
-    }
-    seurat_obj <- SetModuleScores(seurat_obj, module_scores, wgcna_name)
-  }
-
-  # update average module expression:
-  avg_exp <- GetAvgModuleExpr(seurat_obj, wgcna_name)
-  if(!is.null(avg_exp)){
-    if(!("grey" %in% colnames(avg_exp))){
-      colnames(avg_exp) <- new_mod_df$new[new_mod_df$new != 'grey']
-    } else {
-      colnames(avg_exp) <- new_mod_df$new
-    }
-    seurat_obj <- SetAvgModuleExpr(seurat_obj, avg_exp, wgcna_name)
-  }
-
-  # update enrichr table:
-  enrich_table <- GetEnrichrTable(seurat_obj, wgcna_name)
-  if(!is.null(enrich_table)){
-    enrich_table$module <- factor(
-      new_mod_df[match(enrich_table$module, new_mod_df$old),'new'],
-      levels = as.character(new_mod_df$new)
-    )
-    seurat_obj <- SetEnrichrTable(seurat_obj, enrich_table, wgcna_name)
-  }
-
-  # update motif overlap
-  overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
-  if(!is.null(overlap_df)){
-    overlap_df$module <- factor(
-      new_mod_df[match(overlap_df$module, new_mod_df$old),'new'],
-      levels = as.character(new_mod_df$new)
-    )
-    seurat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
-  }
-
-  # update module umap:
-  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
-  if(!is.null(umap_df)){
-    umap_df$module <- factor(
-      new_mod_df[match(umap_df$module, new_mod_df$old),'new'],
-      levels = as.character(new_mod_df$new)
-    )
-    seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
-  }
-
-
+  seurat_obj@misc[[wgcna_name]]$tf_net <- tf_net
   seurat_obj
+}
+
+#' GetTFNetwork
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetTFNetwork <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$tf_net 
+}
+
+
+#' SetTFEval
+#'
+#' @param seurat_obj A Seurat object
+#' @param tf_eval dataframe storing the TF network evaluation info from ConstructTFNetwork
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetTFEval <- function(seurat_obj, tf_eval, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$tf_eval <- tf_eval
+  seurat_obj
+}
+
+#' GetTFEval
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetTFEval <- function(seurat_obj, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$tf_eval
+}
+
+#' SetTFRegulons
+#'
+#' @param seurat_obj A Seurat object
+#' @param tf_regulons dataframe storing the TF regulon info from AssignTFRegulons
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetTFRegulons <- function(seurat_obj, tf_regulons, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  seurat_obj@misc[[wgcna_name]]$tf_regulons <- tf_regulons
+  seurat_obj
+}
+
+#' GetTFRegulons
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetTFRegulons <- function(seurat_obj, wgcna_name=NULL){
+
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$tf_regulons
 
 }
 
@@ -1430,82 +1473,3 @@ ResetModuleNames <- function(
 ############################
 # Reset module names:
 ###########################
-
-#' ResetModuleColors
-#'
-#' Reset the unique color for each hdWGCNA module
-#'
-#' @param seurat_obj A Seurat object
-#' @param new_colors a character vector containing the new colors
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-ResetModuleColors <- function(
-  seurat_obj,
-  new_colors,
-  wgcna_name=NULL
-){
-
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # get modules
-  modules <- GetModules(seurat_obj, wgcna_name)
-  mod_colors_df <- dplyr::select(modules, c(module, color)) %>%
-    dplyr::distinct() %>% dplyr::arrange(module)
-  mod_colors <- mod_colors_df$color
-  if('grey' %in% modules$mod){
-    grey_ind <- which(mod_colors == 'grey')
-  } else{
-    grey_ind <- NA
-  }
-
-  # case where we give a named list:
-  if(class(new_colors) == 'list'){
-    ix <- match(names(new_colors), mod_colors_df$module)
-    mod_colors_df[ix, 'color'] <- as.character(new_colors)
-    new_colors <- mod_colors_df$color
-  } else{
-    if(is.na(grey_ind)){
-      new_colors <- new_colors
-    } else if(grey_ind == 1){
-      new_colors <- c('grey', new_colors)
-    } else if(grey_ind == length(mod_colors)){
-      new_colors <- c(new_colors, 'grey')
-    } else{
-      new_colors <- c(new_colors[1:(grey_ind-1)], 'grey', new_colors[grey_ind:length(new_colors)])
-    }
-  }
-
-  new_color_df <- data.frame(
-    old = mod_colors,
-    new = new_colors
-  )
-
-  modules$color <- new_color_df[match(modules$color, new_color_df$old),'new']
-
-  # set module table
-  seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
-
-  # update motif overlap
-  overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
-  if(!is.null(overlap_df)){
-    overlap_df$color <- new_color_df[match(overlap_df$color, new_color_df$old),'new']
-    seurat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
-  }
-
-  # update module umap:
-  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
-  if(!is.null(umap_df)){
-    umap_df$color <- new_color_df[match(umap_df$color, new_color_df$old),'new']
-    seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
-  }
-
-  # update hdWGCNA dendrogram:
-  net <- GetNetworkData(seurat_obj, wgcna_name)
-  net$colors <- new_color_df[match(net$colors, new_color_df$old),'new']
-  seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
-
-  seurat_obj
-
-}

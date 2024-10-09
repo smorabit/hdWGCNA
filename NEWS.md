@@ -1,3 +1,7 @@
+# hdWGCNA 0.4.00 (2024-10-09)
+## Added
+- Transcription Factor Regulatory Network Analysis functionality.
+
 # hdWGCNA 0.3.03 (2024-06-07)
 ## Added
 - `ModuleRadarPlot` function to visualize expression levels of each module.

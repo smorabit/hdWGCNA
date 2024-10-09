@@ -29,7 +29,4 @@ PlotKMEs(
 \description{
 Plotting function to show genes by kME value in each module
 }
-\examples{
-PlotKMEs
-}
 \keyword{scRNA-seq}

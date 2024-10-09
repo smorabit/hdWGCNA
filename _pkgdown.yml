@@ -3,8 +3,8 @@ title: hdWGCNA
 url: https://smorabit.github.io/hdWGCNA/
 
 template:
-  params:
-    bootswatch: flatly
+  bootstrap: 5
+  bootswatch: flatly
 
 home:
   title: hdWGCNA
@@ -26,7 +26,7 @@ navbar:
   components:
    intro:
      text: Get started
-     href: articles/hdWGCNA.html
+     href: articles/basic_tutorial.html
    news:
      text: News
      href: news/index.html
@@ -60,20 +60,20 @@ navbar:
       href: articles/projecting_modules_cross.html
     - text: -------
     - text: Advanced topics
+    - text: Transcription factor regulatory network analysis
+      href: articles/tf_network.html
     - text: Consensus network analysis
       href: articles/consensus_wgcna.html
     - text: hdWGCNA with pseudobulk data
       href: articles/pseudobulk.html
     - text: Co-expression module dynamics with pseudotime
       href: articles/pseudotime.html
-    - text: Motif analysis
-      href: articles/motif_analysis.html
-    - text: Alternative metacell algorithms
-      href: articles/other_metacells.html
     - text: -------
     - text: Other
     - text: Module customization
       href: articles/customization.html
+    - text: Alternative metacell algorithms
+      href: articles/other_metacells.html
     - text: Using SCTransform normalized data
       href: articles/sctransform.html
     - text: -------
@@ -93,7 +93,6 @@ reference:
   contents:
   - '`MetacellsByGroups`'
   - '`MetaspotsByGroups`'
-  - '`ConstructPseudobulk'
 - title: Network Analysis
   desc: Functions for constructing the co-expression network
   contents:
@@ -106,6 +105,7 @@ reference:
 - title: Network Visualization
   desc: Functions for visualizing the co-expression network
   contents:
+    - '`PlotDendrogram`'
     - '`ModuleNetworkPlot`'
     - '`HubGeneNetworkPlot`'
     - '`RunModuleUMAP`'
@@ -116,6 +116,7 @@ reference:
     - '`FindDMEs`'
     - '`FindAllDMEs`'
     - '`PlotDMEsVolcano`'
+    - '`PlotDMEsLollipop`'
 - title: Enrichment Analysis
   desc: Functions for Enrichr analysis and DEG overlap analysis
   contents:
@@ -131,16 +132,39 @@ reference:
     - '`ModuleFeaturePlot`'
     - '`ModuleRadarPlot`'
     - '`PlotModuleTrajectory`'
+- title: Transcription Factor Regulatory Networks
+  contents:
+    - '`MotifScan`'
+    - '`ConstructTFNetwork`'
+    - '`AssignTFRegulons`'
+    - '`GetTFTargetGenes`'
+    - '`TFNetworkPlot`'
+    - '`RegulonScores`'
+    - '`RegulonBarPlot`'
+    - '`RunEnrichrRegulons`'
+    - '`ModuleRegulatoryNetwork`'
+    - '`ModuleRegulatoryNetworkPlot`'
+    - '`ModuleRegulatoryHeatmap`'
+    - '`FindDifferentialRegulons`'
+    - '`PlotDifferentialRegulons`'
 - title: Module Preservation
   desc: Functions for performing module preservation analysis
   contents:
+    - '`ProjectModules`'
     - '`ModulePreservation`'
+    - '`ModulePreservationNetRep`'
     - '`PlotModulePreservation`'
+    - '`PlotModulePreservationLollipop`'
+    - '`ModuleTopologyHeatmap`'
+    - '`ModuleTopologyBarplot`'
 - title: Module Trait Correlation
   desc: Functions for performing module trait correlation analysis
   contents:
     - '`ModuleTraitCorrelation`'
     - '`PlotModuleTraitCorrelation`'
+- title: Transcription Factor Networks
+  contents:
+  - '`MotifScan`'
 - title: Getters and setters
   desc: Functions to retrieve and set the values for various attributes
   contents:
@@ -190,6 +214,20 @@ reference:
     - '`GetMotifOverlap`'
     - '`SetMotifScores`'
     - '`GetMotifScores`'
+    - '`SetDegrees`'
+    - '`GetDegrees`'
+    - '`GetTFRegulons`'
+    - '`SetTFRegulons`'
+    - '`GetTFEval`'
+    - '`SetTFEval`'
+    - '`GetRegulonScores`'
+    - '`SetRegulonScores`'
+    - '`GetEnrichrRegulonTable`'
+    - '`SetEnrichrRegulonTable`'
+    - '`GetMetacellParams`'
+    - '`SetMetacellParams`'
+    - '`SetTFNetwork`'
+    - '`GetTFNetwork`'
 - title: Seurat wrappers
   desc: Wrapper functions to run Seurat commands on the metacell data
   contents:
@@ -204,6 +242,38 @@ reference:
   contents:
     - '`ResetModuleColors`'
     - '`ResetModuleNames`'
+- title: Other
+  desc: Other functions
+  contents:
+  - '`ConstructPseudobulk`'
+  - '`ReassignModules`'
+  - '`GetActiveWGCNAName`'
+- title: internal
+  contents:
+  - umap_theme
+  - to_pseudobulk
+  - CheckSeurat5 
+  - CheckWGCNAName
+  - scale01 
+  - shuffle_points
+  - DoHubGeneHeatmap 
+  - ConstructMetacells
+  - ConstructMetaspots 
+  - AvgModuleExpr 
+  - ComputeModuleEigengene 
+  - ModuleCorrNetwork 
+  - ModuleCorrelogram 
+  - ModuleExprScore 
+  - OverlapModulesMotifs 
+  - corSparse
+  - check_inputs 
+  - GetAvgModuleExpr
+  - SetAvgModuleExpr
+  - TransferModuleGenome 
+  - PlotKMEs
+  - PlotLollipop
+  - BinPseudotime
+  - MotifOverlapBarPlot
 
 deploy:
   install_metadata: true

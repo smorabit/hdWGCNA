@@ -1449,16 +1449,6 @@ seurat_obj <- readRDS(file = 'tutorial_data/PBMC_masseq_hdWGCNA_major.rds')
 
 
 
-
-## Example 3: consensus wgcna between the two samples
-
-Coming soon!
-
-
-# Isoform plotting with ggtranscript and Swan
-
-Coming soon!
-
 ```{r eval=FALSE, echo=FALSE}
 
 # consensus network analysis  (just for funsies)

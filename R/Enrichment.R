@@ -76,6 +76,102 @@ RunEnrichr <- function(
 }
 
 
+#' RunEnrichrRegulons
+#'
+#' Run Enrichr gene set enrichment tests on hdWGCNA modules
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs character vector of EnrichR databases
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
+#' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+#' RunEnrichr
+RunEnrichrRegulons <- function(
+    seurat_obj,
+    dbs = c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021'),
+    depth = 1,
+    use_regulons=TRUE,
+    min_genes = 5,
+    wait = TRUE,
+    wait_time = 5,
+    wgcna_name=NULL, ...
+){
+
+  # get data from active assay if wgcna_name is not given
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # check wait_time 
+  if(!is.numeric(wait_time)){
+    stop(paste0('wait_time must be a numeric.'))
+  } 
+  if(wait_time > 60 | wait_time < 1){
+    stop(paste0('Invalid value selected for wait_time, must be greater than 0 and less than 60.'))
+  }
+
+  # get regulons
+  tf_regulons <- GetTFRegulons(seurat_obj, wgcna_name)
+  tf_list <- unique(tf_regulons$tf)
+
+  # run EnrichR for loop:
+  combined_output <- data.frame()
+  for(i in 1:length(tf_list)){
+  	cur_tf <- tf_list[i]
+    cur_targets <- GetTFTargetGenes(seurat_obj, cur_tf, depth=depth, use_regulons=use_regulons, wgcna_name=wgcna_name)
+    cur_pos <- subset(cur_targets, Cor > 0) %>% .$gene %>% unique()
+    cur_neg <- subset(cur_targets, Cor < 0) %>% .$gene %>% unique()
+
+    # run the enrichment test
+    if(length(cur_pos) >= min_genes){
+        enriched <- enrichR::enrichr(cur_pos, dbs)
+
+        # collapse into one db
+        for(db in names(enriched)){
+            cur_df <- enriched[[db]]
+            if (nrow(cur_df) > 1){
+                cur_df$db <- db
+                cur_df$tf <- cur_tf
+                cur_df$target_type <- 'positive'
+                combined_output <- rbind(combined_output, cur_df)
+            }
+        }
+
+        if(wait){
+            Sys.sleep(wait_time)
+        }
+    }
+
+    if(length(cur_neg) >= min_genes){
+        enriched <- enrichR::enrichr(cur_neg, dbs)
+
+        # collapse into one db
+        for(db in names(enriched)){
+            cur_df <- enriched[[db]]
+            if (nrow(cur_df) > 1){
+                cur_df$db <- db
+                cur_df$tf <- cur_tf
+                cur_df$target_type <- 'negative'
+                combined_output <- rbind(combined_output, cur_df)
+            }
+        }
+
+        if(wait){
+            Sys.sleep(wait_time)
+        }
+    }
+
+  }
+
+  # add GO term table to seurat object
+  seurat_obj <- SetEnrichrRegulonTable(seurat_obj, combined_output, wgcna_name)
+  seurat_obj
+
+}
+
+
 #' OverlapModulesDEGs
 #'
 #' Performs Fisher's Exact Test for overlap between DEGs and hdWGCNA modules.
@@ -162,3 +258,4 @@ OverlapModulesDEGs <- function(
 
   overlap_df
 }
+

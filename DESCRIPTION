@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.3.03
+Version: 0.4.00
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
@@ -13,9 +13,9 @@ License: GNU GPLv3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
-URL: https://smorabit.github.io/hdWGCNA/
-Imports: WGCNA, Seurat, Matrix, harmony, igraph, ggplot2, dplyr, tester, proxy
+RoxygenNote: 7.3.2
+URL: https://smorabit.github.io/hdWGCNA/, https://github.com/smorabit/hdWGCNA
+Imports: WGCNA, Seurat, Matrix, harmony, igraph, enrichR, ggplot2, dplyr, tester, proxy
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
@@ -24,4 +24,11 @@ Depends:
     Seurat (>= 4.0.0),
     ggrepel (>= 0.9.0),
     WGCNA, 
-    igraph
+    dplyr,
+    igraph,
+    ggraph,
+    tidygraph,
+    ggrepel,
+    UCell, 
+    GeneOverlap,
+    GenomicRanges

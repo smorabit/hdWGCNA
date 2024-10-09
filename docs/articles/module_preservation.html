@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Module preservation and reproducibility • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
@@ -12,148 +12,93 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
-<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Module preservation and reproducibility">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Module preservation and reproducibility">
+<meta name="description" content="Tutorial for performing module preservation tests in hdWGCNA.
+">
 <meta property="og:description" content="Tutorial for performing module preservation tests in hdWGCNA.
 ">
 <meta property="og:image" content="https://smorabit.github.io/hdWGCNA/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
-    
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
-    <div class="container template-article">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
-      </span>
-    </div>
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/hdWGCNA.html">Get started</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Core functionality</li>
-    <li>
-      <a href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
-    </li>
-    <li>
-      <a href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
-    </li>
-    <li>
-      <a href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a>
-    </li>
-    <li>
-      <a href="../articles/network_visualizations.html">Network visualization</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Biological context for co-expression modules</li>
-    <li>
-      <a href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a>
-    </li>
-    <li>
-      <a href="../articles/module_trait_correlation.html">Module trait correlation</a>
-    </li>
-    <li>
-      <a href="../articles/enrichment_analysis.html">Enrichment analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Exploring modules in external datasets</li>
-    <li>
-      <a href="../articles/projecting_modules.html">Projecting modules to new datasets</a>
-    </li>
-    <li>
-      <a href="../articles/module_preservation.html">Module preservation and reproducibility</a>
-    </li>
-    <li>
-      <a href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Advanced topics</li>
-    <li>
-      <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
-    </li>
-    <li>
-      <a href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a>
-    </li>
-    <li>
-      <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
-    </li>
-    <li>
-      <a href="../articles/motif_analysis.html">Motif analysis</a>
-    </li>
-    <li>
-      <a href="../articles/other_metacells.html">Alternative metacell algorithms</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Other</li>
-    <li>
-      <a href="../articles/customization.html">Module customization</a>
-    </li>
-    <li>
-      <a href="../articles/sctransform.html">Using SCTransform normalized data</a>
-    </li>
-    <li class="divider">
-    </li>
-<li>
-      <a href="../articles/index.html">All vignettes</a>
-    </li>
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
+    <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/basic_tutorial.html">Get started</a></li>
+<li class="active nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-vignettes" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Vignettes</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-vignettes">
+<li><h6 class="dropdown-header" data-toc-skip>Core functionality</h6></li>
+    <li><a class="dropdown-item" href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a></li>
+    <li><a class="dropdown-item" href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a></li>
+    <li><a class="dropdown-item" href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a></li>
+    <li><a class="dropdown-item" href="../articles/network_visualizations.html">Network visualization</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Biological context for co-expression modules</h6></li>
+    <li><a class="dropdown-item" href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/module_trait_correlation.html">Module trait correlation</a></li>
+    <li><a class="dropdown-item" href="../articles/enrichment_analysis.html">Enrichment analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Exploring modules in external datasets</h6></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules.html">Projecting modules to new datasets</a></li>
+    <li><a class="dropdown-item" href="../articles/module_preservation.html">Module preservation and reproducibility</a></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced topics</h6></li>
+    <li><a class="dropdown-item" href="../articles/tf_network.html">Transcription factor regulatory network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/consensus_wgcna.html">Consensus network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
+    <li><a class="dropdown-item" href="../articles/customization.html">Module customization</a></li>
+    <li><a class="dropdown-item" href="../articles/other_metacells.html">Alternative metacell algorithms</a></li>
+    <li><a class="dropdown-item" href="../articles/sctransform.html">Using SCTransform normalized data</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">All vignettes</a></li>
   </ul>
 </li>
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/hdWGCNA/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+      </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
+</nav><div class="container template-article">
 
-      
 
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Module preservation and reproducibility</h1>
+
+
+<div class="row">
+  <main id="main" class="col-md-9"><div class="page-header">
+      <img src="../logo.png" class="logo" alt=""><h1>Module preservation and reproducibility</h1>
             
       
-      
-      <div class="hidden name"><code>module_preservation.Rmd</code></div>
-
+      <small class="dont-index">Source: <a href="https://github.com/smorabit/hdWGCNA/blob/HEAD/vignettes/module_preservation.Rmd" class="external-link"><code>vignettes/module_preservation.Rmd</code></a></small>
+      <div class="d-none name"><code>module_preservation.Rmd</code></div>
     </div>
 
     
@@ -163,84 +108,84 @@
 <p>Data-driven models are most useful when they are generalizable across different datasets. Thinking about co-expression networks from this perspective, we need a way to quantify and test the conservation of co-expression patterns identified in one dataset across external datasets. In this tutorial, we demonstrate <strong>module preservation analysis</strong> with hdWGCNA, a statistical framework that allows us to test the degree to which co-expression modules identified in one dataset are “preserved” in another dataset. Module preservation analysis can also be used to assess biological relevance of co-expression modules. For example, you can imagine that you may find modules in a disease samples that are not preserved in healthy samples, or you may find modules in humans that are not preserved in mice. This tutorial builds off of a <a href="projecting_modules.html">previous tutorial</a>, where we projected the co-expression modules from a reference dataset to a query dataset.</p>
 <p>First we must load the data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
-
-<span class="co"># plotting and data science packages</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
-
-<span class="co"># co-expression network analysis packages:</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span>
-
-<span class="co"># network analysis &amp; visualization package:</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org" class="external-link">igraph</a></span><span class="op">)</span>
-
-<span class="co"># using the cowplot theme for ggplot</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set random seed for reproducibility</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span>
-
-<span class="co"># load the Zhou et al snRNA-seq dataset</span>
-<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span>
-
-<span class="co"># load the Morabito &amp; Miyoshi 2021 snRNA-seq dataset</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Morabito_Miyoshi_2021_control.rds'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plotting and data science packages</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># co-expression network analysis packages:</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># network analysis &amp; visualization package:</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># using the cowplot theme for ggplot</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set random seed for reproducibility</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
+<span><span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load the Morabito &amp; Miyoshi 2021 snRNA-seq dataset</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'Morabito_Miyoshi_2021_control.rds'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="module-preservation-analysis">Module preservation analysis<a class="anchor" aria-label="anchor" href="#module-preservation-analysis"></a>
 </h2>
 <p>In their 2011 paper titled <a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">“Is My Network Module Preserved and Reproducible?”</a>, Langfelder et al discuss statistical methods for module preservation analysis in co-expression network analysis. Notably, module preservation analysis can be used to assess the reproducibility of co-expression networks, but it can also be used for specific biological analyses, for example to identify which modules are significantly preserved across different disease conditions, tissues, developmental stages, or even evolutionary time.</p>
 <p>The first step in module preservation analysis is to project modules from a reference to a query dataset, which is explained in more detail in the <a href="projecting_modules.html">previous tutorial</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span>
-  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
-  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
-  wgcna_name <span class="op">=</span> <span class="st">"tutorial"</span>,
-  wgcna_name_proj<span class="op">=</span><span class="st">"projected"</span>,
-  assay<span class="op">=</span><span class="st">"RNA"</span> <span class="co"># assay for query dataset</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,</span>
+<span>  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,</span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"tutorial"</span>,</span>
+<span>  wgcna_name_proj<span class="op">=</span><span class="st">"projected"</span>,</span>
+<span>  assay<span class="op">=</span><span class="st">"RNA"</span> <span class="co"># assay for query dataset</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Next, we set up the expression matrices for the query and reference datasets. Either the single-cell or the metacell gene expression matrices can be used here by setting the <code>use_metacells</code> flag in <code>SetDatExpr</code>. In general we recommend using the same matrix that was used to construct the network for the reference (in this case, the metacell matrix). If you have not already constructed metacells in the query dataset, you can do that prior to module preservation analysis.</p>
 <details><summary>
 See code to consruct metacells in the query dataset
 </summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># construct metacells:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
-  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
-  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,
-  k <span class="op">=</span> <span class="fl">25</span>,
-  max_shared <span class="op">=</span> <span class="fl">12</span>,
-  reduction <span class="op">=</span> <span class="st">'harmony'</span>,
-  ident.group <span class="op">=</span> <span class="st">'cell_type'</span>
-<span class="op">)</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># construct metacells:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  max_shared <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'harmony'</span>,</span>
+<span>  ident.group <span class="op">=</span> <span class="st">'cell_type'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span></code></pre></div>
 </details><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># set expression matrix for reference dataset</span>
-<span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_ref</span>,
-  group_name <span class="op">=</span> <span class="st">"INH"</span>,
-  group.by <span class="op">=</span> <span class="st">"cell_type"</span>
-<span class="op">)</span>
-
-<span class="co"># set expression matrix for query dataset:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  group_name <span class="op">=</span> <span class="st">"INH"</span>,
-  group.by <span class="op">=</span> <span class="st">"cell_type"</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># set expression matrix for reference dataset</span></span>
+<span><span class="va">seurat_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_ref</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="st">"INH"</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="st">"cell_type"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set expression matrix for query dataset:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="st">"INH"</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="st">"cell_type"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Now we can run the <code>ModulePreservation</code> function. Note that this function does take a while to run since it is a permutation test, but it can be sped up by lowering the <code>n_permutations</code> parameter, but we do not recommend any lower than 100 permutations. Also note that the <code>parallel</code> option currently does not work. For demonstration purposes, we ran the code for this tutorial using only 20 permutations so it would run quickly.</p>
 <p><code>ModulePreservation</code> takes a <code>name</code> parameter, which is used to store the results of this module perturbation test.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># run module preservation function</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservation.html">ModulePreservation</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,
-  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
-  verbose<span class="op">=</span><span class="fl">3</span>,
-  n_permutations<span class="op">=</span><span class="fl">250</span> <span class="co"># n_permutations=20 used for the tutorial</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># run module preservation function</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservation.html">ModulePreservation</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  seurat_ref <span class="op">=</span> <span class="va">seurat_ref</span>,</span>
+<span>  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,</span>
+<span>  verbose<span class="op">=</span><span class="fl">3</span>,</span>
+<span>  n_permutations<span class="op">=</span><span class="fl">250</span> <span class="co"># n_permutations=20 used for the tutorial</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <!-- Previously we recommended  [this tutorial](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/ModulePreservation/Tutorials/)
 for an explanation of the different stats. Currently working on writing up a
 description of the stats on this page. The visualizations are inspired by
@@ -251,19 +196,19 @@ those included in the [original WGCNA module preservation tutorials](https://hor
 </h2>
 <p>The module perturbation test produces a number of different preservation statistics, which you can inspect in the following tables.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get the module preservation table</span>
-<span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>
-<span class="va">obs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">obs</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># get the module preservation table</span></span>
+<span><span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span></span>
+<span><span class="va">obs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">"Zhou-INH"</span><span class="op">)</span><span class="op">$</span><span class="va">obs</span></span></code></pre></div>
 <p>In the past we linked to the original WGCNA documentation website for more detailed explanations of thes statistics, but unfortunately at the time of writing this tutorial the website has been taken offline. Please refer to the original publication in <a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">PLOS Computational Biology</a> for further explanations.</p>
 <p>hdWGCNA includes the function <code>PlotModulePreservation</code> to visualize the statistics we computed in the previous section. This function generates a scatter plot showing the module size versus the module preservation stats. The summary statistics aggregate the individual preservation and quality statistics into a single metric so we generally recommend primarily interpreting the results with these plots.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
-  statistics <span class="op">=</span> <span class="st">"summary"</span>
-<span class="op">)</span>
-
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,</span>
+<span>  statistics <span class="op">=</span> <span class="st">"summary"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/module_preservation_summary.png" width="700" height="700"></p>
 <p>Here we can see three different shades in the background. These represent cutoff values for interpreting the Z summary statistics. The following guidelines help us understand the preservation of these modules.</p>
 <ul>
@@ -273,26 +218,26 @@ those included in the [original WGCNA module preservation tutorials](https://hor
 </ul>
 <p>The following code shows how to plot additional module preservation stats.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># plot ranking stats</span>
-<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
-  statistics <span class="op">=</span> <span class="st">"rank"</span>
-<span class="op">)</span>
-
-
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># plot ranking stats</span></span>
+<span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,</span>
+<span>  statistics <span class="op">=</span> <span class="st">"rank"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/module_preservation_rank.png" width="700" height="700"></p>
 <p>Plot all of the different stats:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,
-  statistics <span class="op">=</span> <span class="st">"all"</span>,
-  plot_labels<span class="op">=</span><span class="cn">FALSE</span>
-<span class="op">)</span>
-
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservation.html">PlotModulePreservation</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  name<span class="op">=</span><span class="st">"Zhou-INH"</span>,</span>
+<span>  statistics <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  plot_labels<span class="op">=</span><span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/module_preservation_all.png" width="700" height="700"></p>
 </div>
 <div class="section level2">
@@ -301,113 +246,113 @@ those included in the [original WGCNA module preservation tutorials](https://hor
 <p>Here we include an alternative method for performing module preservation analysis using the R package <a href="https://github.com/sritchie73/NetRep" class="external-link"><code>NetRep</code></a>. In their 2016 paper titled <a href="https://www.cell.com/fulltext/S2405-4712(16)30217-4" class="external-link">“A Scalable Permutation Approach Reveals Replication and Preservation Patterns of Network Modules in Large Datasets”</a>, Ritchie et al. introduced a relatively faster approach for module preservation. In this paper, the authors also show that this method has improved false discovery control. We include a function <code>ModulePreservationNetRep</code> in order to perform this analysis in hdWGCNA. <code>NetRep</code> is not included as a dependency of hdWGCNA since it is not used for other analyses, so here we must install <code>NetRep</code> before proceeding.</p>
 <p>If you use this method in your research, we encourage you to properly cite the NetRep paper. Please consult the <a href="https://github.com/sritchie73/NetRep" class="external-link"><code>NetRep</code> GitHub repository</a> for more details.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># install</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'NetRep'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'NetRep'</span><span class="op">)</span></span></code></pre></div>
 <p>One important difference between these two implementations of module preservation analysis is that NetRep requires the topological overlap matrix (TOM) for the query and for the reference datasets. In order to satisfy this requirement, we first perform the standard hdWGCNA analysis on the query dataset.</p>
 <details><summary>
 See code to perform network analysis in the query dataset
 </summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># use the genes from the ref dataset</span>
-<span class="va">genes_use</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">)</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  features <span class="op">=</span> <span class="va">genes_use</span>,
-  wgcna_name <span class="op">=</span> <span class="st">"INH"</span>
-<span class="op">)</span>
-
-<span class="co"># construct metacells:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
-  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,
-  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,
-  k <span class="op">=</span> <span class="fl">25</span>,
-  max_shared <span class="op">=</span> <span class="fl">12</span>,
-  reduction <span class="op">=</span> <span class="st">'harmony'</span>,
-  ident.group <span class="op">=</span> <span class="st">'cell_type'</span>
-<span class="op">)</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span>
-
-
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  group_name <span class="op">=</span> <span class="st">"INH"</span>, 
-  group.by<span class="op">=</span><span class="st">'cell_type'</span>
-<span class="op">)</span>
-
-<span class="co"># Test different soft powers:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  networkType <span class="op">=</span> <span class="st">'signed'</span>
-<span class="op">)</span>
-
-<span class="co"># construct co-expression network:</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  tom_name <span class="op">=</span> <span class="st">'INH_query'</span>,
-  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span> 
-<span class="op">)</span>
-
-<span class="co"># compute all MEs in the full single-cell dataset</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span>
-
-<span class="co"># compute eigengene-based connectivity (kME):</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu">hdWGCNA</span><span class="fu">::</span><span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name <span class="op">=</span> <span class="st">'INH'</span>
-<span class="op">)</span>
-
-<span class="co"># reset the active WGCNA to projected</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'projected'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># use the genes from the ref dataset</span></span>
+<span><span class="va">genes_use</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  features <span class="op">=</span> <span class="va">genes_use</span>,</span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"INH"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct metacells:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  max_shared <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'harmony'</span>,</span>
+<span>  ident.group <span class="op">=</span> <span class="st">'cell_type'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="st">"INH"</span>, </span>
+<span>  group.by<span class="op">=</span><span class="st">'cell_type'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Test different soft powers:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  networkType <span class="op">=</span> <span class="st">'signed'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct co-expression network:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  tom_name <span class="op">=</span> <span class="st">'INH_query'</span>,</span>
+<span>  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span> </span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># compute all MEs in the full single-cell dataset</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># compute eigengene-based connectivity (kME):</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu">hdWGCNA</span><span class="fu">::</span><span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name <span class="op">=</span> <span class="st">'INH'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># reset the active WGCNA to projected</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'projected'</span><span class="op">)</span></span></code></pre></div>
 </details><p>Next we can run the <code>ModulePreservationNetRep</code> function to perform module preservation analysis using the <code>NetRep</code> method.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># run NetRep module preservation</span>
-<span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservationNetRep.html">ModulePreservationNetRep</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>,
-  <span class="va">seurat_ref</span>,
-  name <span class="op">=</span> <span class="st">'testing_NetRep'</span>,
-  n_permutations <span class="op">=</span> <span class="fl">5000</span>,
-  n_threads<span class="op">=</span><span class="fl">8</span>, <span class="co"># number of threads to run in Parallel</span>
-  TOM_use<span class="op">=</span><span class="st">"INH"</span>, <span class="co"># specify the name of the hdWGCNA experiment that contains the TOM for the query dataset</span>
-  wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,
-  wgcna_name_ref <span class="op">=</span> <span class="st">'tutorial'</span>
-<span class="op">)</span>
-
-<span class="co"># access the results:</span>
-<span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'testing_NetRep'</span>, <span class="st">'projected'</span><span class="op">)</span>
-
-<span class="co"># access statistics for each module:</span>
-<span class="va">mod_pres</span><span class="op">$</span><span class="va">p.values</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># run NetRep module preservation</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModulePreservationNetRep.html">ModulePreservationNetRep</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  <span class="va">seurat_ref</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">'testing_NetRep'</span>,</span>
+<span>  n_permutations <span class="op">=</span> <span class="fl">5000</span>,</span>
+<span>  n_threads<span class="op">=</span><span class="fl">8</span>, <span class="co"># number of threads to run in Parallel</span></span>
+<span>  TOM_use<span class="op">=</span><span class="st">"INH"</span>, <span class="co"># specify the name of the hdWGCNA experiment that contains the TOM for the query dataset</span></span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,</span>
+<span>  wgcna_name_ref <span class="op">=</span> <span class="st">'tutorial'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># access the results:</span></span>
+<span><span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'testing_NetRep'</span>, <span class="st">'projected'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># access statistics for each module:</span></span>
+<span><span class="va">mod_pres</span><span class="op">$</span><span class="va">p.values</span></span></code></pre></div>
 <p>This approach reports preservation statistics for each module, and in this case a significant p-value indicates that a given module is significantly preserved. <code>NetRep</code> reports p-values for seven different network attributes, so we can see specifically which attributes are preserved or not. To get an overall result of module preservation, we compute the average of these different p-values.</p>
 <p>Next we plot the resulting statistics using the function <code>PlotModulePreservationLollipop</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/PlotModulePreservationLollipop.html">PlotModulePreservationLollipop</a></span><span class="op">(</span>
-  <span class="va">seurat_query</span>, 
-  name<span class="op">=</span><span class="st">'testing_NetRep'</span>,
-  features<span class="op">=</span><span class="st">'average'</span>,
-  wgcna_name<span class="op">=</span><span class="st">'projected'</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotModulePreservationLollipop.html">PlotModulePreservationLollipop</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>, </span>
+<span>  name<span class="op">=</span><span class="st">'testing_NetRep'</span>,</span>
+<span>  features<span class="op">=</span><span class="st">'average'</span>,</span>
+<span>  wgcna_name<span class="op">=</span><span class="st">'projected'</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/module_preservation_NetRep_lollipop_summary.png" width="400" height="400"></p>
 <p>This plot shows us each module ranked by how well they module preserved in the query dataset. The x-axis is showing us the averaged FDR-corrected p-values from the different network attributes for each module to result in a composite statistic. The size of each dot corresponds to the number of genes in each module. We can also use this same function to plot the individual statistics. As a demonstration we also set <code>fdr=FALSE</code> to show how to look at the raw p-value rather than the FDR-corrected p-value based on the user’s preference.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get the module preservation results</span>
-<span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'testing_NetRep'</span>, <span class="st">'projected'</span><span class="op">)</span>
-
-<span class="co"># get the names of the statistics to plot</span>
-<span class="va">plot_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'average'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mod_pres</span><span class="op">$</span><span class="va">p.value</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># loop through each statistic </span>
-<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">cur_feature</span> <span class="kw">in</span> <span class="va">plot_features</span><span class="op">)</span><span class="op">{</span>
-    <span class="va">plot_list</span><span class="op">[[</span><span class="va">cur_feature</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservationLollipop.html">PlotModulePreservationLollipop</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>, 
-    name<span class="op">=</span><span class="st">'testing_NetRep'</span>,
-    features<span class="op">=</span><span class="va">cur_feature</span>,
-    fdr<span class="op">=</span><span class="cn">FALSE</span>,
-    wgcna_name<span class="op">=</span><span class="st">'projected'</span>
-  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-<span class="op">}</span>
-
-<span class="co"># assemble the final plot</span>
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># get the module preservation results</span></span>
+<span><span class="va">mod_pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModulePreservation.html">GetModulePreservation</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'testing_NetRep'</span>, <span class="st">'projected'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the names of the statistics to plot</span></span>
+<span><span class="va">plot_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'average'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mod_pres</span><span class="op">$</span><span class="va">p.value</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># loop through each statistic </span></span>
+<span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">cur_feature</span> <span class="kw">in</span> <span class="va">plot_features</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">plot_list</span><span class="op">[[</span><span class="va">cur_feature</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModulePreservationLollipop.html">PlotModulePreservationLollipop</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>, </span>
+<span>    name<span class="op">=</span><span class="st">'testing_NetRep'</span>,</span>
+<span>    features<span class="op">=</span><span class="va">cur_feature</span>,</span>
+<span>    fdr<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>    wgcna_name<span class="op">=</span><span class="st">'projected'</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># assemble the final plot</span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/module_preservation_NetRep_lollipop.png" width="700" height="700"></p>
 </div>
 <div class="section level2">
@@ -416,253 +361,244 @@ See code to perform network analysis in the query dataset
 <p>Here we demonstrate several functions to help visually compare the network topology of a co-expression module in two different datasets. This can be useful to visualize some modules of interest based on the results of the module preservation test. The function <code>ModuleTopologyHeatmap</code> generates a heatmap showing the gene-gene co-expression matrix, either colored by the correlation value or the edge weight in the TOM. In this plot, genes are sorted by their intramodular connectivity. Additionally, <code>ModuleTopologyBarplot</code> complements this by showing the connectivity of each gene (network degree or kME value) in each module.</p>
 <p>We will make a patchwork plot showing the correlation heatmap, the TOM heatmap, the degree barplot, and the kME barplot for module INH-M9, which showed significant preservation based on both module preservation approaches. To better visually compare these plots side-by-side, we must ensure that the genes are ordered the same way. Here we will order the genes based on the reference dataset.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># select the module to plot</span>
-<span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M9'</span>
-
-<span class="co"># plot the correlation matrix in the reference dataset</span>
-<span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"Cor"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    TOM_use <span class="op">=</span> <span class="st">'tutorial'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    high_color <span class="op">=</span> <span class="st">'red'</span>,
-    type <span class="op">=</span> <span class="st">'unsigned'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.75</span>,
-    return_genes <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># select this option to get the gene order</span>
-<span class="op">)</span>
-
-<span class="co"># get the plot from the output list</span>
-<span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Reference'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Correlation'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># get the gene order from the output list</span>
-<span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>
-
-<span class="co"># plot the correlation matrix in the query dataset</span>
-<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"Cor"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,
-    high_color <span class="op">=</span> <span class="st">'red'</span>,
-    type <span class="op">=</span> <span class="st">'unsigned'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.75</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Query'</span><span class="op">)</span> 
-
-<span class="co"># plot the TOM in the reference dataset</span>
-<span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"TOM"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.05</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Network edge weight'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the TOM in the query dataset</span>
-<span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"TOM"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    TOM_use <span class="op">=</span> <span class="st">'INH'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,
-    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.05</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>
-<span class="op">)</span> 
-
-
-<span class="co"># plot the degree in the reference dataset</span>
-<span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the degree in the query dataset</span>
-<span class="va">p6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>
-<span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the kME in the reference dataset</span>
-<span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'kME'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    return_genes<span class="op">=</span><span class="cn">TRUE</span>
-<span class="op">)</span>
-<span class="va">p7</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">gene_list2</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>
-
-<span class="co"># plot the kME in the query dataset</span>
-<span class="va">p8</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'kME'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list2</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>
-<span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># assemble patch:</span>
-<span class="va">patch</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p7</span> <span class="op">|</span> <span class="va">p8</span><span class="op">)</span> <span class="op">+</span> 
-    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
-    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html" class="external-link">plot_annotation</a></span><span class="op">(</span>title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">cur_mod</span>, <span class="st">' topology comparison'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># select the module to plot</span></span>
+<span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M9'</span></span>
+<span></span>
+<span><span class="co"># plot the correlation matrix in the reference dataset</span></span>
+<span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"Cor"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    TOM_use <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'red'</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">'unsigned'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>    return_genes <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># select this option to get the gene order</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the plot from the output list</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Reference'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Correlation'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the gene order from the output list</span></span>
+<span><span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># plot the correlation matrix in the query dataset</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"Cor"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'red'</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">'unsigned'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Query'</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="co"># plot the TOM in the reference dataset</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"TOM"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.05</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Network edge weight'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the TOM in the query dataset</span></span>
+<span><span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"TOM"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    TOM_use <span class="op">=</span> <span class="st">'INH'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span></span>
+<span><span class="op">)</span> </span>
+<span></span>
+<span></span>
+<span><span class="co"># plot the degree in the reference dataset</span></span>
+<span><span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the degree in the query dataset</span></span>
+<span><span class="va">p6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span></span>
+<span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the kME in the reference dataset</span></span>
+<span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'kME'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    return_genes<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">p7</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">gene_list2</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># plot the kME in the query dataset</span></span>
+<span><span class="va">p8</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'kME'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list2</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span></span>
+<span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># assemble patch:</span></span>
+<span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p7</span> <span class="op">|</span> <span class="va">p8</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html" class="external-link">plot_annotation</a></span><span class="op">(</span>title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">cur_mod</span>, <span class="st">' topology comparison'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/INH-M9_topology.png" width="700" height="700"></p>
 <p>As another example, we can create a similar plot for a module which was not significantly preserved in the query dataset, INH-M2.</p>
 <details><summary>
 See code to plot network topology for INH-M2
 </summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># select the module to plot</span>
-<span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M2'</span>
-
-<span class="co"># plot the correlation matrix in the reference dataset</span>
-<span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"Cor"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    TOM_use <span class="op">=</span> <span class="st">'tutorial'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    high_color <span class="op">=</span> <span class="st">'red'</span>,
-    type <span class="op">=</span> <span class="st">'unsigned'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.75</span>,
-    return_genes <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># select this option to get the gene order</span>
-<span class="op">)</span>
-
-<span class="co"># get the plot from the output list</span>
-<span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Reference'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Correlation'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># get the gene order from the output list</span>
-<span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>
-
-<span class="co"># plot the correlation matrix in the query dataset</span>
-<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"Cor"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,
-    high_color <span class="op">=</span> <span class="st">'red'</span>,
-    type <span class="op">=</span> <span class="st">'unsigned'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.75</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Query'</span><span class="op">)</span> 
-
-<span class="co"># plot the TOM in the reference dataset</span>
-<span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"TOM"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.05</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Network edge weight'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the TOM in the query dataset</span>
-<span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>,
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    matrix <span class="op">=</span> <span class="st">"TOM"</span>,
-    order_by <span class="op">=</span> <span class="st">'degree'</span>,
-    TOM_use <span class="op">=</span> <span class="st">'INH'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,
-    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,
-    plot_max <span class="op">=</span> <span class="fl">0.05</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>
-<span class="op">)</span> 
-
-
-<span class="co"># plot the degree in the reference dataset</span>
-<span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the degree in the query dataset</span>
-<span class="va">p6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>
-<span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># plot the kME in the reference dataset</span>
-<span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_ref</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'kME'</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,
-    return_genes<span class="op">=</span><span class="cn">TRUE</span>
-<span class="op">)</span>
-<span class="va">p7</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">gene_list2</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>
-
-<span class="co"># plot the kME in the query dataset</span>
-<span class="va">p8</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span>
-    <span class="va">seurat_query</span>, 
-    mod <span class="op">=</span> <span class="va">cur_mod</span>,
-    features <span class="op">=</span> <span class="st">'kME'</span>,
-    genes_order <span class="op">=</span> <span class="va">gene_list2</span>,
-    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>
-<span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># assemble patch:</span>
-<span class="va">patch</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p7</span> <span class="op">|</span> <span class="va">p8</span><span class="op">)</span> <span class="op">+</span> 
-    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
-    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html" class="external-link">plot_annotation</a></span><span class="op">(</span>title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">cur_mod</span>, <span class="st">' topology comparison'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># select the module to plot</span></span>
+<span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M2'</span></span>
+<span></span>
+<span><span class="co"># plot the correlation matrix in the reference dataset</span></span>
+<span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"Cor"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    TOM_use <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'red'</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">'unsigned'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>    return_genes <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># select this option to get the gene order</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the plot from the output list</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Reference'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Correlation'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the gene order from the output list</span></span>
+<span><span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># plot the correlation matrix in the query dataset</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"Cor"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'red'</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">'unsigned'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Query'</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="co"># plot the TOM in the reference dataset</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"TOM"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.05</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">'Network edge weight'</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the TOM in the query dataset</span></span>
+<span><span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyHeatmap.html">ModuleTopologyHeatmap</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>,</span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    matrix <span class="op">=</span> <span class="st">"TOM"</span>,</span>
+<span>    order_by <span class="op">=</span> <span class="st">'degree'</span>,</span>
+<span>    TOM_use <span class="op">=</span> <span class="st">'INH'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span>,</span>
+<span>    high_color <span class="op">=</span> <span class="st">'seagreen'</span>,</span>
+<span>    plot_max <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span></span>
+<span><span class="op">)</span> </span>
+<span></span>
+<span></span>
+<span><span class="co"># plot the degree in the reference dataset</span></span>
+<span><span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the degree in the query dataset</span></span>
+<span><span class="va">p6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'weighted_degree'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span></span>
+<span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the kME in the reference dataset</span></span>
+<span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_ref</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'kME'</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'tutorial'</span>,</span>
+<span>    return_genes<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">p7</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">gene_list2</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># plot the kME in the query dataset</span></span>
+<span><span class="va">p8</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleTopologyBarplot.html">ModuleTopologyBarplot</a></span><span class="op">(</span></span>
+<span>    <span class="va">seurat_query</span>, </span>
+<span>    mod <span class="op">=</span> <span class="va">cur_mod</span>,</span>
+<span>    features <span class="op">=</span> <span class="st">'kME'</span>,</span>
+<span>    genes_order <span class="op">=</span> <span class="va">gene_list2</span>,</span>
+<span>    wgcna_name <span class="op">=</span> <span class="st">'projected'</span></span>
+<span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># assemble patch:</span></span>
+<span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p7</span> <span class="op">|</span> <span class="va">p8</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>    <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html" class="external-link">plot_annotation</a></span><span class="op">(</span>title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">cur_mod</span>, <span class="st">' topology comparison'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </details><p><img src="figures/projection/INH-M2_topology.png" width="700" height="700"></p>
 <p>In the module topology plots for module INH-M9, we overall see similar signals in the correlation matrix, the TOM, and in the degrees and kME rankings for each gene. This is in contrast to INH-M2, which was not significantly preserved, where the signal is clearly diminished. These plots effectively show us the differences and similarities in the co-expression network topology that are picked up in the module preservation analysis.</p>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
-
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
 
-  
 
 
-  
+
 
   </body>
 </html>

@@ -11,7 +11,7 @@
 
 hdWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://doi.org/10.1186/1471-2105-9-559) in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct context-specific co-expression networks across cellular and spatial hierarchies. hdWGNCA identifies modules of highly co-expressed genes and provides context for these modules via statistical testing and biological knowledge sources. hdWGCNA uses datasets formatted as [Seurat](https://satijalab.org/seurat/index.html) objects. Check out the [hdWGCNA in single-cell data tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) or the [hdWGCNA in spatial transcriptomics data tutorial](https://smorabit.github.io/hdWGCNA/articles/ST_basics.html) to get started.
 
-**Seurat v5 compatibility** As of hdWGCNA v0.3.00 [Seurat version 5](https://satijalab.org/seurat/articles/get_started_v5.html) is now supported in addition to Seurat v4. 
+**New functionality** hdWGCNA is now able to perform [Transcription Factor Regulatory Network Analysis](https://smorabit.github.io/hdWGCNA/articles/tf_network.htm). This functionality was introduced in our publication [Childs & Morabito et al., Cell Reports (2024)](https://www.sciencedirect.com/science/article/pii/S2211124724002845).
 
 If you use hdWGCNA in your research, please cite the following papers in addition to the [original WGCNA publication](https://doi.org/10.1186/1471-2105-9-559):
 
@@ -34,10 +34,8 @@ conda activate hdWGCNA
 Next open R and install the required dependencies:
 
 * [Bioconductor](https://www.bioconductor.org/), an R-based software ecosystem for bioinformatics and biostatistics.
-* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science.
-* [WGCNA](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/), a package for co-expression network analysis.
-* [igraph](https://igraph.org/r/), a package for general network analysis and visualization.
 * [devtools](https://devtools.r-lib.org/), a package for package development in R.
+* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science.
 
 ```r
 # install BiocManager
@@ -46,11 +44,10 @@ install.packages("BiocManager")
 # install Bioconductor core packages
 BiocManager::install()
 
-# install additional packages:
-BiocManager::install(c("WGCNA", "igraph", "devtools", "GeneOverlap", "ggrepel", "UCell"))
-devtools::install_github("NightingaleHealth/ggforestplot")
+# install devtools
+BiocManager::install("devtools")
 
-# install Seurat v5 
+# install latest version of Seurat from CRAN
 install.packages("Seurat")
 
 # alternatively, install Seurat v4
@@ -66,14 +63,13 @@ devtools::install_github('smorabit/hdWGCNA', ref='dev')
 
 ## Suggested Reading
 
-Check out the paper describing hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data:
+Check out the paper describing hdWGCNA, our paper introducing transcription factor regulatory network analysis with hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data. For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.
 
 * [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3) 
-
+* [Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice](https://www.sciencedirect.com/science/article/pii/S2211124724002845)
 * [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z) 
 
-For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis:
-
+WGCNA and related algorithms:
 * [WGCNA: an R package for weighted correlation network analysis](https://doi.org/10.1186/1471-2105-9-559)
 * [Defining clusters from a hierarchical cluster tree: the Dynamic Tree Cut package for R](https://doi.org/10.1093/bioinformatics/btm563)
 * [Eigengene networks for studying the relationships between co-expression modules](https://doi.org/10.1186/1752-0509-1-54)

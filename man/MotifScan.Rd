@@ -2,14 +2,48 @@
 % Please edit documentation in R/Motifs.R
 \name{MotifScan}
 \alias{MotifScan}
-\title{Scan gene promoters for a set of TF PWMs}
+\title{MotifScan}
 \usage{
-MotifScan(seurat_obj, species_genome, pfm, EnsDb, wgcna_name = NULL)
+MotifScan(seurat_obj, pfm, EnsDb, species_genome, wgcna_name = NULL)
+}
+\arguments{
+\item{seurat_obj}{A Seurat object that will be updated with motif scan results.}
+
+\item{pfm}{A list of position frequency matrices (PFMs), such as those from the JASPAR2020 database.}
+
+\item{EnsDb}{An Ensembl database object (e.g., \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Mmusculus.v79}) containing gene and promoter annotations.}
+
+\item{species_genome}{A character string specifying the genome version (e.g., "hg38" for human or "mm10" for mouse).}
+
+\item{wgcna_name}{A character string specifying the name of the WGCNA experiment to associate with the motif data (optional).
+If NULL, the active WGCNA experiment in \code{seurat_obj@misc} will be used.}
+}
+\value{
+A modified Seurat object containing the results of the motif scan, including:
+\itemize{
+\item \code{seurat_obj@misc$motif_matrix}: A binary matrix indicating motif matches for each gene.
+\item \code{seurat_obj@misc$motif_info}: A data frame containing motif names, IDs, and the number of target genes.
+\item \code{seurat_obj@misc$motif_targets}: A list of genes targeted by each motif.
+\item \code{seurat_obj@misc$pfm}: The original PFMs used for the motif scan.
+}
 }
 \description{
-Scan gene promoters for a set of TF PWMs
+This function scans the promoter regions of protein-coding genes for transcription factor (TF) motifs.
+It extracts promoter sequences using an Ensembl database (\code{EnsDb}) and then searches these sequences
+for TF binding motifs using position frequency matrices (PFMs). The Seurat object is updated with a matrix
+of motif-gene matches, a list of target genes for each TF, and additional motif information.
 }
-\examples{
-MotifScan
+\details{
+The \code{MotifScan} function performs the following steps:
+\itemize{
+\item It extracts promoter regions (typically 2 kb upstream of the transcription start site) of protein-coding genes from the provided \code{EnsDb}.
+\item It uses the \code{motifmatchr} package to search these promoters for TF motifs, using the input PFMs.
+\item The function returns the Seurat object updated with several key pieces of information:
+\itemize{
+\item A motif-gene match matrix indicating the presence or absence of each motif in the promoter of each gene.
+\item A list of target genes for each TF based on motif presence.
+\item A summary of motifs, including the number of target genes for each TF.
 }
-\keyword{scRNA-seq}
+\item This data is stored in the \code{seurat_obj}'s metadata and can be used for downstream analysis, such as regulatory network inference.
+}
+}

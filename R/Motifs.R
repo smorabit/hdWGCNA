@@ -1,110 +1,164 @@
-
-
-#' Scan gene promoters for a set of TF PWMs
-#'
-#'
-#' @keywords scRNA-seq
-#' @export
-#' @examples
 #' MotifScan
+#'
+#' @description
+#' This function scans the promoter regions of protein-coding genes for transcription factor (TF) motifs.
+#' It extracts promoter sequences using an Ensembl database (`EnsDb`) and then searches these sequences
+#' for TF binding motifs using position frequency matrices (PFMs). The Seurat object is updated with a matrix
+#' of motif-gene matches, a list of target genes for each TF, and additional motif information.
+#'
+#' @param seurat_obj A Seurat object that will be updated with motif scan results.
+#' @param pfm A list of position frequency matrices (PFMs), such as those from the JASPAR2020 database.
+#' @param EnsDb An Ensembl database object (e.g., `EnsDb.Hsapiens.v86` or `EnsDb.Mmusculus.v79`) containing gene and promoter annotations.
+#' @param species_genome A character string specifying the genome version (e.g., "hg38" for human or "mm10" for mouse).
+#' @param wgcna_name A character string specifying the name of the WGCNA experiment to associate with the motif data (optional).
+#' If NULL, the active WGCNA experiment in `seurat_obj@misc` will be used.
+#'
+#' @details 
+#' The `MotifScan` function performs the following steps:
+#' - It extracts promoter regions (typically 2 kb upstream of the transcription start site) of protein-coding genes from the provided `EnsDb`.
+#' - It uses the `motifmatchr` package to search these promoters for TF motifs, using the input PFMs.
+#' - The function returns the Seurat object updated with several key pieces of information:
+#'   - A motif-gene match matrix indicating the presence or absence of each motif in the promoter of each gene.
+#'   - A list of target genes for each TF based on motif presence.
+#'   - A summary of motifs, including the number of target genes for each TF.
+#' - This data is stored in the `seurat_obj`'s metadata and can be used for downstream analysis, such as regulatory network inference.
+#'
+#' @return A modified Seurat object containing the results of the motif scan, including:
+#' - `seurat_obj@misc$motif_matrix`: A binary matrix indicating motif matches for each gene.
+#' - `seurat_obj@misc$motif_info`: A data frame containing motif names, IDs, and the number of target genes.
+#' - `seurat_obj@misc$motif_targets`: A list of genes targeted by each motif.
+#' - `seurat_obj@misc$pfm`: The original PFMs used for the motif scan.
+#'
+#' @import Seurat 
+#' @importFrom ensembldb promoters genes
+#' @importFrom GenomeInfoDb seqnames seqlevels keepSeqlevels renameSeqlevels
+#' @importFrom GRanges GRanges
+#' @importFrom motifmatchr matchMotifs motifMatches
+#' @export
 MotifScan <- function(
-  seurat_obj,
-  species_genome, # hg38, mm10, etc...
-  pfm, # matrix set from JASPAR2020 for example
-  EnsDb, # Ensembl database such as EnsDb.Mmusculus.v79
-  wgcna_name=NULL
+    seurat_obj,
+    pfm, 
+    EnsDb, 
+    species_genome, 
+    wgcna_name=NULL
 ){
 
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+    CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # TODO: add checks?
-  # check pfm
-  # check ensdb
-  
-  # get a dataframe of just the motif name and the motif ID:
-  motif_df <- data.frame(
-    motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
-    motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
-  )
+    # get a dataframe of just the motif name and the motif ID:
+    motif_df <- data.frame(
+        motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
+        motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
+    )
 
-  # get promoter and gene coords:
-  gene.promoters <- ensembldb::promoters(EnsDb)
-  gene.coords <- ensembldb::genes(EnsDb)
+    # get promoter and gene coords:
+    gene.promoters <- ensembldb::promoters(EnsDb)
+    gene.coords <- ensembldb::genes(EnsDb)
 
-  # subset by protein coding
-  gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
-  gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
+    # subset by protein coding
+    gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
+    gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
 
-  # subset by main chromosomes
-  gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X','Y')]
-  gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
+    # subset by main chromosomes
+    gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X','Y')]
+    gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
 
-  # add the gene name to the promoter object
-  gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
+    # add the gene name to the promoter object
+    gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
 
-  # drop unnecessary chromosomes
-  gene.promoters <- GenomeInfoDb::keepSeqlevels(
-    gene.promoters, 
-    value=levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
-  )
+    # drop unnecessary chromosomes
+    gene.promoters <- GenomeInfoDb::keepSeqlevels(
+        gene.promoters, 
+        value=levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
+    )
 
-  # rename seqlevels to add 'chr', 
-  old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
-  #new_levels <- ifelse(old_levels %in% c('X', 'Y'), old_levels, paste0('chr', old_levels))
-  new_levels <- paste0('chr', old_levels)
-  gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
+    # rename seqlevels to add 'chr', 
+    old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
+    new_levels <- paste0('chr', old_levels)
+    gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
 
-  # set the genome (not sure if we NEED to do this...)
-  GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
+    # set the genome (not sure if we NEED to do this...)
+    GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
 
-  # set up promoters object that only has the necessary info for motifmatchr
-  my_promoters <- GRanges(
-    seqnames =  droplevels(GenomeInfoDb::seqnames(gene.promoters)),
-    IRanges(
-      start = start(gene.promoters),
-      end = end(gene.promoters)
-    ),
-    symbol = gene.promoters$symbol,
-    genome=species_genome
-  )
+    # set up promoters object that only has the necessary info for motifmatchr
+    my_promoters <- GRanges(
+        seqnames =  droplevels(GenomeInfoDb::seqnames(gene.promoters)),
+        IRanges(
+          start = start(gene.promoters),
+          end = end(gene.promoters)
+        ),
+        symbol = gene.promoters$symbol,
+        genome=species_genome
+    )
 
-  # scan these promoters for motifs:
-  print('Matching motifs...')
-  motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome=species_genome)
+    # scan these promoters for motifs:
+    print('Matching motifs...')
+    motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome=species_genome)
 
-  # get the matches
-  tf_match <- motifmatchr::motifMatches(motif_ix)
-  rownames(tf_match) <- my_promoters$symbol
+    # get the matches
+    tf_match <- motifmatchr::motifMatches(motif_ix)
+    rownames(tf_match) <- my_promoters$symbol
 
-  # use motif names as the column names:
-  colnames(tf_match) <- motif_df$motif_name
+    # use motif names as the column names:
+    colnames(tf_match) <- motif_df$motif_name
 
-  # only keep genes that are in the Seurat object and in the given EnsDb:
-  gene_list <- rownames(seurat_obj)
-  gene_list <- gene_list[gene_list %in% rownames(tf_match)]
-  tf_match <- tf_match[gene_list,]
+    # only keep genes that are in the Seurat object and in the given EnsDb:
+    gene_list <- rownames(seurat_obj)
+    gene_list <- gene_list[gene_list %in% rownames(tf_match)]
+    tf_match <- tf_match[gene_list,]
 
-  # get list of target genes for each TF:
-  print('Getting putative TF target genes...')
-  tfs <- motif_df$motif_name
-  tf_targets <- list()
-  n_targets <- list()
-  for(cur_tf in tfs){
-    tf_targets[[cur_tf]] <- names(tf_match[,cur_tf][tf_match[,cur_tf]])
-    n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]] )
-  }
-  n_targets <- unlist(n_targets)
+    # get list of target genes for each TF:
+    print('Getting putative TF target genes...')
+    tfs <- motif_df$motif_name
+    tf_targets <- list()
+    n_targets <- list()
+    for(cur_tf in tfs){
+        tf_targets[[cur_tf]] <- names(tf_match[,cur_tf][tf_match[,cur_tf]])
+        n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]] )
+    }
+    n_targets <- unlist(n_targets)
 
-  # add number of target genes to motif df
-  motif_df$n_targets <- n_targets
+    # add number of target genes to motif_df
+    motif_df$n_targets <- n_targets
 
-  # add info to seurat object
-  seurat_obj <- SetMotifMatrix(seurat_obj, tf_match)
-  seurat_obj <- SetMotifs(seurat_obj, motif_df)
-  seurat_obj <- SetMotifTargets(seurat_obj, tf_targets)
-  seurat_obj <- SetPFMList(seurat_obj, pfm)
+    # add the gene name to the moti_df
+    # remove extra characters from the motif names
+    motif_names <- motif_df$motif_name
+    tmp <- gsub("\\(.*)", "", motif_names)
+    tmp <- gsub('::', ',', as.character(tmp))
 
-  seurat_obj
+    motif_df$tmp <- tmp
+
+    # for motifs that correspond to two genes, split them apart
+    tmp <- motif_df$tmp; names(tmp) <- motif_df$motif_ID
+    motif_df_tmp <- do.call(rbind,lapply(1:length(tmp), function(i){
+    x <- tmp[i]
+    id <- names(x)
+    if(grepl(',', x)){
+        x <- as.character(unlist(do.call(rbind, strsplit(x, ','))))
+    }
+    data.frame(motif_ID = id, gene_name = as.character(x))
+    }))
+
+    # merge with the other motif df:
+    ix <- match(motif_df_tmp$motif_ID, motif_df$motif_ID)
+    motif_df_tmp <- cbind(motif_df_tmp, motif_df[ix,c('motif_name', 'n_targets')])
+    rownames(motif_df_tmp) <- 1:nrow(motif_df_tmp)
+    motif_df_tmp <- dplyr::select(motif_df_tmp, c(motif_ID, motif_name, n_targets, gene_name))
+
+    motif_df <- motif_df_tmp
+
+    # subset to only contain genes in the seurat obj
+    motif_df <- subset(motif_df, gene_name %in% rownames(seurat_obj))
+
+    # add info to seurat object
+    seurat_obj <- SetMotifMatrix(seurat_obj, tf_match)
+    seurat_obj <- SetMotifs(seurat_obj, motif_df)
+    seurat_obj <- SetMotifTargets(seurat_obj, tf_targets)
+    seurat_obj <- SetPFMList(seurat_obj, pfm)
+
+    seurat_obj
 }
 
 
@@ -183,58 +237,3 @@ OverlapModulesMotifs <- function(
 }
 
 
-#' MotifTargetScore
-#'
-#' Computes gene expression scores for TF Motif target genes based on the MotifScan.
-#'
-#' @param seurat_obj A Seurat object
-#' @param method Seurat or UCell?
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#' MotifTargetScore(pbmc)
-MotifTargetScore <- function(
-  seurat_obj,
-  method='Seurat',
-  wgcna_genes=TRUE,
-  wgcna_name=NULL,
-  ...
- ){
-
-   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
-   # get modules:
-   modules <- GetModules(seurat_obj, wgcna_name)
-
-   # get TF target genes:
-   target_genes <- GetMotifTargets(seurat_obj)
-
-   # subset by WGCNA genes only:
-   if(wgcna_genes){
-     target_genes <- lapply(target_genes, function(x){
-       x[x %in% modules$gene_name]
-     })
-   }
-
-   # run gene scoring function
-   if(method == "Seurat"){
-     tf_scores <- Seurat::AddModuleScore(
-       seurat_obj, features=target_genes, ...
-     )@meta.data
-   } else if(method == "UCell"){
-     tf_scores <- UCell::AddModuleScore_UCell(
-       seurat_obj, features=target_genes, ...
-     )@meta.data
-   } else{
-     stop("Invalid method selection. Valid choices are Seurat, UCell")
-   }
-
-   tf_scores <- tf_scores[,(ncol(tf_scores)-length(target_genes)+1):ncol(tf_scores)]
-   colnames(tf_scores) <- names(target_genes)
-
-   # add tf scores to seurat object:
-   seurat_obj <- SetMotifScores(seurat_obj, tf_scores, wgcna_name)
-
-   seurat_obj
-
- }

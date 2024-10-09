@@ -10,25 +10,16 @@ vignette: >
 ---
 
 
-Compiled: 26-02-2024
+Compiled: 07-10-2024
 
 Source: `vignettes/ST_basics.Rmd`
 
 This tutorial covers the basics of using hdWGCNA to perform co-expression network
-analysis on spot-based spatial transcriptomics (ST) data like [10X Genomics Visium](https://www.10xgenomics.com/products/spatial-gene-expression).
-There are many different ST protocols, and datasets arising from these protocols 
-tend to have different properties. For example, some ST protocols have single-cell resolution 
-but only profile a subset of the transcriptome. On the other hand, some ST protocols like Visium 
-and Slide-Seq [(Curio Bioscience)](https://curiobioscience.com/) profile the whole transcriptome. 
-Aside from hdWGCNA, in general datasets from different ST protocols may require different data analysis steps. 
+analysis on transcriptomics (ST) data. Here we primarily focus on sequencing-based approaches like [10X Genomics Visium](https://www.10xgenomics.com/products/spatial-gene-expression), [(Curio Seeker)](https://curiobioscience.com/), and [Visium HD](https://www.10xgenomics.com/products/spatial-gene-expression). Importantly, there are many different ST approaches resulting in datasets with shared and unique properties which we must consider in our data analysis. For example, some ST protocols have single-cell resolution  but only profile a subset of the transcriptome. On the other hand, some ST protocols like Visium and Slide-Seq profile the whole transcriptome. Some ST protocols measure gene expression using sequencing, while others use imaging (i.e. [Xenium](https://www.10xgenomics.com/platforms/xenium) and [CosMX](https://nanostring.com/products/cosmx-spatial-molecular-imager/)). 
 
-In this tutorial, we demonstrate hdWGCNA using two ST datasets from different technologies.
-First, we use hdWGCNA to analyze a Visium ST dataset containing an anterior and posterior saggital 
-section from the mouse brain. Next, we use hdWGCNA to analyze a Curio Seeker (Slide-Seq) dataset 
-of the mouse hippocampus. Overall this tutorial is similar to the [hdWGCNA in single-cell data](basic_tutorial.html) 
-tutorial, and we recommend exploring that tutorial prior to this tutorial.
+Datasets from different ST protocols may require different data analysis steps (i.e. quality control, normalization, clustering), and similarly we take specific steps to perform hdWGCNA for different types of ST. In this tutorial, we demonstrate hdWGCNA using ST datasets from different technologies. First, we use hdWGCNA to analyze a Visium ST dataset containing an anterior and posterior saggital section from the mouse brain. Next, we use hdWGCNA to analyze a Curio Seeker (Slide-Seq) dataset of the mouse hippocampus. Finally, we analyze a similar mouse brain dataset using Visium HD. Overall this tutorial is similar to the [hdWGCNA in single-cell data](basic_tutorial.html) tutorial, and we recommend exploring that tutorial prior to this tutorial. 
 
-## Load required libraries
+# Load required libraries
 
 First we will load the required R libraries for this tutorial.
 
@@ -36,9 +27,6 @@ First we will load the required R libraries for this tutorial.
 
 # single-cell analysis package
 library(Seurat)
-
-# package to install the mouse brain dataset
-library(SeuratData)
 
 # plotting and data science packages
 library(tidyverse)
@@ -60,25 +48,24 @@ set.seed(12345)
 
 ```
 
-## 10X Visium Dataset
+# 10X Visium Dataset
 
-In this section we demonstrate hdWGCNA in ST datasets using a 
-publicly available Visium dataset of the mouse brain.
+In this section we demonstrate hdWGCNA in ST datasets using a publicly available Visium dataset of the mouse brain.
 
-### Download data and perform clustering analysis 
+## Load data 
 
-Here we use `SeuratData` to download the mouse brain ST dataset, and we will
-process the dataset using `Seurat`.
+Here we use `SeuratData` to download the mouse brain ST dataset, and we will process the dataset using `Seurat`.
 
 <details> <summary> Note on `SeuratData` download </summary>
 
-In our own testing, we had difficulty running `InstallData` on our institution's
-compute cluster, so we ran these commands locally and then copied the `.rds` file
-containing the Seurat object to the cluster for subsequent analysis.
+In our own testing, we had difficulty running `InstallData` on our institution's compute cluster, so we ran these commands locally and then copied the `.rds` file containing the Seurat seurat_vhd to the cluster for subsequent analysis.
 
 </details>
 
 ```{r eval=FALSE}
+
+# package to install the mouse brain dataset
+library(SeuratData)
 
 # download the mouse brain ST dataset (stxBrain)
 SeuratData::InstallData("stxBrain")
@@ -89,20 +76,23 @@ brain$region <- 'anterior'
 brain2 <- LoadData("stxBrain", type = "posterior1")
 brain2$region <- 'posterior'
 
-# merge into one seurat object
+# merge into one seurat seurat_vhd
 seurat_obj <- merge(brain, brain2)
 seurat_obj$region <- factor(as.character(seurat_obj$region), levels=c('anterior', 'posterior'))
 
-# save unprocessed object
+# save unprocessed seurat_vhd
 saveRDS(seurat_obj, file='mouse_brain_ST_unprocessed.rds')
 
 ```
 
-hdWGCNA requires the spatial coordinates to be stored in the `seurat_obj@meta.data` slot.
-Here we extract the image coordinates for the two samples, merge into a dataframe, and
-add it into the `seurat_obj@meta.data`. Specifically, the `seurat_obj@meta.data` must have
-columns named `row`, `col`, `imagerow`, and `imagecol` (shown below), otherwise the downstream
-steps will not work.
+hdWGCNA requires the spatial coordinates to be stored in the `seurat_obj@meta.data` slot. Here we extract the image coordinates for the two samples, merge into a dataframe, and add it into the `seurat_obj@meta.data`. Specifically, the `seurat_obj@meta.data` must have columns named `row`, `col`, `imagerow`, and `imagecol` (shown below), otherwise the downstream steps will not work.
+
+**IMPORTANT NOTE** 
+As of Seurat version 5.1, the image class was updated from `VisiumV1` to `VisiumV2`. This changes how Seurat loads Visium data from the `spaceranger` outputs. hdWGCNA requires the spot coorinates in the array, and unfortunately as of Seurat version 5.1 this is no longer loaded by default with `Load10X_Spatial`. `spaceranger count` outputs a file called [`tissue_positions.csv`](https://www.10xgenomics.com/support/software/space-ranger/latest/analysis/outputs/spatial-outputs), which contains these coordinates. If you are following with the tutorial dataset, at this time we recommend using a Seurat version before v5.1. [Please see this GitHub issue for more information](https://github.com/smorabit/hdWGCNA/issues/278).
+
+<details> <summary> Instructions for Seurat versions before v5.1</summary>
+
+If you are using a Seurat version older than v5.1, these coordinates are already loaded into the Seurat seurat_vhd, and you can use the following code to add the coordinates to the Seurat metadata slot. 
 
 ```{r eval=FALSE}
 
@@ -114,15 +104,16 @@ image_df <- do.call(rbind, lapply(names(seurat_obj@images), function(x){
 # merge the image_df with the Seurat metadata
 new_meta <- merge(seurat_obj@meta.data, image_df, by='row.names')
 
-# fix the row ordering to match the original seurat object
+# fix the row ordering to match the original seurat seurat_vhd
 rownames(new_meta) <- new_meta$Row.names
 ix <- match(as.character(colnames(seurat_obj)), as.character(rownames(new_meta)))
 new_meta <- new_meta[ix,]
 
-# add the new metadata to the seurat object
+# add the new metadata to the seurat seurat_vhd
 seurat_obj@meta.data <- new_meta
 
 head(image_df)
+
 
 ```
 
@@ -135,6 +126,34 @@ AAACAGCTTTCAGAAG-1_1      1  43   9     6637     2099
 AAACAGGGTCTATATT-1_1      1  47  13     7116     2375
 AAACATGGTGAGAGGA-1_1      1  62   0     8913     1480
 ```
+
+</details>
+
+<details> <summary> Instructions for Seurat versions after v5.1 </summary>
+
+If you are using a Seurat version v5.1 or newer, these coordinates are not loaded into the Seurat seurat_vhd by default. We need to load the `tissue_positions.csv` file from the `spaceranger` output and then add it into the Seurat seurat_vhd. This section is an example and you need to change the code to use your own file path. If your Seurat seurat_vhd contains more than one sample, you will need to repeat this since each sample will have its own `tissue_positions.csv` file.
+
+```{r eval=FALSE}
+
+# add barcode column to Seurat obj 
+seurat_obj$barcode <- colnames(seurat_obj)
+
+# update this with the path for your sample.
+tissue_positions <- read.csv('path/to/tissue_positions.csv')
+tissue_positions <- subset(tissue_positions, barcode %in% seurat_obj$barcode)
+
+# join the image_df with the Seurat metadata
+new_meta <- dplyr::left_join(seurat_obj@meta.data, tissue_positions, by='barcode')
+
+# add the new metadata to the seurat seurat_vhd
+seurat_obj$row <- new_meta$array_row 
+seurat_obj$imagerow <- new_meta$pxl_row_in_fullres
+seurat_obj$col <- new_meta$array_col
+seurat_obj$imagecol <- new_meta$pxl_col_in_fullres
+
+```
+
+</details>
 
 Now we perform clustering analysis using Seurat.
 
@@ -153,7 +172,7 @@ seurat_obj <- FindClusters(seurat_obj,verbose = TRUE)
 seurat_obj <- RunUMAP(seurat_obj, dims = 1:30)
 
 # set factor level for anterior / posterior
-seurat_mouse_vis$region <- factor(as.character(seurat_mouse_vis$region), levels=c('anterior', 'posterior'))
+seurat_obj$region <- factor(as.character(seurat_obj$region), levels=c('anterior', 'posterior'))
 
 # show the UMAP
 p1 <- DimPlot(seurat_obj, label=TRUE, reduction = "umap", group.by = "seurat_clusters") + NoLegend()
@@ -218,7 +237,7 @@ We used the following cluster labels for this analysis.
 
 ```{r eval=FALSE}
 
-# add annotations to Seurat object
+# add annotations to Seurat seurat_vhd
 annotations <- read.csv('annotations.csv')
 ix <- match(seurat_obj$seurat_clusters, annotations$seurat_clusters)
 seurat_obj$annotation <- annotations$annotation[ix]
@@ -231,24 +250,13 @@ p3 + NoLegend()
 
 ```
 
-### Construct metaspots with hdWGCNA
+## Construct metaspots  
 
-Visium ST generates sparse gene expression profiles
-in each spot, thus introducing the same potential pitfalls as 
-single-cell data for co-expression network analysis. To alleviate 
-these issues, hdWGCNA includes a data aggregation approach to produce 
-spatial **metaspots**, similar to our metacell algorithm. This approach 
-aggregates neighboring spots based on spatial coordinates rather than 
-their transcriptomes. This procedure is performed in hdWGCNA using the 
-`MetaspotsByGroups` function.
+Visium ST generates sparse gene expression profiles in each spot, thus introducing the same potential pitfalls as single-cell data for co-expression network analysis. To alleviate these issues, hdWGCNA includes a data aggregation approach to produce spatial **metaspots**, similar to our metacell algorithm. This approach aggregates neighboring spots based on spatial coordinates rather than their transcriptomes. This procedure is performed in hdWGCNA using the `MetaspotsByGroups` function.
 
 <center><img src="figures/ST_basics/metaspot_explain.png" width="600" height="600"></center>
 
-Here we set up the data for hdWGCNA and run `MetaspotsByGroups`. Similar to
-`MetacellsByGroups`, the `group.by` parameter slices the Seurat object to construct
-metaspots separately for each group. Here we are just grouping by the ST slides
-to perform this step separately for the anterior and posterior sample, but you could
-specify cluster or anatomical regions as well to suit your analysis.
+Here we set up the data for hdWGCNA and run`MetaspotsByGroups`. Similar to `MetacellsByGroups`, the `group.by` parameter slices the Seurat seurat_vhd to construct metaspots separately for each group. Here we are just grouping by the ST slides to perform this step separately for the anterior and posterior sample, but you could specify cluster or anatomical regions as well to suit your analysis.
 
 ```{r eval=FALSE}
 
@@ -269,27 +277,22 @@ seurat_obj  <- NormalizeMetacells(seurat_obj)
 
 ```
 
-The metaspot object is used everywhere that the metacell object would be used for
-downstream analysis. For example, to extract the metaspot object, you can run the
-`GetMetacellObject` function.
+The metaspot seurat_vhd is used everywhere that the metacell seurat_vhd would be used for downstream analysis. For example, to extract the metaspot seurat_vhd, you can run the `GetMetacellseurat_vhd` function.
 
 ```{r eval=FALSE}
-m_obj <- GetMetacellObject(seurat_obj)
+m_obj <- GetMetacellseurat_vhd(seurat_obj)
 m_obj
 ```
 
 ```
-An object of class Seurat
+An seurat_vhd of class Seurat
 31053 features across 1505 samples within 1 assay
 Active assay: Spatial (31053 features, 0 variable features)
 ```
 
-### Co-expression network analysis
+## Co-expression network analysis
 
-Now we are ready to perform co-expression network analysis using an identical pipeline
-to the single-cell workflow. For this analysis, we are performing brain-wide
-network analysis using all spots from all regions, but this analysis could be
-adjusted to perform network analysis on specific regions.
+Now we are ready to perform co-expression network analysis using an identical pipeline to the single-cell workflow. For this analysis, we are performing brain-wide network analysis using all spots from all regions, but this analysis could be adjusted to perform network analysis on specific regions.
 
 ```{r eval=FALSE}
 
@@ -369,7 +372,7 @@ seurat_obj <- ResetModuleNames(
 
 ```
 
-### Data visualization
+## Data visualization
 
 Here we visualize module eigengenes using the Seurat functions `DotPlot` and `SpatialFeaturePlot`.
 For network visualization, please refer to the [Network visualization tutorial](network_visualizations.html).
@@ -499,27 +502,17 @@ dev.off()
 
 ```
 
-## Curio Seeker Dataset 
+# Curio Seeker Dataset 
 
-In this section we perform a similar analysis using a mouse hippocampus 
-dataset from Curio Bioscience. This dataset is not publicly available,
-but we obtained this dataset directly from Curio by filling out 
-[this form on their website](https://curiobioscience.com/example-data/).
-Curio provided a fully processed Seurat object, so for this tutorial 
-we are simply using the Seurat object and clustering that they provided.
+In this section we perform a similar analysis using a mouse hippocampus dataset from Curio Bioscience. This dataset is not publicly available, but we obtained this dataset directly from Curio by filling out [this form on their website](https://curiobioscience.com/example-data/). Curio provided a fully processed Seurat seurat_vhd, so for this tutorial we are simply using the Seurat seurat_vhd and clustering that they provided.
 
-### Load dataset 
+## Load dataset 
 
-First we load the Seurat object containing the mouse hippocampus dataset 
-provided by Curio. We will also make a few plots to show the clustering 
-in transcriptome space (UMAP reduction) and in the biological coordinates.
-Note that this dataset provides a "dim reduction" called "SPATIAL" which contains 
-the 2D biological coordinates.
-
+First we load the Seurat seurat_vhd containing the mouse hippocampus dataset provided by Curio. We will also make a few plots to show the clustering in transcriptome space (UMAP reduction) and in the biological coordinates. Note that this dataset provides a "dim reduction" called "SPATIAL" which contains the 2D biological coordinates.
 
 ```{r eval=FALSE}
 
-# load the Seurat object
+# load the Seurat seurat_vhd
 seurat_curio <- readRDS(paste0(data_dir, 'curio_datasets/Mouse_hippocampus_v1pt1/Mouse_hippocampus_seurat.rds'))
 
 # make a dimplot in transcriptome space
@@ -574,16 +567,9 @@ dev.off()
 
 <center><img src="figures/ST_basics/spatial_clusters_curio_split.png" width="800" height="800"></center>
 
-### Construct metacells with hdWGCNA 
+## Construct Metacells with `MetacellsByGroups`
 
-While Visium ST uses a grid of spots to assign molecular barcodes in 
-space, Curio Seeker uses small beads to capture transcriptome information 
-at 10 microns. Importantly, these beads are not regularly spaced like in 
-Visium. Therefore, the `MetaspotsByGroups` function that we used for the 
-Visium dataset is not appropriate for Curio Seeker data. Instead, we will 
-use `MetacellsByGroups` but we will specify the `reduction` as the spatial 
-information, so cells that are close together in biological space will be 
-aggregated into metacells. 
+While Visium ST uses a grid of spots to assign molecular barcodes in space, Curio Seeker uses small beads to capture transcriptome information at 10 microns. Importantly, these beads are not regularly spaced like in Visium. Therefore, the `MetaspotsByGroups` function that we used for the Visium dataset is not appropriate for Curio Seeker data. Instead, we will use `MetacellsByGroups` but we will specify the `reduction` as the spatial information, so cells that are close together in biological space will be aggregated into metacells. 
 
 ```{r eval=FALSE}
 
@@ -613,9 +599,7 @@ seurat_curio <- NormalizeMetacells(seurat_curio)
 
 ```
 
-We can calculate the average X and Y coordinates for each metacell and 
-plot them to check if they are aggregated based on spatial proximity
-for each cluster as we expect. 
+We can calculate the average X and Y coordinates for each metacell and plot them to check if they are aggregated based on spatial proximityfor each cluster as we expect. 
 
 <center><img src="figures/ST_basics/spatial_clusters_curio_split_metacell.png" width="800" height="800"></center>
 
@@ -623,8 +607,8 @@ for each cluster as we expect.
 
 ```{r eval=FALSE}
 
-# get the metacell object
-m_obj <- GetMetacellObject(seurat_curio)
+# get the metacell seurat_vhd
+m_obj <- GetMetacellseurat_vhd(seurat_curio)
 m_obj$seurat_clusters <- factor(
   m_obj$seurat_clusters,
   levels = levels(seurat_curio$seurat_clusters)
@@ -648,7 +632,7 @@ meta_spatial_coords <- do.call(rbind, lapply(1:ncol(m_obj), function(i){
 rownames(meta_spatial_coords) <- colnames(m_obj)
 
 # add this as a dim reduct
-m_obj@reductions$spatial <- CreateDimReducObject(
+m_obj@reductions$spatial <- CreateDimReducseurat_vhd(
   embeddings = as.matrix(meta_spatial_coords),
   key = 'spatial'
 )
@@ -672,7 +656,7 @@ dev.off()
 
 </details>
 
-### Co-expression network analysis
+## Co-expression network analysis
 
 Now that we have our metacells, we next carry out co-expression 
 network analysis with hdWGCNA, similar to as we have done before. 
@@ -743,29 +727,181 @@ dev.off()
 
 <center><img src="figures/ST_basics/MEs_featureplot_curio.png" width="800" height="800"></center>
 
+This concludes the part of the tutorial for the Curio dataset, but from here we could proceed to perform downstream analysis and more data visualization.
 
-This concludes the part of the tutorial for the Curio dataset, but from 
-here we could proceed to perform downstream visualization and analysis.
+# 10X Visium HD Dataset 
 
-## Conclusion and next steps
+Here we perform a similar analysis using Visium HD, the second major version of sequencing-based ST from 10X Genomics. This is a similar technology to the standard Visium, where the main difference is that the "spots" are much smaller and there is no gap in between them. Visium HD spots are closer to single-cell resolution, however some spots may still span more than one cell, and furthermore one spot could be subcellular. 
 
-In this tutorial we demonstrated the core functions for performing co-expression
-network analysis in two types of ST datasets: Visium and Slide-Seq. From here we 
-encourage you to explore our [other tutorials](hdWGCNA.html) for downstream analysis 
-of these co-expression networks.
+Overall, this workflow is similar to the one shown for the Curio Seeker dataset.
 
-<details> <summary> Session Info </summary>
+## Load dataset 
+
+The mouse brain Visium HD dataset can be downloaded diectly from 10X Genomics [at this link](https://www.10xgenomics.com/datasets/visium-hd-cytassist-gene-expression-mouse-brain-fresh-frozen).
+
 ```{r eval=FALSE}
-SessionInfo()
-```
+
+# use the 008um resolution for this tutorial
+seurat_vhd <- Load10X_Spatial(data.dir='path/to/dataset/square_008um/')
 
 ```
-Put it here 
+
+## Clustering analysis 
+
+Here we follow the Seurat Visium HD tutorial to perform a basic clustering analysis. In practice, you should perform clustering analysis and QC that best suits your dataset, here we simply use Seurat for convenience to demonstrate hdWGCNA.
+
+```{r eval=FALSE}
+seurat_vhd <- NormalizeData(seurat_vhd)
+seurat_vhd <- FindVariableFeatures(seurat_vhd)
+seurat_vhd <- ScaleData(seurat_vhd)
+seurat_vhd <- RunPCA(seurat_vhd)
+seurat_vhd <- FindNeighbors(seurat_vhd, reduction = "pca", dims = 1:30)
+seurat_vhd <- FindClusters(seurat_vhd)
+
+p <- DimPlot(
+  seurat_vhd, 
+  split.by='seurat_clusters',
+  reduction = 'spatial',
+  ncol=9
+) + NoLegend() + umap_theme() 
+
+p
 ```
+
+<center><img src="figures/ST_basics/spatial_clusters_vhd_split.png" width="800" height="800"></center>
+
+## Construct Metacells with `MetacellsByGroups`
+
+Here we set up the genes that we will use for co-expression network analysis (variable features), and then we construct metacells. For Visium HD, we will merge spatially proximal spots using the `MetacellsByGroups` function instead of `MetaspotsByGroups`, which is only used for standard Visium. In order for us to use `MetacellsByGroups` for spatial data, similar to the Curio dataset, we need to create a "dimensionality reduction" in the Seurat object that contains the spatial coordinates.
+
+```{r eval=FALSE}
+
+# create the spatial reduction
+coords <- as.matrix(GetTissueCoordinates(seurat_vhd)[,c('x', 'y')])
+colnames(coords) <- c('spatial_1', 'spatial_2')
+seurat_vhd@reductions$spatial <- CreateDimReducObject(
+  embeddings = coords,
+  assay = 'RNA',
+  key = 'spatial_'
+)
+
+seurat_vhd <- SetupForWGCNA(
+  seurat_vhd,
+  gene_select = "variable", 
+  wgcna_name = "vhd" 
+)
+length(GetWGCNAGenes(seurat_vhd))
+
+# construct metacells  in each group
+seurat_vhd <- MetacellsByGroups(
+  seurat_obj = seurat_vhd,
+  group.by = c("seurat_clusters"), 
+  ident.group = 'seurat_clusters',
+  reduction = 'spatial',
+  k = 50, 
+  max_shared = 15
+)
+
+```
+
+We can calculate the average X and Y coordinates for each metacell and plot them to check if they are aggregated based on spatial proximityfor each cluster as we expect. 
+
+<center><img src="figures/ST_basics/spatial_clusters_vhd_split_metacell.png" width="1200" height="800"></center>
+
+<details> <summary> Show code for calculating metacell spatial coordinates </summary>
+
+```{r eval=FALSE}
+
+# get the metacell object
+m_obj <- GetMetacellObject(seurat_vhd)
+m_obj$seurat_clusters <- factor(
+  m_obj$seurat_clusters,
+  levels = levels(seurat_vhd$seurat_clusters)
+)
+
+# get the image coordinates from the seurat obj and add to the metadata
+spatial_coords <- as.data.frame(seurat_vhd@reductions$spatial@cell.embeddings)
+seurat_vhd@meta.data$spatial_x <- spatial_coords$Spatial_1 * -1
+seurat_vhd@meta.data$spatial_y <- spatial_coords$Spatial_2
+seurat_vhd$barcode <- colnames(seurat_vhd)
+
+# loop over each metacell and calculate the average X and Y
+meta_spatial_coords <- do.call(rbind, lapply(1:ncol(m_obj), function(i){
+  x <- m_obj@meta.data$cells_merged[i]
+  cur_bcs <- str_split(x, ',')[[1]]
+  cur_df <- subset(seurat_vhd@meta.data, barcode %in% cur_bcs)
+  cur_x <- mean(cur_df$spatial_x)
+  cur_y <- mean(cur_df$spatial_y)
+  data.frame(spatial_1 = cur_y, spatial_2=cur_x)
+}))
+rownames(meta_spatial_coords) <- colnames(m_obj)
+
+# add this as a dim reduct
+m_obj@reductions$spatial <- CreateDimReducObject(
+  embeddings = as.matrix(meta_spatial_coords),
+  key = 'spatial'
+)
+
+p <- DimPlot(
+  m_obj, 
+  split.by='seurat_clusters',
+  reduction = 'spatial',
+  ncol=9
+) + NoLegend() + umap_theme() 
+
+p
+```
+
 </details>
 
+## Co-expression network analysis
 
+We are now ready to perform co-expression network analysis, similar to as we did above. 
 
+```{r eval=FALSE}
+# set up the expression matrix
+seurat_vhd  <- SetDatExpr(seurat_vhd)
+
+# test different soft power thresholds
+seurat_vhd <- TestSoftPowers(seurat_vhd)
+
+# construct co-expression network:
+seurat_vhd <- ConstructNetwork(
+  seurat_vhd,
+  tom_name='vhd'
+)
+
+# compute module eigengenes & connectivity
+seurat_vhd <- ModuleEigengenes(seurat_vhd)
+seurat_vhd <- ModuleConnectivity(
+  seurat_vhd
+)
+
+# plot the dendrogram
+PlotDendrogram(seurat_vhd, main='Visium HD hdWGCNA dendrogram')
+```
+
+<center><img src="figures/ST_basics/vhd_dendro.png" width="1200" height="800"></center>
+
+Next we plot the expression of these modules in the spatial coordinates. 
+
+```{r eval=FALSE}
+plot_list <- ModuleFeaturePlot(
+  seurat_vhd,
+  reduction = 'spatial',
+  restrict_range=FALSE
+)
+
+wrap_plots(plot_list, ncol=3)
+```
+
+<center><img src="figures/ST_basics/vhd_featureplots.png" width="1200" height="800"></center>
+
+This concludes the part of the tutorial for the Visium HD dataset, but from here we could proceed to perform downstream analysis and more data visualization.
+
+# Conclusion and next steps
+
+In this tutorial we demonstrated the core functions for performing co-expression network analysis in two types of ST datasets: Visium and Slide-Seq. From here we encourage you to explore our [other tutorials](hdWGCNA.html) for downstream analysis of these co-expression networks.
 
 
 

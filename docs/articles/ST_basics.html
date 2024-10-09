@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>hdWGCNA in spatial transcriptomics • hdWGCNA</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
@@ -12,231 +12,180 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
-<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="hdWGCNA in spatial transcriptomics">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="hdWGCNA in spatial transcriptomics">
+<meta name="description" content="Tutorial for applying the core functions of hdWGCNA in spatial transcriptomics data.
+">
 <meta property="og:description" content="Tutorial for applying the core functions of hdWGCNA in spatial transcriptomics data.
 ">
 <meta property="og:image" content="https://smorabit.github.io/hdWGCNA/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
-    
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
-    <div class="container template-article">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">hdWGCNA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.03</span>
-      </span>
-    </div>
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/hdWGCNA.html">Get started</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Core functionality</li>
-    <li>
-      <a href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a>
-    </li>
-    <li>
-      <a href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a>
-    </li>
-    <li>
-      <a href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a>
-    </li>
-    <li>
-      <a href="../articles/network_visualizations.html">Network visualization</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Biological context for co-expression modules</li>
-    <li>
-      <a href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a>
-    </li>
-    <li>
-      <a href="../articles/module_trait_correlation.html">Module trait correlation</a>
-    </li>
-    <li>
-      <a href="../articles/enrichment_analysis.html">Enrichment analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Exploring modules in external datasets</li>
-    <li>
-      <a href="../articles/projecting_modules.html">Projecting modules to new datasets</a>
-    </li>
-    <li>
-      <a href="../articles/module_preservation.html">Module preservation and reproducibility</a>
-    </li>
-    <li>
-      <a href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Advanced topics</li>
-    <li>
-      <a href="../articles/consensus_wgcna.html">Consensus network analysis</a>
-    </li>
-    <li>
-      <a href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a>
-    </li>
-    <li>
-      <a href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a>
-    </li>
-    <li>
-      <a href="../articles/motif_analysis.html">Motif analysis</a>
-    </li>
-    <li>
-      <a href="../articles/other_metacells.html">Alternative metacell algorithms</a>
-    </li>
-    <li class="divider">
-    </li>
-<li class="dropdown-header">Other</li>
-    <li>
-      <a href="../articles/customization.html">Module customization</a>
-    </li>
-    <li>
-      <a href="../articles/sctransform.html">Using SCTransform normalized data</a>
-    </li>
-    <li class="divider">
-    </li>
-<li>
-      <a href="../articles/index.html">All vignettes</a>
-    </li>
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
+    <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/basic_tutorial.html">Get started</a></li>
+<li class="active nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-vignettes" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Vignettes</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-vignettes">
+<li><h6 class="dropdown-header" data-toc-skip>Core functionality</h6></li>
+    <li><a class="dropdown-item" href="../articles/basic_tutorial.html">hdWGCNA in single-cell data</a></li>
+    <li><a class="dropdown-item" href="../articles/ST_basics.html">hdWGCNA in spatial transcriptomics data</a></li>
+    <li><a class="dropdown-item" href="../articles/isoform_pbmcs.html">Isoform co-expression network analysis with PacBio MAS-Seq</a></li>
+    <li><a class="dropdown-item" href="../articles/network_visualizations.html">Network visualization</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Biological context for co-expression modules</h6></li>
+    <li><a class="dropdown-item" href="../articles/differential_MEs.html">Differential module eigengene (DME) analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/module_trait_correlation.html">Module trait correlation</a></li>
+    <li><a class="dropdown-item" href="../articles/enrichment_analysis.html">Enrichment analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Exploring modules in external datasets</h6></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules.html">Projecting modules to new datasets</a></li>
+    <li><a class="dropdown-item" href="../articles/module_preservation.html">Module preservation and reproducibility</a></li>
+    <li><a class="dropdown-item" href="../articles/projecting_modules_cross.html">Cross-species and cross-modality analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced topics</h6></li>
+    <li><a class="dropdown-item" href="../articles/tf_network.html">Transcription factor regulatory network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/consensus_wgcna.html">Consensus network analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudobulk.html">hdWGCNA with pseudobulk data</a></li>
+    <li><a class="dropdown-item" href="../articles/pseudotime.html">Co-expression module dynamics with pseudotime</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
+    <li><a class="dropdown-item" href="../articles/customization.html">Module customization</a></li>
+    <li><a class="dropdown-item" href="../articles/other_metacells.html">Alternative metacell algorithms</a></li>
+    <li><a class="dropdown-item" href="../articles/sctransform.html">Using SCTransform normalized data</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">All vignettes</a></li>
   </ul>
 </li>
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/hdWGCNA/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+      </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
+</nav><div class="container template-article">
 
-      
 
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    <div class="page-header toc-ignore">
-      <h1 data-toc-skip>hdWGCNA in spatial transcriptomics</h1>
+
+
+<div class="row">
+  <main id="main" class="col-md-9"><div class="page-header">
+      <img src="../logo.png" class="logo" alt=""><h1>hdWGCNA in spatial transcriptomics</h1>
             
       
-      
-      <div class="hidden name"><code>ST_basics.Rmd</code></div>
-
+      <small class="dont-index">Source: <a href="https://github.com/smorabit/hdWGCNA/blob/HEAD/vignettes/ST_basics.Rmd" class="external-link"><code>vignettes/ST_basics.Rmd</code></a></small>
+      <div class="d-none name"><code>ST_basics.Rmd</code></div>
     </div>
 
     
     
-<p>Compiled: 26-02-2024</p>
+<p>Compiled: 07-10-2024</p>
 <p>Source: <code>vignettes/ST_basics.Rmd</code></p>
-<p>This tutorial covers the basics of using hdWGCNA to perform co-expression network analysis on spot-based spatial transcriptomics (ST) data like <a href="https://www.10xgenomics.com/products/spatial-gene-expression" class="external-link">10X Genomics Visium</a>. There are many different ST protocols, and datasets arising from these protocols tend to have different properties. For example, some ST protocols have single-cell resolution but only profile a subset of the transcriptome. On the other hand, some ST protocols like Visium and Slide-Seq <a href="https://curiobioscience.com/" class="external-link">(Curio Bioscience)</a> profile the whole transcriptome. Aside from hdWGCNA, in general datasets from different ST protocols may require different data analysis steps.</p>
-<p>In this tutorial, we demonstrate hdWGCNA using two ST datasets from different technologies. First, we use hdWGCNA to analyze a Visium ST dataset containing an anterior and posterior saggital section from the mouse brain. Next, we use hdWGCNA to analyze a Curio Seeker (Slide-Seq) dataset of the mouse hippocampus. Overall this tutorial is similar to the <a href="basic_tutorial.html">hdWGCNA in single-cell data</a> tutorial, and we recommend exploring that tutorial prior to this tutorial.</p>
+<p>This tutorial covers the basics of using hdWGCNA to perform co-expression network analysis on transcriptomics (ST) data. Here we primarily focus on sequencing-based approaches like <a href="https://www.10xgenomics.com/products/spatial-gene-expression" class="external-link">10X Genomics Visium</a>, <a href="https://curiobioscience.com/" class="external-link">(Curio Seeker)</a>, and <a href="https://www.10xgenomics.com/products/spatial-gene-expression" class="external-link">Visium HD</a>. Importantly, there are many different ST approaches resulting in datasets with shared and unique properties which we must consider in our data analysis. For example, some ST protocols have single-cell resolution but only profile a subset of the transcriptome. On the other hand, some ST protocols like Visium and Slide-Seq profile the whole transcriptome. Some ST protocols measure gene expression using sequencing, while others use imaging (i.e. <a href="https://www.10xgenomics.com/platforms/xenium" class="external-link">Xenium</a> and <a href="https://nanostring.com/products/cosmx-spatial-molecular-imager/" class="external-link">CosMX</a>).</p>
+<p>Datasets from different ST protocols may require different data analysis steps (i.e. quality control, normalization, clustering), and similarly we take specific steps to perform hdWGCNA for different types of ST. In this tutorial, we demonstrate hdWGCNA using ST datasets from different technologies. First, we use hdWGCNA to analyze a Visium ST dataset containing an anterior and posterior saggital section from the mouse brain. Next, we use hdWGCNA to analyze a Curio Seeker (Slide-Seq) dataset of the mouse hippocampus. Finally, we analyze a similar mouse brain dataset using Visium HD. Overall this tutorial is similar to the <a href="basic_tutorial.html">hdWGCNA in single-cell data</a> tutorial, and we recommend exploring that tutorial prior to this tutorial.</p>
 <div class="section level2">
 <h2 id="load-required-libraries">Load required libraries<a class="anchor" aria-label="anchor" href="#load-required-libraries"></a>
 </h2>
 <p>First we will load the required R libraries for this tutorial.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># single-cell analysis package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span>
-
-<span class="co"># package to install the mouse brain dataset</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.satijalab.org/seurat" class="external-link">SeuratData</a></span><span class="op">)</span>
-
-<span class="co"># plotting and data science packages</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
-
-<span class="co"># co-expression network analysis packages:</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span>
-
-<span class="co"># enable parallel processing for network analysis (optional)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/allowWGCNAThreads.html" class="external-link">enableWGCNAThreads</a></span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>
-
-<span class="co"># using the cowplot theme for ggplot</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># set random seed for reproducibility</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plotting and data science packages</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># co-expression network analysis packages:</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># enable parallel processing for network analysis (optional)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/allowWGCNAThreads.html" class="external-link">enableWGCNAThreads</a></span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># using the cowplot theme for ggplot</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set random seed for reproducibility</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="x-visium-dataset">10X Visium Dataset<a class="anchor" aria-label="anchor" href="#x-visium-dataset"></a>
 </h2>
 <p>In this section we demonstrate hdWGCNA in ST datasets using a publicly available Visium dataset of the mouse brain.</p>
 <div class="section level3">
-<h3 id="download-data-and-perform-clustering-analysis">Download data and perform clustering analysis<a class="anchor" aria-label="anchor" href="#download-data-and-perform-clustering-analysis"></a>
+<h3 id="load-data">Load data<a class="anchor" aria-label="anchor" href="#load-data"></a>
 </h3>
 <p>Here we use <code>SeuratData</code> to download the mouse brain ST dataset, and we will process the dataset using <code>Seurat</code>.</p>
 <details><summary>
 Note on <code>SeuratData</code> download
-</summary><p>In our own testing, we had difficulty running <code>InstallData</code> on our institution’s compute cluster, so we ran these commands locally and then copied the <code>.rds</code> file containing the Seurat object to the cluster for subsequent analysis.</p>
+</summary><p>In our own testing, we had difficulty running <code>InstallData</code> on our institution’s compute cluster, so we ran these commands locally and then copied the <code>.rds</code> file containing the Seurat seurat_vhd to the cluster for subsequent analysis.</p>
 </details><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># download the mouse brain ST dataset (stxBrain)</span>
-<span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/InstallData.html" class="external-link">InstallData</a></span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span>
-
-<span class="co"># load the anterior and posterior samples</span>
-<span class="va">brain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span>
-<span class="va">brain</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'anterior'</span>
-<span class="va">brain2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"posterior1"</span><span class="op">)</span>
-<span class="va">brain2</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'posterior'</span>
-
-<span class="co"># merge into one seurat object</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">brain</span>, <span class="va">brain2</span><span class="op">)</span>
-<span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># save unprocessed object</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'mouse_brain_ST_unprocessed.rds'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># package to install the mouse brain dataset</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.satijalab.org/seurat" class="external-link">SeuratData</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># download the mouse brain ST dataset (stxBrain)</span></span>
+<span><span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/InstallData.html" class="external-link">InstallData</a></span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load the anterior and posterior samples</span></span>
+<span><span class="va">brain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></span>
+<span><span class="va">brain</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'anterior'</span></span>
+<span><span class="va">brain2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"posterior1"</span><span class="op">)</span></span>
+<span><span class="va">brain2</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'posterior'</span></span>
+<span></span>
+<span><span class="co"># merge into one seurat seurat_vhd</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">brain</span>, <span class="va">brain2</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># save unprocessed seurat_vhd</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file<span class="op">=</span><span class="st">'mouse_brain_ST_unprocessed.rds'</span><span class="op">)</span></span></code></pre></div>
 <p>hdWGCNA requires the spatial coordinates to be stored in the <code>seurat_obj@meta.data</code> slot. Here we extract the image coordinates for the two samples, merge into a dataframe, and add it into the <code>seurat_obj@meta.data</code>. Specifically, the <code>seurat_obj@meta.data</code> must have columns named <code>row</code>, <code>col</code>, <code>imagerow</code>, and <code>imagecol</code> (shown below), otherwise the downstream steps will not work.</p>
+<p><strong>IMPORTANT NOTE</strong> As of Seurat version 5.1, the image class was updated from <code>VisiumV1</code> to <code>VisiumV2</code>. This changes how Seurat loads Visium data from the <code>spaceranger</code> outputs. hdWGCNA requires the spot coorinates in the array, and unfortunately as of Seurat version 5.1 this is no longer loaded by default with <code>Load10X_Spatial</code>. <code>spaceranger count</code> outputs a file called <a href="https://www.10xgenomics.com/support/software/space-ranger/latest/analysis/outputs/spatial-outputs" class="external-link"><code>tissue_positions.csv</code></a>, which contains these coordinates. If you are following with the tutorial dataset, at this time we recommend using a Seurat version before v5.1. <a href="https://github.com/smorabit/hdWGCNA/issues/278" class="external-link">Please see this GitHub issue for more information</a>.</p>
+<details><summary>
+Instructions for Seurat versions before v5.1
+</summary><p>If you are using a Seurat version older than v5.1, these coordinates are already loaded into the Seurat seurat_vhd, and you can use the following code to add the coordinates to the Seurat metadata slot.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># make a dataframe containing the image coordinates for each sample</span>
-<span class="va">image_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">images</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">seurat_obj</span><span class="op">@</span><span class="va">images</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">coordinates</span>
-<span class="op">}</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># merge the image_df with the Seurat metadata</span>
-<span class="va">new_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">image_df</span>, by<span class="op">=</span><span class="st">'row.names'</span><span class="op">)</span>
-
-<span class="co"># fix the row ordering to match the original seurat object</span>
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">new_meta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">Row.names</span>
-<span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">new_meta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="va">new_meta</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">[</span><span class="va">ix</span>,<span class="op">]</span>
-
-<span class="co"># add the new metadata to the seurat object</span>
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">new_meta</span>
-
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">image_df</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># make a dataframe containing the image coordinates for each sample</span></span>
+<span><span class="va">image_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">images</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">seurat_obj</span><span class="op">@</span><span class="va">images</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">coordinates</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># merge the image_df with the Seurat metadata</span></span>
+<span><span class="va">new_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">image_df</span>, by<span class="op">=</span><span class="st">'row.names'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># fix the row ordering to match the original seurat seurat_vhd</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">new_meta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">Row.names</span></span>
+<span><span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">new_meta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">new_meta</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">[</span><span class="va">ix</span>,<span class="op">]</span></span>
+<span></span>
+<span><span class="co"># add the new metadata to the seurat seurat_vhd</span></span>
+<span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="va">new_meta</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">image_df</span><span class="op">)</span></span></code></pre></div>
 <pre><code>    tissue row col imagerow imagecol
 AAACAAGTATCTCCCA-1_1      1  50 102     7475     8501
 AAACACCAATAACTGC-1_1      1  59  19     8553     2788
@@ -244,32 +193,51 @@ AAACAGAGCGACTCCT-1_1      1  14  94     3164     7950
 AAACAGCTTTCAGAAG-1_1      1  43   9     6637     2099
 AAACAGGGTCTATATT-1_1      1  47  13     7116     2375
 AAACATGGTGAGAGGA-1_1      1  62   0     8913     1480</code></pre>
-<p>Now we perform clustering analysis using Seurat.</p>
+</details><details><summary>
+Instructions for Seurat versions after v5.1
+</summary><p>If you are using a Seurat version v5.1 or newer, these coordinates are not loaded into the Seurat seurat_vhd by default. We need to load the <code>tissue_positions.csv</code> file from the <code>spaceranger</code> output and then add it into the Seurat seurat_vhd. This section is an example and you need to change the code to use your own file path. If your Seurat seurat_vhd contains more than one sample, you will need to repeat this since each sample will have its own <code>tissue_positions.csv</code> file.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># normalization, feature selection, scaling, and PCA</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># Louvain clustering and umap</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters</a></span><span class="op">(</span><span class="va">seurat_obj</span>,verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>
-
-<span class="co"># set factor level for anterior / posterior</span>
-<span class="va">seurat_mouse_vis</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_mouse_vis</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># show the UMAP</span>
-<span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label<span class="op">=</span><span class="cn">TRUE</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, group.by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">p1</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># add barcode column to Seurat obj </span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># update this with the path for your sample.</span></span>
+<span><span class="va">tissue_positions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">'path/to/tissue_positions.csv'</span><span class="op">)</span></span>
+<span><span class="va">tissue_positions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tissue_positions</span>, <span class="va">barcode</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">barcode</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># join the image_df with the Seurat metadata</span></span>
+<span><span class="va">new_meta</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">tissue_positions</span>, by<span class="op">=</span><span class="st">'barcode'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add the new metadata to the seurat seurat_vhd</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">row</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">array_row</span> </span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">imagerow</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">pxl_row_in_fullres</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">col</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">array_col</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">imagecol</span> <span class="op">&lt;-</span> <span class="va">new_meta</span><span class="op">$</span><span class="va">pxl_col_in_fullres</span></span></code></pre></div>
+</details><p>Now we perform clustering analysis using Seurat.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># normalization, feature selection, scaling, and PCA</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Louvain clustering and umap</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters</a></span><span class="op">(</span><span class="va">seurat_obj</span>,verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set factor level for anterior / posterior</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">region</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'anterior'</span>, <span class="st">'posterior'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># show the UMAP</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label<span class="op">=</span><span class="cn">TRUE</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, group.by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">p1</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/umap_clusters.png" width="600" height="600">
 </center>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="va">p2</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">p2</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/spatial_clusters.png" width="800" height="800">
 </center>
@@ -371,46 +339,46 @@ See cluster labels
 <td>Olfactory bulb fiber tracts</td>
 </tr>
 </tbody>
-</table></details><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># add annotations to Seurat object</span>
-<span class="va">annotations</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">'annotations.csv'</span><span class="op">)</span>
-<span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">seurat_clusters</span>, <span class="va">annotations</span><span class="op">$</span><span class="va">seurat_clusters</span><span class="op">)</span>
-<span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span> <span class="op">&lt;-</span> <span class="va">annotations</span><span class="op">$</span><span class="va">annotation</span><span class="op">[</span><span class="va">ix</span><span class="op">]</span>
-
-<span class="co"># set idents</span>
-<span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span>
-
-<span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+</table></details><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># add annotations to Seurat seurat_vhd</span></span>
+<span><span class="va">annotations</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">'annotations.csv'</span><span class="op">)</span></span>
+<span><span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">seurat_clusters</span>, <span class="va">annotations</span><span class="op">$</span><span class="va">seurat_clusters</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span> <span class="op">&lt;-</span> <span class="va">annotations</span><span class="op">$</span><span class="va">annotation</span><span class="op">[</span><span class="va">ix</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># set idents</span></span>
+<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span></span>
+<span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="construct-metaspots-with-hdwgcna">Construct metaspots with hdWGCNA<a class="anchor" aria-label="anchor" href="#construct-metaspots-with-hdwgcna"></a>
+<h3 id="construct-metaspots">Construct metaspots<a class="anchor" aria-label="anchor" href="#construct-metaspots"></a>
 </h3>
 <p>Visium ST generates sparse gene expression profiles in each spot, thus introducing the same potential pitfalls as single-cell data for co-expression network analysis. To alleviate these issues, hdWGCNA includes a data aggregation approach to produce spatial <strong>metaspots</strong>, similar to our metacell algorithm. This approach aggregates neighboring spots based on spatial coordinates rather than their transcriptomes. This procedure is performed in hdWGCNA using the <code>MetaspotsByGroups</code> function.</p>
 <center>
 <img src="figures/ST_basics/metaspot_explain.png" width="600" height="600">
 </center>
-<p>Here we set up the data for hdWGCNA and run <code>MetaspotsByGroups</code>. Similar to <code>MetacellsByGroups</code>, the <code>group.by</code> parameter slices the Seurat object to construct metaspots separately for each group. Here we are just grouping by the ST slides to perform this step separately for the anterior and posterior sample, but you could specify cluster or anatomical regions as well to suit your analysis.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  gene_select <span class="op">=</span> <span class="st">"fraction"</span>,
-  fraction <span class="op">=</span> <span class="fl">0.05</span>,
-  wgcna_name <span class="op">=</span> <span class="st">"vis"</span>
-<span class="op">)</span>
-
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetaspotsByGroups.html">MetaspotsByGroups</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region"</span><span class="op">)</span>,
-  ident.group <span class="op">=</span> <span class="st">"region"</span>,
-  assay <span class="op">=</span> <span class="st">'Spatial'</span>
-<span class="op">)</span>
-<span class="va">seurat_obj</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
-<p>The metaspot object is used everywhere that the metacell object would be used for downstream analysis. For example, to extract the metaspot object, you can run the <code>GetMetacellObject</code> function.</p>
+<p>Here we set up the data for hdWGCNA and run<code>MetaspotsByGroups</code>. Similar to <code>MetacellsByGroups</code>, the <code>group.by</code> parameter slices the Seurat seurat_vhd to construct metaspots separately for each group. Here we are just grouping by the ST slides to perform this step separately for the anterior and posterior sample, but you could specify cluster or anatomical regions as well to suit your analysis.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">m_obj</span></code></pre></div>
-<pre><code>An object of class Seurat
+<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  gene_select <span class="op">=</span> <span class="st">"fraction"</span>,</span>
+<span>  fraction <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"vis"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetaspotsByGroups.html">MetaspotsByGroups</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region"</span><span class="op">)</span>,</span>
+<span>  ident.group <span class="op">=</span> <span class="st">"region"</span>,</span>
+<span>  assay <span class="op">=</span> <span class="st">'Spatial'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
+<p>The metaspot seurat_vhd is used everywhere that the metacell seurat_vhd would be used for downstream analysis. For example, to extract the metaspot seurat_vhd, you can run the <code>GetMetacellseurat_vhd</code> function.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu">GetMetacellseurat_vhd</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">m_obj</span></span></code></pre></div>
+<pre><code>An seurat_vhd of class Seurat
 31053 features across 1505 samples within 1 assay
 Active assay: Spatial (31053 features, 0 variable features)</code></pre>
 </div>
@@ -418,106 +386,106 @@ Active assay: Spatial (31053 features, 0 variable features)</code></pre>
 <h3 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h3>
 <p>Now we are ready to perform co-expression network analysis using an identical pipeline to the single-cell workflow. For this analysis, we are performing brain-wide network analysis using all spots from all regions, but this analysis could be adjusted to perform network analysis on specific regions.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># set up the expression matrix, set group.by and group_name to NULL to include all spots</span>
-<span class="va">seurat_obj</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  group.by<span class="op">=</span><span class="cn">NULL</span>,
-  group_name <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span>
-
-<span class="co"># test different soft power thresholds</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set up the expression matrix, set group.by and group_name to NULL to include all spots</span></span>
+<span><span class="va">seurat_obj</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  group.by<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># test different soft power thresholds</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotSoftPowers.html">PlotSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/test_softpower.png" width="800" height="600">
 </center>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># construct co-expression network:</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  tom_name<span class="op">=</span><span class="st">'test'</span>,
-  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span>
-<span class="op">)</span>
-
-<span class="co"># plot the dendrogram</span>
-<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Spatial hdWGCNA dendrogram'</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># construct co-expression network:</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  tom_name<span class="op">=</span><span class="st">'test'</span>,</span>
+<span>  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the dendrogram</span></span>
+<span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Spatial hdWGCNA dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/dendro.png" width="800" height="600">
 </center>
 <p>Next, we compute module eigengenes (MEs) and eigengene-based connectivities (kMEs) using the <code>ModuleEigengenes</code> and <code>ModuleConnectivity</code> functions respectively.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></code></pre></div>
-<p>Here we reset the module names with the prefix “SM” (spatial modules). This step is optional.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  new_name <span class="op">=</span> <span class="st">"SM"</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
+<p>Here we reset the module names with the prefix “SM” (spatial modules). This step is optional.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  new_name <span class="op">=</span> <span class="st">"SM"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="data-visualization">Data visualization<a class="anchor" aria-label="anchor" href="#data-visualization"></a>
 </h3>
 <p>Here we visualize module eigengenes using the Seurat functions <code>DotPlot</code> and <code>SpatialFeaturePlot</code>. For network visualization, please refer to the <a href="network_visualizations.html">Network visualization tutorial</a>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get module eigengenes and gene-module assignment tables</span>
-<span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span>
-
-<span class="co"># add the MEs to the seurat metadata so we can plot it with Seurat functions</span>
-<span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">MEs</span><span class="op">)</span>
-
-<span class="co"># plot with Seurat's DotPlot function</span>
-<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'annotation'</span>, dot.min<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>
-
-<span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span>
-<span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient2</a></span><span class="op">(</span>high<span class="op">=</span><span class="st">'red'</span>, mid<span class="op">=</span><span class="st">'grey95'</span>, low<span class="op">=</span><span class="st">'blue'</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span>
-
-<span class="va">p</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get module eigengenes and gene-module assignment tables</span></span>
+<span><span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span>; <span class="va">mods</span> <span class="op">&lt;-</span> <span class="va">mods</span><span class="op">[</span><span class="va">mods</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># add the MEs to the seurat metadata so we can plot it with Seurat functions</span></span>
+<span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">MEs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot with Seurat's DotPlot function</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html" class="external-link">DotPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, features<span class="op">=</span><span class="va">mods</span>, group.by <span class="op">=</span> <span class="st">'annotation'</span>, dot.min<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># flip the x/y axes, rotate the axis labels, and change color scheme:</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient2</a></span><span class="op">(</span>high<span class="op">=</span><span class="st">'red'</span>, mid<span class="op">=</span><span class="st">'grey95'</span>, low<span class="op">=</span><span class="st">'blue'</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">''</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/MEs_dotplot.png" width="800" height="500">
 </center>
 <p>We can visualize the MEs directly on the spatial coordinates using <code>SpatialFeaturePlot</code>.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialFeaturePlot</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  features <span class="op">=</span> <span class="va">mods</span>,
-  alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span><span class="op">)</span>,
-  ncol <span class="op">=</span> <span class="fl">8</span>
-<span class="op">)</span>
-
-<span class="va">p</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialFeaturePlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  features <span class="op">=</span> <span class="va">mods</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  ncol <span class="op">=</span> <span class="fl">8</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/MEs_featureplot.png" width="800" height="400">
 </center>
 <p>Next we visualize the co-expression network using UMAP. Please refer to the <a href="network_visualizations.html">network visualization tutorial</a> for more details about visualizing the co-expression network.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># perform UMAP embedding on the co-expression network</span>
-<span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  n_hubs <span class="op">=</span> <span class="fl">5</span>,
-  n_neighbors<span class="op">=</span><span class="fl">15</span>,
-  min_dist<span class="op">=</span><span class="fl">0.3</span>,
-  spread<span class="op">=</span><span class="fl">1</span>
-<span class="op">)</span>
-
-<span class="co"># make the network plot</span>
-<span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span>
-  <span class="va">seurat_obj</span>,
-  edge.alpha<span class="op">=</span><span class="fl">0.5</span>,
-  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,
-  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>,
-  edge_prop<span class="op">=</span><span class="fl">0.075</span>, 
-  label_hubs<span class="op">=</span><span class="fl">5</span> 
-<span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># perform UMAP embedding on the co-expression network</span></span>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  n_hubs <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  n_neighbors<span class="op">=</span><span class="fl">15</span>,</span>
+<span>  min_dist<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span>  spread<span class="op">=</span><span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make the network plot</span></span>
+<span><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  edge.alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span>  sample_edges<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>  keep_grey_edges<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>  edge_prop<span class="op">=</span><span class="fl">0.075</span>, </span>
+<span>  label_hubs<span class="op">=</span><span class="fl">5</span> </span>
+<span><span class="op">)</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/mouse_vis_hubgene_umap_igraph.png" width="800" height="800">
 </center>
@@ -526,207 +494,349 @@ Active assay: Spatial (31053 features, 0 variable features)</code></pre>
 <div class="section level2">
 <h2 id="curio-seeker-dataset">Curio Seeker Dataset<a class="anchor" aria-label="anchor" href="#curio-seeker-dataset"></a>
 </h2>
-<p>In this section we perform a similar analysis using a mouse hippocampus dataset from Curio Bioscience. This dataset is not publicly available, but we obtained this dataset directly from Curio by filling out <a href="https://curiobioscience.com/example-data/" class="external-link">this form on their website</a>. Curio provided a fully processed Seurat object, so for this tutorial we are simply using the Seurat object and clustering that they provided.</p>
+<p>In this section we perform a similar analysis using a mouse hippocampus dataset from Curio Bioscience. This dataset is not publicly available, but we obtained this dataset directly from Curio by filling out <a href="https://curiobioscience.com/example-data/" class="external-link">this form on their website</a>. Curio provided a fully processed Seurat seurat_vhd, so for this tutorial we are simply using the Seurat seurat_vhd and clustering that they provided.</p>
 <div class="section level3">
 <h3 id="load-dataset">Load dataset<a class="anchor" aria-label="anchor" href="#load-dataset"></a>
 </h3>
-<p>First we load the Seurat object containing the mouse hippocampus dataset provided by Curio. We will also make a few plots to show the clustering in transcriptome space (UMAP reduction) and in the biological coordinates. Note that this dataset provides a “dim reduction” called “SPATIAL” which contains the 2D biological coordinates.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># load the Seurat object</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'curio_datasets/Mouse_hippocampus_v1pt1/Mouse_hippocampus_seurat.rds'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># make a dimplot in transcriptome space</span>
-<span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_curio</span>, label<span class="op">=</span><span class="cn">TRUE</span>, reduction <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'UMAP'</span><span class="op">)</span>
-
-<span class="co"># make a dimplot in biological space</span>
-<span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_curio</span>, reduction<span class="op">=</span><span class="st">'SPATIAL'</span>, pt.size<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Spatial'</span><span class="op">)</span>
-
-<span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></code></pre></div>
+<p>First we load the Seurat seurat_vhd containing the mouse hippocampus dataset provided by Curio. We will also make a few plots to show the clustering in transcriptome space (UMAP reduction) and in the biological coordinates. Note that this dataset provides a “dim reduction” called “SPATIAL” which contains the 2D biological coordinates.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># load the Seurat seurat_vhd</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'curio_datasets/Mouse_hippocampus_v1pt1/Mouse_hippocampus_seurat.rds'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make a dimplot in transcriptome space</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_curio</span>, label<span class="op">=</span><span class="cn">TRUE</span>, reduction <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'UMAP'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make a dimplot in biological space</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_curio</span>, reduction<span class="op">=</span><span class="st">'SPATIAL'</span>, pt.size<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Spatial'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/spatial_clusters_curio.png" width="800" height="800">
 </center>
 <p>This plot is a little crowded so can make another <code>DimPlot</code> split by cluster to see each<br>
 cluster on its own.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>, 
-  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,
-  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,
-  ncol<span class="op">=</span><span class="fl">6</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> 
-
-<span class="va">p</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>, </span>
+<span>  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,</span>
+<span>  ncol<span class="op">=</span><span class="fl">6</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/spatial_clusters_curio_split.png" width="800" height="800">
 </center>
 </div>
 <div class="section level3">
-<h3 id="construct-metacells-with-hdwgcna">Construct metacells with hdWGCNA<a class="anchor" aria-label="anchor" href="#construct-metacells-with-hdwgcna"></a>
+<h3 id="construct-metacells-with-metacellsbygroups">Construct Metacells with <code>MetacellsByGroups</code><a class="anchor" aria-label="anchor" href="#construct-metacells-with-metacellsbygroups"></a>
 </h3>
 <p>While Visium ST uses a grid of spots to assign molecular barcodes in space, Curio Seeker uses small beads to capture transcriptome information at 10 microns. Importantly, these beads are not regularly spaced like in Visium. Therefore, the <code>MetaspotsByGroups</code> function that we used for the Visium dataset is not appropriate for Curio Seeker data. Instead, we will use <code>MetacellsByGroups</code> but we will specify the <code>reduction</code> as the spatial information, so cells that are close together in biological space will be aggregated into metacells.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Change the default assay to "RNA", SCTransform is generally not recommended for hdWGCNA.</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_curio</span>, <span class="st">'RNA'</span><span class="op">)</span>
-
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>,
-  gene_select <span class="op">=</span> <span class="st">"fraction"</span>, 
-  fraction <span class="op">=</span> <span class="fl">0.01</span>, 
-  wgcna_name <span class="op">=</span> <span class="st">"curio"</span> 
-<span class="op">)</span>
-
-<span class="co"># construct metacells  in each group</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span>
-  seurat_obj <span class="op">=</span> <span class="va">seurat_curio</span>,
-  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"seurat_clusters"</span><span class="op">)</span>, 
-  ident.group <span class="op">=</span> <span class="st">'seurat_clusters'</span>,
-  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,
-  k <span class="op">=</span> <span class="fl">50</span>, 
-  max_shared <span class="op">=</span> <span class="fl">15</span>, 
-  assay <span class="op">=</span> <span class="st">'RNA'</span>
-<span class="op">)</span>
-
-<span class="co"># normalize metacell expression matrix:</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></code></pre></div>
-<p>We can calculate the average X and Y coordinates for each metacell and plot them to check if they are aggregated based on spatial proximity for each cluster as we expect.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Change the default assay to "RNA", SCTransform is generally not recommended for hdWGCNA.</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_curio</span>, <span class="st">'RNA'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>,</span>
+<span>  gene_select <span class="op">=</span> <span class="st">"fraction"</span>, </span>
+<span>  fraction <span class="op">=</span> <span class="fl">0.01</span>, </span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"curio"</span> </span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct metacells  in each group</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_curio</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"seurat_clusters"</span><span class="op">)</span>, </span>
+<span>  ident.group <span class="op">=</span> <span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">50</span>, </span>
+<span>  max_shared <span class="op">=</span> <span class="fl">15</span>, </span>
+<span>  assay <span class="op">=</span> <span class="st">'RNA'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># normalize metacell expression matrix:</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></span></code></pre></div>
+<p>We can calculate the average X and Y coordinates for each metacell and plot them to check if they are aggregated based on spatial proximityfor each cluster as we expect.</p>
 <center>
 <img src="figures/ST_basics/spatial_clusters_curio_split_metacell.png" width="800" height="800">
 </center>
 <details><summary>
 Show code for calculating metacell spatial coordinates
-</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get the metacell object</span>
-<span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span>
-<span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>
-  <span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span>,
-  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">$</span><span class="va">seurat_clusters</span><span class="op">)</span>
-<span class="op">)</span>
-
-<span class="co"># get the image coordinates from the seurat obj and add to the metadata</span>
-<span class="va">spatial_coords</span> <span class="op">&lt;-</span> <span class="va">seurat_curio</span><span class="op">@</span><span class="va">images</span><span class="op">$</span><span class="va">slice1</span><span class="op">@</span><span class="va">coordinates</span>
-<span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">x</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span>
-<span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">y</span>
-<span class="va">seurat_curio</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span>
-
-<span class="co"># loop over each metacell and calculate the average X and Y</span>
-<span class="va">meta_spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">m_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">cells_merged</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>
-  <span class="va">cur_bcs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html" class="external-link">str_split</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">','</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
-  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">barcode</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">cur_bcs</span><span class="op">)</span>
-  <span class="va">cur_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_x</span><span class="op">)</span>
-  <span class="va">cur_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_y</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>spatial_1 <span class="op">=</span> <span class="va">cur_y</span>, spatial_2<span class="op">=</span><span class="va">cur_x</span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span>
-
-<span class="co"># add this as a dim reduct</span>
-<span class="va">m_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span>
-  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span>,
-  key <span class="op">=</span> <span class="st">'spatial'</span>
-<span class="op">)</span>
-
-<span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span>
-  <span class="va">m_obj</span>, 
-  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,
-  reduction <span class="op">=</span> <span class="st">'spatial'</span>,
-  ncol<span class="op">=</span><span class="fl">6</span>
-<span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> 
-
-<span class="va">p</span></code></pre></div>
+</summary><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get the metacell seurat_vhd</span></span>
+<span><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu">GetMetacellseurat_vhd</span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></span>
+<span><span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>  <span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span>,</span>
+<span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">$</span><span class="va">seurat_clusters</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the image coordinates from the seurat obj and add to the metadata</span></span>
+<span><span class="va">spatial_coords</span> <span class="op">&lt;-</span> <span class="va">seurat_curio</span><span class="op">@</span><span class="va">images</span><span class="op">$</span><span class="va">slice1</span><span class="op">@</span><span class="va">coordinates</span></span>
+<span><span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">x</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span></span>
+<span><span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">y</span></span>
+<span><span class="va">seurat_curio</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># loop over each metacell and calculate the average X and Y</span></span>
+<span><span class="va">meta_spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">m_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">cells_merged</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span>  <span class="va">cur_bcs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html" class="external-link">str_split</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">','</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">barcode</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">cur_bcs</span><span class="op">)</span></span>
+<span>  <span class="va">cur_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_x</span><span class="op">)</span></span>
+<span>  <span class="va">cur_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_y</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>spatial_1 <span class="op">=</span> <span class="va">cur_y</span>, spatial_2<span class="op">=</span><span class="va">cur_x</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add this as a dim reduct</span></span>
+<span><span class="va">m_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu">CreateDimReducseurat_vhd</span><span class="op">(</span></span>
+<span>  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span>,</span>
+<span>  key <span class="op">=</span> <span class="st">'spatial'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">m_obj</span>, </span>
+<span>  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'spatial'</span>,</span>
+<span>  ncol<span class="op">=</span><span class="fl">6</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
 </details>
 </div>
 <div class="section level3">
 <h3 id="co-expression-network-analysis-1">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis-1"></a>
 </h3>
 <p>Now that we have our metacells, we next carry out co-expression network analysis with hdWGCNA, similar to as we have done before. Here we perform network analysis on cluster 6, which appears to contain the pyramidal layer of the hippocampus and the granular layer of the dentate gyrus.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># set up the expression matrix</span>
-<span class="va">seurat_curio</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>,
-  group.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,
-  group_name <span class="op">=</span> <span class="st">'6'</span>
-<span class="op">)</span>
-
-<span class="co"># test different soft power thresholds</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span>
-
-<span class="co"># construct co-expression network:</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>,
-  tom_name<span class="op">=</span><span class="st">'curio'</span>,
-  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span>
-<span class="op">)</span>
-
-<span class="co"># compute module eigengenes &amp; connectivity</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span>
-<span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>,
-  group.by <span class="op">=</span> <span class="st">'seurat_clusters'</span>, 
-  group_name <span class="op">=</span> <span class="st">'6'</span>
-<span class="op">)</span>
-
-<span class="co"># plot the dendrogram </span>
-<span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_curio</span>, main<span class="op">=</span><span class="st">'Curio hdWGCNA dendrogram'</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set up the expression matrix</span></span>
+<span><span class="va">seurat_curio</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>,</span>
+<span>  group.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="st">'6'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># test different soft power thresholds</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct co-expression network:</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>,</span>
+<span>  tom_name<span class="op">=</span><span class="st">'curio'</span>,</span>
+<span>  overwrite_tom<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># compute module eigengenes &amp; connectivity</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_curio</span><span class="op">)</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="st">'seurat_clusters'</span>, </span>
+<span>  group_name <span class="op">=</span> <span class="st">'6'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the dendrogram </span></span>
+<span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_curio</span>, main<span class="op">=</span><span class="st">'Curio hdWGCNA dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/dendro_curio.png" width="800" height="800">
 </center>
 <p>Next we plot the expression of these modules in the tissue coordinates.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span>
-  <span class="va">seurat_curio</span>,
-  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,
-  restrict_range<span class="op">=</span><span class="cn">FALSE</span>
-<span class="op">)</span>
-
-<span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_curio</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'SPATIAL'</span>,</span>
+<span>  restrict_range<span class="op">=</span><span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <center>
 <img src="figures/ST_basics/MEs_featureplot_curio.png" width="800" height="800">
 </center>
-<p>This concludes the part of the tutorial for the Curio dataset, but from here we could proceed to perform downstream visualization and analysis.</p>
+<p>This concludes the part of the tutorial for the Curio dataset, but from here we could proceed to perform downstream analysis and more data visualization.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="x-visium-hd-dataset">10X Visium HD Dataset<a class="anchor" aria-label="anchor" href="#x-visium-hd-dataset"></a>
+</h2>
+<p>Here we perform a similar analysis using Visium HD, the second major version of sequencing-based ST from 10X Genomics. This is a similar technology to the standard Visium, where the main difference is that the “spots” are much smaller and there is no gap in between them. Visium HD spots are closer to single-cell resolution, however some spots may still span more than one cell, and furthermore one spot could be subcellular.</p>
+<p>Overall, this workflow is similar to the one shown for the Curio Seeker dataset.</p>
+<div class="section level3">
+<h3 id="load-dataset-1">Load dataset<a class="anchor" aria-label="anchor" href="#load-dataset-1"></a>
+</h3>
+<p>The mouse brain Visium HD dataset can be downloaded diectly from 10X Genomics <a href="https://www.10xgenomics.com/datasets/visium-hd-cytassist-gene-expression-mouse-brain-fresh-frozen" class="external-link">at this link</a>.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># use the 008um resolution for this tutorial</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/Load10X_Spatial.html" class="external-link">Load10X_Spatial</a></span><span class="op">(</span>data.dir<span class="op">=</span><span class="st">'path/to/dataset/square_008um/'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="clustering-analysis">Clustering analysis<a class="anchor" aria-label="anchor" href="#clustering-analysis"></a>
+</h3>
+<p>Here we follow the Seurat Visium HD tutorial to perform a basic clustering analysis. In practice, you should perform clustering analysis and QC that best suits your dataset, here we simply use Seurat for convenience to demonstrate hdWGCNA.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors</a></span><span class="op">(</span><span class="va">seurat_vhd</span>, reduction <span class="op">=</span> <span class="st">"pca"</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_vhd</span>, </span>
+<span>  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'spatial'</span>,</span>
+<span>  ncol<span class="op">=</span><span class="fl">9</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
+<center>
+<img src="figures/ST_basics/spatial_clusters_vhd_split.png" width="800" height="800">
+</center>
+</div>
+<div class="section level3">
+<h3 id="construct-metacells-with-metacellsbygroups-1">Construct Metacells with <code>MetacellsByGroups</code><a class="anchor" aria-label="anchor" href="#construct-metacells-with-metacellsbygroups-1"></a>
+</h3>
+<p>Here we set up the genes that we will use for co-expression network analysis (variable features), and then we construct metacells. For Visium HD, we will merge spatially proximal spots using the <code>MetacellsByGroups</code> function instead of <code>MetaspotsByGroups</code>, which is only used for standard Visium. In order for us to use <code>MetacellsByGroups</code> for spatial data, similar to the Curio dataset, we need to create a “dimensionality reduction” in the Seurat object that contains the spatial coordinates.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># create the spatial reduction</span></span>
+<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="st">'y'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'spatial_1'</span>, <span class="st">'spatial_2'</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span>  embeddings <span class="op">=</span> <span class="va">coords</span>,</span>
+<span>  assay <span class="op">=</span> <span class="st">'RNA'</span>,</span>
+<span>  key <span class="op">=</span> <span class="st">'spatial_'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_vhd</span>,</span>
+<span>  gene_select <span class="op">=</span> <span class="st">"variable"</span>, </span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"vhd"</span> </span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct metacells  in each group</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_vhd</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"seurat_clusters"</span><span class="op">)</span>, </span>
+<span>  ident.group <span class="op">=</span> <span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'spatial'</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">50</span>, </span>
+<span>  max_shared <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>We can calculate the average X and Y coordinates for each metacell and plot them to check if they are aggregated based on spatial proximityfor each cluster as we expect.</p>
+<center>
+<img src="figures/ST_basics/spatial_clusters_vhd_split_metacell.png" width="1200" height="800">
+</center>
+<details><summary>
+Show code for calculating metacell spatial coordinates
+</summary><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get the metacell object</span></span>
+<span><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>  <span class="va">m_obj</span><span class="op">$</span><span class="va">seurat_clusters</span>,</span>
+<span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">$</span><span class="va">seurat_clusters</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get the image coordinates from the seurat obj and add to the metadata</span></span>
+<span><span class="va">spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span><span class="op">@</span><span class="va">cell.embeddings</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">Spatial_1</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">Spatial_2</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># loop over each metacell and calculate the average X and Y</span></span>
+<span><span class="va">meta_spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">m_obj</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">cells_merged</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span>  <span class="va">cur_bcs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html" class="external-link">str_split</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">','</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">cur_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">barcode</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">cur_bcs</span><span class="op">)</span></span>
+<span>  <span class="va">cur_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_x</span><span class="op">)</span></span>
+<span>  <span class="va">cur_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cur_df</span><span class="op">$</span><span class="va">spatial_y</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>spatial_1 <span class="op">=</span> <span class="va">cur_y</span>, spatial_2<span class="op">=</span><span class="va">cur_x</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add this as a dim reduct</span></span>
+<span><span class="va">m_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span>  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span>,</span>
+<span>  key <span class="op">=</span> <span class="st">'spatial'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">m_obj</span>, </span>
+<span>  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'spatial'</span>,</span>
+<span>  ncol<span class="op">=</span><span class="fl">9</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">p</span></span></code></pre></div>
+</details>
+</div>
+<div class="section level3">
+<h3 id="co-expression-network-analysis-2">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis-2"></a>
+</h3>
+<p>We are now ready to perform co-expression network analysis, similar to as we did above.</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set up the expression matrix</span></span>
+<span><span class="va">seurat_vhd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># test different soft power thresholds</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct co-expression network:</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_vhd</span>,</span>
+<span>  tom_name<span class="op">=</span><span class="st">'vhd'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># compute module eigengenes &amp; connectivity</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_vhd</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot the dendrogram</span></span>
+<span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_vhd</span>, main<span class="op">=</span><span class="st">'Visium HD hdWGCNA dendrogram'</span><span class="op">)</span></span></code></pre></div>
+<center>
+<img src="figures/ST_basics/vhd_dendro.png" width="1200" height="800">
+</center>
+<p>Next we plot the expression of these modules in the spatial coordinates.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_vhd</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'spatial'</span>,</span>
+<span>  restrict_range<span class="op">=</span><span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<center>
+<img src="figures/ST_basics/vhd_featureplots.png" width="1200" height="800">
+</center>
+<p>This concludes the part of the tutorial for the Visium HD dataset, but from here we could proceed to perform downstream analysis and more data visualization.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="conclusion-and-next-steps">Conclusion and next steps<a class="anchor" aria-label="anchor" href="#conclusion-and-next-steps"></a>
 </h2>
 <p>In this tutorial we demonstrated the core functions for performing co-expression network analysis in two types of ST datasets: Visium and Slide-Seq. From here we encourage you to explore our <a href="hdWGCNA.html">other tutorials</a> for downstream analysis of these co-expression networks.</p>
-<details><summary>
-Session Info
-</summary><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">SessionInfo</span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<pre><code>Put it here </code></pre>
-</details>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
-
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by <a href="https://smorabit.github.io" class="external-link">Sam Morabito</a>, <a href="https://swaruplab.bio.uci.edu/" class="external-link">Swarup Lab</a>.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
 
-  
 
 
-  
+
 
   </body>
 </html>

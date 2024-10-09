@@ -1,14 +1,24 @@
-citHeader("To cite hdWGCNA in publications, please use:")
-
 citEntry(
   entry    = "article",
   title    = "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.",
   author   = "Samuel Morabito, Fairlie Reese, Negin Rahimzadeh, Emily Miyoshi, Vivek Swarup",
-  journal  = "Cell reports Methods",
+  journal  = "Cell Reports Methods",
   year     = "2023",
-  url      = "https://www.biorxiv.org/content/10.1101/2022.09.22.509094v1",
+  url      = "https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3",
   textVersion = paste(
-    "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data. Cell Reports Methods (2023) [hdWGCNA]"
+    "Morabito et al. hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data. Cell Reports Methods (2023) [hdWGCNA]"
+  )
+)
+
+citEntry(
+  entry    = "Article",
+  title    = "Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice",
+  author   = "Jessica E. Childs, Samuel Morabito, Sudeshna Das, Caterina Santelli, Victoria Pham, Kelly Kusche, Vanessa Alizo Vera, Fairlie Reese, Rianne R. Campbell, Dina P. Matheos, Vivek Swarup, Marcelo A. Wood",
+  journal  = "Cell Reports",
+  year     = "2024",
+  url      = "https://www.sciencedirect.com/science/article/pii/S2211124724002845",
+  textVersion = paste(
+    "Transcription Factor Regulatory Network Analysis in hdWGCNA"
   )
 )
 
@@ -18,11 +28,8 @@ citEntry(
   author   = "Samuel Morabito, Emily Miyoshi, Neethu Michael, Saba Shahin, Alessandra Cadete Martini, Elizabeth Head, Justine Silva, Kelsey Leavy, Mari Perez-Rosendahl, Vivek Swarup",
   journal  = "Nature Genetics",
   year     = "2021",
-  volume   = "53",
-  number   = "",
-  pages    = "1143–1155",
   url      = "https://doi.org/10.1038/s41588-021-00894-z",
   textVersion = paste(
-    "Morabito and Miyoshi et al. Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease. Nature Genetics (2021) [scWGCNA]"
+    "Original implementation of single-cell WGCNA (scWGCNA)"
   )
 )

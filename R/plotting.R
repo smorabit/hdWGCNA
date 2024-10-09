@@ -2033,191 +2033,6 @@ PlotModuleTraitCorrelation <- function(
 
 
 
-#' ModuleTFNetwork
-#'
-#' Plotting the relationships between a TF and the co-expression modules
-#'
-#' @param seurat_obj A Seurat object
-#' @param tf_name the Motif name for the tf
-#' @param tf_gene_name the gene associated with this tf in the rownames(seurat_obj)
-#' @param edge.alpha scaling factor for edge opacity in the network
-#' @param cor_thresh threshold to plot correlation edges between modules
-#' @param high_color color for positive correlation
-#' @param mid_color color for zero correlation
-#' @param low_color color for negative correlation
-#' @param slot the slot in the seurat object to extract expression data for the tf_gene_name
-#' @param size.scale scaling factor for the size of each node
-#' @param tf_x x coordinate for the TF if the TF is not found in the UMAP
-#' @param tf_y y coordinate for the TF if the TF is not foudn in the UMAP
-#' @param wgcna_name the name of the WGCNA experiment in the seurat object
-#' @keywords scRNA-seq
-#' @export
-#' @examples
-#' ModuleTFNetwork
-ModuleTFNetwork <- function(
-  seurat_obj,
-  tf_name,
-  tf_gene_name,
-  edge.alpha = 0.75,
-  cor_thresh =  0.25,
-  high_color = 'red',
-  mid_color = 'grey',
-  low_color = 'blue',
-  slot = 'data',
-  size.scale = 30,
-  tf_x = 0,
-  tf_y = 0,
-  wgcna_name = NULL
-
-){
-
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-
-  # get modules,
-  modules <- GetModules(seurat_obj, wgcna_name) %>%
-    subset(module != 'grey') %>%
-    mutate(module = droplevels(module))
-  MEs <- GetMEs(seurat_obj, TRUE, wgcna_name) %>% as.matrix
-  MEs <- MEs[,colnames(MEs) != 'grey']
-  mod_sizes <- table(modules$module)
-
-  # correlation of MEs:
-  module_cor <- Hmisc::rcorr(x=MEs, type='pearson')$r
-  module_cor[lower.tri(module_cor)] <- NA
-  module_cor <- reshape2::melt(module_cor) %>% na.omit
-  module_cor <- subset(module_cor, abs(value) >= cor_thresh & Var1 != Var2)
-  module_cor
-
-  # correlation of modules with TF expression:
-  cur_exp <- GetAssayData(seurat_obj, slot=slot)[tf_gene_name,]
-  exp_cor <- Hmisc::rcorr(x=MEs, y=cur_exp)$r[1:ncol(MEs),'y']
-  exp_cor <- data.frame(
-    mod = names(exp_cor),
-    value = as.numeric(exp_cor)
-  )
-
-  plot_lim <- abs(max(c(abs(range(exp_cor$value)), abs(range(module_cor$value)))))
-
-  # make a dummy ggplot so I can get the colors:
-  p <- ggplot(module_cor, aes(x=Var1, y=Var2, color=value)) +
-    geom_point() +
-    scale_color_gradient2(high=high_color, mid=mid_color, low=low_color, limits=c(-1*plot_lim, plot_lim))
-  ggp <- ggplot_build(p)
-  module_cor$color <- ggp$data[[1]]$colour
-
-  p <- ggplot(exp_cor, aes(x=mod, y=mod, color=value)) +
-    geom_point() +
-    scale_color_gradient2(high=high_color, mid=mid_color, low=low_color, limits=c(-1*plot_lim, plot_lim))
-  ggp <- ggplot_build(p)
-  exp_cor$color <- ggp$data[[1]]$colour
-
-  # get the UMAP df:
-  umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
-  mods <- levels(umap_df$modules)
-
-  # get tf info
-  tf_match <- GetMotifMatrix(seurat_obj)
-  tf_targets <- GetMotifTargets(seurat_obj)
-  motif_df <- GetMotifs(seurat_obj)
-  overlap_df <- GetMotifOverlap(seurat_obj)
-
-  # compute the UMAP centroids:
-  centroid_df <-
-    umap_df %>% dplyr::select(c(UMAP1, UMAP2, module)) %>%
-    dplyr::group_by(module) %>%
-    dplyr::summarise(x = mean(UMAP1), y = mean(UMAP2))
-
-  # subset overlap_df by current TF:
-  cur_overlap <- subset(overlap_df, tf == tf_name)
-
-  # combine the two datasets:
-  node_df <- dplyr::left_join(centroid_df, cur_overlap, by='module') %>%
-    dplyr::rename(c(UMAP1=x, UMAP2=y, name=module))
-
-  node_df$size <- as.numeric(node_df$size_intersection) / as.numeric(mod_sizes)
-
-  # add info for tf to this table:
-  if(tf_gene_name %in% umap_df$gene){
-    tf_df <- umap_df[umap_df$gene == tf_gene_name, ] %>%
-      dplyr::select(-c(hub, kME, module)) %>%
-      dplyr::rename(name=gene)
-  } else{
-    tf_df <- data.frame(
-      name = tf_gene_name,
-      module = 'grey',
-      color = 'grey',
-      UMAP1 = tf_x,
-      UMAP2 = tf_y
-    )
-  }
-
-  tf_df$size <- 0.25
-
-  # set up edge df
-  edge_df <- data.frame(
-    Var1 = tf_gene_name,
-    Var2 = as.character(node_df$name),
-    value = node_df$odds_ratio,
-    color = exp_cor$color
-  )
-
-  # set the edge color to grey if the overlap isn't significant:
-  edge_df$color <- ifelse(node_df$fdr <= 0.05, edge_df$color, 'grey')
-  edge_df <- subset(edge_df, color != 'grey')
-
-  # set up node df
-  node_df <- dplyr::bind_rows(node_df, tf_df) %>% as.data.frame()
-  rownames(node_df) <- as.character(node_df$name)
-
-  # set up directed edge df:
-  g1 <- igraph::graph_from_data_frame(
-    edge_df,
-    directed=TRUE,
-    vertices=node_df
-  )
-
-  # set up undirected net
-  g2 <- igraph::graph_from_data_frame(
-    module_cor,
-    directed=FALSE,
-    vertices=node_df
-  )
-
-
-  plot(
-    g2,
-    layout = as.matrix(node_df[,c('UMAP1', 'UMAP2')]),
-    vertex.size=1,
-    edge.curved=0,
-    edge.width=1,
-    vertex.color='grey',
-    vertex.label='',
-    edge.color=adjustcolor(igraph::E(g2)$color, alpha.f=edge.alpha),
-  )
-
-  plot(
-    g1,
-    layout = as.matrix(node_df[,c('UMAP1', 'UMAP2')]),
-    edge.color=adjustcolor(igraph::E(g1)$color),
-    vertex.size=igraph::V(g1)$size * size.scale,
-    edge.curved=0,
-    edge.width=edge_df$value*2,
-    vertex.color=igraph::V(g1)$color,
-    vertex.label=igraph::V(g1)$name,
-    vertex.label.dist=1.1,
-    vertex.label.degree=-pi/4,
-    vertex.label.family='Helvetica',
-    vertex.label.font = 3,
-    vertex.label.color = 'black',
-    vertex.label.cex=0,
-    vertex.frame.color='black',
-    margin=0,
-    edge.arrow.size=edge_df$value/2,
-    add=TRUE
-  )
-
-
-}
 
 #' PlotKMEs
 #'
@@ -2231,8 +2046,6 @@ ModuleTFNetwork <- function(
 #' @param wgcna_name the name of the WGCNA experiment in the seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' PlotKMEs
 PlotKMEs <- function(
   seurat_obj,
   n_hubs=10,
@@ -2251,18 +2064,8 @@ PlotKMEs <- function(
     dplyr::distinct()
 
 
-  #get hub genes:
-  hub_df <- do.call(rbind, lapply(mods, function(cur_mod){
-    print(cur_mod)
-    cur <- subset(modules, module == cur_mod)
-    cur <- cur[,c('gene_name', 'module', paste0('kME_', cur_mod))]
-    names(cur)[3] <- 'kME'
-    cur <- dplyr::arrange(cur, kME)
-    top_genes <- cur %>% dplyr::top_n(n_hubs, wt=kME) %>% .$gene_name
-    cur$lab <- ifelse(cur$gene_name %in% top_genes, cur$gene_name, "")
-    cur
-  }))
-  head(hub_df)
+  # get hub genes:
+  hub_df <- GetHubGenes(seurat_obj, n_hubs, wgcna_name)
 
   plot_list <- lapply(mods, function(x){
     print(x)

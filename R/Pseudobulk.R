@@ -26,7 +26,6 @@
 #' 
 #' @import Seurat
 #' @import Matrix
-#' @export
 ConstructPseudobulk <- function(
   seurat_obj,
   group.by,

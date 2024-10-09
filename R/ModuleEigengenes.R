@@ -45,22 +45,20 @@ ComputeModuleEigengene <- function(
     X_dat <- Seurat::GetAssayData(seurat_obj, slot='data', assay=assay)[cur_genes,]
   }
 
-  # subset seurat object by these genes only:
-  # X_dat <- GetAssayData(seurat_obj, slot='data', assay = assay)[cur_genes,]
-  # if(dim(seurat_obj@assays[[assay]]@counts)[1] == 0){
-  #   X <- X_dat
-  # } else{
-  #   X <- GetAssayData(seurat_obj, slot='counts', assay = assay)[cur_genes,]
-  # }
-
   # create seurat obj with just these genes
   cur_seurat <- CreateSeuratObject(X, assay = assay, meta.data = seurat_obj@meta.data)
   
   if(CheckSeurat5()){
-    cur_seurat <- SetAssayData(cur_seurat, layer='data', new.data=X_dat, assay=assay)
+    result <- try(cur_seurat <- SetAssayData(cur_seurat, layer='data', new.data=X_dat, assay=assay), silent=TRUE)
+    if("Seurat" %in% class(result)){
+      cur_seurat <- result
+    } else{
+        cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
+    }
   } else{
     cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
   }
+
   # scale the subsetted expression dataset:
   if(is.null(vars.to.regress)){
     cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use)

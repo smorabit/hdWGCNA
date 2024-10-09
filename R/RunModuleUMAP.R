@@ -44,12 +44,7 @@ RunModuleUMAP <- function(
   }
 
   # get hub genes:
-  hub_list <- lapply(mods, function(cur_mod){
-    cur <- subset(modules, module == cur_mod)
-    cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(n_hubs) %>% .$gene_name
-  })
-  names(hub_list) <- mods
+  hub_df <- GetHubGenes(seurat_obj, n_hubs=n_hubs, wgcna_name=wgcna_name)
 
   # get all genes that aren't in gray mod
   selected_genes <- modules[modules$module %in% mods,'gene_name']
@@ -63,11 +58,10 @@ RunModuleUMAP <- function(
 
   # subset the TOM for umap
   # keep all genes as rows, and keep only hubs as cols (features)
-  feature_mat <- TOM[selected_genes,unlist(hub_list)]
+  feature_mat <- TOM[selected_genes,hub_df$gene_name]
 
   # run UMAP
   if(supervised){
-    print('running supervised UMAP:')
     hub_umap <-  uwot::umap(
       X = feature_mat,
       min_dist = min_dist,
@@ -88,7 +82,6 @@ RunModuleUMAP <- function(
     )
   }
 
-
   # set up plotting df
   plot_df <- as.data.frame(hub_umap)
   colnames(plot_df) <- c("UMAP1", "UMAP2")
@@ -99,7 +92,7 @@ RunModuleUMAP <- function(
   plot_df$module <- modules$module[ix]
   plot_df$color <- modules$color[ix]
   plot_df$hub <- ifelse(
-    plot_df$gene %in% as.character(unlist(hub_list)), 'hub', 'other'
+    plot_df$gene %in% as.character(hub_df$gene_name), 'hub', 'other'
   )
 
   # get kME values for each gene
