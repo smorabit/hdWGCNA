@@ -30,8 +30,6 @@
 #' - `seurat_obj@misc$pfm`: The original PFMs used for the motif scan.
 #'
 #' @import Seurat 
-#' @importFrom ensembldb promoters genes
-#' @importFrom GenomeInfoDb seqnames seqlevels keepSeqlevels renameSeqlevels
 #' @import GenomicRanges
 #' @export
 MotifScan <- function(
