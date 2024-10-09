@@ -94,7 +94,7 @@ about which TF motifs are present in each gene's promoter.
 
 ```{r eval=FALSE}
 
-seurat_obj <- readRDS(file='/dfs7/swaruplab/smorabit/analysis/scWGCNA/data/zhou_tutorial.rds')
+seurat_obj <- readRDS(file='data/zhou_tutorial.rds')
 
 # use TFBSTools to get the motif position weight matrices 
 # for the JASPAR 2020 database
