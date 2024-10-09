@@ -32,8 +32,7 @@
 #' @import Seurat 
 #' @importFrom ensembldb promoters genes
 #' @importFrom GenomeInfoDb seqnames seqlevels keepSeqlevels renameSeqlevels
-#' @importFrom GRanges GRanges
-#' @importFrom motifmatchr matchMotifs motifMatches
+#' @import GenomicRanges
 #' @export
 MotifScan <- function(
     seurat_obj,
