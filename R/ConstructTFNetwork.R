@@ -17,7 +17,8 @@
 #' regulators of each gene. This process is done on the gene expression matrix stored with SetDatExpr,
 #' which is typically the hdWGCNA metacell gene expression matrix.  
 #' 
-#' @import Seurat, Matrix, xgboost
+#' @import Seurat
+#' @import Matrix
 #' @export
 ConstructTFNetwork <- function(
     seurat_obj,
