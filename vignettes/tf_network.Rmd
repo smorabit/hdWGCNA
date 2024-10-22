@@ -22,7 +22,7 @@ We first described this TF regulatory network method in our paper [Childs & Mora
 # single-cell analysis package
 library(Seurat)
 
-# plotting and data science packages
+# plotting and data science packagesƒ
 library(tidyverse)
 library(cowplot)
 library(patchwork)
@@ -68,7 +68,7 @@ BiocManager::install(c(
 )) 
 
 # install xgboost 
-install('xgboost')
+install.packages('xgboost')
 
 # load these packages into R:
 library(JASPAR2020)
@@ -86,10 +86,8 @@ library(xgboost)
 ## Identify TFs in promoter regions 
 
 The first main step in our TF regulatory network analysis is to 
-determine which genes are potentially regulated by each TF. We provide 
-a function `MotifScan` which uses the algorithm [`motifmatchr`](https://www.bioconductor.org/packages/release/bioc/html/motifmatchr.html)
-to search for occurrences of different TF motifs within gene promoter 
-regions. This function will store information in the `seurat_obj` 
+determine which genes are potentially regulated by each TF. We provide a function `MotifScan` which uses the algorithm [`motifmatchr`](https://www.bioconductor.org/packages/release/bioc/html/motifmatchr.html)
+to search for occurrences of different TF motifs within gene promoter regions. This function will store information in the `seurat_obj` 
 about which TF motifs are present in each gene's promoter.
 
 ```{r eval=FALSE}
@@ -136,10 +134,21 @@ seurat_obj <- SetDatExpr(seurat_obj, group.by = 'cell_type', group_name='INH')
 
 ```
 
-Now we are ready to run `ConstructTFNetwork`. Since this function models each gene, the runtime will scale wth the number of genes selected from the previous step and it will scale with the number of metacells / metaspots that are used for this analysis. 
+Now we are ready to run `ConstructTFNetwork`. Since this function models each gene, the runtime will scale wth the number of genes selected from the previous step and it will scale with the number of metacells / metaspots that are used for this analysis. We use the parameter `model_params` to pass a list of arguments for XGBoost. [See this webpage for the full list of parameters](https://xgboost.readthedocs.io/en/latest/parameter.html). 
+
 
 ```{r eval=FALSE}
-seurat_obj <- ConstructTFNetwork(seurat_obj)
+# define model params:
+model_params <- list(
+    objective = 'reg:squarederror',
+    max_depth = 1,
+    eta = 0.1,
+    nthread=16,
+    alpha=0.5
+)
+
+# construct the TF network
+seurat_obj <- ConstructTFNetwork(seurat_obj, model)
 ```
 
 This function results in a table showing information about each potential TF-gene pair, which we can access using `GetTFNetwork`.
@@ -165,25 +174,6 @@ This table shows the inferred relationships in the network between TFs and targe
 * `Cover` represents the quantity of observations affected by a feature in the trees where is it used.
 * `Frequency` represents how often a feature appears in trees. `Cover` and `Frequency` are the same for trees with shallow depths. 
 * `Cor` simply represents the pearson correlation coefficient.
-
-<details> <summary> Expand to see example with different XGBoost parameters </summary>
-
-We can use the parameter `model_params` to pass a list of arguments for XGBoost. [See this webpage for the full list of parameters](https://xgboost.readthedocs.io/en/latest/parameter.html). 
-
-```{r eval=FALSE}
-seurat_obj <- ConstructTFNetwork(
-    seurat_obj,
-    model_params=list(
-        objective = 'reg:squarederror',
-        max_depth = 1,
-        eta = 0.1,
-        nthread=16,
-        alpha=0.5
-    )
-)
-```
-
-</details>
 
 ## Define TF Regulons 
 

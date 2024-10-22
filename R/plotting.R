@@ -2063,12 +2063,10 @@ PlotKMEs <- function(
     dplyr::select(c(module, color)) %>%
     dplyr::distinct()
 
-
   # get hub genes:
-  hub_df <- GetHubGenes(seurat_obj, n_hubs, wgcna_name)
+  hub_df <- GetHubGenes(seurat_obj, n_hubs=n_hubs, wgcna_name=wgcna_name)
 
   plot_list <- lapply(mods, function(x){
-    print(x)
     cur_color <- subset(mod_colors, module == x) %>% .$color
     cur_df <- subset(hub_df, module == x)
     top_genes <- cur_df %>% dplyr::top_n(n_hubs, wt=kME) %>% .$gene_name

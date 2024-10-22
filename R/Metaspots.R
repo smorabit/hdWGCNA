@@ -29,7 +29,7 @@ ConstructMetaspots <- function(
   }
   
   # what is the image class?
-  image_class <- class(seurat_obj@images[[1]])
+  image_class <- class(cur_seurat@images[[1]])
 
   # check to make sure this is just one sample:
   if(image_class == 'VisiumV2'){
@@ -248,6 +248,8 @@ MetaspotsByGroups <- function(
   if(!(mode %in% c('sum', 'average'))){
     stop('Invalid choice for mode. Mode can be either sum or average.')
   }
+
+  # check data type for 
 
   # check that the image coordinates are present:
   if(!all(c('row', 'col', 'imagerow', 'imagecol') %in% colnames(seurat_obj@meta.data))){
