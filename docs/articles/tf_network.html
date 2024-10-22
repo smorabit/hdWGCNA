@@ -221,7 +221,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># construct the TF network</span></span>
-<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructTFNetwork.html">ConstructTFNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">model</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructTFNetwork.html">ConstructTFNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">model_params</span><span class="op">)</span></span></code></pre></div>
 <p>This function results in a table showing information about each potential TF-gene pair, which we can access using <code>GetTFNetwork</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTFNetwork.html">GetTFNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>

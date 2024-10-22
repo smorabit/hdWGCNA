@@ -148,7 +148,7 @@ model_params <- list(
 )
 
 # construct the TF network
-seurat_obj <- ConstructTFNetwork(seurat_obj, model)
+seurat_obj <- ConstructTFNetwork(seurat_obj, model_params)
 ```
 
 This function results in a table showing information about each potential TF-gene pair, which we can access using `GetTFNetwork`.
