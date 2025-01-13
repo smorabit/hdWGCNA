@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.01</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,8 +118,8 @@
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">EnrichrDotPlot</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, database, mods = "all", n_terms = 3, break_ties = TRUE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     logscale = TRUE, wgcna_name = NULL, ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, database, mods = "all", n_terms = 3, p_cutoff = 0.05, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p_adj = TRUE, break_ties = TRUE, term_size = 10, wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -130,6 +130,13 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     enrichr_df &lt;- GetEnrichrTable(seurat_obj, wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (p_adj) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         enrichr_df &lt;- subset(enrichr_df, Adjusted.P.value &lt;= </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p_cutoff)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         enrichr_df &lt;- subset(enrichr_df, P.value &lt;= p_cutoff)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mod_colors &lt;- dplyr::select(modules, c(module, color)) %&gt;% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dplyr::distinct()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     enrichr_df$color &lt;- mod_colors[match(enrichr_df$module, mod_colors$module), </span>
@@ -138,36 +145,43 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             USE.NAMES = FALSE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- enrichr_df %&gt;% subset(db == database &amp; module %in% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         mods) %&gt;% group_by(module) %&gt;% top_n(n_terms, wt = Combined.Score)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     top_terms &lt;- enrichr_df %&gt;% subset(db == database &amp; module %in% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         mods) %&gt;% group_by(module) %&gt;% slice_max(order_by = Combined.Score, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         n = n_terms) %&gt;% .$Term</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- subset(enrichr_df, Term %in% top_terms)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (break_ties) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         plot_df &lt;- do.call(rbind, lapply(plot_df %&gt;% group_by(module) %&gt;% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             group_split, function(x) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             x[sample(n_terms), ]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- plot_df %&gt;% mutate(Term = stringr::str_replace(Term, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         " \\s*\\([^\\)]+\\)", ""))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df$Term &lt;- wrapText(plot_df$Term, 45)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df$module &lt;- factor(as.character(plot_df$module), levels = levels(modules$module))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- arrange(plot_df, module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df$Term &lt;- factor(as.character(plot_df$Term), levels = unique(as.character(plot_df$Term)))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (logscale) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         plot_df$Combined.Score &lt;- log(plot_df$Combined.Score)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         lab &lt;- "Enrichment\nlog(combined score)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         x &lt;- 0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (p_adj) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         plot_df$p &lt;- plot_df$Adjusted.P.value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         lab &lt;- "Enrichment\n(combined score)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         x &lt;- 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         plot_df$p &lt;- plot_df$P.value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     p &lt;- plot_df %&gt;% ggplot(aes(x = module, y = Term)) + geom_point(aes(size = Combined.Score), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         color = plot_df$color) + RotatedAxis() + ylab("") + xlab("") + </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         labs(size = lab) + scale_y_discrete(limits = rev) + ggtitle(database) + </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         theme(plot.title = element_text(hjust = 0.5), axis.line.x = element_blank(), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             axis.line.y = element_blank(), panel.border = element_rect(colour = "black", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 fill = NA, size = 1))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     max_p &lt;- quantile(-log(plot_df$p), 0.95)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df$logp &lt;- -log(plot_df$p)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df$logp &lt;- ifelse(plot_df$logp &gt; max_p, max_p, plot_df$logp)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p &lt;- plot_df %&gt;% ggplot(aes(x = module, y = Term, size = log10(Combined.Score), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         color = logp)) + geom_point() + Seurat::RotatedAxis() + </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ylab("") + xlab("") + labs(color = bquote("-log"[10] ~ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         "(P)"), size = bquote("log"[10] ~ "(Enrich)")) + scale_y_discrete(limits = rev) + </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ggtitle(database) + theme(plot.title = element_text(hjust = 0.5), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         axis.line.x = element_blank(), axis.line.y = element_blank(), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         axis.text.y = element_text(size = term_size), panel.border = element_rect(colour = "black", </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             fill = NA, size = 1), panel.grid = element_line(size = 0.25, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             color = "lightgrey"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f96312257b8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f854eda05c8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

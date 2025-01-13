@@ -40,17 +40,17 @@ RunEnrichr <- function(
   # exclude grey
   mods <- mods[mods != 'grey']
 
+  # hub genes 
+  hub_df <- GetHubGenes(seurat_obj, n_hubs=max_genes, wgcna_name=wgcna_name)
+
   # run EnrichR for loop:
   combined_output <- data.frame()
   for(i in 1:length(mods)){
-  	cur_mod <- mods[i]
-    if(max_genes != Inf){
-      cur_info <- subset(modules, module == cur_mod)
-      cur_info <- cur_info[,c('gene_name', paste0('kME_', cur_mod))]
-      cur_genes <- top_n(cur_info, max_genes) %>% .$gene_name %>% as.character
-    } else{
-      cur_genes <- subset(modules, module == cur_mod) %>% .$gene_name %>% as.character
-    }
+    
+  	cur_mod <- mods[i] 
+    cur_info <- subset(hub_df, module == cur_mod)
+    cur_genes <- as.character(cur_info$gene_name)
+
     # run the enrichment test
     enriched <- enrichR::enrichr(cur_genes, dbs)
 

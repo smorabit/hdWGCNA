@@ -608,28 +608,48 @@ ModuleFeaturePlot<- function(
 
 #' EnrichrBarPlot
 #'
-#' Makes barplots from RunEnrichr output.
+#' Generates bar plots from Enrichr data to visualize enriched terms for hdWGCNA modules in a Seurat object. 
+#' The function outputs a PDF file for each module, with separate bar plots for each database.
 #'
 #' @param seurat_obj A Seurat object
-#' @param outdir directory to place output .pdf files
-#' @param n_terms the number of terms to plot in each barplot
-#' @param plot_size the size of the output .pdf files (width, height)
-#' @param logscale logical controlling whether to plot the enrichment on a log scale
-#' @param plot_bar_color The color of the bars in the bar plots. Default option (NULL) makes the bars colored using the module's assigned color.
-#' @param plot_text_color The color of the text labels on the bar plots
+#' @param outdir A string specifying the directory where the output PDF files will be saved. Default is "enrichr_plots".
+#' @param n_terms An integer indicating the number of top enriched terms to include in each bar plot. Default is 25.
+#' @param p_cutoff A numeric value specifying the significance threshold for including terms (p-value or adjusted p-value).
+#'                 Only terms with p-values below this threshold are plotted. Default is 0.05.
+#' @param p_adj Logical indicating whether to use the adjusted p-value (default: TRUE) or raw p-value for filtering terms.
+#' @param plot_size A numeric vector of length 2 specifying the width and height of the output PDF files in inches. Default is c(6, 15).
+#' @param logscale Logical specifying whether to log-transform the enrichment scores before plotting. Default is FALSE.
+#' @param plot_bar_color A string specifying the color of the bars in the bar plots. If NULL (default), bars are colored according 
+#'                       to the module's assigned color.
+#' @param plot_text_color A string specifying the color of the text labels on the bar plots. If NULL (default), the color is 
+#'                        automatically determined based on the bar color.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
+#'
+#' @details 
+#' This function processes the Enrichr output stored in a Seurat object, filters enriched terms by significance, and generates 
+#' bar plots for each WGCNA module. Separate plots are created for each database included in the Enrichr results. The top 
+#' enriched terms for each module and database are ordered by their combined enrichment score. If there are ties in the enrichment 
+#' scores, the function uses all tied terms.
+#'
+#' The bar plot text and bar colors can be customized, and plots can be saved with log-transformed enrichment scores if specified.
+#' Text wrapping is applied to long term names for better readability.
+#'
+#' @return 
+#' Generates PDF files in the specified output directory, with one file per WGCNA module. Each file contains bar plots for 
+#' all databases associated with that module.
+#'
 #' @export
-#' @examples
-#' EnrichrBarPlot
 EnrichrBarPlot <- function(
-  seurat_obj, outdir = "enrichr_plots",
-  n_terms = 25, plot_size = c(6,15),
+  seurat_obj, 
+  outdir = "enrichr_plots",
+  n_terms = 25, 
+  p_cutoff = 0.05,
+  p_adj = TRUE,
+  plot_size = c(6,15),
   logscale=FALSE, 
   plot_bar_color=NULL,
   plot_text_color=NULL,
-  wgcna_name=NULL,
-   ...
+  wgcna_name=NULL
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -642,6 +662,13 @@ EnrichrBarPlot <- function(
 
   # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
+
+  # subset based on significance level:
+  if(p_adj){
+    enrichr_df <- subset(enrichr_df, Adjusted.P.value <= p_cutoff)
+  } else{
+    enrichr_df <- subset(enrichr_df, P.value <= p_cutoff)
+  }
 
   # helper function to wrap text
   wrapText <- function(x, len) {
@@ -672,7 +699,8 @@ EnrichrBarPlot <- function(
     plot_list <- list()
     for(cur_db in dbs){
 
-      plot_df <- subset(cur_terms, db==cur_db) %>% top_n(n_terms, wt=Combined.Score)
+      plot_df <- subset(cur_terms, db==cur_db) %>% 
+        slice_max(order_by=Combined.Score, n=n_terms)
 
       # text color:
       if(is.null(plot_text_color)){
@@ -697,14 +725,16 @@ EnrichrBarPlot <- function(
       plot_list[[cur_db]] <- ggplot(plot_df, aes(x=Combined.Score, y=reorder(wrap, Combined.Score)))+
         geom_bar(stat='identity', position='identity', color='white', fill=cur_color) +
         geom_text(aes(label=wrap), x=x, color=text_color, size=3.5, hjust='left') +
-        ylab('Term') + xlab(lab) + ggtitle(cur_db) +
+        scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+        xlab(lab) + ylab('') + ggtitle(cur_db) +
         theme(
           panel.grid.major=element_blank(),
           panel.grid.minor=element_blank(),
           legend.title = element_blank(),
           axis.ticks.y=element_blank(),
           axis.text.y=element_blank(),
-          plot.title = element_text(hjust = 0.5)
+          plot.title = element_text(hjust = 0.5),
+          axis.line.y=element_blank()
         )
     }
 
@@ -720,23 +750,41 @@ EnrichrBarPlot <- function(
 
 #' EnrichrDotPlot
 #'
-#' Makes barplots from Enrichr data
+#' Generate a dot plot visualizing enrichment results from Enrichr for hdWGCNA modules.
+#'
+#' This function creates dot plots from Enrichr results associated with hdWGCNA modules. 
+#' Each module is represented by its most enriched terms from the specified Enrichr database. 
+#' The size of the dots indicates the enrichment score, and the color indicates the statistical significance (-log10 transformed p-value).
 #'
 #' @param seurat_obj A Seurat object
-#' @param database name of the enrichr database to plot.
-#' @param mods names of modules to plot. All modules are plotted if mods='all' (default)
-#' @param n_terms number of enriched terms to plot for each module
-#' @param break_ties logical controlling whether or not to randomly select terms with equal enrichments to precisely enforce n_terms.
-#' @param logscale logical controlling whether to plot the enrichment on a log scale.
+#' @param database A character string specifying the name of the Enrichr database to use (e.g., "GO_Biological_Process_2021").
+#' @param mods A character vector specifying the names of modules to include in the plot. 
+#'        If `mods = "all"` (default), all modules except the "grey" module are included.
+#' @param n_terms An integer specifying the number of top enriched terms to plot for each module (default = 3).
+#' @param p_cutoff A numeric value specifying the p-value threshold for filtering enriched terms (default = 0.05).
+#' @param p_adj A logical value indicating whether to use adjusted p-values (`TRUE`, default) or raw p-values (`FALSE`) for filtering.
+#' @param break_ties A logical value indicating whether to randomly select among tied terms to enforce `n_terms` (default = `TRUE`).
+#' @param term_size A numeric value specifying the font size of the enriched terms displayed on the y-axis (default = 10).
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
+#' @details
+#' - The function first retrieves WGCNA module and Enrichr data from the specified Seurat object.
+#' - Modules are filtered based on the `mods` parameter, and enriched terms are filtered by significance using `p_cutoff` and `p_adj`.
+#' - The top `n_terms` terms for each module are selected based on the Combined Score. If ties occur, the `break_ties` parameter determines how they are resolved.
+#' - A dot plot is generated where each dot represents an enriched term, its size corresponds to the Combined Score (log-transformed), 
+#'   and its color indicates the significance (-log10 transformed p-value).
+#'
+#' @return A ggplot2 object representing the dot plot of enriched terms for the specified modules and database.
 #' @export
-#' @examples
-#' EnrichrDotPlot
 EnrichrDotPlot <- function(
-  seurat_obj, database, mods="all",
-  n_terms = 3, break_ties=TRUE,
-   logscale=TRUE, wgcna_name=NULL, ...
+  seurat_obj, 
+  database, 
+  mods="all",
+  n_terms = 3, 
+  p_cutoff = 0.05,
+  p_adj = TRUE,
+  break_ties=TRUE,
+  term_size=10,
+  wgcna_name=NULL
 ){
 
   # get data from active assay if wgcna_name is not given
@@ -754,6 +802,13 @@ EnrichrDotPlot <- function(
   # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
+  # subset based on significance level:
+  if(p_adj){
+    enrichr_df <- subset(enrichr_df, Adjusted.P.value <= p_cutoff)
+  } else{
+    enrichr_df <- subset(enrichr_df, P.value <= p_cutoff)
+  }
+
   # add color to enrich_table
   mod_colors <- dplyr::select(modules, c(module, color)) %>% dplyr::distinct()
   enrichr_df$color <- mod_colors[match(enrichr_df$module, mod_colors$module), 'color']
@@ -764,10 +819,13 @@ EnrichrDotPlot <- function(
   }
 
   # get data to plot
-  plot_df <- enrichr_df %>%
+  top_terms <- enrichr_df %>%
     subset(db == database & module %in% mods) %>%
     group_by(module) %>%
-    top_n(n_terms, wt=Combined.Score)
+    slice_max(order_by=Combined.Score, n=n_terms) %>% 
+    .$Term
+
+  plot_df <- subset(enrichr_df, Term %in% top_terms)
 
   # sometimes top_n returns more than the desired number if there are ties. so here
   # we just randomly sample to break ties:
@@ -775,6 +833,7 @@ EnrichrDotPlot <- function(
     plot_df <- do.call(rbind, lapply(plot_df %>% group_by(module) %>% group_split, function(x){x[sample(n_terms),]}))
   }
 
+  plot_df <- plot_df %>% mutate(Term = stringr::str_replace(Term, " \\s*\\([^\\)]+\\)", "")) 
   plot_df$Term <- wrapText(plot_df$Term, 45)
 
   # set modules factor and re-order:
@@ -790,26 +849,36 @@ EnrichrDotPlot <- function(
     levels = unique(as.character(plot_df$Term))
   )
 
-  # logscale?
-  if(logscale){
-    plot_df$Combined.Score <- log(plot_df$Combined.Score)
-    lab <- 'Enrichment\nlog(combined score)'
-    x <- 0.2
-  } else{lab <- 'Enrichment\n(combined score)'; x <- 5}
+  if(p_adj){
+    plot_df$p <- plot_df$Adjusted.P.value
+  } else{
+    plot_df$p <- plot_df$P.value
+  }
 
+  max_p <- quantile(-log(plot_df$p), 0.95)
+
+  plot_df$logp <- -log(plot_df$p)
+  plot_df$logp <- ifelse(plot_df$logp > max_p, max_p, plot_df$logp)
 
   p <- plot_df  %>%
-    ggplot(aes(x=module, y=Term)) +
-    geom_point(aes(size=Combined.Score), color=plot_df$color) +
-    RotatedAxis() +
-    ylab('') + xlab('') + labs(size=lab) +
+    ggplot(aes(x=module, y=Term, size=log10(Combined.Score), color=logp)) +
+    geom_point() +
+    #geom_point(aes(size=p), color=plot_df$color) +
+    Seurat::RotatedAxis() +
+    ylab('') + xlab('') + 
+    labs(
+        color = bquote("-log"[10]~"(P)"),
+        size= bquote("log"[10]~"(Enrich)")
+    ) + 
     scale_y_discrete(limits=rev) +
     ggtitle(database) +
     theme(
       plot.title = element_text(hjust = 0.5),
       axis.line.x = element_blank(),
       axis.line.y = element_blank(),
-      panel.border = element_rect(colour = "black", fill=NA, size=1)
+      axis.text.y = element_text(size=term_size),
+      panel.border = element_rect(colour = "black", fill=NA, size=1),
+      panel.grid = element_line(size=0.25, color='lightgrey')
     )
 
   p
@@ -2924,6 +2993,12 @@ ModuleRadarPlot <- function(
     names(cell_grouping) <- colnames(seurat_obj)
   }
 
+  if(is.factor(cell_grouping)){
+    group_order <- levels(cell_grouping)
+  } else{
+    group_order <- unique(cell_grouping)
+  }
+
   # get the module info
   modules <- GetModules(seurat_obj, wgcna_name)
   mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
@@ -2961,12 +3036,15 @@ ModuleRadarPlot <- function(
   plot_df[plot_df < 0] <- 0 
   plot_df$group <- rownames(plot_df)
   plot_df <- plot_df[,c('group', clusters)]
-  head(plot_df)
+  print(head(plot_df))
 
   # set module factor levels
   plot_df$group <- factor(as.character(plot_df$group), levels=mods)
   plot_df <- plot_df %>% dplyr::arrange(group) %>% as.data.frame()
   colnames(plot_df) <- c('group', clusters)
+
+  # set the group factor levels
+  plot_df <- plot_df[,c('group', group_order)]
 
   # make the radar plots for each module
   plot_list <- list()

@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.01</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,18 +103,17 @@
 
     
     
-<p>In this tutorial, we will perform enrichment tests on our hdWGCNA modules. We leverage the R pacakge <a href="https://maayanlab.cloud/Enrichr/" class="external-link"><code>enrichR</code></a> to perform enrichment tests on a wide range of curated gene lists. This analysis should point us towards biological processes that our hdWGCNA modules are involved in. Additionally, we perform a gene set overlap analysis to compare the genes in hdWGCNA modules with the marker genes identified using Seurat’s <a href="https://satijalab.org/seurat/reference/findallmarkers" class="external-link">FindAllMarkers</a> function.</p>
+<p>Compiled: 10-01-2025</p>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>In this tutorial, we aim to provide further biological context for our co-expression modules by performing different enrichment tests. We leverage the R pacakge <a href="https://maayanlab.cloud/Enrichr/" class="external-link"><code>enrichR</code></a> to perform enrichment tests on a wide range of curated gene lists. We also demonstrate using the R package <a href="https://bioconductor.org/packages/release/bioc/vignettes/fgsea/inst/doc/fgsea-tutorial.html" class="external-link"><code>fgsea</code></a> another type of enrichment analysis (GSEA).</p>
 <p>First, we first need to load the data and the required libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># plotting and data science packages</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># co-expression network analysis packages:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
@@ -122,37 +121,66 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">enrichR</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://shenlab-sinai.github.io/shenlab-sinai/" class="external-link">GeneOverlap</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># using the cowplot theme for ggplot</span></span>
+<span><span class="co"># using the cowplot theme for ggplot (optional)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># set random seed for reproducibility</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
+<span><span class="co"># re-load the Zhou et al snRNA-seq dataset, which was already processed </span></span>
+<span><span class="co"># as shown in the hdWGCNA basics tutorial</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
-<h2 id="enrichr">EnrichR<a class="anchor" aria-label="anchor" href="#enrichr"></a>
+<h2 id="enrichr">Enrichr<a class="anchor" aria-label="anchor" href="#enrichr"></a>
 </h2>
-<p>In this section we discuss how to perform Enrichr enrichment tests and how to visualize the results using hdWGCNA. hdWGCNA includes the function <code>RunEnrichr</code> to compare the set of genes in each module with any of the gene lists hosted by Enrichr. You can take a look at the list of different Enrichr gene lists <a href="https://maayanlab.cloud/Enrichr/#libraries" class="external-link">here</a>. We store the results of the enrichment tests in the hdWGCNA experiment, so can be easily retrieved for downstream analysis or exporting to external applicaitons like Excel. In the following example, we perform the enrichment test with three Gene Ontology datbases:</p>
+<p>In this section we discuss how to perform Enrichr enrichment tests and how to visualize the results using hdWGCNA. hdWGCNA includes the function <code>RunEnrichr</code> to compare the set of genes in each module with any of the gene lists hosted by Enrichr. You can take a look at the list of different Enrichr gene lists <a href="https://maayanlab.cloud/Enrichr/#libraries" class="external-link">here</a>.</p>
+<div class="section level3">
+<h3 id="run-enrichr">Run Enrichr<a class="anchor" aria-label="anchor" href="#run-enrichr"></a>
+</h3>
+<p>In the following example, we perform the Enrichr enrichment test with three Gene Ontology datbases:</p>
 <ul>
-<li>GO_Biological_Process_2021</li>
-<li>GO_Cellular_Component_2021</li>
-<li>GO_Molecular_Function_2021</li>
+<li>GO_Biological_Process_2023</li>
+<li>GO_Cellular_Component_2023</li>
+<li>GO_Molecular_Function_2023</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># enrichr databases to test</span></span>
-<span><span class="va">dbs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'GO_Biological_Process_2021'</span>,<span class="st">'GO_Cellular_Component_2021'</span>,<span class="st">'GO_Molecular_Function_2021'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># define the enrichr databases to test</span></span>
+<span><span class="va">dbs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'GO_Biological_Process_2023'</span>,<span class="st">'GO_Cellular_Component_2023'</span>,<span class="st">'GO_Molecular_Function_2023'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># perform enrichment tests</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunEnrichr.html">RunEnrichr</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
-<span>  dbs<span class="op">=</span><span class="va">dbs</span>, <span class="co"># character vector of enrichr databases to test</span></span>
-<span>  max_genes <span class="op">=</span> <span class="fl">100</span> <span class="co"># number of genes per module to test. use max_genes = Inf to choose all genes!</span></span>
+<span>  dbs<span class="op">=</span><span class="va">dbs</span>,</span>
+<span>  max_genes <span class="op">=</span> <span class="fl">100</span> <span class="co"># use max_genes = Inf to choose all genes</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># retrieve the output table</span></span>
-<span><span class="va">enrich_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetEnrichrTable.html">GetEnrichrTable</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
-<p>The outputs of the Enrichr test are explained in detail here, but we offer a short explanation below for the different columns in <code>enrich_df</code>:</p>
+<span><span class="va">enrich_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetEnrichrTable.html">GetEnrichrTable</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># look at the results</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">enrich_df</span><span class="op">)</span></span></code></pre></div>
+<pre><code>                                                                  Term Overlap
+1           Central Nervous System Neuron Differentiation (GO:0021953)    2/31
+2                                Response To Amyloid-Beta (GO:1904645)    2/43
+3                                      Cardiac Conduction (GO:0061337)    2/46
+4                          Cellular Response To Radiation (GO:0071478)    2/48
+5 Regulation Of Growth Hormone Receptor Signaling Pathway (GO:0060398)     1/5
+6                 Negative Regulation Of Neuron Migration (GO:2001223)     1/5
+     P.value Adjusted.P.value Old.P.value Old.Adjusted.P.value Odds.Ratio
+1 0.01047245        0.4204923           0                    0  13.983814
+2 0.01956379        0.4204923           0                    0   9.885017
+3 0.02220804        0.4204923           0                    0   9.209647
+4 0.02404833        0.4204923           0                    0   8.808341
+5 0.02475353        0.4204923           0                    0  50.242424
+6 0.02475353        0.4204923           0                    0  50.242424
+  Combined.Score         Genes                         db module
+1       63.75231   ZC4H2;KNDC1 GO_Biological_Process_2023 INH-M1
+2       38.88840 CACNA1B;GRIN1 GO_Biological_Process_2023 INH-M1
+3       35.06390  AKAP9;CTNNA3 GO_Biological_Process_2023 INH-M1
+4       32.83476   SPIDR;RAD9A GO_Biological_Process_2023 INH-M1
+5      185.83604          MBD5 GO_Biological_Process_2023 INH-M1
+6      185.83604        NEXMIF GO_Biological_Process_2023 INH-M1</code></pre>
 <ul>
 <li>
 <code>Term</code>: The name of the term (ie biological process, etc).</li>
@@ -173,6 +201,7 @@
 <li>
 <code>module</code>: the name of the hdWGCNA module.</li>
 </ul>
+</div>
 <div class="section level3">
 <h3 id="visualize-enrichments">Visualize enrichments<a class="anchor" aria-label="anchor" href="#visualize-enrichments"></a>
 </h3>
@@ -181,13 +210,13 @@
 <h4 id="enrichrbarplot">
 <code>EnrichrBarPlot</code><a class="anchor" aria-label="anchor" href="#enrichrbarplot"></a>
 </h4>
-<p>hdWGCNA includes the function <code>EnrichrBarPlot</code> to summarize the results of every Enrichr database and every module. This function outputs a .pdf figure for each module, containing a barplot showing the top <em>N</em> enriched terms. The following example will plot the top 10 terms in each module and will output the results to a folder called <code>enrichr_plots</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>Next we use <code>EnrichrBarPlot</code> to summarize the results of every Enrichr database and every module. This function outputs a .pdf figure for each module, containing a barplot showing the top <em>N</em> enriched terms. The following example will plot the top 10 terms in each module and will output the results to a folder called <code>enrichr_plots</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># make GO term plots:</span></span>
 <span><span class="fu"><a href="../reference/EnrichrBarPlot.html">EnrichrBarPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  outdir <span class="op">=</span> <span class="st">"enrichr_plots"</span>, <span class="co"># name of output directory</span></span>
-<span>  n_terms <span class="op">=</span> <span class="fl">10</span>, <span class="co"># number of enriched terms to show (sometimes more show if there are ties!!!)</span></span>
+<span>  n_terms <span class="op">=</span> <span class="fl">10</span>, <span class="co"># number of enriched terms to show (sometimes more are shown if there are ties)</span></span>
 <span>  plot_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">7</span><span class="op">)</span>, <span class="co"># width, height of the output .pdfs</span></span>
 <span>  logscale<span class="op">=</span><span class="cn">TRUE</span> <span class="co"># do you want to show the enrichment as a log scale?</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -196,92 +225,292 @@
 <p><strong><em>Interpreting Enrichr results</em></strong></p>
 <p>Each of the enrichment bar plots are colored by the module’s unique color, and each term is sorted by the enrichment (combined score). We encourage users to carefully inspect the results of the enrichment tests, and use prior biological knowledge before jumping to conclusions. In this example, we see some terms that make sense for inhibitory neurons, such as “inhibitory synapse assembly” and “synaptic transmission, GABAergic”. On the other hand, we see several cardiac related terms that are realistically not at all related to our system in this example (human brain). Many genes take part in distinct biological processes in different tissues within the same organism, which leads to enrichment results like this.</p>
 </div>
-<div class="section level4">
-<h4 id="enrichrdotplot">
+</div>
+<div class="section level3">
+<h3 id="enrichrdotplot">
 <code>EnrichrDotPlot</code><a class="anchor" aria-label="anchor" href="#enrichrdotplot"></a>
-</h4>
+</h3>
 <p>hdWGCNA includes an additional visualization function for enrichment results, <code>EnrichrDotPlot</code>, which shows the top results for one Enrichr database in each module. In the following example, we plot the top term in the <code>GO_Biological_Process_2021</code> database.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># enrichr dotplot</span></span>
 <span><span class="fu"><a href="../reference/EnrichrDotPlot.html">EnrichrDotPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
-<span>  mods <span class="op">=</span> <span class="st">"all"</span>, <span class="co"># use all modules (this is the default behavior)</span></span>
-<span>  database <span class="op">=</span> <span class="st">"GO_Biological_Process_2021"</span>, <span class="co"># this has to be one of the lists we used above!!!</span></span>
-<span>  n_terms<span class="op">=</span><span class="fl">1</span> <span class="co"># number of terms for each module</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures/enrichment/GO_dotplot.png" width="500" height="500"></p>
-<p>In this plot, each dot is colored by the module’s unique color, and the size of each dot is scaled by the enrichment of the term.</p>
-</div>
+<span>  mods <span class="op">=</span> <span class="st">"all"</span>, <span class="co"># use all modules (default)</span></span>
+<span>  database <span class="op">=</span> <span class="st">"GO_Biological_Process_2023"</span>, <span class="co"># this must match one of the dbs used previously</span></span>
+<span>  n_terms<span class="op">=</span><span class="fl">2</span>, <span class="co"># number of terms per module</span></span>
+<span>  term_size<span class="op">=</span><span class="fl">8</span>, <span class="co"># font size for the terms</span></span>
+<span>  p_adj <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># show the p-val or adjusted p-val?</span></span>
+<span><span class="op">)</span>  <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_steps.html" class="external-link">scale_color_stepsn</a></span><span class="op">(</span>colors<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">magma</a></span><span class="op">(</span><span class="fl">256</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/enrichment/GO_dotplot.png" width="800" height="800"></p>
+<p>In this plot, the dot size shows the enrichment and the color shows the significance level. Terms are only shown in a module if the enrichment is significant (p &lt; 0.05).</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="marker-gene-overlap-analysis">Marker gene overlap analysis<a class="anchor" aria-label="anchor" href="#marker-gene-overlap-analysis"></a>
+<h2 id="gene-set-enrichment-analysis-gsea">Gene Set Enrichment Analysis (GSEA)<a class="anchor" aria-label="anchor" href="#gene-set-enrichment-analysis-gsea"></a>
 </h2>
-<p>In this section we discuss how to compare hdWGCNA modules with cluster or cell-type marker genes. First we use the Seurat function <code>FindAllMarkers</code> to identify the marker genes in each cell type, and then we use the hdWGCNA function <code>OverlapModulesDEGs</code> to overlap the modules and the DEGs.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># compute cell-type marker genes with Seurat:</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">cell_type</span></span>
-<span><span class="va">markers</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">FindAllMarkers</a></span><span class="op">(</span></span>
-<span>  <span class="va">seurat_obj</span>,</span>
-<span>  only.pos <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  logfc.threshold<span class="op">=</span><span class="fl">1</span></span>
+<p>Aside from Enrichr, we can also perform Gene Set Enrichment Analysis (GSEA) to provide further biological context to our co-expression modules. For this section, we use the Bioconductor package <a href="https://bioconductor.org/packages/release/bioc/html/fgsea.html" class="external-link"><code>fgsea</code></a>. Note that this analysis simply uses the functions provided by <code>fgsea</code> rather than including new functions specific to hdWGCNA.</p>
+<p>First, install <code>fgsea</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"fgsea"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">fgsea</span><span class="op">)</span></span></code></pre></div>
+<p>While the Enrichr package queries their web database for gene lists, <code>fgsea</code> does not have a similar functionality and we need to directly supply the gene lists of interest. For this example, we download the <a href="https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&amp;libraryName=GO_Biological_Process_2023" class="external-link">GO_Biological_Process_2023</a> list from the Enrichr website as a <code>.txt</code> file. <a href="https://maayanlab.cloud/Enrichr/#libraries" class="external-link">Please see this link</a> to download other Enrichr gene sets. Now we will load the gene lists using <code>fgsea</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># load the GO Biological Pathways file (downloaded from EnrichR website)</span></span>
+<span><span class="va">pathways</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">gmtPathways</span><span class="op">(</span><span class="st">'GO_Biological_Process_2023.txt'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># optionally, remove the GO term ID from the pathway names to make the downstream plots look cleaner</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html" class="external-link">str_replace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span>, <span class="st">" \\s*\\([^\\)]+\\)"</span>, <span class="st">""</span><span class="op">)</span></span></code></pre></div>
+<details><summary>
+Expand to see explanation of pathways
+</summary><p><code>pathways</code> is a named list where the names represent the pathways, and each element of the list is a character vector representing the genes associated with this pathway. The order of genes in the character vector does not matter. You can easily use this structure to create custom lists to query with <code>fgsea</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span></span></code></pre></div>
+<pre><code>$`'De Novo' AMP Biosynthetic Process`
+[1] "ATIC"  "PAICS" "PFAS"  "ADSS1" "ADSS2" "GART" 
+
+$`'De Novo' Post-Translational Protein Folding`
+ [1] "SDF2L1"  "HSPA9"   "CCT2"    "HSPA6"   "ST13"    "ENTPD5"  "HSPA1L" 
+ [8] "HSPA5"   "PTGES3"  "HSPA8"   "HSPA7"   "DNAJB13" "HSPA2"   "DNAJB14"
+[15] "HSPE1"   "DNAJC18" "GAK"     "DNAJC7"  "DNAJB12" "HSPA1A"  "ST13P5" 
+[22] "HSPA1B"  "ERO1A"   "SELENOF" "HSPA14"  "HSPA13"  "DNAJB1"  "CHCHD4" 
+[29] "DNAJB5"  "DNAJB4"  "SDF2"    "UGGT1"  
+
+$`2-Oxoglutarate Metabolic Process`
+ [1] "IDH1"   "PHYH"   "GOT2"   "MRPS36" "GOT1"   "IDH2"   "ADHFE1" "GPT2"  
+ [9] "TAT"    "DLST"   "OGDHL"  "L2HGDH" "D2HGDH" "OGDH"  
+
+$`3'-UTR-mediated mRNA Destabilization`
+ [1] "UPF1"    "TRIM71"  "RC3H1"   "ZFP36L1" "ZFP36L2" "MOV10"   "KHSRP"  
+ [8] "ZC3H12D" "ZFP36"   "ZC3H12A" "DHX36"   "DND1"    "PLEKHN1" "RBM24"  
+[15] "TARDBP" 
+
+$`3'-UTR-mediated mRNA Stabilization`
+ [1] "DAZ4"     "TIRAP"    "DAZ3"     "YBX3"     "DAZ2"     "DAZ1"    
+ [7] "ELAVL1"   "ELAVL4"   "MAPK14"   "DAZL"     "MYD88"    "BOLL"    
+[13] "ZFP36"    "MAPKAPK2" "HNRNPC"   "RBM47"    "TARDBP"   "HNRNPA0" 
+
+$`3'-Phosphoadenosine 5'-Phosphosulfate Metabolic Process`
+ [1] "PAPSS1"  "PAPSS2"  "SULT1A2" "SULT1C4" "SULT2A1" "SULT1A1" "SULT1C3"
+ [8] "SULT2B1" "TPST2"   "SULT1B1" "SULT1E1" "ENPP1"   "TPST1"   "BPNT1"  
+[15] "SULT1A3"</code></pre>
+</details><div class="section level3">
+<h3 id="example-1-using-all-co-expression-network-genes">Example 1: using all co-expression network genes<a class="anchor" aria-label="anchor" href="#example-1-using-all-co-expression-network-genes"></a>
+</h3>
+<p>Next, we need to provide a “ranked” list of genes to compare against our gene lists. In this example, we focus on module INH-M5, and we use all genes in our co-expression analysis except for genes in the grey module. We will rank the genes by their eigengene-based connectivity (kME) in the module.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get the modules table and remove grey genes</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module</span> <span class="op">!=</span> <span class="st">'grey'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># rank all genes in this kME</span></span>
+<span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M5'</span></span>
+<span><span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span>,<span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'gene_name'</span>, <span class="st">'module'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'kME_'</span>, <span class="va">cur_mod</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">kME</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">gene_name</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">ranks</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span></span></code></pre></div>
+<pre><code>  KIAA1217     SPOCK3      GRIK3      TENM2    SPARCL1       SOX6 
+-0.4932557 -0.4605339 -0.3541557 -0.3448085 -0.3354791 -0.3145449 </code></pre>
+<p><code>ranks</code> is a numeric where the values represent kMEs, and the names correspond to genes. They are ordered from low to high.</p>
+<p>Next we run the GSEA test using the <code>fgsea</code> function. Please consult the<a href="https://bioconductor.org/packages/release/bioc/manuals/fgsea/man/fgsea.pdf" class="external-link"><code>fgsea</code> documentation</a> for information about the options for this function.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># run fgsea to compute enrichments</span></span>
+<span><span class="va">gsea_df</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">fgsea</span><span class="op">(</span></span>
+<span>  pathways <span class="op">=</span> <span class="va">pathways</span>, </span>
+<span>  stats <span class="op">=</span> <span class="va">ranks</span>,</span>
+<span>  minSize <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  maxSize <span class="op">=</span> <span class="fl">500</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gsea_df</span><span class="op">)</span></span></code></pre></div>
+<pre><code>                                        pathway       pval      padj    log2err
+                                         &lt;char&gt;      &lt;num&gt;     &lt;num&gt;      &lt;num&gt;
+1: 'De Novo' Post-Translational Protein Folding 0.68875740 0.9861627 0.03871667
+2:                     ATP Biosynthetic Process 0.01018654 0.1789733 0.38073040
+3:                        ATP Metabolic Process 0.98579882 1.0000000 0.02048936
+4:               Actin Filament Bundle Assembly 0.45405405 0.8872106 0.15114876
+5:                  Actin Filament Organization 0.79468085 0.9954510 0.02660528
+6:     Actin Polymerization Or Depolymerization 0.02005858 0.2209742 0.35248786
+           ES        NES  size  leadingEdge
+        &lt;num&gt;      &lt;num&gt; &lt;int&gt;       &lt;list&gt;
+1:  0.4162606  0.8738619    12 ERO1A, H....
+2: -0.6001491 -1.8153572    14 ATP5F1B,....
+3:  0.2417035  0.5074116    12 AK4, ATP....
+4: -0.3595058 -0.9972337    10 MYO1B, S....
+5:  0.3299864  0.8015173    31 COBL, FA....
+6:  0.7482025  1.4964736    10 COBL, DI....</code></pre>
+<p>Next we use the <code>fgsea</code> function <code>plotGseaTable</code> to visualize the top 25 pathways enriched in this module.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">top_pathways</span> <span class="op">&lt;-</span> <span class="va">gsea_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">pval</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span>order_by<span class="op">=</span><span class="va">NES</span>, n<span class="op">=</span><span class="fl">25</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="va">.</span><span class="op">$</span><span class="va">pathway</span></span>
+<span></span>
+<span><span class="fu">plotGseaTable</span><span class="op">(</span></span>
+<span>    <span class="va">pathways</span><span class="op">[</span><span class="va">top_pathways</span><span class="op">]</span>, </span>
+<span>    <span class="va">ranks</span>, </span>
+<span>    <span class="va">gsea_df</span>, </span>
+<span>    gseaParam<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span>    colwidths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/enrichment/INH-M5_gsea_top25.png" width="800" height="800"></p>
+<p>We can also visualize one pathway at a time using the function <code>plotEnrichment</code>.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># name of the pathway to plot </span></span>
+<span><span class="va">selected_pathway</span> <span class="op">&lt;-</span> <span class="st">'Neuron Projection Morphogenesis'</span></span>
+<span></span>
+<span><span class="fu">plotEnrichment</span><span class="op">(</span></span>
+<span>    <span class="va">pathways</span><span class="op">[[</span><span class="va">selected_pathway</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    <span class="va">ranks</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="va">selected_pathway</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/enrichment/INH-M5_gsea_selected.png" width="800" height="800"></p>
+</div>
+<div class="section level3">
+<h3 id="example-2-using-only-the-genes-in-one-module">Example 2: using only the genes in one module<a class="anchor" aria-label="anchor" href="#example-2-using-only-the-genes-in-one-module"></a>
+</h3>
+<p>Here we show a similar example as above, but only using the genes in one module rather than all the genes in our co-expression network. These enrichment results may be more specific to each module, but the downside is that for small modules there may be no significant results.</p>
+<p>We will use module INH-M5 again, which has 287 genes.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># rank by INH-M5 genes only by kME</span></span>
+<span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M5'</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module</span> <span class="op">==</span> <span class="va">cur_mod</span><span class="op">)</span></span>
+<span><span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span>,<span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'gene_name'</span>, <span class="st">'module'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'kME_'</span>, <span class="va">cur_mod</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">kME</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">gene_name</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">ranks</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># run fgsea to compute enrichments</span></span>
+<span><span class="va">gsea_df2</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">fgsea</span><span class="op">(</span></span>
+<span>  pathways <span class="op">=</span> <span class="va">pathways</span>, </span>
+<span>  stats <span class="op">=</span> <span class="va">ranks</span>,</span>
+<span>  minSize <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  maxSize <span class="op">=</span> <span class="fl">500</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Let’s see how many significant results there are in this table versus the previous table.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n_signif1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">gsea_df</span>, <span class="va">pval</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">nrow</span> </span>
+<span><span class="va">n_signif2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">gsea_df2</span>, <span class="va">pval</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">nrow</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"All genes: "</span>, <span class="va">n_signif1</span>, <span class="st">", "</span>, <span class="va">cur_mod</span>, <span class="st">" only: "</span>, <span class="va">n_signif2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>[1] "All genes: 138 | INH-M5 only: 18"</code></pre>
+<p>We can see that there are more significant hits when we use all of the genes, so we encourage users to think about which approach better suits your particular use case. We can use these results to make similar plots as above using the same functions.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">top_pathways</span> <span class="op">&lt;-</span> <span class="va">gsea_df2</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">pval</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span>order_by<span class="op">=</span><span class="va">NES</span>, n<span class="op">=</span><span class="fl">25</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>    <span class="va">.</span><span class="op">$</span><span class="va">pathway</span></span>
+<span></span>
+<span><span class="fu">plotGseaTable</span><span class="op">(</span></span>
+<span>    <span class="va">pathways</span><span class="op">[</span><span class="va">top_pathways</span><span class="op">]</span>, </span>
+<span>    <span class="va">ranks</span>, </span>
+<span>    <span class="va">gsea_df2</span>, </span>
+<span>    gseaParam<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span>    colwidths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/enrichment/INH-M5_gsea2_top25.png" width="800" height="800"></p>
+<p>Finally, let’s demonstrate what happens when we run GSEA on a very small module. We will use module INH-M17, which contains 57 genes.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># rank by INH-M17 genes only by kME</span></span>
+<span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M17'</span></span>
+<span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module</span> <span class="op">==</span> <span class="va">cur_mod</span><span class="op">)</span></span>
+<span><span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">modules</span><span class="op">[</span>,<span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'gene_name'</span>, <span class="st">'module'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'kME_'</span>, <span class="va">cur_mod</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">kME</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cur_genes</span><span class="op">$</span><span class="va">gene_name</span></span>
+<span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="va">ranks</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># run fgsea to compute enrichments</span></span>
+<span><span class="va">gsea_df3</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">fgsea</span><span class="op">(</span></span>
+<span>  pathways <span class="op">=</span> <span class="va">pathways</span>, </span>
+<span>  stats <span class="op">=</span> <span class="va">ranks</span>,</span>
+<span>  minSize <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  maxSize <span class="op">=</span> <span class="fl">500</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># compute marker gene overlaps</span></span>
-<span><span class="va">overlap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/OverlapModulesDEGs.html">OverlapModulesDEGs</a></span><span class="op">(</span></span>
-<span>  <span class="va">seurat_obj</span>,</span>
-<span>  deg_df <span class="op">=</span> <span class="va">markers</span>,</span>
-<span>  fc_cutoff <span class="op">=</span> <span class="fl">1</span> <span class="co"># log fold change cutoff for overlap analysis</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Notably, the results from <code>OverlapModulesDEGs</code> are currently not stored in the hdWGCNA experiment. This is partially because this test is extremely fast to run, and partially because there are many different sets of DEGs that one could compare their modules to. The <code>overlap_df</code> contains the following columns:</p>
-<ul>
-<li>
-<code>module</code>: the name of the hdWGCNA module.</li>
-<li>
-<code>group</code>: the name of the RNA-seq cluster / cell-type / etc.</li>
-<li>
-<code>color</code>: the module’s unique color.</li>
-<li>
-<code>odds_ratio</code>: statistic to quantify the association between the gene list in the current module and the gene list for the marker genes.</li>
-<li>
-<code>pval</code>: Fisher’s exact test p-value.</li>
-<li>
-<code>fdr</code>: False Discovery Rate (FDR) multiple testing correction for the Fisher’s p-values.</li>
-<li>
-<code>Significance</code>: Character vector indicating the significance level of the overlap.</li>
-<li>
-<code>Jaccard</code>: Jaccard index for the two gene lists.</li>
-<li>
-<code>size_intersection</code>: the number of genes that overlap between the two gene lists.</li>
-</ul>
-<div class="section level3">
-<h3 id="visualize-overlaps">Visualize overlaps<a class="anchor" aria-label="anchor" href="#visualize-overlaps"></a>
-</h3>
-<p>hdWGCNA includes two functions to visualize the results from <code>OverlapModulesDEGs</code>, <code>OverlapDotPlot</code> and <code>OverlapBarPlot</code>.</p>
-<p>Here we demonstrate using <code>OverlapBarPlot</code> to visualize the results of <code>OverlapModulesDEGs</code>. This function creates a bar plot for each cell type showing one of the overlap statistics for each module.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># overlap barplot, produces a plot for each cell type</span></span>
-<span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/OverlapBarPlot.html">OverlapBarPlot</a></span><span class="op">(</span><span class="va">overlap_df</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># stitch plots with patchwork</span></span>
-<span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures/enrichment/overlap_barplot.png" width="500" height="500"></p>
-<p>Next we use <code>OverlapDotPlot</code> to visualize the overlap results in a single plot.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># plot odds ratio of the overlap as a dot plot</span></span>
-<span><span class="fu"><a href="../reference/OverlapDotPlot.html">OverlapDotPlot</a></span><span class="op">(</span></span>
-<span>  <span class="va">overlap_df</span>,</span>
-<span>  plot_var <span class="op">=</span> <span class="st">'odds_ratio'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'Overlap of modules &amp; cell-type markers'</span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures/enrichment/overlap_dotplot.png" width="600" height="600"></p>
-<p>Each dot is colored by the hdWGCNA module’s unique color, and the size of the dot is scaled by the overlap statistic. We show FDR significance levels as stars on top of the dots.</p>
-<ul>
-<li>’***’: 0 - 0.001</li>
-<li>’**’: 0.001 - 0.01</li>
-<li>’*’: 0.01 - 0.05</li>
-<li>‘+’: 0.05 - 0.1</li>
-<li>(No symbol): 0.1 - 1.0</li>
-</ul>
+<span><span class="va">n_signif3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">gsea_df3</span>, <span class="va">pval</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">nrow</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">n_signif3</span><span class="op">)</span></span></code></pre></div>
+<pre><code>[1] 2 </code></pre>
+<p>For a small module like this one, we do not expect many significant results with this approach. Only 2 significant results were found in this example. It would likely be better to use the ranked list of genes by kME for all genes in the co-expression network as in the first example.</p>
+<!-- 
+## Marker gene overlap analysis
+
+In this section we discuss how to compare hdWGCNA modules with cluster or cell-type
+marker genes. First we use the Seurat function `FindAllMarkers` to identify the
+marker genes in each cell type, and then we use the hdWGCNA function `OverlapModulesDEGs`
+to overlap the modules and the DEGs.
+
+
+``` r
+# compute cell-type marker genes with Seurat:
+Idents(seurat_obj) <- seurat_obj$cell_type
+markers <- Seurat::FindAllMarkers(
+  seurat_obj,
+  only.pos = TRUE,
+  logfc.threshold=1
+)
+
+# compute marker gene overlaps
+overlap_df <- OverlapModulesDEGs(
+  seurat_obj,
+  deg_df = markers,
+  fc_cutoff = 1 # log fold change cutoff for overlap analysis
+)
+```
+
+Notably, the results from `OverlapModulesDEGs` are currently not stored in the
+hdWGCNA experiment. This is partially because this test is extremely fast to run,
+and partially because there are many different sets of DEGs that one could compare
+their modules to. The `overlap_df` contains the following columns:
+
+* `module`: the name of the hdWGCNA module.
+* `group`: the name of the RNA-seq cluster / cell-type / etc.
+* `color`: the module's unique color.
+* `odds_ratio`: statistic to quantify the association between the gene list in the current module and the gene list for the marker genes.
+* `pval`: Fisher's exact test p-value.
+* `fdr`: False Discovery Rate (FDR) multiple testing correction for the Fisher's p-values.
+* `Significance`: Character vector indicating the significance level of the overlap.
+* `Jaccard`: Jaccard index for the two gene lists.
+* `size_intersection`: the number of genes that overlap between the two gene lists.
+
+### Visualize overlaps
+
+hdWGCNA includes two functions to visualize the results from `OverlapModulesDEGs`,
+`OverlapDotPlot` and `OverlapBarPlot`.
+
+Here we demonstrate using `OverlapBarPlot` to visualize the results of
+`OverlapModulesDEGs`. This function creates a bar plot for each cell type showing
+one of the overlap statistics for each module.
+
+
+``` r
+# overlap barplot, produces a plot for each cell type
+plot_list <- OverlapBarPlot(overlap_df)
+
+# stitch plots with patchwork
+wrap_plots(plot_list, ncol=3)
+```
+
+<img src="figures/enrichment/overlap_barplot.png" width="500" height="500">
+
+
+Next we use `OverlapDotPlot` to visualize the overlap results in a single plot.
+
+
+``` r
+# plot odds ratio of the overlap as a dot plot
+OverlapDotPlot(
+  overlap_df,
+  plot_var = 'odds_ratio') +
+  ggtitle('Overlap of modules & cell-type markers')
+```
+
+<img src="figures/enrichment/overlap_dotplot.png" width="600" height="600">
+
+
+Each dot is colored by the hdWGCNA module's unique color, and the size of the
+dot is scaled by the overlap statistic. We show FDR significance levels
+as stars on top of the dots.
+
+* '***': 0 - 0.001
+* '**': 0.001 - 0.01
+* '*': 0.01 - 0.05
+* '+': 0.05 - 0.1
+* (No symbol): 0.1 - 1.0 -->
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

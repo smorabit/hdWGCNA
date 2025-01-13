@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.01</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -127,18 +127,13 @@
 <h3 id="download-the-tutorial-data">Download the tutorial data<a class="anchor" aria-label="anchor" href="#download-the-tutorial-data"></a>
 </h3>
 <p>For the purpose of this tutorial, we provide a processed Seurat object of the control human brains from the <a href="https://www.nature.com/articles/s41591-019-0695-9" class="external-link">Zhou et al 2020 study</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
-<details><summary>
-Download not working?
-</summary>
-Please try downloading the file from this <a href="https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing" class="external-link">Google Drive link</a> instead.
-</details>
+<p>Please download the file <code>Zhou_2020_control.rds</code> from this <a href="https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing" class="external-link">Google Drive link</a>.</p>
 </div>
 <div class="section level3">
 <h3 id="load-the-dataset-and-required-libraries">Load the dataset and required libraries<a class="anchor" aria-label="anchor" href="#load-the-dataset-and-required-libraries"></a>
 </h3>
 <p>First we will load the single-cell dataset and the required R libraries for this tutorial.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span></span>
@@ -161,7 +156,10 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/allowWGCNAThreads.html" class="external-link">enableWGCNAThreads</a></span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
-<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020.rds'</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020_control.rds'</span><span class="op">)</span></span></code></pre></div>
+<p>This Seurat object was originally created using Seruat v4. If you are using Seurat v5, please run this additional command.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu">SeuratObject</span><span class="fu">::</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/UpdateSeuratObject.html" class="external-link">UpdateSeuratObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
 <p>Here we will plot the UMAP colored by cell type just to check that we have loaded the data correctly, and to make sure that we have grouped cells into clusters and cell types.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by<span class="op">=</span><span class="st">'cell_type'</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
@@ -173,7 +171,7 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <div class="section level2">
 <h2 id="set-up-seurat-object-for-wgcna">Set up Seurat object for WGCNA<a class="anchor" aria-label="anchor" href="#set-up-seurat-object-for-wgcna"></a>
 </h2>
-<p>Before running hdWGCNA, we first have to set up the Seurat object. Most of the information computed by hdWGCNA is stored in the Seurat object’s <code>@misc</code> slot. A single Seurat object can hold multiple hdWGCNA experiments, for example representing different cell types in the same single-cell dataset. Notably, since we consider hdWGCNA to be a downstream data analysis step, <strong><em>we do not support subsetting the Seurat object</em></strong> after <code>SetupForWGCNA</code> has been run.</p>
+<p>Before running hdWGCNA, we first have to set up the Seurat object. Most of the information computed by hdWGCNA is stored in the Seurat object’s <code>@misc</code> slot, and all of this information can be retrieved by various getter and setter functions. A single Seurat object can hold multiple hdWGCNA experiments, for example representing different cell types in the same single-cell dataset. Notably, since we consider hdWGCNA to be a downstream data analysis step, <strong><em>we do not support subsetting the Seurat object</em></strong> after <code>SetupForWGCNA</code> has been run.</p>
 <p>Here we will set up the Seurat object using the <code>SetupForWGCNA</code> function, specifying the name of the hdWGNCA experiment. This function also selects the genes that will be used for WGCNA. The user can select genes using three different approaches using the <code>gene_select</code> parameter:</p>
 <ul>
 <li>
@@ -241,14 +239,14 @@ Optional: Process the Metacell Seurat Object
 <div class="section level3">
 <h3 id="set-up-the-expression-matrix">Set up the expression matrix<a class="anchor" aria-label="anchor" href="#set-up-the-expression-matrix"></a>
 </h3>
-<p>Here we specify the expression matrix that we will use for network analysis. Since We only want to include the inhibitory neurons, so we have to subset our expression data prior to constructing the network. hdWGCNA includes the <code>SetDatExpr</code> function to store the transposed expression matrix for a given group of cells that will be used for downstream network analysis. The metacell expression matrix is used by default (<code>use_metacells=TRUE</code>), but hdWGCNA does allow for the single-cell expression matrix to be used if desired.. This function allows the user to specify which slot to take the expression matrix from, for example if the user wanted to apply <a href="https://satijalab.org/seurat/articles/sctransform_vignette.html" class="external-link">SCTransform</a> normalization instead of <code>NormalizeData</code>.</p>
+<p>Here we specify the expression matrix that we will use for network analysis. Since We only want to include the inhibitory neurons, so we have to subset our expression data prior to constructing the network. hdWGCNA includes the <code>SetDatExpr</code> function to store the transposed expression matrix for a given group of cells that will be used for downstream network analysis. The metacell expression matrix is used by default (<code>use_metacells=TRUE</code>), but hdWGCNA does allow for the single-cell expression matrix to be used if desired.. This function allows the user to specify which slot/layer to take the expression matrix from, for example if the user wanted to apply <a href="https://satijalab.org/seurat/articles/sctransform_vignette.html" class="external-link">SCTransform</a> normalization instead of <code>NormalizeData</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  group_name <span class="op">=</span> <span class="st">"INH"</span>, <span class="co"># the name of the group of interest in the group.by column</span></span>
 <span>  group.by<span class="op">=</span><span class="st">'cell_type'</span>, <span class="co"># the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups</span></span>
 <span>  assay <span class="op">=</span> <span class="st">'RNA'</span>, <span class="co"># using RNA assay</span></span>
-<span>  slot <span class="op">=</span> <span class="st">'data'</span> <span class="co"># using normalized data</span></span>
+<span>  layer <span class="op">=</span> <span class="st">'data'</span> <span class="co"># using normalized data</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <details><summary>
 Selecting more than one group

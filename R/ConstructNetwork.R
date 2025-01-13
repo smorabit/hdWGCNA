@@ -45,10 +45,10 @@ ConstructNetwork <- function(
   wgcna_name = NULL,
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
-  TOMDenom = "min", scaleTOMs = TRUE, calibrationQuantile = 0.8,
+  TOMDenom = "min", scaleTOMs = TRUE, calibrationQuantile = 0.95,
   sampleForCalibration = TRUE, sampleForCalibrationFactor = 1000,
   useDiskCache = TRUE, chunkSize = NULL,
-  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
+  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minƒModuleSize = 50,
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
 ){
 
@@ -122,8 +122,10 @@ ConstructNetwork <- function(
     networkType = networkType,
     TOMType = TOMType,
     TOMDenom = TOMDenom,
-    scaleTOMs = scaleTOMs, calibrationQuantile = calibrationQuantile,
-    sampleForCalibration = sampleForCalibration, sampleForCalibrationFactor = sampleForCalibrationFactor,
+    scaleTOMs = scaleTOMs, 
+    calibrationQuantile = calibrationQuantile,
+    sampleForCalibration = sampleForCalibration, 
+    sampleForCalibrationFactor = sampleForCalibrationFactor,
     useDiskCache = useDiskCache, chunkSize = chunkSize,
     deepSplit = deepSplit,
     pamStage=pamStage,

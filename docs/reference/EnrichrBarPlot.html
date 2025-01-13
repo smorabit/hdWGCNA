@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.00</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.01</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,8 +124,8 @@
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">EnrichrBarPlot</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (seurat_obj, outdir = "enrichr_plots", n_terms = 25, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_size = c(6, 15), logscale = FALSE, plot_bar_color = NULL, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_text_color = NULL, wgcna_name = NULL, ...) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     p_cutoff = 0.05, p_adj = TRUE, plot_size = c(6, 15), logscale = FALSE, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     plot_bar_color = NULL, plot_text_color = NULL, wgcna_name = NULL) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (is.null(wgcna_name)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         wgcna_name &lt;- seurat_obj@misc$active_wgcna</span>
@@ -134,6 +134,13 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- levels(modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mods &lt;- mods[mods != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     enrichr_df &lt;- GetEnrichrTable(seurat_obj, wgcna_name)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (p_adj) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         enrichr_df &lt;- subset(enrichr_df, Adjusted.P.value &lt;= </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             p_cutoff)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         enrichr_df &lt;- subset(enrichr_df, P.value &lt;= p_cutoff)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     wrapText &lt;- function(x, len) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             USE.NAMES = FALSE)</span>
@@ -156,8 +163,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_terms$wrap &lt;- wrapText(cur_terms$Term, 45)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         plot_list &lt;- list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         for (cur_db in dbs) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             plot_df &lt;- subset(cur_terms, db == cur_db) %&gt;% top_n(n_terms, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 wt = Combined.Score)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             plot_df &lt;- subset(cur_terms, db == cur_db) %&gt;% slice_max(order_by = Combined.Score, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 n = n_terms)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             if (is.null(plot_text_color)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 if (cur_color == "black") {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                   text_color = "grey"</span>
@@ -182,11 +189,12 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 y = reorder(wrap, Combined.Score))) + geom_bar(stat = "identity", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 position = "identity", color = "white", fill = cur_color) + </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 geom_text(aes(label = wrap), x = x, color = text_color, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   size = 3.5, hjust = "left") + ylab("Term") + </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 xlab(lab) + ggtitle(cur_db) + theme(panel.grid.major = element_blank(), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   size = 3.5, hjust = "left") + scale_x_continuous(expand = c(0, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 0), limits = c(0, NA)) + xlab(lab) + ylab("") + </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 ggtitle(cur_db) + theme(panel.grid.major = element_blank(), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 panel.grid.minor = element_blank(), legend.title = element_blank(), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 axis.ticks.y = element_blank(), axis.text.y = element_blank(), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 plot.title = element_text(hjust = 0.5))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 plot.title = element_text(hjust = 0.5), axis.line.y = element_blank())</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         pdf(paste0(outdir, "/", cur_mod, ".pdf"), width = plot_size[1], </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             height = plot_size[2])</span>
@@ -196,7 +204,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         dev.off()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f962fdbb2d0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f854b374d58&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

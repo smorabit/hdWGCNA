@@ -1,3 +1,11 @@
+# hdWGCNA 0.4.01 (2025-01-10)
+## Added
+- New section in the enrichment tutorial for GSEA analysis.
+
+## Changes
+- New options in `EnrichrDotPlot` and `EnrichrBarPlot`.
+- Updated `EnrichrDotPlot`.
+
 # hdWGCNA 0.4.00 (2024-10-09)
 ## Added
 - Transcription Factor Regulatory Network Analysis functionality.

@@ -114,6 +114,12 @@ ConstructPseudobulk <- function(
         colnames(cur) <- paste0(x, ':', colnames(cur))
         cur
     }))
+
+    print('here')
+    print(class(datExpr))
+    print(length(pseudobulk_list))
+    print(dim(pseudobulk_list[[1]]))
+
     datExpr <- t(datExpr[genes_use,])
 
     # return the pseudobulk matrix:
@@ -186,7 +192,7 @@ to_pseudobulk = function(input,
   keep = meta %>%
     dplyr::count(cell_type, label) %>%
     group_by(cell_type) %>%
-    filter(all(n >= min_cells)) %>%
+    dplyr::filter(all(n >= min_cells)) %>%
     pull(cell_type) %>%
     unique()
   
@@ -195,7 +201,7 @@ to_pseudobulk = function(input,
     map( ~ {
       print(.)
       cell_type = .
-      meta0 = meta %>% filter(cell_type == !!cell_type)
+      meta0 = meta %>% dplyr::filter(cell_type == !!cell_type)
       expr0 = expr %>% magrittr::extract(, meta0$cell_barcode)
       # catch cell types without replicates or conditions
       if (n_distinct(meta0$label) < 2)

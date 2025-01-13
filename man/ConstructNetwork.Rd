@@ -22,7 +22,7 @@ ConstructNetwork(
   TOMType = "signed",
   TOMDenom = "min",
   scaleTOMs = TRUE,
-  calibrationQuantile = 0.8,
+  calibrationQuantile = 0.95,
   sampleForCalibration = TRUE,
   sampleForCalibrationFactor = 1000,
   useDiskCache = TRUE,
@@ -30,7 +30,7 @@ ConstructNetwork(
   deepSplit = 4,
   pamStage = FALSE,
   detectCutHeight = 0.995,
-  minModuleSize = 50,
+  minƒModuleSize = 50,
   mergeCutHeight = 0.2,
   saveConsensusTOMs = TRUE,
   ...

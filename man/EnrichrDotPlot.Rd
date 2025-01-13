@@ -9,31 +9,48 @@ EnrichrDotPlot(
   database,
   mods = "all",
   n_terms = 3,
+  p_cutoff = 0.05,
+  p_adj = TRUE,
   break_ties = TRUE,
-  logscale = TRUE,
-  wgcna_name = NULL,
-  ...
+  term_size = 10,
+  wgcna_name = NULL
 )
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{database}{name of the enrichr database to plot.}
+\item{database}{A character string specifying the name of the Enrichr database to use (e.g., "GO_Biological_Process_2021").}
 
-\item{mods}{names of modules to plot. All modules are plotted if mods='all' (default)}
+\item{mods}{A character vector specifying the names of modules to include in the plot.
+If \code{mods = "all"} (default), all modules except the "grey" module are included.}
 
-\item{n_terms}{number of enriched terms to plot for each module}
+\item{n_terms}{An integer specifying the number of top enriched terms to plot for each module (default = 3).}
 
-\item{break_ties}{logical controlling whether or not to randomly select terms with equal enrichments to precisely enforce n_terms.}
+\item{p_cutoff}{A numeric value specifying the p-value threshold for filtering enriched terms (default = 0.05).}
 
-\item{logscale}{logical controlling whether to plot the enrichment on a log scale.}
+\item{p_adj}{A logical value indicating whether to use adjusted p-values (\code{TRUE}, default) or raw p-values (\code{FALSE}) for filtering.}
+
+\item{break_ties}{A logical value indicating whether to randomly select among tied terms to enforce \code{n_terms} (default = \code{TRUE}).}
+
+\item{term_size}{A numeric value specifying the font size of the enriched terms displayed on the y-axis (default = 10).}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
+\value{
+A ggplot2 object representing the dot plot of enriched terms for the specified modules and database.
+}
 \description{
-Makes barplots from Enrichr data
+Generate a dot plot visualizing enrichment results from Enrichr for hdWGCNA modules.
 }
-\examples{
-EnrichrDotPlot
+\details{
+This function creates dot plots from Enrichr results associated with hdWGCNA modules.
+Each module is represented by its most enriched terms from the specified Enrichr database.
+The size of the dots indicates the enrichment score, and the color indicates the statistical significance (-log10 transformed p-value).
+\itemize{
+\item The function first retrieves WGCNA module and Enrichr data from the specified Seurat object.
+\item Modules are filtered based on the \code{mods} parameter, and enriched terms are filtered by significance using \code{p_cutoff} and \code{p_adj}.
+\item The top \code{n_terms} terms for each module are selected based on the Combined Score. If ties occur, the \code{break_ties} parameter determines how they are resolved.
+\item A dot plot is generated where each dot represents an enriched term, its size corresponds to the Combined Score (log-transformed),
+and its color indicates the significance (-log10 transformed p-value).
 }
-\keyword{scRNA-seq}
+}

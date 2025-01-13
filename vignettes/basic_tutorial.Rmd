@@ -48,13 +48,7 @@ figures that you generate will be slightly different than what are shown here if
 For the purpose of this tutorial, we provide a processed Seurat object of the
 control human brains from the [Zhou et al 2020 study](https://www.nature.com/articles/s41591-019-0695-9).
 
-```{bash eval=FALSE}
-wget https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds
-```
-
-<details> <summary> Download not working? </summary>
-Please try downloading the file from this [Google Drive link](https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing) instead.
-</details>
+Please download the file `Zhou_2020_control.rds` from this [Google Drive link](https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing).
 
 ## Load the dataset and required libraries
 
@@ -85,8 +79,14 @@ set.seed(12345)
 enableWGCNAThreads(nThreads = 8)
 
 # load the Zhou et al snRNA-seq dataset
-seurat_obj <- readRDS('Zhou_2020.rds')
+seurat_obj <- readRDS('Zhou_2020_control.rds')
 
+```
+
+This Seurat object was originally created using Seruat v4. If you are using Seurat v5, please run this additional command.
+
+```{r eval=FALSE}
+seurat_obj <- SeuratObject::UpdateSeuratObject(seurat_obj)
 ```
 
 Here we will plot the UMAP colored by cell
@@ -106,7 +106,8 @@ p
 # Set up Seurat object for WGCNA
 
 Before running hdWGCNA, we first have to set up the Seurat object. Most of the
-information computed by hdWGCNA is stored in the Seurat object's `@misc` slot.
+information computed by hdWGCNA is stored in the Seurat object's `@misc` slot, and all of this information 
+can be retrieved by various getter and setter functions.
 A single Seurat object can hold multiple hdWGCNA experiments, for example representing
 different cell types in the same single-cell dataset. Notably, since we consider
 hdWGCNA to be a downstream data analysis step, ***we do not support subsetting
@@ -239,7 +240,7 @@ want to include the inhibitory neurons, so we have to subset our expression data
 prior to constructing the network. hdWGCNA includes the `SetDatExpr` function to store the
 transposed expression matrix for a given group of cells that will be used for downstream
 network analysis. The metacell expression matrix is used by default (`use_metacells=TRUE`), but hdWGCNA does allow for the single-cell expression matrix to be used if desired..
-This function allows the user to specify which slot to take the expression matrix from,
+This function allows the user to specify which slot/layer to take the expression matrix from,
 for example if the user wanted to apply [SCTransform](https://satijalab.org/seurat/articles/sctransform_vignette.html) normalization instead of `NormalizeData`.
 
 ```{r eval=FALSE}
@@ -249,7 +250,7 @@ seurat_obj <- SetDatExpr(
   group_name = "INH", # the name of the group of interest in the group.by column
   group.by='cell_type', # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
   assay = 'RNA', # using RNA assay
-  slot = 'data' # using normalized data
+  layer = 'data' # using normalized data
 )
 
 
