@@ -48,7 +48,7 @@ ConstructNetwork <- function(
   TOMDenom = "min", scaleTOMs = TRUE, calibrationQuantile = 0.95,
   sampleForCalibration = TRUE, sampleForCalibrationFactor = 1000,
   useDiskCache = TRUE, chunkSize = NULL,
-  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minƒModuleSize = 50,
+  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
 ){
 
