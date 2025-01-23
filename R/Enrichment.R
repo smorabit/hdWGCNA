@@ -75,7 +75,6 @@ RunEnrichr <- function(
 
 }
 
-
 #' RunEnrichrRegulons
 #'
 #' Run Enrichr gene set enrichment tests on hdWGCNA modules

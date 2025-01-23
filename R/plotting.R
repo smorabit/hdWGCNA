@@ -662,6 +662,7 @@ EnrichrBarPlot <- function(
 
   # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
+  dbs <- as.character(unique(enrichr_df$db))
 
   # subset based on significance level:
   if(p_adj){

@@ -2,7 +2,7 @@
 title: "Co-expression module dynamics with pseudotime"
 output: rmarkdown::html_vignette
 description: >
-  Full Seurat clustering and hdWGCNA analysis tutorial of PacBio MAS-Seq PBMC dataset.
+  Co-expression module dynamics with pseudotime.
 vignette: >
   %\VignetteIndexEntry{Co-expression module dynamics with pseudotime}
   %\VignetteEngine{knitr::rmarkdown}
