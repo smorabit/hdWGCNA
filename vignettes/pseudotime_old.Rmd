@@ -68,6 +68,7 @@ library(Matrix)
 library(viridis)
 library(harmony)
 library(RColorBrewer)
+library(ggpubr)
 library(tictoc)
 library(RColorBrewer)
 library(Hmisc)
@@ -83,12 +84,13 @@ enableWGCNAThreads(nThreads = 8)
 theme_set(theme_cowplot())
 set.seed(12345)
 
+library(hdWGCNA)
 
-setwd('/Users/sam.morabito/Library/CloudStorage/GoogleDrive-smorabit@uci.edu/Shared drives/Bioinfo_SwarupLab/Sam_Dropbox/pipelines/hdWGCNA/')
+setwd("/dfs7/swaruplab/smorabit/analysis/scWGCNA/pseudotime_tutorial/")
 data_dir <- 'data/'
-fig_dir <- '../scWGCNA_paper/figures/'
+fig_dir <- 'figures/'
 
-seurat_obj <- readRDS(file='../mpa/data/seacells_hdWGCNA.rds')
+seurat_obj <- readRDS(file='/dfs7/swaruplab/smorabit/analysis/scWGCNA/compare_seacells/data/seacells_hdWGCNA.rds')
 
 ```
 
@@ -234,6 +236,8 @@ dev.off()
 ```
 
 <img src="figures/pseudotime/umap_trajectories.png" width="900" height="900">
+
+
 
 
 # Co-expression network analysis
@@ -409,7 +413,7 @@ inference approaches, we simply chose to run Monocle3 as an example.
 
 ```{r eval=FALSE}
 
-#seurat_obj$ery_pseudotime <- NA
+seurat_obj$ery_pseudotime <- NA
 
 p  <- PlotModuleTrajectory(
     seurat_obj,

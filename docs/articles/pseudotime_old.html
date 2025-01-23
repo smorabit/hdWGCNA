@@ -97,8 +97,8 @@
       <img src="../logo.png" class="logo" alt=""><h1>Co-expression module dynamics with pseudotime</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/smorabit/hdWGCNA/blob/HEAD/vignettes/pseudotime.Rmd" class="external-link"><code>vignettes/pseudotime.Rmd</code></a></small>
-      <div class="d-none name"><code>pseudotime.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/smorabit/hdWGCNA/blob/HEAD/vignettes/pseudotime_old.Rmd" class="external-link"><code>vignettes/pseudotime_old.Rmd</code></a></small>
+      <div class="d-none name"><code>pseudotime_old.Rmd</code></div>
     </div>
 
     
@@ -318,7 +318,7 @@ See DotPlot code
 <p>In this section we use the hdWGCNA function <code>PlotModuleTrajectory</code> to visualize how the module eigengenes change throughout the pseudotime trajectories for each co-expression module. This function requires you to specify the name of the column in the Seurat object’s meta data where the pseudotime information is stored. Since we split our pseudotime into four different trajectories, first we will plot the ME trajectory dynamics for the erythrocytes.</p>
 <p>Importantly, we note that module dynamics can be studied using different pseudotime inference approaches, we simply chose to run Monocle3 as an example.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#seurat_obj$ery_pseudotime &lt;- NA</span></span>
+<code class="sourceCode R"><span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">ery_pseudotime</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="va">p</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModuleTrajectory.html">PlotModuleTrajectory</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>

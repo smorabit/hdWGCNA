@@ -288,7 +288,17 @@ ResetModuleNames <- function(
     seurat_obj <- SetModuleUMAP(seurat_obj, umap_df, wgcna_name)
   }
 
-
+  # update degree 
+  degree_df <- GetDegrees(seurat_obj, wgcna_name)
+  if(!is.null(degree_df)){
+    degree_df$module <- factor(
+      new_mod_df[match(degree_df$module, new_mod_df$old),'new'],
+      levels = as.character(new_mod_df$new)
+    )
+    seurat_obj <- SetDegrees(seurat_obj, degree_df, wgcna_name)
+  }
+  
+  # return the seurat object
   seurat_obj
 
 }

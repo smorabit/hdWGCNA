@@ -82,13 +82,13 @@ RunEnrichr <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param dbs character vector of EnrichR databases
+#' @param depth Include primary TF target genes (depth=1) or primary + secondary (depth=2)
+#' @param use_regulons Use the regulons (default=TRUE) or the full set of TF target genes?
 #' @param max_genes Max number of genes to include per module, ranked by kME.
 #' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
 #' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
 #' @export
-#' RunEnrichr
 RunEnrichrRegulons <- function(
     seurat_obj,
     dbs = c('GO_Biological_Process_2021','GO_Cellular_Component_2021','GO_Molecular_Function_2021'),

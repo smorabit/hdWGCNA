@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.02 (2025-01-23)
+## Added
+- `RunEnrichrRegulons`. This should have been included previously but there was a problem with the export.
+
+## Changes
+- Bugfix in `PlotModuleTrajectory` 
+
 # hdWGCNA 0.4.01 (2025-01-10)
 ## Added
 - New section in the enrichment tutorial for GSEA analysis.

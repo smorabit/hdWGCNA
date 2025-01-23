@@ -30,7 +30,7 @@ ConstructNetwork(
   deepSplit = 4,
   pamStage = FALSE,
   detectCutHeight = 0.995,
-  minƒModuleSize = 50,
+  minModuleSize = 50,
   mergeCutHeight = 0.2,
   saveConsensusTOMs = TRUE,
   ...

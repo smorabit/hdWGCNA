@@ -118,7 +118,7 @@ reference:
     - '`PlotDMEsVolcano`'
     - '`PlotDMEsLollipop`'
 - title: Enrichment Analysis
-  desc: Functions for Enrichr analysis and DEG overlap analysis
+  desc: Functions for Enrichr analysis
   contents:
     - '`RunEnrichr`'
     - '`EnrichrBarPlot`'

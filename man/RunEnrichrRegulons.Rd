@@ -22,6 +22,10 @@ RunEnrichrRegulons(
 
 \item{dbs}{character vector of EnrichR databases}
 
+\item{depth}{Include primary TF target genes (depth=1) or primary + secondary (depth=2)}
+
+\item{use_regulons}{Use the regulons (default=TRUE) or the full set of TF target genes?}
+
 \item{wait}{logical indicating whether or not to wait some time between sending requests to the EnrichR server.}
 
 \item{wait_time}{the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.}
@@ -33,4 +37,3 @@ RunEnrichrRegulons(
 \description{
 Run Enrichr gene set enrichment tests on hdWGCNA modules
 }
-\keyword{scRNA-seq}
