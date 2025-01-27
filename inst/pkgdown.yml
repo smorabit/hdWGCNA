@@ -14,6 +14,7 @@ articles:
   motif_analysis: motif_analysis.html
   network_visualizations: network_visualizations.html
   other_metacells: other_metacells.html
+  ppi_integration: ppi_integration.html
   projecting_modules_cross: projecting_modules_cross.html
   projecting_modules: projecting_modules.html
   pseudobulk: pseudobulk.html
@@ -22,7 +23,7 @@ articles:
   sctransform: sctransform.html
   ST_basics: ST_basics.html
   tf_network: tf_network.html
-last_built: 2025-01-23T13:50Z
+last_built: 2025-01-27T09:21Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles

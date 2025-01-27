@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.03 (2025-01-27)
+## Added
+- New tutorial titled "Integrating co-expression and protein-protein interaction networks".
+
+## Changes
+- None.
+
 # hdWGCNA 0.4.02 (2025-01-23)
 ## Added
 - `RunEnrichrRegulons`. This should have been included previously but there was a problem with the export.

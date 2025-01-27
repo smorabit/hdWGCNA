@@ -62,6 +62,8 @@ navbar:
     - text: Advanced topics
     - text: Transcription factor regulatory network analysis
       href: articles/tf_network.html
+    - text: Integrating co-expression and protein-protein interaction networks
+      href: articles/ppi_integration.html
     - text: Consensus network analysis
       href: articles/consensus_wgcna.html
     - text: hdWGCNA with pseudobulk data

@@ -2520,6 +2520,10 @@ ModuleTopologyHeatmap <- function(
     CheckWGCNAName(seurat_obj, wgcna_name)
     if(is.null(TOM_use)){TOM_use <- wgcna_name}
 
+    # is ggrastr available?
+    raster_avail <- require('ggrastr')
+    if(!raster_avail){raster <- FALSE}
+
     # get the modules table
     modules <- GetModules(seurat_obj, wgcna_name)
     cur_genes <- subset(modules, module == mod) %>% .$gene_name

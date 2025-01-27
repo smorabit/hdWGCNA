@@ -25,7 +25,7 @@ Before running the code in this tutorial, you must first perform the standard co
 # single-cell analysis package
 library(Seurat)
 
-# plotting and data science packagesƒ
+# plotting and data science packages:
 library(tidyverse)
 library(cowplot)
 library(patchwork)
