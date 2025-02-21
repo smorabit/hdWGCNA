@@ -4,7 +4,13 @@
 \alias{ConstructTFNetwork}
 \title{ConstructTFNetwork}
 \usage{
-ConstructTFNetwork(seurat_obj, model_params, nfold = 5, wgcna_name = NULL)
+ConstructTFNetwork(
+  seurat_obj,
+  model_params,
+  nfold = 5,
+  callbacks = NULL,
+  wgcna_name = NULL
+)
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
@@ -12,6 +18,8 @@ ConstructTFNetwork(seurat_obj, model_params, nfold = 5, wgcna_name = NULL)
 \item{model_params}{a list of model parameters to pass to xgboost}
 
 \item{nfold}{number of folds for cross validation}
+
+\item{callbacks}{callback functions for the xgboost model}
 
 \item{wgcna_name}{name of the WGCNA experiment}
 }

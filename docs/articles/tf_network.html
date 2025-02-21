@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.03</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,7 +134,7 @@
 <span><span class="co"># set random seed for reproducibility</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># re-load the Zhou et al snRNA-seq dataset</span></span>
+<span><span class="co"># load your Seurat object which has already been processed with hdWGCNA</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="install-additional-packages">Install additional packages<a class="anchor" aria-label="anchor" href="#install-additional-packages"></a>
@@ -150,16 +150,20 @@
 <span></span>
 <span><span class="co"># install database packages for human motifs &amp; genomic features</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">'JASPAR2020'</span>,</span>
 <span>  <span class="st">'EnsDb.Hsapiens.v86'</span>,</span>
 <span>  <span class="st">'BSgenome.Hsapiens.UCSC.hg38'</span></span>
 <span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">'JASPAR2020'</span>,</span>
+<span>  <span class="st">'JASPAR2024'</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># install xgboost </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'xgboost'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># load these packages into R:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://jaspar.genereg.net/" class="external-link">JASPAR2020</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">JASPAR2024</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">motifmatchr</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TFBSTools</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnsDb.Hsapiens.v86</span><span class="op">)</span></span>
@@ -175,17 +179,29 @@
 <h3 id="identify-tfs-in-promoter-regions">Identify TFs in promoter regions<a class="anchor" aria-label="anchor" href="#identify-tfs-in-promoter-regions"></a>
 </h3>
 <p>The first main step in our TF regulatory network analysis is to determine which genes are potentially regulated by each TF. We provide a function <code>MotifScan</code> which uses the algorithm <a href="https://www.bioconductor.org/packages/release/bioc/html/motifmatchr.html" class="external-link"><code>motifmatchr</code></a> to search for occurrences of different TF motifs within gene promoter regions. This function will store information in the <code>seurat_obj</code> about which TF motifs are present in each gene’s promoter.</p>
+<p>First, we set up a list of position weight matrices for each TF using <code>TFBStools</code>. This process is slightly different depending on the version of <code>JASPAR</code> that you use. In the tutorial, we used <code>JASPAR2020</code> but here we also show how to use <code>JASPAR2024</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">'data/zhou_tutorial.rds'</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># use TFBSTools to get the motif position weight matrices </span></span>
-<span><span class="co"># for the JASPAR 2020 database</span></span>
+<code class="sourceCode R"><span><span class="co"># JASPAR 2020</span></span>
 <span><span class="va">pfm_core</span> <span class="op">&lt;-</span> <span class="fu">TFBSTools</span><span class="fu">::</span><span class="fu">getMatrixSet</span><span class="op">(</span></span>
 <span>  x <span class="op">=</span> <span class="va">JASPAR2020</span>,</span>
 <span>  opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"CORE"</span>, tax_group <span class="op">=</span> <span class="st">'vertebrates'</span>, all_versions <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># run the motif scan</span></span>
+<span><span class="co"># JASPAR 2024 (not used for this tutorial)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">JASPAR2024</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rsqlite.r-dbi.org" class="external-link">RSQLite</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnsDb.Hsapiens.v86</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">JASPAR2024</span> <span class="op">&lt;-</span> <span class="fu">JASPAR2024</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">sq24</span> <span class="op">&lt;-</span> <span class="fu">RSQLite</span><span class="fu">::</span><span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu">db</span><span class="op">(</span><span class="va">JASPAR2024</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pfm_core</span> <span class="op">&lt;-</span> <span class="fu">TFBSTools</span><span class="fu">::</span><span class="fu">getMatrixSet</span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">sq24</span>,</span>
+<span>  opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"CORE"</span>, tax_group <span class="op">=</span> <span class="st">'vertebrates'</span>, all_versions <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Now we can run the hdWGCNA function <code>MotifScan</code> using these motifs.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># run the motif scan</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MotifScan.html">MotifScan</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  species_genome <span class="op">=</span> <span class="st">'hg38'</span>,</span>
@@ -198,7 +214,7 @@
 </h3>
 <p>Now that we have information about which TFs potentially regulate each gene based on TF motif presence, we have a basis for constructing a TF regulatory network. In this section, we use the function <code>ConstructTFNetwork</code> to construct a network of TFs and their putative target genes. This function leverages the <a href="https://xgboost.readthedocs.io/en/stable/R-package/xgboostPresentation.html" class="external-link">extreme gradient boosting (XGBoost) algorithm</a>, a powerful ensemble learning approach that we use to predict the expression of a given gene based on the expression of all TFs with a matching motif in that gene’s promoter. This analysis will reveal a ranking of which TFs are best at predicting the expression of the target gene, which we consider the most likely regulators of that particular gene. <a href="https://www.sciencedirect.com/science/article/pii/S2211124724002845#sec4" class="external-link">Please read the methods section of our paper for more information.</a></p>
 <p>Similar to the standard hdWGCNA co-expression network analysis, we need to define the set of genes that will be used for this analysis, and we need to explicitly define the expression matrix that will be used with the function <code>SetDatExpr</code>. The user may decide which genes that they want to use for this analysis, but here we will use all of the genes that were assigned to a co-expression module based on the co-expression network analysis, and all genes corresponding to a TF.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the motif df:</span></span>
 <span><span class="va">motif_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMotifs.html">GetMotifs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
@@ -212,7 +228,7 @@
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetWGCNAGenes.html">SetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">genes_use</span><span class="op">)</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_obj</span>, group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name<span class="op">=</span><span class="st">'INH'</span><span class="op">)</span></span></code></pre></div>
 <p>Now we are ready to run <code>ConstructTFNetwork</code>. Since this function models each gene, the runtime will scale wth the number of genes selected from the previous step and it will scale with the number of metacells / metaspots that are used for this analysis. We use the parameter <code>model_params</code> to pass a list of arguments for XGBoost. <a href="https://xgboost.readthedocs.io/en/latest/parameter.html" class="external-link">See this webpage for the full list of parameters</a>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># define model params:</span></span>
 <span><span class="va">model_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    objective <span class="op">=</span> <span class="st">'reg:squarederror'</span>,</span>
@@ -225,7 +241,7 @@
 <span><span class="co"># construct the TF network</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructTFNetwork.html">ConstructTFNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">model_params</span><span class="op">)</span></span></code></pre></div>
 <p>This function results in a table showing information about each potential TF-gene pair, which we can access using <code>GetTFNetwork</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTFNetwork.html">GetTFNetwork</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      tf gene       Gain Cover Frequency         Cor
@@ -257,7 +273,7 @@
 <li>Strategy “C” retains all TF-gene pairs above a certain regulatory score (<code>reg_thresh</code>).</li>
 </ul>
 <p>For this analysis, we employ Strategy “A”, selecting the top 10 TFs for each gene.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AssignTFRegulons.html">AssignTFRegulons</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>
 <span>    strategy <span class="op">=</span> <span class="st">"A"</span>,</span>
@@ -274,7 +290,7 @@
 6 ARGFX ZRANB3 0.04465245 0.05000000 0.05000000 0.21549817</code></pre>
 <details><summary>
 Expand to see example of Strategy “B”
-</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AssignTFRegulons.html">AssignTFRegulons</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>
 <span>    strategy <span class="op">=</span> <span class="st">"B"</span>,</span>
@@ -283,7 +299,7 @@ Expand to see example of Strategy “B”
 <span><span class="op">)</span></span></code></pre></div>
 </details><details><summary>
 Expand to see example of Strategy “C”
-</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AssignTFRegulons.html">AssignTFRegulons</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>
 <span>    strategy <span class="op">=</span> <span class="st">"C"</span>,</span>
@@ -295,7 +311,7 @@ Expand to see example of Strategy “C”
 <h3 id="visualize-regulons">Visualize regulons<a class="anchor" aria-label="anchor" href="#visualize-regulons"></a>
 </h3>
 <p>We can visualize the top target genes within TF regulons using the function <code>RegulonBarPlot</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RegulonBarPlot.html">RegulonBarPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, selected_tf<span class="op">=</span><span class="st">'RUNX2'</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RegulonBarPlot.html">RegulonBarPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, selected_tf<span class="op">=</span><span class="st">'ETV1'</span>, cutoff<span class="op">=</span><span class="fl">0.15</span><span class="op">)</span></span>
 <span></span>
@@ -310,7 +326,7 @@ Expand to see example of Strategy “C”
 </h3>
 <p>In the hdWGCNA co-expression analysis, we compute aggregated expression scores for each module, called Module Eigengenes. In TF regulatory network analysis, we also have groups of genes (regulons) for which we can calculate gene expression scores. This will inform us which cells express genes which are likely regulated by specific TFs. Here we use the function <code>RegulonScores</code> to compute scores for each TF regulon.</p>
 <p>Importantly, in our TF network analysis, there are some TF-gene pairs with positive co-expression, and some TF-gene pairs with negative co-expression. For regulon scoring, we provide the option <code>target_type</code> to select ‘positive’, ‘negative’, or ‘both’, making it possible to separately analyze the signatures for genes that are activated or repressed by a given TF.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># positive regulons</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RegulonScores.html">RegulonScores</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>
@@ -330,7 +346,7 @@ Expand to see example of Strategy “C”
 <span><span class="va">pos_regulon_scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetRegulonScores.html">GetRegulonScores</a></span><span class="op">(</span><span class="va">seurat_obj</span>, target_type<span class="op">=</span><span class="st">'positive'</span><span class="op">)</span></span>
 <span><span class="va">neg_regulon_scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetRegulonScores.html">GetRegulonScores</a></span><span class="op">(</span><span class="va">seurat_obj</span>, target_type<span class="op">=</span><span class="st">'negative'</span><span class="op">)</span></span></code></pre></div>
 <p>We can use various approaches to visualize the regulon scores. Here we compare the regulon scores side-by-side with the expression of RUNX2 using a Seurat <code>FeaturePlot</code>.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select a TF of interest</span></span>
 <span><span class="va">cur_tf</span> <span class="op">&lt;-</span> <span class="st">'RUNX2'</span></span>
 <span></span>
@@ -359,7 +375,7 @@ Expand to see example of Strategy “C”
 </h3>
 <p>Based on the specific research project or biological question, there are many different ways that one could visualize the TF network. In this section we will use <code>TFNetworkPlot</code>, a built-in funciton within hdWGCNA to plot the network centered around specified TFs.</p>
 <p>First, we use <code>TFNetworkPlot</code> with the default settings using a TF of interest, RUNX2.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select TF of interest</span></span>
 <span><span class="va">cur_tf</span> <span class="op">&lt;-</span> <span class="st">'RUNX2'</span></span>
 <span></span>
@@ -373,7 +389,7 @@ Expand to see example of Strategy “C”
 <details><summary>
 Expand to see how we select TFs of interest
 </summary><p>To select interesting TFs, we look for TFs that are specifically expressed in our cell type of interest (INH), and TFs that are hub genes in our co-expression modules.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the TF regulons</span></span>
 <span><span class="va">tf_regulons</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTFRegulons.html">GetTFRegulons</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
@@ -396,7 +412,7 @@ Expand to see how we select TFs of interest
 <pre><code>[1] "PKNOX2" "RARB"   "RUNX2"</code></pre>
 </details><p>This plot is a <a href="https://en.wikipedia.org/wiki/Directed_graph" class="external-link">directed network</a> showing regulatory links originating from our TF of interest. The nodes (dots) in this network represent TFs and genes, and the edges (arrows) represent inferred regulatory relationships. The selected TF is shown as a diamond, other TFs are shown as triangles, and genes are shown as circles. The size of each node corresponds to the outdegree in the network (number of outgoing connections). The color of the edges represent the strength of the TF-gene interaction based on the pearson correlation of gene expression. The color of each node represents the number of links to the selected TFs, in this case showing us the “primary” and “secondary” targets of RUNX2. By default, the only genes that are labeled are the selected TFs and the primary TF targets.</p>
 <p>The <code>TFNetworkPlot</code> function contains many options to modify the network plot, and here we show some of these options. First, we show different plots based on the network “depth”.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># plot the RUNX2 network with primary, secondary, and tertiary targets</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TFNetworkPlot.html">TFNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, selected_tfs<span class="op">=</span><span class="va">cur_tf</span>, depth<span class="op">=</span><span class="fl">1</span>, no_labels<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TFNetworkPlot.html">TFNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, selected_tfs<span class="op">=</span><span class="va">cur_tf</span>, depth<span class="op">=</span><span class="fl">2</span>, no_labels<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -408,7 +424,7 @@ Expand to see how we select TFs of interest
 </center>
 <p>The network complexity increases drastically when we use <code>depth=3</code>, so in general we recommend using <code>depth=1</code> to plot the primary targets or <code>depth=2</code> to plot primary and secondary targes (default).</p>
 <p>We can also use <code>TFNetworkPlot</code> with multiple selected TFs. Here we show a network plot with three selected TFs. We also use the option <code>target_type</code> to show different plots for the positive and negative TF-gene relationships based on the sign of their correlations.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select TF of interest</span></span>
 <span><span class="va">cur_tfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RUNX2'</span>, <span class="st">'RXRA'</span>, <span class="st">'TCF4'</span><span class="op">)</span></span>
 <span></span>
@@ -435,7 +451,7 @@ Expand to see how we select TFs of interest
 <img src="figures/tf_network/TFnetwork_multi_pos_vs_neg.png" width="1200" height="600">
 </center>
 <p>There are two options for how to change the edge weights, either based on TF-gene pearson correlations (<code>edge_weight='Cor'</code>) or based on the importance from the XGBoost model (<code>edge_weight='Gain'</code>). Here we show both of these options, and we also show how to</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cur_tf</span> <span class="op">&lt;-</span> <span class="st">'RUNX2'</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TFNetworkPlot.html">TFNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, selected_tfs<span class="op">=</span><span class="va">cur_tf</span>, </span>
@@ -452,7 +468,7 @@ Expand to see how we select TFs of interest
 <img src="figures/tf_network/TFnetwork_cor_vs_gain_RUNX2.png" width="1200" height="600">
 </center>
 <p>Finally we show a few more options: plotting only TFs, adding custom gene labels, and changing the color scheme.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cur_tf</span> <span class="op">&lt;-</span> <span class="st">'RUNX2'</span></span>
 <span></span>
 <span><span class="co"># get a list of hub genes in the same module as RUNX2</span></span>
@@ -493,7 +509,7 @@ Expand to see how we select TFs of interest
 <p>In this example, we will plot the RUNX2 TF regulatory network using the co-expression UMAP as the graph layout, and we will color genes by their co-expression module assignment.</p>
 <details><summary>
 Expand to see code to generate the custom network plot
-</summary><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Need to do this if not already run</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -646,7 +662,7 @@ Expand to see code to generate the custom network plot
 <code>FindDifferentialRegulons</code><a class="anchor" aria-label="anchor" href="#finddifferentialregulons"></a>
 </h3>
 <p>Similar to differential expression analysis or <a href="differential_MEs.html">differential module eigengene analysis</a>, we can perform <strong>differential regulon analysis</strong> to compare the TF regulon scores between two groups using the <code>FindDifferentialRegulons</code> function. This function performs differential analysis based on the positive and negative regulon scores, and on the gene expression level of the corresponding TFs. Here we run <code>FindDifferentialRegulons</code> to compare female vs. male in the inhibitory neuron cell population.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the cell barcodes for the groups of interest </span></span>
 <span><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
 <span><span class="va">group2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
@@ -690,7 +706,7 @@ Expand to see the differential regulons table
 <h3 id="visualize-and-interpret-the-results">Visualize and interpret the results<a class="anchor" aria-label="anchor" href="#visualize-and-interpret-the-results"></a>
 </h3>
 <p>TF regulon scores describe the overall expression levels of the predicted target genes of a given TF, split by target genes that are positively or negatively correlated with the TF. Intuitively, if a specific TF is expressed higher in one group, the positive target genes should be up-regulated and the negative target genes should be down-regulated. Therefore, we expect an inverse relationship between the effect sizes for the positive and negative regulons for TFs that are differentially regulating the two groups. We provide the plotting function <code>PlotDifferentialRegulons</code> to visualize the differential regulon data, summarizing this point.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># use the dregs which we obtained above</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotDifferentialRegulons.html">PlotDifferentialRegulons</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">dregs</span><span class="op">)</span></span>
 <span></span>
@@ -707,14 +723,14 @@ Expand to see the differential regulons table
 <h2 id="enrichment-analysis">Enrichment analysis<a class="anchor" aria-label="anchor" href="#enrichment-analysis"></a>
 </h2>
 <p>Here we perform pathway enrichment analysis using EnrichR for the set of target genes of each TF using the function <code>RunEnrichrRegulons</code>. This function can take a while to run because it is performing a separate query to the enrichR server for each TF. You can specify a subset of TFs to query to speed up the runtime.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">enrichR</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunEnrichrRegulons.html">RunEnrichrRegulons</a></span><span class="op">(</span><span class="va">seurat_obj</span>, wait_time<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>At this time, we do not provide a plotting function for the regulon enrichR results, but here we demonstrate how to make a simple bar plot using ggplot2.</p>
 <details><summary>
 Expand to see barplot code
-</summary><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the enrichr results table </span></span>
 <span><span class="va">enrich_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetEnrichrRegulonTable.html">GetEnrichrRegulonTable</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
@@ -783,7 +799,7 @@ Expand to see barplot code
 <code>ModuleRegulatoryHeatmap</code><a class="anchor" aria-label="anchor" href="#moduleregulatoryheatmap"></a>
 </h3>
 <p>Here we demonstrate the function <code>ModuleRegulatoryHeatmap</code> to show the summarized regulatory relationships between co-expression modules based on the underlying relationships between TFs and predicted target genes in these modules. First, we plot the “positive” and “negative” regulatory relationships separately.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryHeatmap.html">ModuleRegulatoryHeatmap</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'positive'</span>, </span>
 <span>  high_color<span class="op">=</span><span class="st">'orange2'</span><span class="op">)</span></span>
@@ -797,7 +813,7 @@ Expand to see barplot code
 </center>
 <p>These heatmaps summarize the TF-mediated regulatory relationships between each pair of co-expression modules. The x-axis shows the “source” module containing the TFs, and the y-axis shows the “target” module containing the target genes. The regulatory scores (heatmap color) are calculated by counting the number of TF-gene links going from the source to the target module, normalized by the total number of TFs found in the source module. The labels on the heatmap show the actual number of regulatory links between the pair of modules.</p>
 <p><strong>By default, this plot only shows relationships between TFs and other TFs, all other target genes are excluded.</strong> We can use the option <code>TFs_only=FALSE</code> to show the same plot for all genes.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryHeatmap.html">ModuleRegulatoryHeatmap</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'positive'</span>, </span>
 <span>  high_color<span class="op">=</span><span class="st">'orange2'</span><span class="op">)</span></span>
@@ -810,7 +826,7 @@ Expand to see barplot code
 <img src="figures/tf_network/module_network_heatmap_allgenes.png" width="1200" height="600">
 </center>
 <p>We can also use this function to plot the difference between the positive and negative regulatory scores, which helps us to understand if one module is overall activating or repressing another module. To accomplish this, we use the option <code>feature='delta'</code> (this is the default behavior). We can also avoid using the dendrogram by setting <code>dendrogram=FALSE</code></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryHeatmap.html">ModuleRegulatoryHeatmap</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'delta'</span>, dendrogram<span class="op">=</span><span class="cn">FALSE</span></span>
 <span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'TFs only'</span><span class="op">)</span></span>
@@ -830,7 +846,7 @@ Expand to see barplot code
 <code>ModuleRegulatoryNetworkPlot</code><a class="anchor" aria-label="anchor" href="#moduleregulatorynetworkplot"></a>
 </h3>
 <p>We can plot the same module regulatory information as a network plot rather than as a heatmap using <code>ModuleRegulatoryNetworkPlot</code>.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, cutoff<span class="op">=</span><span class="fl">0.5</span>, max_val<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span>  </span>
@@ -839,7 +855,7 @@ Expand to see barplot code
 <img src="figures/tf_network/module_network_plot_delta1.png" width="1200" height="600">
 </center>
 <p>This network shows the same information as the previous heatmap shown above. We can also make similar network plots split by positive and negative regulatory relationships.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'positive'</span>, high_color<span class="op">=</span><span class="st">'orange2'</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
@@ -852,7 +868,7 @@ Expand to see barplot code
 <p>These directed network plots show the positive (right) and negative (left) regulatory relationships between modules. Nodes represent modules, and directed edges represent a regulatory relationship from the source module to the target module (this is the same as the heatmap color in <code>ModuleRegulatoryHeatmap</code>). By default, the layout of the nodes is based on the module UMAP (<code>RunModuleUMAP</code>), but <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">other layouts</a> can be used as well.</p>
 <details><summary>
 Expand to see example with alternate layouts.
-</summary><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, layout<span class="op">=</span><span class="st">'circle'</span>, loops<span class="op">=</span><span class="cn">FALSE</span></span>
 <span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"layout='circle'"</span><span class="op">)</span></span>
@@ -866,7 +882,7 @@ Expand to see example with alternate layouts.
 <img src="figures/tf_network/module_network_plot_layouts.png" width="1200" height="600">
 </center>
 </details><p>Next we set <code>TFs_only=FALSE</code> to show the regulatory relationships between TFs and all target genes.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set max_val=50 to stop the color scale at 50</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'positive'</span>, high_color<span class="op">=</span><span class="st">'orange2'</span>,</span>
@@ -881,7 +897,7 @@ Expand to see example with alternate layouts.
 <img src="figures/tf_network/module_network_plot_allgenes.png" width="1200" height="600">
 </center>
 <p>Similar to <code>ModuleRegulatoryHeatmap</code>, we can also show edge weights as the difference between the positive and negative regulatory scores. Here we also show some additional options. We use <code>cutoff=0.5</code> to remove weak relationships, we use <code>umap_background=TRUE</code> to show the individual genes in the co-expression UMAP, and we use <code>label_modules=FALSE</code> to remove the module labels.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'delta'</span>, </span>
 <span>    cutoff<span class="op">=</span><span class="fl">0.5</span>, max_val<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
@@ -898,7 +914,7 @@ Expand to see example with alternate layouts.
 <img src="figures/tf_network/module_network_plot_delta.png" width="1200" height="600">
 </center>
 <p>We can also make network plots that focus on specific modules as the source or the targets.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># source</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleRegulatoryNetworkPlot.html">ModuleRegulatoryNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, feature<span class="op">=</span><span class="st">'positive'</span>, </span>

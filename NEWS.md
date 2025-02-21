@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.03 (2025-02-21)
+## Added
+- None
+## Changes
+- Updated `MotifScan` to handle cases where one gene name corresponds to multiple motifs.
+- Updated `ConstructTFNetwork` for compatible with multiple versions of `xgboost`.
+
 # hdWGCNA 0.4.03 (2025-01-27)
 ## Added
 - New tutorial titled "Integrating co-expression and protein-protein interaction networks".

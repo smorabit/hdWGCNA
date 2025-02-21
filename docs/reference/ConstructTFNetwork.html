@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.03</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,13 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ConstructTFNetwork</span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">model_params</span>, nfold <span class="op">=</span> <span class="fl">5</span>, wgcna_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ConstructTFNetwork</span><span class="op">(</span></span>
+<span>  <span class="va">seurat_obj</span>,</span>
+<span>  <span class="va">model_params</span>,</span>
+<span>  nfold <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  callbacks <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  wgcna_name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -88,6 +94,10 @@
 
 <dt id="arg-nfold">nfold<a class="anchor" aria-label="anchor" href="#arg-nfold"></a></dt>
 <dd><p>number of folds for cross validation</p></dd>
+
+
+<dt id="arg-callbacks">callbacks<a class="anchor" aria-label="anchor" href="#arg-callbacks"></a></dt>
+<dd><p>callback functions for the xgboost model</p></dd>
 
 
 <dt id="arg-wgcna-name">wgcna_name<a class="anchor" aria-label="anchor" href="#arg-wgcna-name"></a></dt>

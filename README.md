@@ -13,10 +13,10 @@ hdWGCNA is an R package for performing weighted gene co-expression network analy
 
 **New functionality:** hdWGCNA is now able to perform [Transcription Factor Regulatory Network Analysis](https://smorabit.github.io/hdWGCNA/articles/tf_network.html). This functionality was introduced in our publication [Childs & Morabito et al., Cell Reports (2024)](https://www.sciencedirect.com/science/article/pii/S2211124724002845).
 
-If you use hdWGCNA in your research, please cite the following papers in addition to the [original WGCNA publication](https://doi.org/10.1186/1471-2105-9-559):
+If you use hdWGCNA in your research, please cite the manuscript describing hdWGCNA in addition to the [original WGCNA publication](https://doi.org/10.1186/1471-2105-9-559):
 
-* [Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
-* [Morabito & Miyoshi et al., Nature Genetics (2021)](https://doi.org/10.1038/s41588-021-00894-z)
+* [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.
+ Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
 
 ## Installation
 
@@ -46,6 +46,9 @@ BiocManager::install()
 # install devtools
 BiocManager::install("devtools")
 
+# install additional packages
+BiocManager::install(c("WGCNA", "UCell", "GenomicRanges", "GeneOverlap"))
+
 # install latest version of Seurat from CRAN
 install.packages("Seurat")
 
@@ -60,22 +63,29 @@ Now you can install the hdWGCNA package using `devtools`.
 devtools::install_github('smorabit/hdWGCNA', ref='dev')
 ```
 
+<details> <summary> Troubleshooting the installation </summary>
+
+If you have trouble installing some of the dependencies, we advise trying to install them using alternative sources. For example, if you try to install the package using Bioconductor or CRAN, try instead with conda. Let's say you have trouble installing `devtools`, try instead to use conda:
+
+```
+conda install conda-forge::r-devtools
+```
+
+For specific problems, please write a [GitHub issue](https://github.com/smorabit/hdWGCNA/issues) and we will try to help you.
+
+</details>
+
 ## Suggested Reading
 
-Check out the paper describing hdWGCNA, our paper introducing transcription factor regulatory network analysis with hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data. For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.
+To learn more about the method and to see several examples of analyzing different datasets, please check out the paper describing hdWGCNA (Morabito et al 2023). We also suggest our follow-up paper introducing transcription factor regulatory network analysis with hdWGCNA (Childs & Morabito et al 2024). 
 
-* [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3) 
-* [Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice](https://www.sciencedirect.com/science/article/pii/S2211124724002845)
-* [Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease](https://doi.org/10.1038/s41588-021-00894-z) 
+* hdWGCNA method description: [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3) 
+* Transcription factor networks: [Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice](https://www.sciencedirect.com/science/article/pii/S2211124724002845)
 
-WGCNA and related algorithms:
+For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.
 
 * [WGCNA: an R package for weighted correlation network analysis](https://doi.org/10.1186/1471-2105-9-559)
 * [Defining clusters from a hierarchical cluster tree: the Dynamic Tree Cut package for R](https://doi.org/10.1093/bioinformatics/btm563)
-* [Eigengene networks for studying the relationships between co-expression modules](https://doi.org/10.1186/1752-0509-1-54)
-* [Geometric Interpretation of Gene Coexpression Network Analysis](https://doi.org/10.1371/journal.pcbi.1000117)
 * [Is My Network Module Preserved and Reproducible?](https://doi.org/10.1371/journal.pcbi.1001057)
 
-**Note about package development:** hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to
-write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
-to report bugs, ask for help, and to request potential enhancements.
+**Note about package development:** hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write [GitHub issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue) to report bugs, ask for help, and to request potential enhancements. 

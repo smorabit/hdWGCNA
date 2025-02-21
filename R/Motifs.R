@@ -89,6 +89,7 @@ MotifScan <- function(
         genome=species_genome
     )
 
+        
     # scan these promoters for motifs:
     print('Matching motifs...')
     motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome=species_genome)
@@ -98,7 +99,10 @@ MotifScan <- function(
     rownames(tf_match) <- my_promoters$symbol
 
     # use motif names as the column names:
-    colnames(tf_match) <- motif_df$motif_name
+    # colnames(tf_match) <- motif_df$motif_name
+    colnames(tf_match) <- motif_df$motif_ID
+
+    #
 
     # only keep genes that are in the Seurat object and in the given EnsDb:
     gene_list <- rownames(seurat_obj)
@@ -107,10 +111,9 @@ MotifScan <- function(
 
     # get list of target genes for each TF:
     print('Getting putative TF target genes...')
-    tfs <- motif_df$motif_name
     tf_targets <- list()
     n_targets <- list()
-    for(cur_tf in tfs){
+    for(cur_tf in colnames(tf_match)){
         tf_targets[[cur_tf]] <- names(tf_match[,cur_tf][tf_match[,cur_tf]])
         n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]] )
     }
@@ -119,7 +122,18 @@ MotifScan <- function(
     # add number of target genes to motif_df
     motif_df$n_targets <- n_targets
 
-    # add the gene name to the moti_df
+    # resolve cases where there's more than 1 motif per gene?
+    # maybe take the union or smth. 
+    tfs_fix <- table(motif_df$motif_name)
+    tfs_fix <- names(tfs_fix[which(tfs_fix > 1)])
+    for(cur_tf in tfs_fix){
+        cur_motifs <- subset(motif_df, motif_name == cur_tf) 
+        cur_indices <- as.numeric(rownames(cur_motifs))
+        cur_targets <- unique(unlist(tf_targets[cur_indices]))
+        tf_targets[[cur_tf]] <- cur_targets
+    }
+
+    # add the gene name to the motif_df
     # remove extra characters from the motif names
     motif_names <- motif_df$motif_name
     tmp <- gsub("\\(.*)", "", motif_names)
@@ -130,12 +144,12 @@ MotifScan <- function(
     # for motifs that correspond to two genes, split them apart
     tmp <- motif_df$tmp; names(tmp) <- motif_df$motif_ID
     motif_df_tmp <- do.call(rbind,lapply(1:length(tmp), function(i){
-    x <- tmp[i]
-    id <- names(x)
-    if(grepl(',', x)){
-        x <- as.character(unlist(do.call(rbind, strsplit(x, ','))))
-    }
-    data.frame(motif_ID = id, gene_name = as.character(x))
+      x <- tmp[i]
+      id <- names(x)
+      if(grepl(',', x)){
+          x <- as.character(unlist(do.call(rbind, strsplit(x, ','))))
+      }
+      data.frame(motif_ID = id, gene_name = as.character(x))
     }))
 
     # merge with the other motif df:

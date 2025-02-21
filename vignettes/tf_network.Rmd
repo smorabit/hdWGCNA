@@ -44,7 +44,7 @@ theme_set(theme_cowplot())
 # set random seed for reproducibility
 set.seed(12345)
 
-# re-load the Zhou et al snRNA-seq dataset
+# load your Seurat object which has already been processed with hdWGCNA
 seurat_obj <- readRDS('data/Zhou_control.rds')
 
 ```
@@ -65,16 +65,20 @@ BiocManager::install(c(
 
 # install database packages for human motifs & genomic features
 BiocManager::install(c(
-  'JASPAR2020',
   'EnsDb.Hsapiens.v86',
   'BSgenome.Hsapiens.UCSC.hg38'
 )) 
+BiocManager::install(c(
+  'JASPAR2020',
+  'JASPAR2024'
+))
 
 # install xgboost 
 install.packages('xgboost')
 
 # load these packages into R:
 library(JASPAR2020)
+library(JASPAR2024)
 library(motifmatchr)
 library(TFBSTools)
 library(EnsDb.Hsapiens.v86)
@@ -93,17 +97,32 @@ determine which genes are potentially regulated by each TF. We provide a functio
 to search for occurrences of different TF motifs within gene promoter regions. This function will store information in the `seurat_obj` 
 about which TF motifs are present in each gene's promoter.
 
+First, we set up a list of position weight matrices for each TF using `TFBStools`. This process is slightly different depending on the version of `JASPAR` that you use. In the tutorial, we used `JASPAR2020` but here we also show how to use `JASPAR2024`.
+
 ```{r eval=FALSE}
-
-seurat_obj <- readRDS(file='data/zhou_tutorial.rds')
-
-# use TFBSTools to get the motif position weight matrices 
-# for the JASPAR 2020 database
+# JASPAR 2020
 pfm_core <- TFBSTools::getMatrixSet(
   x = JASPAR2020,
   opts = list(collection = "CORE", tax_group = 'vertebrates', all_versions = FALSE)
 )
 
+# JASPAR 2024 (not used for this tutorial)
+library(JASPAR2024)
+library(RSQLite)
+library(EnsDb.Hsapiens.v86)
+
+JASPAR2024 <- JASPAR2024()
+sq24 <- RSQLite::dbConnect(RSQLite::SQLite(), db(JASPAR2024))
+
+pfm_core <- TFBSTools::getMatrixSet(
+  x = sq24,
+  opts = list(collection = "CORE", tax_group = 'vertebrates', all_versions = FALSE)
+)
+```
+
+Now we can run the hdWGCNA function `MotifScan` using these motifs.
+
+```{r eval=FALSE}
 # run the motif scan
 seurat_obj <- MotifScan(
   seurat_obj,
@@ -111,7 +130,6 @@ seurat_obj <- MotifScan(
   pfm = pfm_core,
   EnsDb = EnsDb.Hsapiens.v86
 )
-
 ```
 
 ## Construct TF Regulatory Network 

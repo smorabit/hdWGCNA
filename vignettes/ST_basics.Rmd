@@ -901,7 +901,20 @@ This concludes the part of the tutorial for the Visium HD dataset, but from here
 
 # Conclusion and next steps
 
-In this tutorial we demonstrated the core functions for performing co-expression network analysis in two types of ST datasets: Visium and Slide-Seq. From here we encourage you to explore our [other tutorials](hdWGCNA.html) for downstream analysis of these co-expression networks.
+In this tutorial we demonstrated the core functions for performing co-expression network analysis in two types of ST datasets: Visium and Slide-Seq. Now that you have constructed a co-expression network and identified gene modules, there are many downstream analysis tasks which you can take advantage of within hdWGCNA. To provide more depth to your co-expression modules, we encourage you to explore the network visualization tutorial and the enrichment analysis tutorial.
 
+* [Network visualization tutorial](network_visualizations.html)
+* [Enrichment tutorial](enrichment_analysis.html)
 
+To **compare different biological conditions** using hdWGCNA, check out the following tutorials.
+
+* [Differential module eigengene (DME) tutorial](differential_MEs.html)
+* [Module preservation tutorial](module_preservation.html)
+* [Module-trait correlation tutorial](module_trait_correlation.html)
+
+For more advanced analysis, such as **Transcription factor regulatory network analysis**, please check out the following tutorials.
+
+* [Transcription factor regulatory network analysis tutorial](tf_network.html)
+* [Protein-protein interaction tutorial](ppi_integration.html)
+* [Consensus network analysis tutorial](consensus_wgcna.html) 
 

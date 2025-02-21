@@ -254,7 +254,7 @@ reference:
   contents:
   - umap_theme
   - to_pseudobulk
-  - CheckSeurat5 
+  - CheckSeurat5
   - CheckWGCNAName
   - scale01 
   - shuffle_points

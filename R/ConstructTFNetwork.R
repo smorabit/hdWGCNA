@@ -7,6 +7,7 @@
 #' @param seurat_obj A Seurat object
 #' @param model_params a list of model parameters to pass to xgboost
 #' @param nfold number of folds for cross validation
+#' @param callbacks callback functions for the xgboost model
 #' @param wgcna_name name of the WGCNA experiment
 #' 
 #' @details 
@@ -24,6 +25,7 @@ ConstructTFNetwork <- function(
     seurat_obj,
     model_params,
     nfold=5,
+    callbacks = NULL,
     wgcna_name=NULL
 ){
 
@@ -43,12 +45,24 @@ ConstructTFNetwork <- function(
         stop('gene_name column missing in motif table (GetMotifs(seurat_obj)). Please add a column indicating the gene_name in the seurat_obj for each motif.' )
     }
 
+    check_xgboost2 <- startsWith(as.character(packageVersion('xgboost')), '2')
+
+    # define XGBoost callback function based on the installed version, because between v1 and v2 they changed the names of some parameters
+    if(is.null(callbacks)){
+        if(check_xgboost2){
+            callbacks <- list(xgboost::xgb.cb.cv.predict(save_models = TRUE))
+        } else{
+            callbacks = list(xgboost::cb.cv.predict(save_models=TRUE))
+        }
+    }
+
     # subset the motif_df by genes that are in the seurat obj:
     motif_df <- subset(motif_df, gene_name %in% rownames(seurat_obj))
 
     # get the expression matrix:
     datExpr <- as.matrix(GetDatExpr(seurat_obj, wgcna_name=wgcna_name))
     genes_use <- colnames(datExpr)
+    genes_use <- genes_use[genes_use %in% rownames(motif_matrix)]
 
     # set up output dataframes
     importance_df <- data.frame()
@@ -62,15 +76,9 @@ ConstructTFNetwork <- function(
 
         setTxtProgressBar(pb, counter)
 
-        # check if this gene is in the motif matrix:
-        if(! cur_gene %in% rownames(motif_matrix)){
-            print(paste0('Gene not found in the motif_matrix, skipping ', cur_gene))
-            next
-        }
-
         # get the list of TFs that regulate this gene:
         cur_tfs <- names(which(motif_matrix[cur_gene,]))
-        cur_tfs <- subset(motif_df, motif_name %in% cur_tfs) %>% .$gene_name %>% unique
+        cur_tfs <- subset(motif_df, motif_ID %in% cur_tfs) %>% .$gene_name %>% unique
         cur_tfs <- cur_tfs[cur_tfs %in% genes_use]
 
         # set up the expression matrices
@@ -98,14 +106,14 @@ ConstructTFNetwork <- function(
             print(paste0('skipping ', cur_gene))
             next
         }
+
         xgb <- xgboost::xgb.cv(
             params = model_params,
-            data = x_vars,
-            label = y_var,
+            data =  xgboost::xgb.DMatrix(x_vars, label=y_var),
             nrounds = 100,
             showsd = FALSE,
             nfold = nfold,
-            callbacks = list(cb.cv.predict(save_models=TRUE)),
+            callbacks = callbacks,
             verbose=FALSE
         )
 
@@ -115,7 +123,12 @@ ConstructTFNetwork <- function(
 
         # average the importance score from each fold
         importance <- Reduce('+', lapply(1:nfold, function(i){
-            cur_imp <- xgb.importance(feature_names = colnames(x_vars), model = xgb$models[[i]])
+            if(check_xgboost2){
+                cur_model <- xgb$cv_predict$models[[i]]
+            } else{
+                cur_model <- xgb$models[[i]]
+            }
+            cur_imp <- xgboost::xgb.importance(feature_names = colnames(x_vars), model = cur_model)
             ix <- match(colnames(x_vars),  as.character(cur_imp$Feature))
             cur_imp <- as.matrix(cur_imp[ix,-1])
             cur_imp[is.na(cur_imp)] <- 0

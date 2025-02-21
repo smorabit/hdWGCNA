@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.03</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,11 +96,8 @@
 <p><a href="https://github.com/smorabit/hdWGCNA/tree/dev" class="external-link"><img src="https://img.shields.io/github/r-package/v/smorabit/hdWGCNA" alt="R"></a> <a href="https://github.com/smorabit/hdWGCNA/issues" class="external-link"><img src="https://img.shields.io/github/issues/smorabit/hdWGCNA" alt="ISSUES"></a> <a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link"><img src="https://img.shields.io/badge/publication-Cell%20Rep%20Meth-%2300A1D7" alt="Publication"></a> <a href="https://github.com/smorabit/hdWGCNA" class="external-link"><img src="https://img.shields.io/badge/Lifecycle-Maturing-007EC6" alt="Lifecycle:Maturing"></a> <a href="https://github.com/smorabit/hdWGCNA/" class="external-link"><img src="https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social" alt="Stars"></a></p>
 <p>hdWGCNA is an R package for performing weighted gene co-expression network analysis <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">(WGCNA)</a> in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct context-specific co-expression networks across cellular and spatial hierarchies. hdWGNCA identifies modules of highly co-expressed genes and provides context for these modules via statistical testing and biological knowledge sources. hdWGCNA uses datasets formatted as <a href="https://satijalab.org/seurat/index.html" class="external-link">Seurat</a> objects. Check out the <a href="https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html">hdWGCNA in single-cell data tutorial</a> or the <a href="https://smorabit.github.io/hdWGCNA/articles/ST_basics.html">hdWGCNA in spatial transcriptomics data tutorial</a> to get started.</p>
 <p><strong>New functionality:</strong> hdWGCNA is now able to perform <a href="https://smorabit.github.io/hdWGCNA/articles/tf_network.html">Transcription Factor Regulatory Network Analysis</a>. This functionality was introduced in our publication <a href="https://www.sciencedirect.com/science/article/pii/S2211124724002845" class="external-link">Childs &amp; Morabito et al., Cell Reports (2024)</a>.</p>
-<p>If you use hdWGCNA in your research, please cite the following papers in addition to the <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">original WGCNA publication</a>:</p>
-<ul>
-<li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">Morabito et al., Cell Reports Methods (2023)</a></li>
-<li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito &amp; Miyoshi et al., Nature Genetics (2021)</a></li>
-</ul>
+<p>If you use hdWGCNA in your research, please cite the manuscript describing hdWGCNA in addition to the <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">original WGCNA publication</a>:</p>
+<ul><li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data Morabito et al., Cell Reports Methods (2023)</a></li></ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -129,6 +126,9 @@
 <span><span class="co"># install devtools</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># install additional packages</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WGCNA"</span>, <span class="st">"UCell"</span>, <span class="st">"GenomicRanges"</span>, <span class="st">"GeneOverlap"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># install latest version of Seurat from CRAN</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span></span>
 <span></span>
@@ -137,22 +137,24 @@
 <p>Now you can install the hdWGCNA package using <code>devtools</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'smorabit/hdWGCNA'</span>, ref<span class="op">=</span><span class="st">'dev'</span><span class="op">)</span></span></code></pre></div>
+<details><summary>Troubleshooting the installation</summary><p>If you have trouble installing some of the dependencies, we advise trying to install them using alternative sources. For example, if you try to install the package using Bioconductor or CRAN, try instead with conda. Let’s say you have trouble installing <code>devtools</code>, try instead to use conda:</p>
+<pre><code>conda install conda-forge::r-devtools</code></pre>
+<p>For specific problems, please write a <a href="https://github.com/smorabit/hdWGCNA/issues" class="external-link">GitHub issue</a> and we will try to help you.</p></details>
 </div>
 <div class="section level2">
 <h2 id="suggested-reading">Suggested Reading<a class="anchor" aria-label="anchor" href="#suggested-reading"></a>
 </h2>
-<p>Check out the paper describing hdWGCNA, our paper introducing transcription factor regulatory network analysis with hdWGCNA, and our original description of applying WGCNA to single-nucleus RNA-seq data. For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.</p>
+<p>To learn more about the method and to see several examples of analyzing different datasets, please check out the paper describing hdWGCNA (Morabito et al 2023). We also suggest our follow-up paper introducing transcription factor regulatory network analysis with hdWGCNA (Childs &amp; Morabito et al 2024).</p>
 <ul>
-<li><a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data</a></li>
-<li><a href="https://www.sciencedirect.com/science/article/pii/S2211124724002845" class="external-link">Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice</a></li>
-<li><a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease</a></li>
+<li>hdWGCNA method description: <a href="https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3" class="external-link">hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data</a>
+</li>
+<li>Transcription factor networks: <a href="https://www.sciencedirect.com/science/article/pii/S2211124724002845" class="external-link">Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice</a>
+</li>
 </ul>
-<p>WGCNA and related algorithms:</p>
+<p>For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.</p>
 <ul>
 <li><a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">WGCNA: an R package for weighted correlation network analysis</a></li>
 <li><a href="https://doi.org/10.1093/bioinformatics/btm563" class="external-link">Defining clusters from a hierarchical cluster tree: the Dynamic Tree Cut package for R</a></li>
-<li><a href="https://doi.org/10.1186/1752-0509-1-54" class="external-link">Eigengene networks for studying the relationships between co-expression modules</a></li>
-<li><a href="https://doi.org/10.1371/journal.pcbi.1000117" class="external-link">Geometric Interpretation of Gene Coexpression Network Analysis</a></li>
 <li><a href="https://doi.org/10.1371/journal.pcbi.1001057" class="external-link">Is My Network Module Preserved and Reproducible?</a></li>
 </ul>
 <p><strong>Note about package development:</strong> hdWGCNA is under active development, so you may run into errors and small typos. We welcome users to write <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue" class="external-link">GitHub issues</a> to report bugs, ask for help, and to request potential enhancements.</p>
