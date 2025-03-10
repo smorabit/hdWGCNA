@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Projecting modules to new datasets">
 <meta name="description" content="Tutorial for applying the core functions of hdWGCNA.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,7 +106,17 @@
     
 <p>Compiled: 07-03-2024</p>
 <p>Source: <code>vignettes/basic_tutorial.Rmd</code></p>
-<p>In this tutorial we show how to investigate co-expresion modules detected in one dataset in external datasets. Rather than building a new co-expression network from scratch in a new dataset, we can take the modules from one dataset and project them into the new dataset. A prerequisite for this tutorial is constructing a co-expression network in a single-cell or spatial transcritpomic dataset, see the <a href="articles/basics_tutorial.html">single-cell basics</a> or the <a href="articles/ST_basics.html">spatial basics</a> tutorial before proceeding. The main hdWGCNA tutorials have been using the control brain samples from <a href="https://www.nature.com/articles/s41591-019-0695-9" class="external-link">this publication</a>, and now we will project the inhibitory neruon modules from Zhou et al into the control brain snRNA-seq dataset from <a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito and Miyoshi 2021</a>.</p>
+<p>In this tutorial we show how to investigate co-expresion modules
+detected in one dataset in external datasets. Rather than building a new
+co-expression network from scratch in a new dataset, we can take the
+modules from one dataset and project them into the new dataset. A
+prerequisite for this tutorial is constructing a co-expression network
+in a single-cell or spatial transcritpomic dataset, see the <a href="articles/basics_tutorial.html">single-cell basics</a> or the <a href="articles/ST_basics.html">spatial basics</a> tutorial before
+proceeding. The main hdWGCNA tutorials have been using the control brain
+samples from <a href="https://www.nature.com/articles/s41591-019-0695-9" class="external-link">this
+publication</a>, and now we will project the inhibitory neruon modules
+from Zhou et al into the control brain snRNA-seq dataset from <a href="https://doi.org/10.1038/s41588-021-00894-z" class="external-link">Morabito and Miyoshi
+2021</a>.</p>
 <p>First we load the datasets and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
@@ -118,7 +128,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -138,7 +148,16 @@
 <div class="section level2">
 <h2 id="projecting-modules-from-reference-to-query">Projecting modules from reference to query<a class="anchor" aria-label="anchor" href="#projecting-modules-from-reference-to-query"></a>
 </h2>
-<p>In this section we project the modules from the Zhou et al inhibitory neuron hdWGCNA experiment into the Morabito &amp; Miyoshi et al control brain dataset. We refer to the Zhou et al dataset as the “reference” dataset, and the Morabito &amp; Miyoshi et al dataset as the “query” dataset. Just <a href="basic_tutorial.html">as we had done before</a> when building the co-expression network from scratch, the basic single-cell pipeline has to be done on the query dataset (normalization, scaling, variable features, PCA, batch correction, UMAP, clustering). First we make a UMAP plot to visualize the two datasets to ensure they have both been processed.</p>
+<p>In this section we project the modules from the Zhou et al inhibitory
+neuron hdWGCNA experiment into the Morabito &amp; Miyoshi et al control
+brain dataset. We refer to the Zhou et al dataset as the “reference”
+dataset, and the Morabito &amp; Miyoshi et al dataset as the “query”
+dataset. Just <a href="basic_tutorial.html">as we had done before</a>
+when building the co-expression network from scratch, the basic
+single-cell pipeline has to be done on the query dataset (normalization,
+scaling, variable features, PCA, batch correction, UMAP, clustering).
+First we make a UMAP plot to visualize the two datasets to ensure they
+have both been processed.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -154,11 +173,21 @@ Code
 <span></span>
 <span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
 </details><p><img src="figures/projection/compare_umaps.png" width="600" height="600"></p>
-<p>Next we will run the function <code>ProjectModules</code> to project the modules from the reference dataset into the query dataset. If the genes used for co-expression network analysis in the reference dataset have not been scaled in the query dataset, Seurat’s <code>ScaleData</code> function will be run from within <code>ProjectModules</code>. We perform the following analysis steps to project the modules into the query dataset:</p>
+<p>Next we will run the function <code>ProjectModules</code> to project
+the modules from the reference dataset into the query dataset. If the
+genes used for co-expression network analysis in the reference dataset
+have not been scaled in the query dataset, Seurat’s
+<code>ScaleData</code> function will be run from within
+<code>ProjectModules</code>. We perform the following analysis steps to
+project the modules into the query dataset:</p>
 <ul>
-<li>Run <code>ProjectModules</code> to compute the module eigengenes in the query dataset based on the gene modules in the reference dataset.</li>
-<li>Optionally run <code>ModuleExprScore</code> to compute hub gene expression scores for the projected modules.</li>
-<li>Run <code>ModuleConnectivity</code> to compute intramodular connectivity (<em>kME</em>) in the query dataset.</li>
+<li>Run <code>ProjectModules</code> to compute the module eigengenes in
+the query dataset based on the gene modules in the reference
+dataset.</li>
+<li>Optionally run <code>ModuleExprScore</code> to compute hub gene
+expression scores for the projected modules.</li>
+<li>Run <code>ModuleConnectivity</code> to compute intramodular
+connectivity (<em>kME</em>) in the query dataset.</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Project modules from query to reference dataset</span></span>
@@ -170,7 +199,14 @@ Code
 <span>  wgcna_name_proj<span class="op">=</span><span class="st">"projected"</span>, <span class="co"># name of the new hdWGCNA experiment in the query dataset</span></span>
 <span>  wgcna_name <span class="op">=</span> <span class="st">"tutorial"</span> <span class="co"># name of the hdWGCNA experiment in the ref dataset</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>As you can see it only takes running one function to project co-expression modules from one dataset into another using hdWGCNA. Optionally, we can also compute the hub gene expression scores and the intramodular connectivity for the projected modules. Note that if we do not run the <code>ModuleConnectivity</code> function on the query dataset, the <em>kME</em> values in the module assignment table <code>GetModules(seurat_query)</code> are the <em>kME</em> values from the reference dataset.</p>
+<p>As you can see it only takes running one function to project
+co-expression modules from one dataset into another using hdWGCNA.
+Optionally, we can also compute the hub gene expression scores and the
+intramodular connectivity for the projected modules. Note that if we do
+not run the <code>ModuleConnectivity</code> function on the query
+dataset, the <em>kME</em> values in the module assignment table
+<code>GetModules(seurat_query)</code> are the <em>kME</em> values from
+the reference dataset.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_query</span>,</span>
@@ -181,15 +217,26 @@ Code
 <span>  <span class="va">seurat_query</span>,</span>
 <span>  method<span class="op">=</span><span class="st">'UCell'</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>We can extract the projected module eigengenes using the <code>GetMEs</code> function.</p>
+<p>We can extract the projected module eigengenes using the
+<code>GetMEs</code> function.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">projected_hMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span></code></pre></div>
-<p>The projected modules can be used in most of the downstream hdWGCNA analysis tasks and visualization functions, such as <a href="module_trait_correlation.html">module trait correlation</a>, however it is important to note that some of the functions cannot be run on the projected modules. In particular, we cannot make any of the network plots since we did not actually construct a co-expression network in the query dataset, so running functions such as <code>RunModuleUMAP</code> and <code>ModuleNetworks</code> will throw an error.</p>
+<p>The projected modules can be used in most of the downstream hdWGCNA
+analysis tasks and visualization functions, such as <a href="module_trait_correlation.html">module trait correlation</a>,
+however it is important to note that some of the functions cannot be run
+on the projected modules. In particular, we cannot make any of the
+network plots since we did not actually construct a co-expression
+network in the query dataset, so running functions such as
+<code>RunModuleUMAP</code> and <code>ModuleNetworks</code> will throw an
+error.</p>
 </div>
 <div class="section level2">
 <h2 id="visualization">Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
 </h2>
-<p>In this section we demonstrate some of the visualization functions for the projected modules in the query dataset. First, we use the <code>ModuleFeaturePlot</code> function to visualizes the hMEs on the UMAP:</p>
+<p>In this section we demonstrate some of the visualization functions
+for the projected modules in the query dataset. First, we use the
+<code>ModuleFeaturePlot</code> function to visualizes the hMEs on the
+UMAP:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># make a featureplot of hMEs for each module</span></span>
 <span><span class="va">plot_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span></span>
@@ -202,7 +249,8 @@ Code
 <span><span class="co"># stitch together with patchwork</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/projection/projected_featureplots.png" width="700" height="700"></p>
-<p>Next we will make a dot plot for each of the modules grouped by cell type identity.</p>
+<p>Next we will make a dot plot for each of the modules grouped by cell
+type identity.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the projected MEs</span></span>
 <span><span class="va">projected_MEs</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
@@ -232,10 +280,19 @@ Code
 <div class="section level2">
 <h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
-<p>We encourage users to explore the projected modules using hdWGCNA’s various visualization and analysis functions. In the <a href="module_preservation.html">next tutorial</a>, we cover statistical methods to determine the preservation and reproducibility of co-expression modules between reference and query datasets. Additionally, we include <a href="projecting_modules_cross.html">another tutorial</a> to projet modules in special cases where the two datasets come from different species, or from different -omic modalities such as scATAC-seq.</p>
+<p>We encourage users to explore the projected modules using hdWGCNA’s
+various visualization and analysis functions. In the <a href="module_preservation.html">next tutorial</a>, we cover statistical
+methods to determine the preservation and reproducibility of
+co-expression modules between reference and query datasets.
+Additionally, we include <a href="projecting_modules_cross.html">another
+tutorial</a> to projet modules in special cases where the two datasets
+come from different species, or from different -omic modalities such as
+scATAC-seq.</p>
 <ul>
-<li><a href="module_preservation.html">Module preservation tutorial</a></li>
-<li><a href="projecting_modules_cross.html">Cross-species and cross-modality tutorial</a></li>
+<li><a href="module_preservation.html">Module preservation
+tutorial</a></li>
+<li><a href="projecting_modules_cross.html">Cross-species and
+cross-modality tutorial</a></li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -249,7 +306,7 @@ Code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

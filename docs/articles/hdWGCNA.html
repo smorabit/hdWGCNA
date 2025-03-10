@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Vignettes overview">
 <meta name="description" content="Document showing an overview of the different analysis vignettes.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,52 +107,70 @@
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h2>
-<p>These tutorials cover the essentials of performing co-expression network analysis in single-cell transcriptomics data, and visualizing the key results.</p>
+<p>These tutorials cover the essentials of performing co-expression
+network analysis in single-cell transcriptomics data, and visualizing
+the key results.</p>
 <div class="section level3">
 <h3 id="hdwgcna-in-single-cell-data">
 <a href="basic_tutorial.html">hdWGCNA in single-cell data</a><a class="anchor" aria-label="anchor" href="#hdwgcna-in-single-cell-data"></a>
 </h3>
-<p>This tutorial covers the essential functions to construct a co-expression network in single-cell transcriptomics data with hdWGCNA.</p>
+<p>This tutorial covers the essential functions to construct a
+co-expression network in single-cell transcriptomics data with
+hdWGCNA.</p>
 <p><img src="figures/basic_tutorial/Zhou_featureplot_hMEs_selected_wide.png" width="500" height="500"></p>
 </div>
 <div class="section level3">
 <h3 id="hdwgcna-in-spatial-transcriptomics-data">
-<a href="ST_basics.html">hdWGCNA in spatial transcriptomics data</a><a class="anchor" aria-label="anchor" href="#hdwgcna-in-spatial-transcriptomics-data"></a>
+<a href="ST_basics.html">hdWGCNA in spatial transcriptomics
+data</a><a class="anchor" aria-label="anchor" href="#hdwgcna-in-spatial-transcriptomics-data"></a>
 </h3>
-<p>This tutorial covers the essential functions to construct a co-expression network in spatial transcriptomics data with hdWGCNA.</p>
+<p>This tutorial covers the essential functions to construct a
+co-expression network in spatial transcriptomics data with hdWGCNA.</p>
 <p><img src="figures/ST_basics/spatial_clusters.png" width="500" height="500"></p>
 </div>
 <div class="section level3">
 <h3 id="network-visualization">
 <a href="network_visualizations.html">Network visualization</a><a class="anchor" aria-label="anchor" href="#network-visualization"></a>
 </h3>
-<p>This tutorial highlights several approaches for visualizing the hdWGCNA co-expression networks.</p>
+<p>This tutorial highlights several approaches for visualizing the
+hdWGCNA co-expression networks.</p>
 <p><img src="figures/network_vis/hubgene_umap_igraph.png" width="400" height="400"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="biological-context-for-co-expression-modules">Biological context for co-expression modules<a class="anchor" aria-label="anchor" href="#biological-context-for-co-expression-modules"></a>
 </h2>
-<p>These tutorials will provide further biological context for our co-expression modules, potentially revealing what experimental conditions and biological processes that these modules are involved in.</p>
+<p>These tutorials will provide further biological context for our
+co-expression modules, potentially revealing what experimental
+conditions and biological processes that these modules are involved
+in.</p>
 <div class="section level3">
 <h3 id="differential-module-eigengene-dme-analysis">
-<a href="differential_MEs.html">Differential module eigengene (DME) analysis</a><a class="anchor" aria-label="anchor" href="#differential-module-eigengene-dme-analysis"></a>
+<a href="differential_MEs.html">Differential module eigengene (DME)
+analysis</a><a class="anchor" aria-label="anchor" href="#differential-module-eigengene-dme-analysis"></a>
 </h3>
-<p>This tutorial covers how to compare module eigengenes between experimental groups.</p>
+<p>This tutorial covers how to compare module eigengenes between
+experimental groups.</p>
 <p><img src="figures/DMEs/test_DME_volcano.png" width="400" height="400" href="differential_MEs.html"></p>
 </div>
 <div class="section level3">
 <h3 id="module-trait-correlation">
-<a href="module_trait_correlation.html">Module trait correlation</a><a class="anchor" aria-label="anchor" href="#module-trait-correlation"></a>
+<a href="module_trait_correlation.html">Module trait
+correlation</a><a class="anchor" aria-label="anchor" href="#module-trait-correlation"></a>
 </h3>
-<p>This tutorial covers how to correlate continuous and categorical variables with module eigengenes or module expression scores, revealing which modules are related to different experimental conditions or covariates.</p>
+<p>This tutorial covers how to correlate continuous and categorical
+variables with module eigengenes or module expression scores, revealing
+which modules are related to different experimental conditions or
+covariates.</p>
 <p><img src="figures/mt_correlation/ME_Trait_correlation_fdr.png" width="400" height="400" href="module_trait_correlation.html"></p>
 </div>
 <div class="section level3">
 <h3 id="enrichment-analysis">
 <a href="enrichment_analysis.html">Enrichment analysis</a><a class="anchor" aria-label="anchor" href="#enrichment-analysis"></a>
 </h3>
-<p>This tutorial shows how to use Enrichr to compare the gene members of each co-expression module to curated gene lists, thereby pointing towards the biological functions of the co-expression modules.</p>
+<p>This tutorial shows how to use Enrichr to compare the gene members of
+each co-expression module to curated gene lists, thereby pointing
+towards the biological functions of the co-expression modules.</p>
 <p><img src="figures/enrichment/GO_dotplot.png" width="400" height="400"></p>
 </div>
 </div>
@@ -161,23 +179,31 @@
 </h2>
 <div class="section level3">
 <h3 id="projecting-modules-to-new-datasets">
-<a href="projecting_modules.html">Projecting modules to new datasets</a><a class="anchor" aria-label="anchor" href="#projecting-modules-to-new-datasets"></a>
+<a href="projecting_modules.html">Projecting modules to new
+datasets</a><a class="anchor" aria-label="anchor" href="#projecting-modules-to-new-datasets"></a>
 </h3>
-<p>This tutorial covers how to project co-expression modules from a reference to a query dataset.</p>
+<p>This tutorial covers how to project co-expression modules from a
+reference to a query dataset.</p>
 <p><img src="figures/projection/compare_umaps.png" width="500" height="500"></p>
 </div>
 <div class="section level3">
 <h3 id="module-preservation-and-reproducibility">
-<a href="module_preservation.html">Module preservation and reproducibility</a><a class="anchor" aria-label="anchor" href="#module-preservation-and-reproducibility"></a>
+<a href="module_preservation.html">Module preservation and
+reproducibility</a><a class="anchor" aria-label="anchor" href="#module-preservation-and-reproducibility"></a>
 </h3>
-<p>This tutorial covers statistical methods for assessing the preservation and reproducibility of co-expression networks using external datasets.</p>
+<p>This tutorial covers statistical methods for assessing the
+preservation and reproducibility of co-expression networks using
+external datasets.</p>
 <p><img src="figures/projection/module_preservation_summary.png" width="500" height="500"></p>
 </div>
 <div class="section level3">
 <h3 id="cross-species-and-cross-modality-analysis">
-<a href="projecting_modules_cross.html">Cross-species and cross-modality analysis</a><a class="anchor" aria-label="anchor" href="#cross-species-and-cross-modality-analysis"></a>
+<a href="projecting_modules_cross.html">Cross-species and
+cross-modality analysis</a><a class="anchor" aria-label="anchor" href="#cross-species-and-cross-modality-analysis"></a>
 </h3>
-<p>This tutorial covers how to project co-expression modules from a reference to a query dataset for special cases where the data modality or the species do not match between the reference and the query.</p>
+<p>This tutorial covers how to project co-expression modules from a
+reference to a query dataset for special cases where the data modality
+or the species do not match between the reference and the query.</p>
 <p><img src="figures/projection/atac_umap_covplot.png" width="700" height="700"></p>
 </div>
 </div>
@@ -202,14 +228,17 @@
 <h3 id="module-customization">
 <a href="customization.html">Module customization</a><a class="anchor" aria-label="anchor" href="#module-customization"></a>
 </h3>
-<p>This tutorial covers how to change the default names and colors for hdWGCNA modules.</p>
+<p>This tutorial covers how to change the default names and colors for
+hdWGCNA modules.</p>
 <p><img src="figures/customization/featureplot.png" width="400" height="400"></p>
 </div>
 <div class="section level3">
 <h3 id="using-sctransform-normalized-data">
-<a href="sctransform.html">Using SCTransform normalized data</a><a class="anchor" aria-label="anchor" href="#using-sctransform-normalized-data"></a>
+<a href="sctransform.html">Using SCTransform normalized
+data</a><a class="anchor" aria-label="anchor" href="#using-sctransform-normalized-data"></a>
 </h3>
-<p>This tutorial covers how to use SCTransform normalized data in hdWGCNA.</p>
+<p>This tutorial covers how to use SCTransform normalized data in
+hdWGCNA.</p>
 <p><img src="figures/sctransform/dendro_SCT_compare.png" width="400" height="400" href="sctransform.html"></p>
 </div>
 </div>
@@ -224,7 +253,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

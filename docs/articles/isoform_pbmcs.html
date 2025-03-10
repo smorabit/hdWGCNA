@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Isoform co-expression network analysis with PacBio MAS-Seq">
 <meta name="description" content="Full Seurat clustering and hdWGCNA analysis tutorial of PacBio MAS-Seq PBMC dataset.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,26 +104,58 @@
 
     
     
-<p>This tutorial covers the basics of using hdWGCNA to perform <strong>isoform</strong> co-expression network analysis using <a href="https://www.pacb.com/wp-content/uploads/Application-note-MAS-Seq-for-single-cell-isoform-sequencing.pdf" class="external-link">PacBio MAS-Seq</a> data. Briefly, MAS-Seq is a single-cell RNA-seq protocol that uses long-read sequencing to profile full-length RNA molecules, potentially providing a much greater depth of information about individual RNA splicing isoforms compared to traditional short-read scRNA-seq. This tutorial starts from the typical genes by cells counts matrix, as well as an isoforms by cells counts matrix unique to long-read single-cell approaches like MAS-seq, and we cover how to perform clustering analysis in long-read single-cell data using Seurat. Finally, we demonstrate several different ways to use hdWGCNA for isoform co-expression network analysis. Here we use a MAS-Seq dataset of PBMCs from two donors, sequenced using the PacBio Revio platform. Before working through this tutorial, we recommend becoming familar with the basics of hdWGCNA using our single-cell tutorial.</p>
+<p>This tutorial covers the basics of using hdWGCNA to perform
+<strong>isoform</strong> co-expression network analysis using <a href="https://www.pacb.com/wp-content/uploads/Application-note-MAS-Seq-for-single-cell-isoform-sequencing.pdf" class="external-link">PacBio
+MAS-Seq</a> data. Briefly, MAS-Seq is a single-cell RNA-seq protocol
+that uses long-read sequencing to profile full-length RNA molecules,
+potentially providing a much greater depth of information about
+individual RNA splicing isoforms compared to traditional short-read
+scRNA-seq. This tutorial starts from the typical genes by cells counts
+matrix, as well as an isoforms by cells counts matrix unique to
+long-read single-cell approaches like MAS-seq, and we cover how to
+perform clustering analysis in long-read single-cell data using Seurat.
+Finally, we demonstrate several different ways to use hdWGCNA for
+isoform co-expression network analysis. Here we use a MAS-Seq dataset of
+PBMCs from two donors, sequenced using the PacBio Revio platform. Before
+working through this tutorial, we recommend becoming familar with the
+basics of hdWGCNA using our single-cell tutorial.</p>
 <div class="section level2">
 <h2 id="download-the-tutorial-data">Download the tutorial data<a class="anchor" aria-label="anchor" href="#download-the-tutorial-data"></a>
 </h2>
-<p>Here we download the genes and isoforms counts matrices from PacBio for the two replicates using wget. These counts matrices were generated using the PacBio SMRT Link software, more details can be found at the <a href="https://isoseq.how/umi/" class="external-link">isoseq documentation website</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># download replicate 1</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">--recursive</span> <span class="at">--no-parent</span> https://downloads.pacbcloud.com/public/dataset/MAS-Seq/DATA-Revio-PBMC-1/4-SeuratMatrix/</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># download replicate 2</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">--recursive</span> <span class="at">--no-parent</span> https://downloads.pacbcloud.com/public/dataset/MAS-Seq/DATA-Revio-PBMC-2/4-SeuratMatrix/</span></code></pre></div>
-<p>You can also <a href="https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link" class="external-link">download the unprocessed Seurat object containing both replicates</a> instead of running the “Create a multi-assay Seurat object” section.</p>
+<p>Here we download the genes and isoforms counts matrices from PacBio
+for the two replicates using wget. These counts matrices were generated
+using the PacBio SMRT Link software, more details can be found at the <a href="https://isoseq.how/umi/" class="external-link">isoseq documentation website</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># download replicate 1</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">wget</span> <span class="at">--recursive</span> <span class="at">--no-parent</span> https://downloads.pacbcloud.com/public/dataset/MAS-Seq/DATA-Revio-PBMC-1/4-SeuratMatrix/</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># download replicate 2</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">wget</span> <span class="at">--recursive</span> <span class="at">--no-parent</span> https://downloads.pacbcloud.com/public/dataset/MAS-Seq/DATA-Revio-PBMC-2/4-SeuratMatrix/</span></code></pre></div>
+<p>You can also <a href="https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link" class="external-link">download
+the unprocessed Seurat object containing both replicates</a> instead of
+running the “Create a multi-assay Seurat object” section.</p>
 </div>
 <div class="section level2">
 <h2 id="seurat-clustering-analysis">Seurat clustering analysis<a class="anchor" aria-label="anchor" href="#seurat-clustering-analysis"></a>
 </h2>
-<p>In this section, we will perform clustering analysis on MAS-Seq dataset using Seurat. In principal, this analysis could also be performed using alternative pipelines such as Scanpy before performing network analysis. We perform the standard clustering steps including quality control (QC) filtering, normalization, feature selection, linear dimensionality reduction (PCA), batch correction (harmony), non-linear dimensionality reduction (UMAP), and louvain clustering. Here we perform the clustering analysis using the gene counts matrix and the isoform counts matrix separately to compare the differences.</p>
+<p>In this section, we will perform clustering analysis on MAS-Seq
+dataset using Seurat. In principal, this analysis could also be
+performed using alternative pipelines such as Scanpy before performing
+network analysis. We perform the standard clustering steps including
+quality control (QC) filtering, normalization, feature selection, linear
+dimensionality reduction (PCA), batch correction (harmony), non-linear
+dimensionality reduction (UMAP), and louvain clustering. Here we perform
+the clustering analysis using the gene counts matrix and the isoform
+counts matrix separately to compare the differences.</p>
 <div class="section level3">
 <h3 id="create-a-multi-assay-seurat-object">Create a multi-assay Seurat object<a class="anchor" aria-label="anchor" href="#create-a-multi-assay-seurat-object"></a>
 </h3>
-<p>The MAS-Seq dataset includes both gene and isoform level quantifications, and in this section we will load these matrices for both replicates to create a multi-assay Seurat object. The number of isoforms detected differs for each replicate, and here we have chosen to only include isoforms that were detected in both replicates. If you don’t want to run this section, you can <a href="https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link" class="external-link">download the unprocessed Seurat object here</a>.</p>
+<p>The MAS-Seq dataset includes both gene and isoform level
+quantifications, and in this section we will load these matrices for
+both replicates to create a multi-assay Seurat object. The number of
+isoforms detected differs for each replicate, and here we have chosen to
+only include isoforms that were detected in both replicates. If you
+don’t want to run this section, you can <a href="https://drive.google.com/file/d/1pIINwgMlJX-3db4sLApt5Gi7GkWQElGf/view?usp=share_link" class="external-link">download
+the unprocessed Seurat object here</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
@@ -181,12 +213,20 @@
 225080 features across 17637 samples within 2 assays 
 Active assay: RNA (19877 features, 0 variable features)
  1 other assay present: iso</code></pre>
-<p>We have successfully created a Seurat object with two assays, <code>iso</code> containing the isoform counts counts matrix, and <code>RNA</code> containing the gene counts matrix. The <code>iso</code> assay contains 225080 different isoforms, and the <code>RNA</code> assay contains 19877 genes. The Seurat object has 17637 cell barcodes before QC filtering.</p>
+<p>We have successfully created a Seurat object with two assays,
+<code>iso</code> containing the isoform counts counts matrix, and
+<code>RNA</code> containing the gene counts matrix. The <code>iso</code>
+assay contains 225080 different isoforms, and the <code>RNA</code> assay
+contains 19877 genes. The Seurat object has 17637 cell barcodes before
+QC filtering.</p>
 </div>
 <div class="section level3">
 <h3 id="quality-control-qc-filtering">Quality control (QC) filtering<a class="anchor" aria-label="anchor" href="#quality-control-qc-filtering"></a>
 </h3>
-<p>Here we will insepct the distribution of certain QC metrics in order to determine reasonable cutoffs for outlier removal. We can inspect distributions of gene UMI counts, the number of genes detected, isoform UMI counts, and the number of isoforms detected.</p>
+<p>Here we will insepct the distribution of certain QC metrics in order
+to determine reasonable cutoffs for outlier removal. We can inspect
+distributions of gene UMI counts, the number of genes detected, isoform
+UMI counts, and the number of isoforms detected.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load unprocessed seurat object:</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">'PBMC_masseq_unprocessed_seurat.rds'</span><span class="op">)</span></span>
@@ -210,7 +250,8 @@ Active assay: RNA (19877 features, 0 variable features)
 <span><span class="co"># assemble plots with patchwork</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/isoseq/vln_qc.png" width="600" height="600"></p>
-<p>Based on these distributions, we remove barcodes with fewer than 500 gene UMI counts and greater than 5000 gene UMI counts.</p>
+<p>Based on these distributions, we remove barcodes with fewer than 500
+gene UMI counts and greater than 5000 gene UMI counts.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># keep cells with greater than 500 UMIs and fewer than 5000 UMIs</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">nCount_RNA</span> <span class="op">&gt;=</span> <span class="fl">500</span> <span class="op">&amp;</span> <span class="va">nCount_RNA</span> <span class="op">&lt;=</span> <span class="fl">5000</span><span class="op">)</span></span></code></pre></div>
@@ -218,7 +259,11 @@ Active assay: RNA (19877 features, 0 variable features)
 <div class="section level3">
 <h3 id="clustering-on-gene-counts-matrix">Clustering on gene counts matrix<a class="anchor" aria-label="anchor" href="#clustering-on-gene-counts-matrix"></a>
 </h3>
-<p>In this section, we perform clustering analysis on the gene counts matrix. We use <a href="https://github.com/immunogenomics/harmony" class="external-link">harmony</a> to integrate the two replicates prior to clustering, but we do also include the results without integration. In general this section follows the generic Seurat clustering workflow.</p>
+<p>In this section, we perform clustering analysis on the gene counts
+matrix. We use <a href="https://github.com/immunogenomics/harmony" class="external-link">harmony</a> to
+integrate the two replicates prior to clustering, but we do also include
+the results without integration. In general this section follows the
+generic Seurat clustering workflow.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># change the assay to the gene counts matrix</span></span>
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
@@ -292,14 +337,30 @@ See clustering analysis without Harmony
 <span></span>
 <span><span class="co"># show the plots</span></span>
 <span><span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span></span></code></pre></div>
-<p>We can see that the PCA-based clustering separates each replicate, whereas the harmony-based clustering results in clusters originating from both replicates.</p>
+<p>We can see that the PCA-based clustering separates each replicate,
+whereas the harmony-based clustering results in clusters originating
+from both replicates.</p>
 <p><img src="figures/isoseq/umap_RNA_pca.png" width="900" height="600"></p>
 </details>
 </div>
 <div class="section level3">
 <h3 id="clustering-on-isoform-counts-matrix">Clustering on isoform counts matrix<a class="anchor" aria-label="anchor" href="#clustering-on-isoform-counts-matrix"></a>
 </h3>
-<p>In this section, we perform Seurat clustering analysis on the isoform counts matrix. We use nearly the same steps as above with the gene counts matrix, however we tackle the feature selection step in a slightly different way. In this particular dataset, there are many isoforms that are expressed much higher in one replicate or the other, and this variance in expression is picked up by the <code>FindVariableFeatures</code> function. Therefore, running <code>FindVariableFeatures</code> followed by the rest of the clustering steps will result in clusters that separate by replicate, even after running Harmony (we did not show this analysis here, but you could run it yourself as a fun exercise). Instead, we run <code>FindVariableFeatures</code> separately on each replicate and take the intersection of the variable isoforms for further analysis, giving us a set of variable isoforms for the whole dataset. The rest of the steps are identical to the gene-level analysis.</p>
+<p>In this section, we perform Seurat clustering analysis on the isoform
+counts matrix. We use nearly the same steps as above with the gene
+counts matrix, however we tackle the feature selection step in a
+slightly different way. In this particular dataset, there are many
+isoforms that are expressed much higher in one replicate or the other,
+and this variance in expression is picked up by the
+<code>FindVariableFeatures</code> function. Therefore, running
+<code>FindVariableFeatures</code> followed by the rest of the clustering
+steps will result in clusters that separate by replicate, even after
+running Harmony (we did not show this analysis here, but you could run
+it yourself as a fun exercise). Instead, we run
+<code>FindVariableFeatures</code> separately on each replicate and take
+the intersection of the variable isoforms for further analysis, giving
+us a set of variable isoforms for the whole dataset. The rest of the
+steps are identical to the gene-level analysis.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to the isoform assay </span></span>
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
@@ -356,11 +417,25 @@ See clustering analysis without Harmony
 <span><span class="co"># assemble with patchwork</span></span>
 <span><span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">|</span> <span class="va">p4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/isoseq/umap_iso.png" width="900" height="600"></p>
-<p>We visualize the isoform-level clustering and the gene-level clustering on the isoform UMAP, and we can see that qualitatively there appears to be some overlap in the cluster assignments. Without further analysis, it is not immediately obvious which clustering is better than the other as both seem to separate the major cell populations in the PBMC dataset.</p>
+<p>We visualize the isoform-level clustering and the gene-level
+clustering on the isoform UMAP, and we can see that qualitatively there
+appears to be some overlap in the cluster assignments. Without further
+analysis, it is not immediately obvious which clustering is better than
+the other as both seem to separate the major cell populations in the
+PBMC dataset.</p>
 <div class="section level4">
 <h4 id="multimodal-clustering-with-genes-and-isoforms">Multimodal clustering with genes and isoforms<a class="anchor" aria-label="anchor" href="#multimodal-clustering-with-genes-and-isoforms"></a>
 </h4>
-<p>Seurat includes functionality for multimodal clustering analysis using an algorithm called <strong>Weighted Nearest Neighbors (WNN)</strong> to create a cell graph by accounting for information from two assays simultaneously. This has been used by the Seurat authors with CITE-Seq data and RNA + ATAC multiome data with some success, but it is not clear if this would help us better characterize our long-read single-cell data. Here we follow the major steps from the <a href="https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis.html" class="external-link">Seurat WNN tutorial</a> to perform a multimodal clustering analysis using both the gene and isoform assays. Note that this analysis first requires you to have already processed both of your assays of interest.</p>
+<p>Seurat includes functionality for multimodal clustering analysis
+using an algorithm called <strong>Weighted Nearest Neighbors
+(WNN)</strong> to create a cell graph by accounting for information from
+two assays simultaneously. This has been used by the Seurat authors with
+CITE-Seq data and RNA + ATAC multiome data with some success, but it is
+not clear if this would help us better characterize our long-read
+single-cell data. Here we follow the major steps from the <a href="https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis.html" class="external-link">Seurat
+WNN tutorial</a> to perform a multimodal clustering analysis using both
+the gene and isoform assays. Note that this analysis first requires you
+to have already processed both of your assays of interest.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch back to genes assay</span></span>
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
@@ -399,8 +474,16 @@ See clustering analysis without Harmony
 <span><span class="co"># assemble with patchwork</span></span>
 <span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span> <span class="op">|</span> <span class="va">p3</span></span></code></pre></div>
 <p><img src="figures/isoseq/umap_wnn.png" width="900" height="600"></p>
-<p>Qualitatively, a side-by-side comparison of the three clustering analysis shows similar results, but we note that your milage may vary depending on your particular tissue or system of interest. WNN outputs cell-specific modality weights that tell us about the relative information content of each cell for that modality. This is a weight between 0 and 1 where close to 0 means most of the<br>
-information would come from the isoform assay, close to 1 means most information would come from the gene assay, and close to 0.5 means that both assays provide similar levels of information. Here we visualize the distributions of these weights in each of the WNN clusters.</p>
+<p>Qualitatively, a side-by-side comparison of the three clustering
+analysis shows similar results, but we note that your milage may vary
+depending on your particular tissue or system of interest. WNN outputs
+cell-specific modality weights that tell us about the relative
+information content of each cell for that modality. This is a weight
+between 0 and 1 where close to 0 means most of the<br>
+information would come from the isoform assay, close to 1 means most
+information would come from the gene assay, and close to 0.5 means that
+both assays provide similar levels of information. Here we visualize the
+distributions of these weights in each of the WNN clusters.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html" class="external-link">VlnPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -415,16 +498,23 @@ information would come from the isoform assay, close to 1 means most information
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/isoseq/vln_wnn_weight.png" width="900" height="600"></p>
-<p>It appears that for the genes + isoforms WNN analysis, there does not seem to be a huge advantage of using the information from both assays simultaneously, as we can see that the median for most of these groups is near 0.5. Cluster 8 has the highest median <code>RNA.weight = 0.574</code>, so this cluster may have been occluded in the isoform-level clustering analysis. We can use a Sankey diagram to compare the clustering assignments from the three separate analyses. Note that this step is not necessary and can be skipped.</p>
+<p>It appears that for the genes + isoforms WNN analysis, there does not
+seem to be a huge advantage of using the information from both assays
+simultaneously, as we can see that the median for most of these groups
+is near 0.5. Cluster 8 has the highest median
+<code>RNA.weight = 0.574</code>, so this cluster may have been occluded
+in the isoform-level clustering analysis. We can use a Sankey diagram to
+compare the clustering assignments from the three separate analyses.
+Note that this step is not necessary and can be skipped.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install ggsankey if necessary</span></span>
 <span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="co"># remotes::install_github("davidsjoberg/ggsankey")</span></span>
 <span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/davidsjoberg/ggsankey" class="external-link">ggsankey</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ggsankey</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu">ggsankey</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggsankey/man/make_long.html" class="external-link">make_long</a></span><span class="op">(</span><span class="va">seurat_clusters_RNA</span>, <span class="va">seurat_clusters_wnn</span>, <span class="va">seurat_clusters_iso</span><span class="op">)</span></span>
+<span>  <span class="fu">ggsankey</span><span class="fu">::</span><span class="fu">make_long</span><span class="op">(</span><span class="va">seurat_clusters_RNA</span>, <span class="va">seurat_clusters_wnn</span>, <span class="va">seurat_clusters_iso</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, </span>
 <span>               next_x <span class="op">=</span> <span class="va">next_x</span>, </span>
@@ -432,9 +522,9 @@ information would come from the isoform assay, close to 1 means most information
 <span>               next_node <span class="op">=</span> <span class="va">next_node</span>,</span>
 <span>               fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">node</span><span class="op">)</span>,</span>
 <span>               label <span class="op">=</span> <span class="va">node</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggsankey/man/geom_sankey.html" class="external-link">geom_sankey</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggsankey/man/geom_sankey_label.html" class="external-link">geom_sankey_label</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggsankey/man/theme_sankey.html" class="external-link">theme_sankey</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_sankey</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_sankey_label</span><span class="op">(</span>size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sankey</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_discrete.html" class="external-link">scale_x_discrete</a></span><span class="op">(</span>labels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">'seurat_clusters_RNA'</span> <span class="op">=</span> <span class="st">'Genes'</span>,</span>
 <span>    <span class="st">'seurat_clusters_wnn'</span> <span class="op">=</span> <span class="st">'WNN'</span>,</span>
@@ -443,14 +533,28 @@ information would come from the isoform assay, close to 1 means most information
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/isoseq/cluster_sankey.png" width="900" height="600"></p>
-<p>It appears that WNN cluster 8 was grouped together with another cluster in the isoform-level analysis, but it was separated out in the RNA and WNN analyses.</p>
-<p>Thus far we have performed three different clustering analyses to demonstrate different ways of analyzing long-read single-cell data, but we want to note that this is not a thorough or quantitative comparison of the different approaches and we ultimately do not have a clear method that is superior. For the remainder of this tutorial, we are going to use the UMAP and clustering from the gene-level analysis, but this could have just as easily been done with the isoform-level clusters or the WNN clusters with likely very similar results.</p>
+<p>It appears that WNN cluster 8 was grouped together with another
+cluster in the isoform-level analysis, but it was separated out in the
+RNA and WNN analyses.</p>
+<p>Thus far we have performed three different clustering analyses to
+demonstrate different ways of analyzing long-read single-cell data, but
+we want to note that this is not a thorough or quantitative comparison
+of the different approaches and we ultimately do not have a clear method
+that is superior. For the remainder of this tutorial, we are going to
+use the UMAP and clustering from the gene-level analysis, but this could
+have just as easily been done with the isoform-level clusters or the WNN
+clusters with likely very similar results.</p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="cell-type-annotation">Cell type annotation<a class="anchor" aria-label="anchor" href="#cell-type-annotation"></a>
 </h3>
-<p>In this section we manually assign cell-type labels to each cluster. We inspected the expression levels of many different known PBMC marker genes which we obtained from <a href="https://azimuth.hubmapconsortium.org/references/" class="external-link">Azimuth</a> to assign each cluster with a cell type label. Note that this can also be done automatically using transfer learning algorithms and a reasonable reference dataset.</p>
+<p>In this section we manually assign cell-type labels to each cluster.
+We inspected the expression levels of many different known PBMC marker
+genes which we obtained from <a href="https://azimuth.hubmapconsortium.org/references/" class="external-link">Azimuth</a> to
+assign each cluster with a cell type label. Note that this can also be
+done automatically using transfer learning algorithms and a reasonable
+reference dataset.</p>
 <details><summary>
 See cell type marker genes
 </summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -494,7 +598,8 @@ See cell type marker genes
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</details><p>We generated a file called pbmc_annotations.txt containing the following table based on the marker gene expression profiles.</p>
+</details><p>We generated a file called pbmc_annotations.txt containing the
+following table based on the marker gene expression profiles.</p>
 <table class="table">
 <thead><tr class="header">
 <th>seurat_cluster</th>
@@ -569,7 +674,8 @@ See cell type marker genes
 </tr>
 </tbody>
 </table>
-<p>Next we add this information to the Seurat object and plot the labels on the UMAP.</p>
+<p>Next we add this information to the Seurat object and plot the labels
+on the UMAP.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">annotations</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'data/pbmc_annotations.txt'</span><span class="op">)</span>, header<span class="op">=</span><span class="cn">TRUE</span>, sep<span class="op">=</span><span class="st">'\t'</span><span class="op">)</span></span>
 <span><span class="va">ix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">seurat_clusters_RNA</span>, <span class="va">annotations</span><span class="op">$</span><span class="va">seurat_cluster</span><span class="op">)</span></span>
@@ -585,7 +691,9 @@ See cell type marker genes
 <span><span class="co"># assemble with patchwork</span></span>
 <span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="figures/isoseq/umap_RNA_annotated.png" width="900" height="600"></p>
-<p>We have now finished the Seurat clustering part of this tutorial, so it is a good idea to save your Seurat object at this point before moving on to network analysis.</p>
+<p>We have now finished the Seurat clustering part of this tutorial, so
+it is a good idea to save your Seurat object at this point before moving
+on to network analysis.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">seurat_obj</span>, file <span class="op">=</span> <span class="st">'PBMC_masseq_processed_seurat.rds'</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -593,15 +701,30 @@ See cell type marker genes
 <div class="section level2">
 <h2 id="isoform-co-expression-network-analysis">Isoform co-expression network analysis<a class="anchor" aria-label="anchor" href="#isoform-co-expression-network-analysis"></a>
 </h2>
-<p>In this section, we perform isofom co-expression network analysis with hdWGCNA. We cover several different approaches in this tutorial. In general, isoform network analysis is more complicated than gene co-expression network analysis since we are working with a larger data matrix to start with. For this dataset, the isoform matrix has roughly ten times the number of features as the gene matrix. Since networks are represented as features-by-features square matrices, it is extremely computationally challenging to compute and represent a full isoform co-expression network. Additionally, many isoforms are expressed at low levels, and like ordinary scRNA-seq we have technical data sparsity as well. For these reasons, we have to carefully consider what isoforms and what cell populations to include in our co-expression network analysis.</p>
+<p>In this section, we perform isofom co-expression network analysis
+with hdWGCNA. We cover several different approaches in this tutorial. In
+general, isoform network analysis is more complicated than gene
+co-expression network analysis since we are working with a larger data
+matrix to start with. For this dataset, the isoform matrix has roughly
+ten times the number of features as the gene matrix. Since networks are
+represented as features-by-features square matrices, it is extremely
+computationally challenging to compute and represent a full isoform
+co-expression network. Additionally, many isoforms are expressed at low
+levels, and like ordinary scRNA-seq we have technical data sparsity as
+well. For these reasons, we have to carefully consider what isoforms and
+what cell populations to include in our co-expression network
+analysis.</p>
 <ol style="list-style-type: decimal">
 <li>Variable features in all PBMC clusters</li>
 <li>Major isoforms of cluster marker genes in all PBMC clusters</li>
 <li>All major isoforms in NK cells</li>
 </ol>
-<p>Before proceeding, we need to remove the very smallest cell populations which could cause trouble in our metacell grouping step. We also need to load the relevant libraries for running hdWGCNA, and we enable multithreading (optional) to speed up our processing time.</p>
+<p>Before proceeding, we need to remove the very smallest cell
+populations which could cause trouble in our metacell grouping step. We
+also need to load the relevant libraries for running hdWGCNA, and we
+enable multithreading (optional) to speed up our processing time.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/WGCNA/man/allowWGCNAThreads.html" class="external-link">enableWGCNAThreads</a></span><span class="op">(</span>nThreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
@@ -614,7 +737,13 @@ See cell type marker genes
 <div class="section level3">
 <h3 id="example-1-variable-features-in-all-pbmcs">Example 1: Variable Features in all PBMCs<a class="anchor" aria-label="anchor" href="#example-1-variable-features-in-all-pbmcs"></a>
 </h3>
-<p>First, we will demonstrate isoform co-expression network analysis using variable features as our input set of isoforms, and we will use all of the PBMCs. Similar to our clustering analysis, we will identify variable isoforms separately for each sample and take the intersection as our feature set. However, we would like to use more features for network analysis, so we increase the number of variable features to 50000.</p>
+<p>First, we will demonstrate isoform co-expression network analysis
+using variable features as our input set of isoforms, and we will use
+all of the PBMCs. Similar to our clustering analysis, we will identify
+variable isoforms separately for each sample and take the intersection
+as our feature set. However, we would like to use more features for
+network analysis, so we increase the number of variable features to
+50000.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to isoform assay:</span></span>
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
@@ -626,7 +755,13 @@ See cell type marker genes
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">intersect</span>, <span class="va">selected_features</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] 9265</code></pre>
-<p>This approach gives us 9265 isoforms to perform network analysis on. Next we run the <code>SetupForWGCNA</code> function and indicate that we want to use variable features as our set of input features for network analysis. We also perform metacell aggregation with the <code>MetacellsByGroups</code> function, specifying <code>assay="iso"</code> in order to obtain a metacells by isoforms matrix.</p>
+<p>This approach gives us 9265 isoforms to perform network analysis on.
+Next we run the <code>SetupForWGCNA</code> function and indicate that we
+want to use variable features as our set of input features for network
+analysis. We also perform metacell aggregation with the
+<code>MetacellsByGroups</code> function, specifying
+<code>assay="iso"</code> in order to obtain a metacells by isoforms
+matrix.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># setup this hdWGCNA experiment</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
@@ -649,7 +784,14 @@ See cell type marker genes
 <span>  target_metacells<span class="op">=</span><span class="fl">150</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
-<p>Next we specify the cell groups that will be used for network analysis and we set up the expression matrix using <code>SetDatExpr</code>. Note that we are setting <code>group_name = unique(seurat_obj$cell_type)</code> in order to use all of the cell types for a single network analysis. Once again we ensure to specify <code>assay='iso'</code> for the isoform-level analysis. We then run the <code>TestSoftPowers</code> function to find suitable values for the <code>soft_power</code> parameter.</p>
+<p>Next we specify the cell groups that will be used for network
+analysis and we set up the expression matrix using
+<code>SetDatExpr</code>. Note that we are setting
+<code>group_name = unique(seurat_obj$cell_type)</code> in order to use
+all of the cell types for a single network analysis. Once again we
+ensure to specify <code>assay='iso'</code> for the isoform-level
+analysis. We then run the <code>TestSoftPowers</code> function to find
+suitable values for the <code>soft_power</code> parameter.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get list of cell populations</span></span>
 <span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span></span>
@@ -671,7 +813,9 @@ See cell type marker genes
 <span><span class="co"># assemble with patchwork</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/isoseq/variable_test_softpower.png" width="900" height="600"></p>
-<p>Now we are ready to construct the network, compute module eigen<strong>isoforms</strong> (MEiso), and compute eigenisoform-based connectivities (kMEiso).</p>
+<p>Now we are ready to construct the network, compute module
+eigen<strong>isoforms</strong> (MEiso), and compute eigenisoform-based
+connectivities (kMEiso).</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># construct wgcna network:</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
@@ -703,7 +847,13 @@ See cell type marker genes
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/isoseq/variable_dendro.png" width="900" height="600"></p>
-<p>We have now constructed the isoform co-expression network, so we can now perform downstream analysis to better characterize and understand the network and these isoform modules. Before we move on to another way of doing isoform co-expression network analysis, we plot the MEiso values for each module in each cluster with <code>DotPlot</code>, and we use <code>RunModuleUMAP</code> to visualize the isoform co-expression network in two dimensions.</p>
+<p>We have now constructed the isoform co-expression network, so we can
+now perform downstream analysis to better characterize and understand
+the network and these isoform modules. Before we move on to another way
+of doing isoform co-expression network analysis, we plot the MEiso
+values for each module in each cluster with <code>DotPlot</code>, and we
+use <code>RunModuleUMAP</code> to visualize the isoform co-expression
+network in two dimensions.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the MEisos from the seurat object and add it to the metadata</span></span>
 <span><span class="va">MEiso</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -783,8 +933,22 @@ See cell type marker genes
 <div class="section level3">
 <h3 id="example-2-major-isoforms-of-cluster-marker-genes-in-all-pbmcs">Example 2: Major isoforms of cluster marker genes in all PBMCs<a class="anchor" aria-label="anchor" href="#example-2-major-isoforms-of-cluster-marker-genes-in-all-pbmcs"></a>
 </h3>
-<p>Here we use a different approach for obtaining a list of input isoforms for hdWGCNA. We first identify <strong>Major Isoforms</strong>, defined as the set of isoforms accounting for 80% of a gene’s total expression. Major isoforms are identified for each gene and for each cell population, and the 80% threshold parameter can be tweaked. hdWGCNA includes <code>FindMajorIsoforms</code>, a function to call major isoforms from a Seurat object.</p>
-<p>The set of major isoforms across all of the cell populations may still contain feature set that would be challenging to perform network analysis on due to its size. Therefore, in this tutorial we will intersect the major isoform list with a cluster marker gene list, giving us a set of major isoforms for each cell population’s marker genes. In the following block of code, we run Seurat’s <code>FindAllMarkers</code> function on the RNA assay to get a marker gene table. Note that we are identifying <strong>marker genes</strong> and not marker isoforms for this step.</p>
+<p>Here we use a different approach for obtaining a list of input
+isoforms for hdWGCNA. We first identify <strong>Major Isoforms</strong>,
+defined as the set of isoforms accounting for 80% of a gene’s total
+expression. Major isoforms are identified for each gene and for each
+cell population, and the 80% threshold parameter can be tweaked. hdWGCNA
+includes <code>FindMajorIsoforms</code>, a function to call major
+isoforms from a Seurat object.</p>
+<p>The set of major isoforms across all of the cell populations may
+still contain feature set that would be challenging to perform network
+analysis on due to its size. Therefore, in this tutorial we will
+intersect the major isoform list with a cluster marker gene list, giving
+us a set of major isoforms for each cell population’s marker genes. In
+the following block of code, we run Seurat’s <code>FindAllMarkers</code>
+function on the RNA assay to get a marker gene table. Note that we are
+identifying <strong>marker genes</strong> and not marker isoforms for
+this step.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to the RNA assay because we want marker genes</span></span>
 <span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
@@ -802,7 +966,10 @@ See cell type marker genes
 <span><span class="co"># save your cluster markers as a table</span></span>
 <span><span class="va">cluster_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">'data/cluster_markers.csv'</span><span class="op">)</span></span>
 <span><span class="va">cluster_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cluster_markers</span>, <span class="op">!</span><span class="op">(</span><span class="va">cluster</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'DC'</span>, <span class="st">'Platelet'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Next, we run <code>FindMajorIsoforms</code> to identify major isoforms of the cluster marker genes, and then we set up the Seurat object with a new hdWGCNA experiment using these isoforms as the input features.</p>
+<p>Next, we run <code>FindMajorIsoforms</code> to identify major
+isoforms of the cluster marker genes, and then we set up the Seurat
+object with a new hdWGCNA experiment using these isoforms as the input
+features.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span>
 <span></span>
@@ -833,7 +1000,9 @@ See cell type marker genes
 <span><span class="co"># how many isoforms?</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">selected_isoforms</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] 13217</code></pre>
-<p>This approach gives us 13217 isoforms for network analysis. Now we run the main steps of co-expression network analysis with hdWGCNA similarly to what we did in the previous section.</p>
+<p>This approach gives us 13217 isoforms for network analysis. Now we
+run the main steps of co-expression network analysis with hdWGCNA
+similarly to what we did in the previous section.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up expression matrix</span></span>
 <span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span></span>
@@ -872,7 +1041,8 @@ See cell type marker genes
 <span><span class="co"># compute module connectivity:</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/isoseq/major_dendro.png" width="900" height="600"></p>
-<p>Next we visualize the MEiso signatures for each module in each cell population using a DotPlot.</p>
+<p>Next we visualize the MEiso signatures for each module in each cell
+population using a DotPlot.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">MEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMEs.html">GetMEs</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -969,7 +1139,7 @@ See cell type marker genes
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

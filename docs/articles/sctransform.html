@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Using SCTransform normalized data">
 <meta name="description" content="Tutorial demonstrating hdWGCNA with SCTransform normalized data.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,17 @@
 
     
     
-<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a> for hdWGCNA. Overall we do not recommend using SCTransform with hdWGCNA, however we have included this tutorial due to numerous user requests. This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>. This tutorial also assumes that you are familiar with the <a href="https://github.com/satijalab/sctransform" class="external-link">SCTransform R package</a> and the <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link">SCTransform methods paper</a>. Once again, we do not advise using SCTransform with hdWGCNA so proceed with caution. If you have made it past these warnings, at least make sure you are fully aware of how SCTransform works and the underlying assumptions that it makes about gene expression distributions etc.</p>
+<p>In this tutorial, we briefly cover how to use data normalized with <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link"><code>SCTransform</code></a>
+for hdWGCNA. Overall we do not recommend using SCTransform with hdWGCNA,
+however we have included this tutorial due to numerous user requests.
+This tutorial assumes that you are familiar with the <a href="basic_tutorial.html">basics of the hdWGCNA workflow</a>. This
+tutorial also assumes that you are familiar with the <a href="https://github.com/satijalab/sctransform" class="external-link">SCTransform R
+package</a> and the <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link">SCTransform
+methods paper</a>. Once again, we do not advise using SCTransform with
+hdWGCNA so proceed with caution. If you have made it past these
+warnings, at least make sure you are fully aware of how SCTransform
+works and the underlying assumptions that it makes about gene expression
+distributions etc.</p>
 <p>First we load the required R libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
@@ -119,7 +129,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -131,11 +141,12 @@
 <span><span class="co"># set random seed for reproducibility</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span></code></pre></div>
 <p>Download the tutorial dataset:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
 <div class="section level2">
 <h2 id="run-sctransform">Run SCTransform<a class="anchor" aria-label="anchor" href="#run-sctransform"></a>
 </h2>
-<p>Here we run <code>SCTransform</code> normalization on the tutorial dataset, regressing <code>percent.mt</code>.</p>
+<p>Here we run <code>SCTransform</code> normalization on the tutorial
+dataset, regressing <code>percent.mt</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load the tutorial dataset</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'data/Zhou_control.rds'</span><span class="op">)</span></span>
@@ -148,7 +159,9 @@
 <span></span>
 <span><span class="co"># run SCTransform</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SCTransform.html" class="external-link">SCTransform</a></span><span class="op">(</span><span class="va">seurat_subset</span>, vars.to.regress <span class="op">=</span> <span class="st">"percent.mt"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>It is important to note that <code>SCTransform</code> pearson residuals are typically only output for the highly variable features. We can check this by extracting the expression matrix.</p>
+<p>It is important to note that <code>SCTransform</code> pearson
+residuals are typically only output for the highly variable features. We
+can check this by extracting the expression matrix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract sct expression data</span></span>
 <span><span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_subset</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span></span>
@@ -160,12 +173,20 @@
 <code class="sourceCode R"><span><span class="co"># print the shape of the seurat object (genes by cells)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sct_data</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] 36601  3162</code></pre>
-<p>We see that <code>seurat_obj</code> has 36,601 genes, but only 3,000 are in the SCTransform <code>scale.data</code> slot. Therefore, if we want to use hdWGCNA on the SCTransform pearson residuals, we must only include the highly variable genes. Alternatively, SCTransform does output a <code>counts</code> and normalized <code>data</code> slot which may also be used.</p>
+<p>We see that <code>seurat_obj</code> has 36,601 genes, but only 3,000
+are in the SCTransform <code>scale.data</code> slot. Therefore, if we
+want to use hdWGCNA on the SCTransform pearson residuals, we must only
+include the highly variable genes. Alternatively, SCTransform does
+output a <code>counts</code> and normalized <code>data</code> slot which
+may also be used.</p>
 </div>
 <div class="section level2">
 <h2 id="option-1-sctransform-on-single-cell-data">Option 1: SCTransform on single-cell data<a class="anchor" aria-label="anchor" href="#option-1-sctransform-on-single-cell-data"></a>
 </h2>
-<p>Here we demonstrate how to run the standard hdWGCNA workflow on SCTransform normalized single-cell data. First we set up the hdWGCNA experiment, ensuring to only include genes that were used for SCTransform.</p>
+<p>Here we demonstrate how to run the standard hdWGCNA workflow on
+SCTransform normalized single-cell data. First we set up the hdWGCNA
+experiment, ensuring to only include genes that were used for
+SCTransform.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># only supply features that were used for SCTransform!!!</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
@@ -173,7 +194,9 @@
 <span>  features <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span>,</span>
 <span>  wgcna_name <span class="op">=</span> <span class="st">"SCT"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Next, we construct metacells while specifying <code>slot='scale.data'</code> and <code>assay='SCT'</code> in order to use the SCTransform normalized data.</p>
+<p>Next, we construct metacells while specifying
+<code>slot='scale.data'</code> and <code>assay='SCT'</code> in order to
+use the SCTransform normalized data.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
 <span>  seurat_obj <span class="op">=</span> <span class="va">seurat_subset</span>,</span>
@@ -197,7 +220,10 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">plot_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/sctransform/test_softpower_SCT_cells.png" width="800" height="900"></p>
-<p>Interestingly, none of the soft power thresholds tested have a scale-free topology moddel fit of 0.8 or higher. For network construction, we will choose <code>soft_power=14</code> since that is where the model fit starts to plateau.</p>
+<p>Interestingly, none of the soft power thresholds tested have a
+scale-free topology moddel fit of 0.8 or higher. For network
+construction, we will choose <code>soft_power=14</code> since that is
+where the model fit starts to plateau.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_subset</span>,</span>
@@ -217,7 +243,8 @@
 <div class="section level2">
 <h2 id="option-2-sctransform-on-metacell-data">Option 2: SCTransform on metacell data<a class="anchor" aria-label="anchor" href="#option-2-sctransform-on-metacell-data"></a>
 </h2>
-<p>Alternatively, we can apply SCTransform after we have constructed metacells.</p>
+<p>Alternatively, we can apply SCTransform after we have constructed
+metacells.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_subset</span>,</span>
@@ -236,7 +263,9 @@
 <span>  slot <span class="op">=</span> <span class="st">'counts'</span>,</span>
 <span>  assay <span class="op">=</span> <span class="st">'RNA'</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Here, we extract the metacell Seurat object, then run SCTransform on it. Importantly, this will give us a different set of genes than we used previously.</p>
+<p>Here, we extract the metacell Seurat object, then run SCTransform on
+it. Importantly, this will give us a different set of genes than we used
+previously.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get metacell object and run SCTransform</span></span>
 <span><span class="va">mobj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetMetacellObject.html">GetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span></span>
@@ -254,7 +283,8 @@
 <span><span class="co"># update the genes used for WGCNA, and reset the metacell object</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetWGCNAGenes.html">SetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_subset</span>, <span class="va">gene_list</span><span class="op">)</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMetacellObject.html">SetMetacellObject</a></span><span class="op">(</span><span class="va">seurat_subset</span>, <span class="va">mobj</span><span class="op">)</span></span></code></pre></div>
-<p>Next we continue with the hdWGCNA pipeline using this metacell object.</p>
+<p>Next we continue with the hdWGCNA pipeline using this metacell
+object.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specify SCT assay and scale.data slot</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span><span class="va">seurat_subset</span>, assay <span class="op">=</span> <span class="st">'SCT'</span>, slot<span class="op">=</span><span class="st">'scale.data'</span><span class="op">)</span></span>
@@ -282,7 +312,9 @@
 <div class="section level2">
 <h2 id="comparing-to-the-standard-hdwgcna-workflow">Comparing to the standard hdWGCNA workflow<a class="anchor" aria-label="anchor" href="#comparing-to-the-standard-hdwgcna-workflow"></a>
 </h2>
-<p>Here, we run the standard hdWGCNA workflow without SCTransform so we can make comparisons later. Note that we are using the same set of genes that we did above when using SCTransform.</p>
+<p>Here, we run the standard hdWGCNA workflow without SCTransform so we
+can make comparisons later. Note that we are using the same set of genes
+that we did above when using SCTransform.</p>
 <details><summary>
 Show standard hdWGCNA
 </summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -330,7 +362,8 @@ Show standard hdWGCNA
 <span></span>
 <span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_subset</span>, main<span class="op">=</span><span class="st">'hdWGCNA RNA Dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/sctransform/dendro_RNA.png" width="800" height="900"></p>
-</details><p>Now we can plot the modules from the RNA under the modules from SCT to compare.</p>
+</details><p>Now we can plot the modules from the RNA under the modules from SCT
+to compare.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get both sets of modules</span></span>
 <span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_subset</span>, <span class="st">'SCT'</span><span class="op">)</span></span>
@@ -417,7 +450,7 @@ Show standard hdWGCNA
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

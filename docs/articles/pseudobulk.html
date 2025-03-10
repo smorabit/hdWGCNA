@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="hdWGCNA with pseudobulk data">
 <meta name="description" content="Tutorial for running hdWGCNA with pseudobulk data rather than metacells/metaspots .
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,13 +106,42 @@
     
 <p>Compiled: 27-02-2024</p>
 <p>Source: <code>vignettes/pseudobulk.Rmd</code></p>
-<p>In this tutorial, we demonstrate how to run hdWGCNA using pseudobulk data instead of using metacells or metaspots. Pseudobulk can be advantageous for very large datasets where the metacell calculations can be slow. First we discuss why we would use pseudobulk instead of metacells / metaspots, and what considerations must be made. We will then perform a co-expression network analysis in the Zhou et al 2020 human brain dataset using six major cell types together. This tutorial assumes that you are already familiar with hdWGCNA from our other tutorials.</p>
+<p>In this tutorial, we demonstrate how to run hdWGCNA using pseudobulk
+data instead of using metacells or metaspots. Pseudobulk can be
+advantageous for very large datasets where the metacell calculations can
+be slow. First we discuss why we would use pseudobulk instead of
+metacells / metaspots, and what considerations must be made. We will
+then perform a co-expression network analysis in the Zhou et al 2020
+human brain dataset using six major cell types together. This tutorial
+assumes that you are already familiar with hdWGCNA from our other
+tutorials.</p>
 <div class="section level2">
 <h2 id="considerations-and-motivation-for-pseudobulk-hdwgcna">Considerations and motivation for pseudobulk hdWGCNA<a class="anchor" aria-label="anchor" href="#considerations-and-motivation-for-pseudobulk-hdwgcna"></a>
 </h2>
-<p>“Pseudobulk” refers to aggregating gene expression profiles from all of the cells of a particular group (cluster, cell type, etc) from a single biological replicate. This is somewhat comparable to sorting a cell population of interest (ie via FACS) and then performing bulk RNA-seq, thus the name “pseudobulk”. However, it is worth noting that pseudobulk aggregates from single-cell data are still somewhat different than actual bulk RNA-seq data. This pseudobulk procedure helps alleviate the sparsity of single-cell data in a similar way to our previous aggregation approaches. We used this pseduobulking approach in our <a href="https://www.biorxiv.org/content/10.1101/2023.07.24.550282v1" class="external-link">recent spatial transcriptomic study of Alzheimer’s Disease</a>.</p>
-<p>Due to the cost of performing single-cell or spatial RNA-seq experiments, the number of biological replicates tends to be low for many studies. While we have not thoroughly tested the number of replicates that are required for pseudobulk hdWGCNA, the <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html" class="external-link">original WGCNA FAQ page</a> recommends at least 20 samples. Without a sufficient number of samples, gene-gene correlations will essentially be too noisy to be meaningful or reproducible.</p>
-<p>In our example dataset, we only have N=11 samples. Therefore, when we compute pseudobulk replicates for each sample across the 6 major cell types, we end up with 66 replicates. Based on the advice from the original WGCNA authors, we do not have enough replicates in this case to perform pseudobulk hdWGCNA on an individual cell type. Therefore for the purpose of this tutorial we will construct a network using pseudobulk data from all 6 cell types together.</p>
+<p>“Pseudobulk” refers to aggregating gene expression profiles from all
+of the cells of a particular group (cluster, cell type, etc) from a
+single biological replicate. This is somewhat comparable to sorting a
+cell population of interest (ie via FACS) and then performing bulk
+RNA-seq, thus the name “pseudobulk”. However, it is worth noting that
+pseudobulk aggregates from single-cell data are still somewhat different
+than actual bulk RNA-seq data. This pseudobulk procedure helps alleviate
+the sparsity of single-cell data in a similar way to our previous
+aggregation approaches. We used this pseduobulking approach in our <a href="https://www.biorxiv.org/content/10.1101/2023.07.24.550282v1" class="external-link">recent
+spatial transcriptomic study of Alzheimer’s Disease</a>.</p>
+<p>Due to the cost of performing single-cell or spatial RNA-seq
+experiments, the number of biological replicates tends to be low for
+many studies. While we have not thoroughly tested the number of
+replicates that are required for pseudobulk hdWGCNA, the <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html" class="external-link">original
+WGCNA FAQ page</a> recommends at least 20 samples. Without a sufficient
+number of samples, gene-gene correlations will essentially be too noisy
+to be meaningful or reproducible.</p>
+<p>In our example dataset, we only have N=11 samples. Therefore, when we
+compute pseudobulk replicates for each sample across the 6 major cell
+types, we end up with 66 replicates. Based on the advice from the
+original WGCNA authors, we do not have enough replicates in this case to
+perform pseudobulk hdWGCNA on an individual cell type. Therefore for the
+purpose of this tutorial we will construct a network using pseudobulk
+data from all 6 cell types together.</p>
 </div>
 <div class="section level2">
 <h2 id="load-the-dataset-and-required-libraries">Load the dataset and required libraries<a class="anchor" aria-label="anchor" href="#load-the-dataset-and-required-libraries"></a>
@@ -128,7 +157,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># using the cowplot theme for ggplot</span></span>
@@ -146,8 +175,22 @@
 <div class="section level2">
 <h2 id="create-the-pseudobulk-data-matrix">Create the pseudobulk data matrix<a class="anchor" aria-label="anchor" href="#create-the-pseudobulk-data-matrix"></a>
 </h2>
-<p>Here we make the pseudobulk data matrix using the hdWGCNA function <code>ConstructPseudobulk</code>. This function adds up the UMI counts for all cells in a given group based on <code>group.by</code> in each biological replicate based on <code>replicate_col</code>, which should be metadata columns in <code>seurat_obj@meta.data</code>. We will then compute a log CPM normalization of this matrix, but other normalization methods can be used instead if desired. Finally we allow hdWGCNA to use this matrix for downstream processing by passing the matrix directly to the <code>SetDatExpr</code> function. After setting up the pseudobulk matrix, we can continue to use the other hdWGCNA functions as we normally would.</p>
-<p>Since we recommend having at least 20 replicates for this analysis, <code>ConstructPseudobulk</code> has a parameter called <code>min_reps</code> to control the minimum number of allowed replicates. Here we will set <code>min_reps=10</code> so it does not give us an error message.</p>
+<p>Here we make the pseudobulk data matrix using the hdWGCNA function
+<code>ConstructPseudobulk</code>. This function adds up the UMI counts
+for all cells in a given group based on <code>group.by</code> in each
+biological replicate based on <code>replicate_col</code>, which should
+be metadata columns in <code>seurat_obj@meta.data</code>. We will then
+compute a log CPM normalization of this matrix, but other normalization
+methods can be used instead if desired. Finally we allow hdWGCNA to use
+this matrix for downstream processing by passing the matrix directly to
+the <code>SetDatExpr</code> function. After setting up the pseudobulk
+matrix, we can continue to use the other hdWGCNA functions as we
+normally would.</p>
+<p>Since we recommend having at least 20 replicates for this analysis,
+<code>ConstructPseudobulk</code> has a parameter called
+<code>min_reps</code> to control the minimum number of allowed
+replicates. Here we will set <code>min_reps=10</code> so it does not
+give us an error message.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -178,12 +221,19 @@
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  mat <span class="op">=</span> <span class="va">cpm</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Note that <code>ConstructPseudobulk</code> gives us an important warning about the number of replicates.</p>
+<p>Note that <code>ConstructPseudobulk</code> gives us an important
+warning about the number of replicates.</p>
 <pre><code>Warning message:
 In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Sample",  :
   We strongly recommend at least 20 replicates for pseudobulk hdWGCNA, and there are only 11 replicates detected. Results may not be reproducible or informative with low numbers of replicates so proceed at your own risk.</code></pre>
-<p>While there are only 11 samples in this dataset, in this case, our total number of “replicates” for network analysis is actually higher since we are performing network analysis for all 6 cell types together, therefore giving us 66 pseudobulk “replicates”.</p>
-<p>Since we often want to perform hdWGCNA on one cell type at a time, we can easily subset the pseudobulk matrix to just contain one cell type for downstream analysis. Note that this is an example and was not run for this tutorial.</p>
+<p>While there are only 11 samples in this dataset, in this case, our
+total number of “replicates” for network analysis is actually higher
+since we are performing network analysis for all 6 cell types together,
+therefore giving us 66 pseudobulk “replicates”.</p>
+<p>Since we often want to perform hdWGCNA on one cell type at a time, we
+can easily subset the pseudobulk matrix to just contain one cell type
+for downstream analysis. Note that this is an example and was not run
+for this tutorial.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># we only want the data from the astrocytes </span></span>
 <span><span class="va">cur_group</span> <span class="op">&lt;-</span> <span class="st">'ASC'</span></span>
@@ -199,7 +249,8 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h2>
-<p>Now that we have our pseudobulk matrix, we can perform co-expression network analysis.</p>
+<p>Now that we have our pseudobulk matrix, we can perform co-expression
+network analysis.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select the soft power threshold</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -214,8 +265,11 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span></span>
 <span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'pseudobulk dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/pseudobulk/dendro_pseudobulk.png" width="900" height="600"></p>
-<p>We can see that this analysis has resulted in 36 co-expression modules across the six cell types.</p>
-<p>Next we compute the module eigengenes (MEs) and eigengene-based connectivity (kMEs) at the single-cell level, and we can plot the MEs for each module in the different cell types.</p>
+<p>We can see that this analysis has resulted in 36 co-expression
+modules across the six cell types.</p>
+<p>Next we compute the module eigengenes (MEs) and eigengene-based
+connectivity (kMEs) at the single-cell level, and we can plot the MEs
+for each module in the different cell types.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># compute the MEs and kMEs</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -244,7 +298,8 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span></span>
 <span><span class="va">p</span> </span></code></pre></div>
 <p><img src="figures/pseudobulk/dotplot_pseudobulk.png" width="900" height="600"></p>
-<p>Next we will use UMAP to project the co-expression network in two dimensions, and we will visualize the results using ggplot2.</p>
+<p>Next we will use UMAP to project the co-expression network in two
+dimensions, and we will visualize the results using ggplot2.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># compute the co-expression network umap </span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span></span>
@@ -281,13 +336,22 @@ In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Samp
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/pseudobulk/pseudobulk_hubgene_umap_ggplot.png" width="600" height="600"></p>
-<p>As you can see, the co-expression network derived from pseudobulk data can be used for the same downstream analysis as with the metacell/metaspot data.</p>
+<p>As you can see, the co-expression network derived from pseudobulk
+data can be used for the same downstream analysis as with the
+metacell/metaspot data.</p>
 </div>
 <div class="section level2">
 <h2 id="consensus-network-analysis-with-pseudobulk-data">Consensus network analysis with pseudobulk data<a class="anchor" aria-label="anchor" href="#consensus-network-analysis-with-pseudobulk-data"></a>
 </h2>
-<p>We can also run consensus network analysis using pseudobulk data. If you are not already familiar<br>
-with consensus co-expression network analysis, please visit our <a href="consensus_wgcna.html">other tutorial page</a> describing it in more detail. Here we will use all cell types again, and we will run the consensus network analysis with biological sex as the variable of interest. When we run <code>ConstructPseudobulk</code>, we have to provide the function with information about the cell groupings, the biological samples, and the variable we will be using for consensus network analysis (sex in this case).</p>
+<p>We can also run consensus network analysis using pseudobulk data. If
+you are not already familiar<br>
+with consensus co-expression network analysis, please visit our <a href="consensus_wgcna.html">other tutorial page</a> describing it in
+more detail. Here we will use all cell types again, and we will run the
+consensus network analysis with biological sex as the variable of
+interest. When we run <code>ConstructPseudobulk</code>, we have to
+provide the function with information about the cell groupings, the
+biological samples, and the variable we will be using for consensus
+network analysis (sex in this case).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up a new wgcna experiment for the consensus analysis</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
@@ -317,15 +381,29 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cpm</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "ASC:C1:0" "ASC:C3:0" "ASC:C5:0" "ASC:C6:0" "ASC:C7:0" "ASC:C8:0"</code></pre>
-<p>The rownames of the expression matrix denote the different pseudobulk replicates. By default they are named with the <code>group.by</code> variable, the <code>replicate_col</code> variable, and the <code>label_col</code> variable.</p>
-<p>For consensus network analysis, we need to provide a list of gene expression matrices for each group of interest (male and female in this case), but <code>ConstructPseudobulk</code> only returns a single matrix. We will next use <code>SetMultiExpr</code> to properly format the <code>cpm</code> matrix. Importantly, we will provide <code>SetMultiExpr</code> with the <code>multi.group.by</code> parameter telling it how to split apart the matrix for the consensus network analysis, and this group should be the same as what you chose for <code>label_col</code> in the <code>ConstructPseudobulk</code> function.</p>
+<p>The rownames of the expression matrix denote the different pseudobulk
+replicates. By default they are named with the <code>group.by</code>
+variable, the <code>replicate_col</code> variable, and the
+<code>label_col</code> variable.</p>
+<p>For consensus network analysis, we need to provide a list of gene
+expression matrices for each group of interest (male and female in this
+case), but <code>ConstructPseudobulk</code> only returns a single
+matrix. We will next use <code>SetMultiExpr</code> to properly format
+the <code>cpm</code> matrix. Importantly, we will provide
+<code>SetMultiExpr</code> with the <code>multi.group.by</code> parameter
+telling it how to split apart the matrix for the consensus network
+analysis, and this group should be the same as what you chose for
+<code>label_col</code> in the <code>ConstructPseudobulk</code>
+function.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMultiExpr.html">SetMultiExpr</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  multi.group.by<span class="op">=</span><span class="st">'msex'</span>,</span>
 <span>  mat <span class="op">=</span> <span class="va">cpm</span> <span class="co"># provide the normalized pseudobulk matrix</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>For consensus network analysis, we need to perform the soft power threshold testing for each group, so next we use <code>TestSoftPowersConsensus</code>.</p>
+<p>For consensus network analysis, we need to perform the soft power
+threshold testing for each group, so next we use
+<code>TestSoftPowersConsensus</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowersConsensus.html">TestSoftPowersConsensus</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
@@ -341,7 +419,8 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/pseudobulk/pseudobulk_consensus_softpowers.png" width="600" height="600"></p>
-<p>We now proceed with the network construction, and we ensure to set <code>consensus=TRUE</code>.</p>
+<p>We now proceed with the network construction, and we ensure to set
+<code>consensus=TRUE</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -354,7 +433,9 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span><span class="co"># plot the dendrogram</span></span>
 <span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'pseudobulk consensus dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/pseudobulk/dendro_pseudobulk_consensus.png" width="900" height="600"></p>
-<p>Finally we will compute the MEs and kMEs, and visualize the expression level of each of the 54 modules in the 6 major cell types.</p>
+<p>Finally we will compute the MEs and kMEs, and visualize the
+expression level of each of the 54 modules in the 6 major cell
+types.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># compute the MEs and kMEs</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -382,7 +463,9 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/pseudobulk/dotplot_consensus_pseudobulk.png" width="900" height="600"></p>
-<p>The tutorial ends here but the pseudobulk consensus modules can be further explored using our <a href="hdWGCNA.html">other tutorials</a>.</p>
+<p>The tutorial ends here but the pseudobulk consensus modules can be
+further explored using our <a href="hdWGCNA.html">other
+tutorials</a>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -395,7 +478,7 @@ with consensus co-expression network analysis, please visit our <a href="consens
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

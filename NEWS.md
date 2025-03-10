@@ -1,6 +1,15 @@
-# hdWGCNA 0.4.03 (2025-02-21)
+# hdWGCNA 0.4.05 (2025-03-10)
 ## Added
 - None
+
+## Changes
+- Fixed compatibility issue causing an error in `ModuleEigengenes` when using `SCTransform` datasets in `Seurat v5`.
+
+
+# hdWGCNA 0.4.04 (2025-02-21)
+## Added
+- None
+
 ## Changes
 - Updated `MotifScan` to handle cases where one gene name corresponds to multiple motifs.
 - Updated `ConstructTFNetwork` for compatible with multiple versions of `xgboost`.

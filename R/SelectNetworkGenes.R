@@ -22,7 +22,8 @@
 #' @export
 SelectNetworkGenes <- function(
   seurat_obj,
-  gene_select="variable", fraction=0.05,
+  gene_select="variable", 
+  fraction=0.05,
   group.by=NULL, # should be a column in the Seurat object, eg clusters
   gene_list=NULL,
   assay = NULL,

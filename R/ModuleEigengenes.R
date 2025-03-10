@@ -38,16 +38,14 @@ ComputeModuleEigengene <- function(
 
   # get the expression matrix:
   if(CheckSeurat5()){
-    X <- SeuratObject::LayerData(seurat_obj, layer='counts', assay=assay)[cur_genes,]
     X_dat <- SeuratObject::LayerData(seurat_obj, layer='data', assay=assay)[cur_genes,]
   } else{
-    X <- Seurat::GetAssayData(seurat_obj, slot='counts', assay=assay)[cur_genes,]
     X_dat <- Seurat::GetAssayData(seurat_obj, slot='data', assay=assay)[cur_genes,]
   }
 
   # create seurat obj with just these genes
-  cur_seurat <- CreateSeuratObject(X, assay = assay, meta.data = seurat_obj@meta.data)
-  
+  cur_seurat <- CreateSeuratObject(X_dat, assay = assay, meta.data = seurat_obj@meta.data)
+
   if(CheckSeurat5()){
     result <- try(cur_seurat <- SetAssayData(cur_seurat, layer='data', new.data=X_dat, assay=assay), silent=TRUE)
     if("Seurat" %in% class(result)){

@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Alternative metacell algorithms">
 <meta name="description" content="Tutorial for performing co-expression network analysis using alternative metacell aggregation algorithms.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,323 +104,353 @@
 
     
     
-<p>In this tutorial, we demonstrate an advanced analysis showing how to use alternative metacell aggregation algorithms for co-expression network analysis. Here we will identify metacells using <a href="https://github.com/dpeerlab/SEACells" class="external-link">SEACells</a> and <a href="https://github.com/tanaylab/metacells" class="external-link">Metacell2</a> (MC2) using the CD34+ hematopoietic stem and progenitor stem cells dataset provided with SEACells. Both SEACells and MC2 are Python packages, so they are not directly interoperable with hdWGCNA and are not formally included as part of the hdWGCNA package. Thus, in this tutorial we will follow the recommended workflows for SEACells and MC2 in Python, then export the resulting data so they can be loaded into R.</p>
-<p>Before getting started with this tutorial, please install SEACells and MC2 using the github links above. I was able to create a conda environment for SEACells as specified in their github, and then install MC2 within that environment.</p>
-<p>We can download the practice dataset provided with SEACells for this tutorial:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://dp-lab-data-public.s3.amazonaws.com/SEACells-multiome/cd34_multiome_rna.h5ad <span class="at">-O</span> cd34_multiome_rna.h5ad</span></code></pre></div>
+<p>In this tutorial, we demonstrate an advanced analysis showing how to
+use alternative metacell aggregation algorithms for co-expression
+network analysis. Here we will identify metacells using <a href="https://github.com/dpeerlab/SEACells" class="external-link">SEACells</a> and <a href="https://github.com/tanaylab/metacells" class="external-link">Metacell2</a> (MC2) using
+the CD34+ hematopoietic stem and progenitor stem cells dataset provided
+with SEACells. Both SEACells and MC2 are Python packages, so they are
+not directly interoperable with hdWGCNA and are not formally included as
+part of the hdWGCNA package. Thus, in this tutorial we will follow the
+recommended workflows for SEACells and MC2 in Python, then export the
+resulting data so they can be loaded into R.</p>
+<p>Before getting started with this tutorial, please install SEACells
+and MC2 using the github links above. I was able to create a conda
+environment for SEACells as specified in their github, and then install
+MC2 within that environment.</p>
+<p>We can download the practice dataset provided with SEACells for this
+tutorial:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">wget</span> https://dp-lab-data-public.s3.amazonaws.com/SEACells-multiome/cd34_multiome_rna.h5ad <span class="at">-O</span> cd34_multiome_rna.h5ad</span></code></pre></div>
 <div class="section level2">
 <h2 id="constructing-metacells-with-seacells">Constructing metacells with SEACells<a class="anchor" aria-label="anchor" href="#constructing-metacells-with-seacells"></a>
 </h2>
-<p>In this section, we follow the recommended workflow for constructing metacells with SEACells. Here we only show the code, but you may wish to consult the <a href="https://github.com/dpeerlab/SEACells/blob/main/notebooks/SEACell_computation.ipynb" class="external-link">tutorial from the SEACells github page</a> for more information.</p>
-<p><strong><em>Note</em></strong> I tried to run this tutorial on a larger dataset of 60k cells and 30k genes, but SEACells didn’t complete running after several hours. Thus, your mileage may vary depending on your input dataset, and that issue is essentially the reason why this entire tutorial is done using the SEACells hematopoietic stem cell dataset.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># following this tutorial: https://github.com/dpeerlab/SEACells/blob/main/notebooks/SEACell_computation.ipynb</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scanpy <span class="im">as</span> sc</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> SEACells</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> io</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># load the dataset downloaded above into Python</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>adata <span class="op">=</span> sc.read_h5ad(<span class="st">'cd34_multiome_rna.h5ad'</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># retain the unprocessed UMI counts matrix in the .raw slot</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>raw_ad <span class="op">=</span> sc.AnnData(adata.X)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>raw_ad.obs_names, raw_ad.var_names <span class="op">=</span> adata.obs_names, adata.var_names</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>adata.raw <span class="op">=</span> raw_ad</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># process data with SCANPY</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># note that we don't scale the data matrix before PCA. this is how</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># they do it in the SEACells tutorial so we do it that way here.</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>sc.pp.normalize_per_cell(adata)</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>sc.pp.log1p(adata)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>sc.pp.highly_variable_genes(adata, n_top_genes<span class="op">=</span><span class="dv">1500</span>)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>sc.tl.pca(adata, n_comps<span class="op">=</span><span class="dv">50</span>, use_highly_variable<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">##################################################################################</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Running SEACells</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">##################################################################################</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co"># they recommend one metacell for every 75 real cells</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>n_SEACells <span class="op">=</span> <span class="bu">int</span>(np.floor(adata.obs.shape[<span class="dv">0</span>] <span class="op">/</span> <span class="dv">75</span>))</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>build_kernel_on <span class="op">=</span> <span class="st">'X_pca'</span> <span class="co"># key in ad.obsm to use for computing metacells</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># This would be replaced by 'X_svd' for ATAC data</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">## Additional parameters</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>n_waypoint_eigs <span class="op">=</span> <span class="dv">10</span> <span class="co"># Number of eigenvalues to consider when initializing metacells</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>waypoint_proportion <span class="op">=</span> <span class="fl">0.9</span> <span class="co"># Proportion of metacells to initialize using waypoint analysis,</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># the remainder of cells are selected by greedy selection</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co"># set up the model</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> SEACells.core.SEACells(adata,</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>                  build_kernel_on<span class="op">=</span>build_kernel_on,</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>                  n_SEACells<span class="op">=</span>n_SEACells,</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>                  n_waypoint_eigs<span class="op">=</span>n_waypoint_eigs,</span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>                  waypt_proportion<span class="op">=</span>waypoint_proportion,</span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>                  convergence_epsilon <span class="op">=</span> <span class="fl">1e-5</span>)</span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize archetypes</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>model.initialize_archetypes()</span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="co"># fit the model</span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>model.fit(n_iter<span class="op">=</span><span class="dv">20</span>)</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="co"># create aggregated metacell expression dataset</span></span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>SEACell_ad <span class="op">=</span> SEACells.core.summarize_by_SEACell(adata, SEACells_label<span class="op">=</span><span class="st">'SEACell'</span>, summarize_layer<span class="op">=</span><span class="st">'raw'</span>)</span></code></pre></div>
-<p>Next, we need to write the data matrices to disk so we can read them into R. There are several different approaches to convert directly between <code>.h5ad</code> and <code>Seurat</code> formats, but I have personally run into a lot of unresolved bugs with these approaches (such as <a href="https://github.com/mojaveazure/seurat-disk" class="external-link">SeuratDisk</a>) so exporting the data using <code>scipy</code> and <code>pandas</code> is more reliable, at least in my experience.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># write the h5ad files in case we want to load them into Python again</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>adata.write_h5ad(<span class="st">'data/tutorial_singlecell.h5ad'</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>SEACell_ad.write_h5ad(<span class="st">'data/tutorial_seacells.h5ad'</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save components of single-cell dataset</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># write obs table</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>data_dir <span class="op">=</span> <span class="st">'data/'</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">'UMAP_1'</span>] <span class="op">=</span> adata.obsm[<span class="st">'X_umap'</span>][:,<span class="dv">0</span>]</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">'UMAP_2'</span>] <span class="op">=</span> adata.obsm[<span class="st">'X_umap'</span>][:,<span class="dv">1</span>]</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>adata.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># write var table:</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>adata.var.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_var.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> adata.raw.X</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix.transpose(X)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co"># write the PCA</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(adata.obsm[<span class="st">'X_pca'</span>]).to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_pca.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Save components of SEACells dataset</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co"># write obs table</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>SEACell_ad.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_seacells_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> SEACell_ad.X</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix.transpose(X)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_seacells.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span></code></pre></div>
-<p>If you just want to run SEACells and not MC2, you can skip the next section.</p>
+<p>In this section, we follow the recommended workflow for constructing
+metacells with SEACells. Here we only show the code, but you may wish to
+consult the <a href="https://github.com/dpeerlab/SEACells/blob/main/notebooks/SEACell_computation.ipynb" class="external-link">tutorial
+from the SEACells github page</a> for more information.</p>
+<p><strong><em>Note</em></strong> I tried to run this tutorial on a
+larger dataset of 60k cells and 30k genes, but SEACells didn’t complete
+running after several hours. Thus, your mileage may vary depending on
+your input dataset, and that issue is essentially the reason why this
+entire tutorial is done using the SEACells hematopoietic stem cell
+dataset.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># following this tutorial: https://github.com/dpeerlab/SEACells/blob/main/notebooks/SEACell_computation.ipynb</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="im">import</span> scanpy <span class="im">as</span> sc</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="im">import</span> SEACells</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="im">import</span> scipy</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> io</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># load the dataset downloaded above into Python</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>adata <span class="op">=</span> sc.read_h5ad(<span class="st">'cd34_multiome_rna.h5ad'</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co"># retain the unprocessed UMI counts matrix in the .raw slot</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>raw_ad <span class="op">=</span> sc.AnnData(adata.X)</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>raw_ad.obs_names, raw_ad.var_names <span class="op">=</span> adata.obs_names, adata.var_names</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>adata.raw <span class="op">=</span> raw_ad</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co"># process data with SCANPY</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co"># note that we don't scale the data matrix before PCA. this is how</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co"># they do it in the SEACells tutorial so we do it that way here.</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>sc.pp.normalize_per_cell(adata)</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>sc.pp.log1p(adata)</span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>sc.pp.highly_variable_genes(adata, n_top_genes<span class="op">=</span><span class="dv">1500</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>sc.tl.pca(adata, n_comps<span class="op">=</span><span class="dv">50</span>, use_highly_variable<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">##################################################################################</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co"># Running SEACells</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">##################################################################################</span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co"># they recommend one metacell for every 75 real cells</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>n_SEACells <span class="op">=</span> <span class="bu">int</span>(np.floor(adata.obs.shape[<span class="dv">0</span>] <span class="op">/</span> <span class="dv">75</span>))</span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a>build_kernel_on <span class="op">=</span> <span class="st">'X_pca'</span> <span class="co"># key in ad.obsm to use for computing metacells</span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a>                          <span class="co"># This would be replaced by 'X_svd' for ATAC data</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">## Additional parameters</span></span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a>n_waypoint_eigs <span class="op">=</span> <span class="dv">10</span> <span class="co"># Number of eigenvalues to consider when initializing metacells</span></span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a>waypoint_proportion <span class="op">=</span> <span class="fl">0.9</span> <span class="co"># Proportion of metacells to initialize using waypoint analysis,</span></span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a>                        <span class="co"># the remainder of cells are selected by greedy selection</span></span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a><span class="co"># set up the model</span></span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a>model <span class="op">=</span> SEACells.core.SEACells(adata,</span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a>                  build_kernel_on<span class="op">=</span>build_kernel_on,</span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a>                  n_SEACells<span class="op">=</span>n_SEACells,</span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a>                  n_waypoint_eigs<span class="op">=</span>n_waypoint_eigs,</span>
+<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a>                  waypt_proportion<span class="op">=</span>waypoint_proportion,</span>
+<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a>                  convergence_epsilon <span class="op">=</span> <span class="fl">1e-5</span>)</span>
+<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a><span class="co"># Initialize archetypes</span></span>
+<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a>model.initialize_archetypes()</span>
+<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a></span>
+<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a><span class="co"># fit the model</span></span>
+<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a>model.fit(n_iter<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb2-58"><a href="#cb2-58" tabindex="-1"></a></span>
+<span id="cb2-59"><a href="#cb2-59" tabindex="-1"></a><span class="co"># create aggregated metacell expression dataset</span></span>
+<span id="cb2-60"><a href="#cb2-60" tabindex="-1"></a>SEACell_ad <span class="op">=</span> SEACells.core.summarize_by_SEACell(adata, SEACells_label<span class="op">=</span><span class="st">'SEACell'</span>, summarize_layer<span class="op">=</span><span class="st">'raw'</span>)</span></code></pre></div>
+<p>Next, we need to write the data matrices to disk so we can read them
+into R. There are several different approaches to convert directly
+between <code>.h5ad</code> and <code>Seurat</code> formats, but I have
+personally run into a lot of unresolved bugs with these approaches (such
+as <a href="https://github.com/mojaveazure/seurat-disk" class="external-link">SeuratDisk</a>)
+so exporting the data using <code>scipy</code> and <code>pandas</code>
+is more reliable, at least in my experience.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># write the h5ad files in case we want to load them into Python again</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>adata.write_h5ad(<span class="st">'data/tutorial_singlecell.h5ad'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>SEACell_ad.write_h5ad(<span class="st">'data/tutorial_seacells.h5ad'</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># Save components of single-cell dataset</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co"># write obs table</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>data_dir <span class="op">=</span> <span class="st">'data/'</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>adata.obs[<span class="st">'UMAP_1'</span>] <span class="op">=</span> adata.obsm[<span class="st">'X_umap'</span>][:,<span class="dv">0</span>]</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>adata.obs[<span class="st">'UMAP_2'</span>] <span class="op">=</span> adata.obsm[<span class="st">'X_umap'</span>][:,<span class="dv">1</span>]</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>adata.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co"># write var table:</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>adata.var.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_var.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>X <span class="op">=</span> adata.raw.X</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix.transpose(X)</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co"># write the PCA</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>pd.DataFrame(adata.obsm[<span class="st">'X_pca'</span>]).to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_singlecell_pca.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co"># Save components of SEACells dataset</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co"># write obs table</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>SEACell_ad.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_seacells_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>X <span class="op">=</span> SEACell_ad.X</span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix.transpose(X)</span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_seacells.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span></code></pre></div>
+<p>If you just want to run SEACells and not MC2, you can skip the next
+section.</p>
 </div>
 <div class="section level2">
 <h2 id="constructing-metacells-with-mc2">Constructing metacells with MC2<a class="anchor" aria-label="anchor" href="#constructing-metacells-with-mc2"></a>
 </h2>
-<p>In this section, we follow the <a href="https://metacells.readthedocs.io/en/latest/Metacells_Vignette.html" class="external-link">recommended workflow for constructing metacells with MC2</a>, using the same dataset that was used for SEACells.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># following this tutorial: https://metacells.readthedocs.io/en/latest/Metacells_Vignette.html</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scanpy <span class="im">as</span> sc</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> SEACells</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> io</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anndata <span class="im">as</span> ad</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> metacells <span class="im">as</span> mc</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.sparse <span class="im">as</span> sp</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sb</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> hypot</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>adata <span class="op">=</span> sc.read_h5ad(<span class="st">'data/cd34_multiome_rna.h5ad'</span>)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># need to run these utilities functions to fix the counts matrix</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> adata.X</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>mc.utilities.typing.sum_duplicates(X)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>mc.utilities.typing.sort_indices(X)</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>adata.X <span class="op">=</span> X</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># set the raw counts matrix</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>raw_ad <span class="op">=</span> sc.AnnData(adata.X)</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>raw_ad.obs_names, raw_ad.var_names <span class="op">=</span> adata.obs_names, adata.var_names</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>adata.raw <span class="op">=</span> raw_ad</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="co"># name of the dataset</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>mc.ut.set_name(adata, <span class="st">'cd34'</span>)</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleaning genes</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>excluded_gene_names <span class="op">=</span> [<span class="st">'IGHMBP2'</span>, <span class="st">'IGLL1'</span>, <span class="st">'IGLL5'</span>, <span class="st">'IGLON5'</span>, <span class="st">'NEAT1'</span>, <span class="st">'TMSB10'</span>, <span class="st">'TMSB4X'</span>]</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>excluded_gene_patterns <span class="op">=</span> [<span class="st">'MT-.*'</span>]</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>mc.pl.analyze_clean_genes(adata,</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>                          excluded_gene_names<span class="op">=</span>excluded_gene_names,</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>                          excluded_gene_patterns<span class="op">=</span>excluded_gene_patterns,</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>                          random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="co"># combine into a clean gene mask</span></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>mc.pl.pick_clean_genes(adata)</span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean cells</span></span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>full <span class="op">=</span> adata</span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>properly_sampled_min_cell_total <span class="op">=</span> <span class="dv">800</span></span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>properly_sampled_max_cell_total <span class="op">=</span> <span class="dv">15000</span></span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>total_umis_of_cells <span class="op">=</span> mc.ut.get_o_numpy(full, name<span class="op">=</span><span class="st">'__x__'</span>, <span class="bu">sum</span><span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>too_small_cells_count <span class="op">=</span> <span class="bu">sum</span>(total_umis_of_cells <span class="op">&lt;</span> properly_sampled_min_cell_total)</span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>too_large_cells_count <span class="op">=</span> <span class="bu">sum</span>(total_umis_of_cells <span class="op">&gt;</span> properly_sampled_max_cell_total)</span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>too_small_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_small_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>too_large_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_large_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with less than %s UMIs"</span></span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>      <span class="op">%</span> (too_small_cells_count,</span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>         too_small_cells_percent,</span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>         properly_sampled_min_cell_total))</span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with more than %s UMIs"</span></span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>      <span class="op">%</span> (too_large_cells_count,</span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>         too_large_cells_percent,</span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>         properly_sampled_max_cell_total))</span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>properly_sampled_max_excluded_genes_fraction <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>excluded_genes_data <span class="op">=</span> mc.tl.filter_data(full, var_masks<span class="op">=</span>[<span class="st">'~clean_gene'</span>])[<span class="dv">0</span>]</span>
-<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>excluded_umis_of_cells <span class="op">=</span> mc.ut.get_o_numpy(excluded_genes_data, name<span class="op">=</span><span class="st">'__x__'</span>, <span class="bu">sum</span><span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>excluded_fraction_of_umis_of_cells <span class="op">=</span> excluded_umis_of_cells <span class="op">/</span> total_umis_of_cells</span>
-<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>too_excluded_cells_count <span class="op">=</span> <span class="bu">sum</span>(excluded_fraction_of_umis_of_cells <span class="op">&gt;</span> properly_sampled_max_excluded_genes_fraction)</span>
-<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>too_excluded_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_excluded_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
-<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with more than %.2f%% excluded gene UMIs"</span></span>
-<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>      <span class="op">%</span> (too_excluded_cells_count,</span>
-<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>         too_excluded_cells_percent,</span>
-<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>         <span class="fl">100.0</span> <span class="op">*</span> properly_sampled_max_excluded_genes_fraction))</span>
-<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>mc.pl.analyze_clean_cells(</span>
-<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>    full,</span>
-<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>    properly_sampled_min_cell_total<span class="op">=</span>properly_sampled_min_cell_total,</span>
-<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a>    properly_sampled_max_cell_total<span class="op">=</span>properly_sampled_max_cell_total,</span>
-<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>    properly_sampled_max_excluded_genes_fraction<span class="op">=</span>properly_sampled_max_excluded_genes_fraction)</span>
-<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>mc.pl.pick_clean_cells(full)</span>
-<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a>clean <span class="op">=</span> mc.pl.extract_clean_data(full)</span>
-<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a><span class="co"># Forbidden genes</span></span>
-<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a>suspect_gene_names <span class="op">=</span> [<span class="st">'PCNA'</span>, <span class="st">'MKI67'</span>, <span class="st">'TOP2A'</span>, <span class="st">'HIST1H1D'</span>,</span>
-<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>                      <span class="st">'FOS'</span>, <span class="st">'JUN'</span>, <span class="st">'HSP90AB1'</span>, <span class="st">'HSPA1A'</span>,</span>
-<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a>                      <span class="st">'ISG15'</span>, <span class="st">'WARS'</span> ]</span>
-<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>suspect_gene_patterns <span class="op">=</span> [ <span class="st">'MCM[0-9]'</span>, <span class="st">'SMC[0-9]'</span>, <span class="st">'IFI.*'</span> ]</span>
-<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>suspect_genes_mask <span class="op">=</span> mc.tl.find_named_genes(clean, names<span class="op">=</span>suspect_gene_names,</span>
-<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a>                                            patterns<span class="op">=</span>suspect_gene_patterns)</span>
-<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a>suspect_gene_names <span class="op">=</span> <span class="bu">sorted</span>(clean.var_names[suspect_genes_mask])</span>
-<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a>mc.pl.relate_genes(clean, random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
-<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="co"># which groups of genes contain sus genes</span></span>
-<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a>module_of_genes <span class="op">=</span> clean.var[<span class="st">'related_genes_module'</span>]</span>
-<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a>suspect_gene_modules <span class="op">=</span> np.unique(module_of_genes[suspect_genes_mask])</span>
-<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>suspect_gene_modules <span class="op">=</span> suspect_gene_modules[suspect_gene_modules <span class="op">&gt;=</span> <span class="dv">0</span>]</span>
-<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(suspect_gene_modules)</span>
-<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>similarity_of_genes <span class="op">=</span> mc.ut.get_vv_frame(clean, <span class="st">'related_genes_similarity'</span>)</span>
-<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> gene_module <span class="kw">in</span> suspect_gene_modules:</span>
-<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>    module_genes_mask <span class="op">=</span> module_of_genes <span class="op">==</span> gene_module</span>
-<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a>    similarity_of_module <span class="op">=</span> similarity_of_genes.loc[module_genes_mask, module_genes_mask]</span>
-<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>    similarity_of_module.index <span class="op">=</span> <span class="op">\</span></span>
-<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>    similarity_of_module.columns <span class="op">=</span> [</span>
-<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>        <span class="st">'(*) '</span> <span class="op">+</span> name <span class="cf">if</span> name <span class="kw">in</span> suspect_gene_names <span class="cf">else</span> name</span>
-<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> name <span class="kw">in</span> similarity_of_module.index</span>
-<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.axes()</span>
-<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>    sb.heatmap(similarity_of_module, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>, xticklabels<span class="op">=</span><span class="va">True</span>, yticklabels<span class="op">=</span><span class="va">True</span>, ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">"YlGnBu"</span>)</span>
-<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'Gene Module </span><span class="sc">{</span>gene_module<span class="sc">}</span><span class="ss">'</span>)</span>
-<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>    plt.savefig(<span class="st">'figures/module_heatmap_</span><span class="sc">{}</span><span class="st">.pdf'</span>.<span class="bu">format</span>(gene_module))</span>
-<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>    plt.clf()</span>
-<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a><span class="co"># genes that are correlated with the known forbidden genes</span></span>
-<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>forbidden_genes_mask <span class="op">=</span> suspect_genes_mask</span>
-<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> gene_module <span class="kw">in</span> [<span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">24</span>, <span class="dv">78</span>, <span class="dv">113</span>, <span class="dv">144</span>, <span class="dv">149</span>]:</span>
-<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>    module_genes_mask <span class="op">=</span> module_of_genes <span class="op">==</span> gene_module</span>
-<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>    forbidden_genes_mask <span class="op">|=</span> module_genes_mask</span>
-<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>forbidden_gene_names <span class="op">=</span> <span class="bu">sorted</span>(clean.var_names[forbidden_genes_mask])</span>
-<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(forbidden_gene_names))</span>
-<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">' '</span>.join(forbidden_gene_names))</span>
-<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a><span class="co"># computing metacells</span></span>
-<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a><span class="co">################################################################################</span></span>
-<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>max_parallel_piles <span class="op">=</span> mc.pl.guess_max_parallel_piles(clean)</span>
-<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(max_parallel_piles)</span>
-<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>mc.pl.set_max_parallel_piles(max_parallel_piles)</span>
-<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> mc.ut.progress_bar():</span>
-<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>    mc.pl.divide_and_conquer_pipeline(clean,</span>
-<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>                                      forbidden_gene_names<span class="op">=</span>forbidden_gene_names,</span>
-<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>                                      <span class="co">#target_metacell_size=...,</span></span>
-<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>                                      random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
-<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>metacells <span class="op">=</span> mc.pl.collect_metacells(clean, name<span class="op">=</span><span class="st">'cd34.metacells'</span>)</span></code></pre></div>
+<p>In this section, we follow the <a href="https://metacells.readthedocs.io/en/latest/Metacells_Vignette.html" class="external-link">recommended
+workflow for constructing metacells with MC2</a>, using the same dataset
+that was used for SEACells.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># following this tutorial: https://metacells.readthedocs.io/en/latest/Metacells_Vignette.html</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="im">import</span> scanpy <span class="im">as</span> sc</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="im">import</span> SEACells</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="im">import</span> scipy</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> io</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="im">import</span> anndata <span class="im">as</span> ad</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="im">import</span> metacells <span class="im">as</span> mc</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="im">import</span> scipy.sparse <span class="im">as</span> sp</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sb</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> hypot</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>adata <span class="op">=</span> sc.read_h5ad(<span class="st">'data/cd34_multiome_rna.h5ad'</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co"># need to run these utilities functions to fix the counts matrix</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>X <span class="op">=</span> adata.X</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>mc.utilities.typing.sum_duplicates(X)</span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>mc.utilities.typing.sort_indices(X)</span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>adata.X <span class="op">=</span> X</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co"># set the raw counts matrix</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>raw_ad <span class="op">=</span> sc.AnnData(adata.X)</span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>raw_ad.obs_names, raw_ad.var_names <span class="op">=</span> adata.obs_names, adata.var_names</span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>adata.raw <span class="op">=</span> raw_ad</span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co"># name of the dataset</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>mc.ut.set_name(adata, <span class="st">'cd34'</span>)</span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co"># Cleaning genes</span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a>excluded_gene_names <span class="op">=</span> [<span class="st">'IGHMBP2'</span>, <span class="st">'IGLL1'</span>, <span class="st">'IGLL5'</span>, <span class="st">'IGLON5'</span>, <span class="st">'NEAT1'</span>, <span class="st">'TMSB10'</span>, <span class="st">'TMSB4X'</span>]</span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a>excluded_gene_patterns <span class="op">=</span> [<span class="st">'MT-.*'</span>]</span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a>mc.pl.analyze_clean_genes(adata,</span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a>                          excluded_gene_names<span class="op">=</span>excluded_gene_names,</span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a>                          excluded_gene_patterns<span class="op">=</span>excluded_gene_patterns,</span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a>                          random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co"># combine into a clean gene mask</span></span>
+<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a>mc.pl.pick_clean_genes(adata)</span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co"># Clean cells</span></span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a></span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a>full <span class="op">=</span> adata</span>
+<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a>properly_sampled_min_cell_total <span class="op">=</span> <span class="dv">800</span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a>properly_sampled_max_cell_total <span class="op">=</span> <span class="dv">15000</span></span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a></span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a>total_umis_of_cells <span class="op">=</span> mc.ut.get_o_numpy(full, name<span class="op">=</span><span class="st">'__x__'</span>, <span class="bu">sum</span><span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a>too_small_cells_count <span class="op">=</span> <span class="bu">sum</span>(total_umis_of_cells <span class="op">&lt;</span> properly_sampled_min_cell_total)</span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a>too_large_cells_count <span class="op">=</span> <span class="bu">sum</span>(total_umis_of_cells <span class="op">&gt;</span> properly_sampled_max_cell_total)</span>
+<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a>too_small_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_small_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
+<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a>too_large_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_large_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
+<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a></span>
+<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with less than %s UMIs"</span></span>
+<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a>      <span class="op">%</span> (too_small_cells_count,</span>
+<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a>         too_small_cells_percent,</span>
+<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a>         properly_sampled_min_cell_total))</span>
+<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with more than %s UMIs"</span></span>
+<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a>      <span class="op">%</span> (too_large_cells_count,</span>
+<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a>         too_large_cells_percent,</span>
+<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a>         properly_sampled_max_cell_total))</span>
+<span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a></span>
+<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a></span>
+<span id="cb4-85"><a href="#cb4-85" tabindex="-1"></a>properly_sampled_max_excluded_genes_fraction <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a></span>
+<span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a>excluded_genes_data <span class="op">=</span> mc.tl.filter_data(full, var_masks<span class="op">=</span>[<span class="st">'~clean_gene'</span>])[<span class="dv">0</span>]</span>
+<span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a>excluded_umis_of_cells <span class="op">=</span> mc.ut.get_o_numpy(excluded_genes_data, name<span class="op">=</span><span class="st">'__x__'</span>, <span class="bu">sum</span><span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-89"><a href="#cb4-89" tabindex="-1"></a>excluded_fraction_of_umis_of_cells <span class="op">=</span> excluded_umis_of_cells <span class="op">/</span> total_umis_of_cells</span>
+<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a></span>
+<span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a>too_excluded_cells_count <span class="op">=</span> <span class="bu">sum</span>(excluded_fraction_of_umis_of_cells <span class="op">&gt;</span> properly_sampled_max_excluded_genes_fraction)</span>
+<span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a></span>
+<span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a>too_excluded_cells_percent <span class="op">=</span> <span class="fl">100.0</span> <span class="op">*</span> too_excluded_cells_count <span class="op">/</span> <span class="bu">len</span>(total_umis_of_cells)</span>
+<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a></span>
+<span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Will exclude %s (%.2f%%) cells with more than %.2f%% excluded gene UMIs"</span></span>
+<span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a>      <span class="op">%</span> (too_excluded_cells_count,</span>
+<span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a>         too_excluded_cells_percent,</span>
+<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a>         <span class="fl">100.0</span> <span class="op">*</span> properly_sampled_max_excluded_genes_fraction))</span>
+<span id="cb4-99"><a href="#cb4-99" tabindex="-1"></a></span>
+<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a></span>
+<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a>mc.pl.analyze_clean_cells(</span>
+<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a>    full,</span>
+<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a>    properly_sampled_min_cell_total<span class="op">=</span>properly_sampled_min_cell_total,</span>
+<span id="cb4-104"><a href="#cb4-104" tabindex="-1"></a>    properly_sampled_max_cell_total<span class="op">=</span>properly_sampled_max_cell_total,</span>
+<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a>    properly_sampled_max_excluded_genes_fraction<span class="op">=</span>properly_sampled_max_excluded_genes_fraction)</span>
+<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a></span>
+<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a></span>
+<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a>mc.pl.pick_clean_cells(full)</span>
+<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a></span>
+<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a>clean <span class="op">=</span> mc.pl.extract_clean_data(full)</span>
+<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a></span>
+<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a></span>
+<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co"># Forbidden genes</span></span>
+<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a></span>
+<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a>suspect_gene_names <span class="op">=</span> [<span class="st">'PCNA'</span>, <span class="st">'MKI67'</span>, <span class="st">'TOP2A'</span>, <span class="st">'HIST1H1D'</span>,</span>
+<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a>                      <span class="st">'FOS'</span>, <span class="st">'JUN'</span>, <span class="st">'HSP90AB1'</span>, <span class="st">'HSPA1A'</span>,</span>
+<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a>                      <span class="st">'ISG15'</span>, <span class="st">'WARS'</span> ]</span>
+<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a>suspect_gene_patterns <span class="op">=</span> [ <span class="st">'MCM[0-9]'</span>, <span class="st">'SMC[0-9]'</span>, <span class="st">'IFI.*'</span> ]</span>
+<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a>suspect_genes_mask <span class="op">=</span> mc.tl.find_named_genes(clean, names<span class="op">=</span>suspect_gene_names,</span>
+<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a>                                            patterns<span class="op">=</span>suspect_gene_patterns)</span>
+<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a>suspect_gene_names <span class="op">=</span> <span class="bu">sorted</span>(clean.var_names[suspect_genes_mask])</span>
+<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a></span>
+<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a></span>
+<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a>mc.pl.relate_genes(clean, random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
+<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a></span>
+<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a><span class="co"># which groups of genes contain sus genes</span></span>
+<span id="cb4-129"><a href="#cb4-129" tabindex="-1"></a>module_of_genes <span class="op">=</span> clean.var[<span class="st">'related_genes_module'</span>]</span>
+<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a>suspect_gene_modules <span class="op">=</span> np.unique(module_of_genes[suspect_genes_mask])</span>
+<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a>suspect_gene_modules <span class="op">=</span> suspect_gene_modules[suspect_gene_modules <span class="op">&gt;=</span> <span class="dv">0</span>]</span>
+<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="bu">print</span>(suspect_gene_modules)</span>
+<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a></span>
+<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a></span>
+<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a>similarity_of_genes <span class="op">=</span> mc.ut.get_vv_frame(clean, <span class="st">'related_genes_similarity'</span>)</span>
+<span id="cb4-136"><a href="#cb4-136" tabindex="-1"></a><span class="cf">for</span> gene_module <span class="kw">in</span> suspect_gene_modules:</span>
+<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a>    module_genes_mask <span class="op">=</span> module_of_genes <span class="op">==</span> gene_module</span>
+<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a>    similarity_of_module <span class="op">=</span> similarity_of_genes.loc[module_genes_mask, module_genes_mask]</span>
+<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a>    similarity_of_module.index <span class="op">=</span> <span class="op">\</span></span>
+<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a>    similarity_of_module.columns <span class="op">=</span> [</span>
+<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a>        <span class="st">'(*) '</span> <span class="op">+</span> name <span class="cf">if</span> name <span class="kw">in</span> suspect_gene_names <span class="cf">else</span> name</span>
+<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a>        <span class="cf">for</span> name <span class="kw">in</span> similarity_of_module.index</span>
+<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a>    ]</span>
+<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a>    ax <span class="op">=</span> plt.axes()</span>
+<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a>    sb.heatmap(similarity_of_module, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>, xticklabels<span class="op">=</span><span class="va">True</span>, yticklabels<span class="op">=</span><span class="va">True</span>, ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">"YlGnBu"</span>)</span>
+<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a>    ax.set_title(<span class="ss">f'Gene Module </span><span class="sc">{</span>gene_module<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a>    plt.savefig(<span class="st">'figures/module_heatmap_</span><span class="sc">{}</span><span class="st">.pdf'</span>.<span class="bu">format</span>(gene_module))</span>
+<span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a>    plt.clf()</span>
+<span id="cb4-149"><a href="#cb4-149" tabindex="-1"></a></span>
+<span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a></span>
+<span id="cb4-151"><a href="#cb4-151" tabindex="-1"></a></span>
+<span id="cb4-152"><a href="#cb4-152" tabindex="-1"></a><span class="co"># genes that are correlated with the known forbidden genes</span></span>
+<span id="cb4-153"><a href="#cb4-153" tabindex="-1"></a>forbidden_genes_mask <span class="op">=</span> suspect_genes_mask</span>
+<span id="cb4-154"><a href="#cb4-154" tabindex="-1"></a><span class="cf">for</span> gene_module <span class="kw">in</span> [<span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">24</span>, <span class="dv">78</span>, <span class="dv">113</span>, <span class="dv">144</span>, <span class="dv">149</span>]:</span>
+<span id="cb4-155"><a href="#cb4-155" tabindex="-1"></a>    module_genes_mask <span class="op">=</span> module_of_genes <span class="op">==</span> gene_module</span>
+<span id="cb4-156"><a href="#cb4-156" tabindex="-1"></a>    forbidden_genes_mask <span class="op">|=</span> module_genes_mask</span>
+<span id="cb4-157"><a href="#cb4-157" tabindex="-1"></a></span>
+<span id="cb4-158"><a href="#cb4-158" tabindex="-1"></a>forbidden_gene_names <span class="op">=</span> <span class="bu">sorted</span>(clean.var_names[forbidden_genes_mask])</span>
+<span id="cb4-159"><a href="#cb4-159" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(forbidden_gene_names))</span>
+<span id="cb4-160"><a href="#cb4-160" tabindex="-1"></a><span class="bu">print</span>(<span class="st">' '</span>.join(forbidden_gene_names))</span>
+<span id="cb4-161"><a href="#cb4-161" tabindex="-1"></a></span>
+<span id="cb4-162"><a href="#cb4-162" tabindex="-1"></a></span>
+<span id="cb4-163"><a href="#cb4-163" tabindex="-1"></a></span>
+<span id="cb4-164"><a href="#cb4-164" tabindex="-1"></a></span>
+<span id="cb4-165"><a href="#cb4-165" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-166"><a href="#cb4-166" tabindex="-1"></a><span class="co"># computing metacells</span></span>
+<span id="cb4-167"><a href="#cb4-167" tabindex="-1"></a><span class="co">################################################################################</span></span>
+<span id="cb4-168"><a href="#cb4-168" tabindex="-1"></a></span>
+<span id="cb4-169"><a href="#cb4-169" tabindex="-1"></a>max_parallel_piles <span class="op">=</span> mc.pl.guess_max_parallel_piles(clean)</span>
+<span id="cb4-170"><a href="#cb4-170" tabindex="-1"></a><span class="bu">print</span>(max_parallel_piles)</span>
+<span id="cb4-171"><a href="#cb4-171" tabindex="-1"></a>mc.pl.set_max_parallel_piles(max_parallel_piles)</span>
+<span id="cb4-172"><a href="#cb4-172" tabindex="-1"></a></span>
+<span id="cb4-173"><a href="#cb4-173" tabindex="-1"></a></span>
+<span id="cb4-174"><a href="#cb4-174" tabindex="-1"></a></span>
+<span id="cb4-175"><a href="#cb4-175" tabindex="-1"></a><span class="cf">with</span> mc.ut.progress_bar():</span>
+<span id="cb4-176"><a href="#cb4-176" tabindex="-1"></a>    mc.pl.divide_and_conquer_pipeline(clean,</span>
+<span id="cb4-177"><a href="#cb4-177" tabindex="-1"></a>                                      forbidden_gene_names<span class="op">=</span>forbidden_gene_names,</span>
+<span id="cb4-178"><a href="#cb4-178" tabindex="-1"></a>                                      <span class="co">#target_metacell_size=...,</span></span>
+<span id="cb4-179"><a href="#cb4-179" tabindex="-1"></a>                                      random_seed<span class="op">=</span><span class="dv">123456</span>)</span>
+<span id="cb4-180"><a href="#cb4-180" tabindex="-1"></a></span>
+<span id="cb4-181"><a href="#cb4-181" tabindex="-1"></a></span>
+<span id="cb4-182"><a href="#cb4-182" tabindex="-1"></a>metacells <span class="op">=</span> mc.pl.collect_metacells(clean, name<span class="op">=</span><span class="st">'cd34.metacells'</span>)</span></code></pre></div>
 <p>Now we can save the results so we can load into R later.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># output dir</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>data_dir <span class="op">=</span> <span class="st">'./'</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># write the h5ad file</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>metacells.write_h5ad(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2.h5ad'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># write obs/var tables</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>metacells.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>metacells.var.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2_var.csv'</span>.<span class="bu">format</span>(data_dir))</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> metacells.X</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix(np.transpose(X).astype(<span class="bu">int</span>))</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># output dir</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>data_dir <span class="op">=</span> <span class="st">'./'</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># write the h5ad file</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>metacells.write_h5ad(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2.h5ad'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co"># write obs/var tables</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>metacells.obs.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2_obs.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>metacells.var.to_csv(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2_var.csv'</span>.<span class="bu">format</span>(data_dir))</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co"># save the sparse matrix for Seurat:</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>X <span class="op">=</span> metacells.X</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>X <span class="op">=</span> scipy.sparse.csr_matrix(np.transpose(X).astype(<span class="bu">int</span>))</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>io.mmwrite(<span class="st">'</span><span class="sc">{}</span><span class="st">/tutorial_MC2.mtx'</span>.<span class="bu">format</span>(data_dir), X)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="load-the-seacells-and-mc2-metacell-datasets-into-r">Load the SEACells and MC2 metacell datasets into R<a class="anchor" aria-label="anchor" href="#load-the-seacells-and-mc2-metacell-datasets-into-r"></a>
 </h2>
-<p>Here we load the results from running SEACells and MC2 into R, and format the data as Seurat objects.</p>
+<p>Here we load the results from running SEACells and MC2 into R, and
+format the data as Seurat objects.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -431,7 +461,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -552,7 +582,9 @@
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h2>
-<p>Now we are ready to perform co-expression network analysis using these metacell datasets. First we need to load the CD34+ HSC dataset.</p>
+<p>Now we are ready to perform co-expression network analysis using
+these metacell datasets. First we need to load the CD34+ HSC
+dataset.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># directory where the data was saved</span></span>
 <span> <span class="va">data_dir</span> <span class="op">&lt;-</span> <span class="st">'./'</span></span>
@@ -562,7 +594,9 @@
 <div class="section level3">
 <h3 id="seacells">SEACells<a class="anchor" aria-label="anchor" href="#seacells"></a>
 </h3>
-<p>Here we perform co-expression network analysis using the SEACells metacells. We can use the function <code>SetMetacellObject</code> to add the SEACells metacell data to the hdWGCNA experiment.</p>
+<p>Here we perform co-expression network analysis using the SEACells
+metacells. We can use the function <code>SetMetacellObject</code> to add
+the SEACells metacell data to the hdWGCNA experiment.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load datasets</span></span>
 <span><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'tutorial_seacells_metacell.rds'</span><span class="op">)</span><span class="op">)</span></span>
@@ -613,7 +647,10 @@
 <div class="section level3">
 <h3 id="mc2">MC2<a class="anchor" aria-label="anchor" href="#mc2"></a>
 </h3>
-<p>Here we perform co-expression network analysis using the MC2 metacells. This is nearly the same as above, but here we add an extra step to ensure that all of the genes selected for WGCNA are in the MC2 metacell object.</p>
+<p>Here we perform co-expression network analysis using the MC2
+metacells. This is nearly the same as above, but here we add an extra
+step to ensure that all of the genes selected for WGCNA are in the MC2
+metacell object.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">'tutorial_MC2_metacell.rds'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -671,7 +708,12 @@
 <div class="section level3">
 <h3 id="hdwgcna">hdWGCNA<a class="anchor" aria-label="anchor" href="#hdwgcna"></a>
 </h3>
-<p>Lastly, we run the hdWGCNA metacell algorithm so we can compare the results of the three different methods. Since MC2 and SEACells don’t aggregate metacells separately by cluster or biological replicate, here we run hdWGCNA in the same manner where metacells are constructed for the whole dataset. This means that some metacells will be a mix of different cell types, which is also the case in SEACells and MC2.</p>
+<p>Lastly, we run the hdWGCNA metacell algorithm so we can compare the
+results of the three different methods. Since MC2 and SEACells don’t
+aggregate metacells separately by cluster or biological replicate, here
+we run hdWGCNA in the same manner where metacells are constructed for
+the whole dataset. This means that some metacells will be a mix of
+different cell types, which is also the case in SEACells and MC2.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up hdWGCNA experiment</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
@@ -732,11 +774,17 @@
 <div class="section level2">
 <h2 id="comparing-co-expression-modules-across-methods">Comparing co-expression modules across methods<a class="anchor" aria-label="anchor" href="#comparing-co-expression-modules-across-methods"></a>
 </h2>
-<p>For this CD34+ HSC dataset, each of the three metacell methods resulted in a set of gene modules, and the module eigengene FeaturePlots look like there is cell-type/lineage specificity of these modules. In this section, we will compare the results of these different analyses to get an idea of what is shared and distinct.</p>
+<p>For this CD34+ HSC dataset, each of the three metacell methods
+resulted in a set of gene modules, and the module eigengene FeaturePlots
+look like there is cell-type/lineage specificity of these modules. In
+this section, we will compare the results of these different analyses to
+get an idea of what is shared and distinct.</p>
 <div class="section level3">
 <h3 id="compare-dendrograms-and-module-assignments">Compare dendrograms and module assignments<a class="anchor" aria-label="anchor" href="#compare-dendrograms-and-module-assignments"></a>
 </h3>
-<p>We can plot the hdWGCNA dendrogram with the gene module color assignments below for all three methods as a high-level comparison of the different approaches.</p>
+<p>We can plot the hdWGCNA dendrogram with the gene module color
+assignments below for all three methods as a high-level comparison of
+the different approaches.</p>
 <details><summary>
 SEACells dendrogram code
 </summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -873,7 +921,7 @@ hdWGCNA dendrogram code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

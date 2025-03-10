@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Integrating co-expression and protein-protein interaction networks">
 <meta name="description" content="Integrating co-expression and protein-protein interaction networks
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,8 +108,22 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Co-expression networks are a useful approach for identifying biological patterns in a transcriptomic dataset in an unsupervised manner. However, interpreting individual co-expression patterns is not always straightforward. What does a strong co-expression between a pair of genes mean? Does gene A regulate gene B? Are they part of the same pathway? Expressed in the same cell type, disease state, timepoint, etc? In this tutorial, we aim to add more interpretability to the co-expression network by integrating it with a <strong>protein-protein interaction (PPI) network</strong>. This <em>advanced tutorial</em> is inspired by some of our previous works in bulk transcriptomics for <a href="https://academic.oup.com/hmg/article/29/17/2899/5892988" class="external-link">human</a> and <a href="https://www.nature.com/articles/s41591-018-0223-3" class="external-link">mouse</a> datasets, but we have updated the code for compatibility with hdWGCNA.</p>
-<p><strong>Important Note:</strong> Before running the code in this tutorial, you must first perform the standard co-expression network analysis and module identification with hdWGCNA, as shown in our <a href="basic_tutorial.html">other tutorial</a>.</p>
+<p>Co-expression networks are a useful approach for identifying
+biological patterns in a transcriptomic dataset in an unsupervised
+manner. However, interpreting individual co-expression patterns is not
+always straightforward. What does a strong co-expression between a pair
+of genes mean? Does gene A regulate gene B? Are they part of the same
+pathway? Expressed in the same cell type, disease state, timepoint, etc?
+In this tutorial, we aim to add more interpretability to the
+co-expression network by integrating it with a <strong>protein-protein
+interaction (PPI) network</strong>. This <em>advanced tutorial</em> is
+inspired by some of our previous works in bulk transcriptomics for <a href="https://academic.oup.com/hmg/article/29/17/2899/5892988" class="external-link">human</a>
+and <a href="https://www.nature.com/articles/s41591-018-0223-3" class="external-link">mouse</a>
+datasets, but we have updated the code for compatibility with
+hdWGCNA.</p>
+<p><strong>Important Note:</strong> Before running the code in this
+tutorial, you must first perform the standard co-expression network
+analysis and module identification with hdWGCNA, as shown in our <a href="basic_tutorial.html">other tutorial</a>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -122,7 +136,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -139,7 +153,8 @@
 <div class="section level3">
 <h3 id="install-additional-packages">Install additional packages<a class="anchor" aria-label="anchor" href="#install-additional-packages"></a>
 </h3>
-<p>For this analysis, we rely on the Bioconductor package <code>STRINGdb</code> to retrieve the PPI data.</p>
+<p>For this analysis, we rely on the Bioconductor package
+<code>STRINGdb</code> to retrieve the PPI data.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install STRINGdb</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">'STRINGdb'</span><span class="op">)</span></span>
@@ -151,25 +166,42 @@
 <div class="section level2">
 <h2 id="integrating-co-expression-and-ppi-networks">Integrating co-expression and PPI networks<a class="anchor" aria-label="anchor" href="#integrating-co-expression-and-ppi-networks"></a>
 </h2>
-<p>Since we already have a co-expression network generated with hdWGCNA, now we need a PPI network. First, we use the R package <code>STRINGdb</code> to set up a PPI network. Here we briefly explain some of the options for initializing the network, but please consult the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/STRINGdb/inst/doc/STRINGdb.pdf" class="external-link">STRINBdb documentation</a> for further details about using this package. In principle, other PPI resources may be used instead of <code>STRINGdb</code>.</p>
+<p>Since we already have a co-expression network generated with hdWGCNA,
+now we need a PPI network. First, we use the R package
+<code>STRINGdb</code> to set up a PPI network. Here we briefly explain
+some of the options for initializing the network, but please consult the
+<a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/STRINGdb/inst/doc/STRINGdb.pdf" class="external-link">STRINBdb
+documentation</a> for further details about using this package. In
+principle, other PPI resources may be used instead of
+<code>STRINGdb</code>.</p>
 <div class="section level3">
 <h3 id="create-the-ppi-igraph-object-">Create the PPI <code>igraph</code> object.<a class="anchor" aria-label="anchor" href="#create-the-ppi-igraph-object-"></a>
 </h3>
-<p>In this section, we represent the PPI network using an <code>igraph</code> object. First, we generate a <code>STRINGdb</code> object using the class constructor <code>STRINGdb$new</code>.</p>
+<p>In this section, we represent the PPI network using an
+<code>igraph</code> object. First, we generate a <code>STRINGdb</code>
+object using the class constructor <code>STRINGdb$new</code>.</p>
 <ul>
 <li>
 <code>version</code>: the STRING version.</li>
 <li>
-<code>species</code>: the species taxonomy ID. Human is 9606, mouse is 10090. For other species, <a href="http://www.ncbi.nlm.nih.gov/taxonomy" class="external-link">check the NCBI taxonomoy</a>.</li>
+<code>species</code>: the species taxonomy ID. Human is 9606, mouse
+is 10090. For other species, <a href="http://www.ncbi.nlm.nih.gov/taxonomy" class="external-link">check the NCBI
+taxonomoy</a>.</li>
 <li>
-<code>score_threshold</code>: the minimum combined interaction score for a PPI to be included in the network.</li>
+<code>score_threshold</code>: the minimum combined interaction score
+for a PPI to be included in the network.</li>
 <li>
-<code>network_type</code>: the type of network interactions to use. STRING uses both <code>functional</code> and <code>physical</code> interaction data to rank PPIs for the <code>full</code> network, but you can choose to just use one or the other if you wish.</li>
+<code>network_type</code>: the type of network interactions to use.
+STRING uses both <code>functional</code> and <code>physical</code>
+interaction data to rank PPIs for the <code>full</code> network, but you
+can choose to just use one or the other if you wish.</li>
 </ul>
-<p>After we initialize the <code>STRINGdb</code> object, we call the function <code>get_graph()</code> to convert it to an <code>igraph</code> object.</p>
+<p>After we initialize the <code>STRINGdb</code> object, we call the
+function <code>get_graph()</code> to convert it to an
+<code>igraph</code> object.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># initialize the stringdb</span></span>
-<span><span class="va">string_db</span> <span class="op">&lt;-</span> <span class="va">STRINGdb</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span> </span>
+<span><span class="va">string_db</span> <span class="op">&lt;-</span> <span class="va"><a href="https://rdrr.io/pkg/STRINGdb/man/STRINGdb-class.html" class="external-link">STRINGdb</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span> </span>
 <span>    version<span class="op">=</span><span class="st">"12.0"</span>, species<span class="op">=</span><span class="fl">9606</span>, </span>
 <span>    score_threshold<span class="op">=</span><span class="fl">200</span>, </span>
 <span>    network_type<span class="op">=</span><span class="st">"full"</span>, </span>
@@ -178,7 +210,9 @@
 <span></span>
 <span><span class="co"># retrieve the full PPI graph as an igraph object</span></span>
 <span><span class="va">ppi</span> <span class="op">&lt;-</span> <span class="va">string_db</span><span class="op">$</span><span class="fu">get_graph</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Now we have <code>ppi</code>, an <code>igraph</code> object containing the full network of PPIs. Let’s quickly check how many protiens (vertices) and how many PPIs (edges) are in this network.</p>
+<p>Now we have <code>ppi</code>, an <code>igraph</code> object
+containing the full network of PPIs. Let’s quickly check how many
+protiens (vertices) and how many PPIs (edges) are in this network.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_ppis</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">ppi</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">n_proteins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">ppi</span><span class="op">)</span><span class="op">)</span></span>
@@ -193,7 +227,13 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">ppi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "9606.ENSP00000000233" "9606.ENSP00000000412" "9606.ENSP00000001008"
 [4] "9606.ENSP00000001146" "9606.ENSP00000002125" "9606.ENSP00000002165"</code></pre>
-<p>Currently, the proteins are named using their Ensembl protein IDs with the species taxonomy ID (9606) appended to the front. In order to integrate the PPI network and the co-expression network, we need a common naming convention. To solve this, we will convert these protein IDs to gene names using <a href="https://www.ensembl.org/info/data/biomart/index.html" class="external-link">Ensembl BioMart</a>. Using BioMart, we generated a table with the following attributes:</p>
+<p>Currently, the proteins are named using their Ensembl protein IDs
+with the species taxonomy ID (9606) appended to the front. In order to
+integrate the PPI network and the co-expression network, we need a
+common naming convention. To solve this, we will convert these protein
+IDs to gene names using <a href="https://www.ensembl.org/info/data/biomart/index.html" class="external-link">Ensembl
+BioMart</a>. Using BioMart, we generated a table with the following
+attributes:</p>
 <ul>
 <li>Gene.stable.ID</li>
 <li>Gene.stable.ID.version</li>
@@ -283,8 +323,13 @@
 </tr>
 </tbody>
 </table>
-<p>Our Seurat object and the co-expression network use gene names, so we will convert the protein names in the PPI network to gene names.</p>
-<p><strong>IMPORTANT NOTE:</strong> This approach is sufficient for the purpose of the tutorial, but ideally we should convert the gene names in the Seurat object to Ensembl Gene IDs, and then match the Ensembl Protein IDs with the Ensembl Gene IDs because Ensembl IDs are more stable/robust than gene names.</p>
+<p>Our Seurat object and the co-expression network use gene names, so we
+will convert the protein names in the PPI network to gene names.</p>
+<p><strong>IMPORTANT NOTE:</strong> This approach is sufficient for the
+purpose of the tutorial, but ideally we should convert the gene names in
+the Seurat object to Ensembl Gene IDs, and then match the Ensembl
+Protein IDs with the Ensembl Gene IDs because Ensembl IDs are more
+stable/robust than gene names.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># remove the Taxonomy ID from the protein names</span></span>
 <span><span class="va">ppi</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/set_vertex_attr.html" class="external-link">set_vertex_attr</a></span><span class="op">(</span></span>
@@ -318,7 +363,10 @@
 <div class="section level3">
 <h3 id="combine-the-co-expression-and-ppi-networks">Combine the co-expression and PPI networks<a class="anchor" aria-label="anchor" href="#combine-the-co-expression-and-ppi-networks"></a>
 </h3>
-<p>Now that we have converted the protein IDs to gene names, we subset the PPI to match the same genes as the co-expression network. We also subset the co-expression network (Topological Overlap Matrix, TOM) to match the PPI.</p>
+<p>Now that we have converted the protein IDs to gene names, we subset
+the PPI to match the same genes as the co-expression network. We also
+subset the co-expression network (Topological Overlap Matrix, TOM) to
+match the PPI.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># keep genes that are in the co-expression network and in the PPI network</span></span>
 <span><span class="va">keep_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -338,12 +386,18 @@
 <span><span class="co"># get the coex network (TOM), </span></span>
 <span><span class="va">TOM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetTOM.html">GetTOM</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span><span class="va">TOM</span> <span class="op">&lt;-</span> <span class="va">TOM</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">ppi_mat</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">ppi_mat</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<p>Finally, we will perform an element-wise multiplication of the co-expression network by the binarized PPI network. This means the co-expression information will be retained only if there is evidence of a PPI for a particular gene pair.</p>
+<p>Finally, we will perform an element-wise multiplication of the
+co-expression network by the binarized PPI network. This means the
+co-expression information will be retained only if there is evidence of
+a PPI for a particular gene pair.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># perform element-wise multiplicaiton of the TOM by the PPIs network </span></span>
 <span><span class="co"># to only retain gene-gene links supported by PPIs</span></span>
 <span><span class="va">TOM_ppi</span> <span class="op">&lt;-</span> <span class="va">TOM</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">ppi_mat</span><span class="op">)</span></span></code></pre></div>
-<p>We can visually compare the original co-expression network with the integrated network using the function <code>ModuleTopologyHeatmap</code>. This function simply plots a heatmap of the network adjacency matrix for a particular module.</p>
+<p>We can visually compare the original co-expression network with the
+integrated network using the function
+<code>ModuleTopologyHeatmap</code>. This function simply plots a heatmap
+of the network adjacency matrix for a particular module.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get modules and from the seurat obj</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -394,14 +448,29 @@
 <center>
 <img src="figures/ppi_network/topology_compare.png" width="1200" height="600">
 </center>
-<p>In this heatmap, we can easily see that many of the gene-gene edges in the co-expression network are missing in the integrated network. This is expected, and it is because the integrated network only contains gene-gene edges where there is evidence of a protein-protein interaction.</p>
+<p>In this heatmap, we can easily see that many of the gene-gene edges
+in the co-expression network are missing in the integrated network. This
+is expected, and it is because the integrated network only contains
+gene-gene edges where there is evidence of a protein-protein
+interaction.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="identifying-hub-genes-in-the-integrated-network">Identifying hub genes in the integrated network<a class="anchor" aria-label="anchor" href="#identifying-hub-genes-in-the-integrated-network"></a>
 </h2>
-<p>Network hub genes are genes with strong connections in a co-expression module, and they are typically interesting candidates for further analysis. However, since we now have a different network only containing gene-gene links with PPI support, the connectivity of the network has changed substntially, and therefore the hub genes have likely changed as well.</p>
-<p>In this section, we calculate the connectivity of each gene in the integrated network for one module, and compare this to the eigengene-based connectivity (kME) which we typically use to identify module hub genes. We will then make a scatter plot comparing these two measures of connectivity for each gene, and we will label the top hub genes with evidence from both the original co-expression network and the integrated network.</p>
+<p>Network hub genes are genes with strong connections in a
+co-expression module, and they are typically interesting candidates for
+further analysis. However, since we now have a different network only
+containing gene-gene links with PPI support, the connectivity of the
+network has changed substntially, and therefore the hub genes have
+likely changed as well.</p>
+<p>In this section, we calculate the connectivity of each gene in the
+integrated network for one module, and compare this to the
+eigengene-based connectivity (kME) which we typically use to identify
+module hub genes. We will then make a scatter plot comparing these two
+measures of connectivity for each gene, and we will label the top hub
+genes with evidence from both the original co-expression network and the
+integrated network.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the list of genes in this module </span></span>
 <span><span class="va">cur_genes</span> <span class="op">&lt;-</span> <span class="va">modules</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">module</span> <span class="op">==</span> <span class="va">cur_mod</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">$</span><span class="va">gene_name</span></span>
@@ -489,12 +558,22 @@
 <center>
 <img src="figures/ppi_network/degree_compare.png" width="1200" height="600">
 </center>
-<p>This plot shows the genes that are considered hub genes for the original co-expression network (bottom right, downwards triangle), in the integrated network (upper left, upwards triangle), and in both networks (upper right, diamonds). Among 25 hub genes for each network type, there are 6 in common. This approach effectively narrows down the genes of interest for a particular module by requiring external support for connectivity based on an orthogonal data source, in this case the <code>STRINGdb</code> PPI network.</p>
+<p>This plot shows the genes that are considered hub genes for the
+original co-expression network (bottom right, downwards triangle), in
+the integrated network (upper left, upwards triangle), and in both
+networks (upper right, diamonds). Among 25 hub genes for each network
+type, there are 6 in common. This approach effectively narrows down the
+genes of interest for a particular module by requiring external support
+for connectivity based on an orthogonal data source, in this case the
+<code>STRINGdb</code> PPI network.</p>
 </div>
 <div class="section level2">
 <h2 id="visualizing-the-integrated-network">Visualizing the integrated network<a class="anchor" aria-label="anchor" href="#visualizing-the-integrated-network"></a>
 </h2>
-<p>Here we use <code>tidygraph</code> and <code>ggraph</code> to visualize the integrated network. This section is similar to our <a href="network_visualizations.html">network visualization tutorial</a>, please consult this tutorial for more information about custom network plots.</p>
+<p>Here we use <code>tidygraph</code> and <code>ggraph</code> to
+visualize the integrated network. This section is similar to our <a href="network_visualizations.html">network visualization tutorial</a>,
+please consult this tutorial for more information about custom network
+plots.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># cast the network from wide to long format</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_TOM_ppi</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -537,7 +616,8 @@
 <center>
 <img src="figures/ppi_network/INH-M9_ppi_graph.png" width="1200" height="600">
 </center>
-<p>We can repeat this process for all modules in the co-expression network.</p>
+<p>We can repeat this process for all modules in the co-expression
+network.</p>
 <details><summary>
 Click to see code
 </summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -628,7 +708,13 @@ Click to see code
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p>Here we have discussed how to provide further support for the gene-gene links in the co-expression network by integrating with a protein-protein interaction network. If you are interested in further exporing specific gene-gene interactions, there are several external packages that can be explored. For example, both <a href="https://github.com/tpq/propr" class="external-link"><code>propr</code></a> and <a href="https://github.com/yelabucsf/scrna-parameter-estimation" class="external-link"><code>memento</code></a> are packages that can perform differential analysis of specific gene pairs.</p>
+<p>Here we have discussed how to provide further support for the
+gene-gene links in the co-expression network by integrating with a
+protein-protein interaction network. If you are interested in further
+exporing specific gene-gene interactions, there are several external
+packages that can be explored. For example, both <a href="https://github.com/tpq/propr" class="external-link"><code>propr</code></a> and <a href="https://github.com/yelabucsf/scrna-parameter-estimation" class="external-link"><code>memento</code></a>
+are packages that can perform differential analysis of specific gene
+pairs.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -641,7 +727,7 @@ Click to see code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

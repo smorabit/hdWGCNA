@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Module customization">
 <meta name="description" content="Tutorial for customizing module colors and module names in hdWGCNA.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,10 @@
 
     
     
-<p>By default, hdWGCNA (and WGCNA) assign each module a unique color, and often modules are referred to by this color. In this tutorial, we show how we can rename the hdWGCNA modules, and assign a new color to the hdWGCNA modules.</p>
+<p>By default, hdWGCNA (and WGCNA) assign each module a unique color,
+and often modules are referred to by this color. In this tutorial, we
+show how we can rename the hdWGCNA modules, and assign a new color to
+the hdWGCNA modules.</p>
 <p>First, we load the required libraries and the dataset.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
@@ -116,7 +119,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># using the cowplot theme for ggplot</span></span>
@@ -130,7 +133,12 @@
 <div class="section level2">
 <h2 id="renaming-hdwgcna-modules">Renaming hdWGCNA modules<a class="anchor" aria-label="anchor" href="#renaming-hdwgcna-modules"></a>
 </h2>
-<p>hdWGCNA includes the <code>ResetModuleNames</code> function, which assigns a new name to each module. The <code>new_name</code> parameter takes a string as the base name for each module, and a number is then appended to this name. The modules will be re-named in the entire hdWGCNA experiment, so all subsequent plots etc will show the updated names. The following code shows how to rename the hdWGCNA modules.</p>
+<p>hdWGCNA includes the <code>ResetModuleNames</code> function, which
+assigns a new name to each module. The <code>new_name</code> parameter
+takes a string as the base name for each module, and a number is then
+appended to this name. The modules will be re-named in the entire
+hdWGCNA experiment, so all subsequent plots etc will show the updated
+names. The following code shows how to rename the hdWGCNA modules.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleNames.html">ResetModuleNames</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -144,7 +152,8 @@
 [6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
 [11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
 [16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
-<p>Alternatively, we can supply a named list to rename selected modules.</p>
+<p>Alternatively, we can supply a named list to rename selected
+modules.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rename_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Renamed-M1"</span> <span class="op">=</span> <span class="st">'Charlie'</span>, <span class="co"># "old_module_name" = "new_module_name"</span></span>
@@ -164,7 +173,8 @@
 [6] "Renamed-M6"  "Renamed-M7"  "Renamed-M8"  "Renamed-M9"  "Renamed-M10"
 [11] "grey"        "Renamed-M11" "Renamed-M12" "Renamed-M13" "Renamed-M14"
 [16] "Renamed-M15" "Renamed-M16" "Renamed-M17" "Renamed-M18"</code></pre>
-<p>Finally, we can supply a character vector with a new name for each module rather than a named list.</p>
+<p>Finally, we can supply a character vector with a new name for each
+module rather than a named list.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># how many non-grey modules are there?</span></span>
 <span><span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
@@ -179,16 +189,27 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">modules</span><span class="op">$</span><span class="va">module</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "1"    "2"    "3"    "4"    "5"    "6"    "7"    "8"    "9"    "10"
 [11] "grey" "11"   "12"   "13"   "14"   "15"   "16"   "17"   "18"</code></pre>
-<p>In the next section, we will re-make some of the hdWGCNA visualizations so we can see that the module names have been updated.</p>
+<p>In the next section, we will re-make some of the hdWGCNA
+visualizations so we can see that the module names have been
+updated.</p>
 </div>
 <div class="section level2">
 <h2 id="re-coloring-hdwgcna-modules">Re-coloring hdWGCNA modules<a class="anchor" aria-label="anchor" href="#re-coloring-hdwgcna-modules"></a>
 </h2>
-<p>Here we demonstrate how to assign new colors to the hdWGCNA modules using the <code>ResetModuleColors</code> function. This function takes a list of new colors to replace the old colors, or a named list in order to change the colors selected modules. The ordering of the colors depends on the factor level of the hdWGCNA modules themselves. Additionally, this function ensures that the “grey moddule”, which contains genes that did not get assigned to a co-expression module, remains grey.</p>
+<p>Here we demonstrate how to assign new colors to the hdWGCNA modules
+using the <code>ResetModuleColors</code> function. This function takes a
+list of new colors to replace the old colors, or a named list in order
+to change the colors selected modules. The ordering of the colors
+depends on the factor level of the hdWGCNA modules themselves.
+Additionally, this function ensures that the “grey moddule”, which
+contains genes that did not get assigned to a co-expression module,
+remains grey.</p>
 <div class="section level3">
 <h3 id="change-the-colors-of-all-modules">Change the colors of all modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-all-modules"></a>
 </h3>
-<p>In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a> package to select a new color scheme for our modules. First, we can make a table to show the original module-color pairings.</p>
+<p>In this example, we use the <a href="https://github.com/BlakeRMills/MetBrewer" class="external-link"><code>MetBrewer</code></a>
+package to select a new color scheme for our modules. First, we can make
+a table to show the original module-color pairings.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the module table</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -225,7 +246,8 @@ grey       grey         grey
 INH-M18 INH-M18      magenta
 INH-M19 INH-M19         pink
 INH-M20 INH-M20    royalblue</code></pre>
-</details><p>Next, we will use <code>ResetModuleColors</code> to change all of the module-color pairings.</p>
+</details><p>Next, we will use <code>ResetModuleColors</code> to change all of the
+module-color pairings.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load MetBrewer color scheme pakckage</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span></span>
@@ -239,11 +261,12 @@ INH-M20 INH-M20    royalblue</code></pre>
 <span><span class="va">n_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_color_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
 <span></span>
 <span><span class="co"># using the "Signac" palette from metbrewer, selecting for the number of modules</span></span>
-<span><span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">new_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MetBrewer/man/met.brewer.html" class="external-link">met.brewer</a></span><span class="op">(</span><span class="st">"Signac"</span>, n<span class="op">=</span><span class="va">n_mods</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># reset the module colors</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ResetModuleColors.html">ResetModuleColors</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="va">new_colors</span><span class="op">)</span></span></code></pre></div>
-<p>Now we will test some of the different visualization functions to check that the colors were successfully modified.</p>
+<p>Now we will test some of the different visualization functions to
+check that the colors were successfully modified.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -273,7 +296,11 @@ Code
 <div class="section level3">
 <h3 id="change-the-colors-of-selected-modules">Change the colors of selected modules<a class="anchor" aria-label="anchor" href="#change-the-colors-of-selected-modules"></a>
 </h3>
-<p>In this example, we will change the colors of only two modules rather than all of them. We need to supply <code>ResetModuleColors</code> with a named list detailing which modules we want to change, and which color to change them to. We will make a FeaturePlot before and after changing the colors to test if they were properly changed.</p>
+<p>In this example, we will change the colors of only two modules rather
+than all of them. We need to supply <code>ResetModuleColors</code> with
+a named list detailing which modules we want to change, and which color
+to change them to. We will make a FeaturePlot before and after changing
+the colors to test if they were properly changed.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># make a featureplot before changing colors</span></span>
 <span><span class="va">pl1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleFeaturePlot.html">ModuleFeaturePlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, module_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'INH-M5'</span>, <span class="st">'INH-M12'</span>, <span class="st">'INH-M16'</span><span class="op">)</span><span class="op">)</span></span>
@@ -288,7 +315,8 @@ Code
 <span><span class="co"># stitch together with patchwork</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pl1</span>, <span class="va">pl2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/customization/selected_featureplot.png" width="700" height="700"></p>
-<p>We successfully changed the color of modules INH-M5 and INH-M12, while leaving all of the other module colors as they were.</p>
+<p>We successfully changed the color of modules INH-M5 and INH-M12,
+while leaving all of the other module colors as they were.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -302,7 +330,7 @@ Code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

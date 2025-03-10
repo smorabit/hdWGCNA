@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Module Trait Correlation">
 <meta name="description" content="Tutorial for identifying relationships between hdWGCNA modules with biological and technical variables.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,9 @@
 
     
     
-<p>In this tutorial, we cover how to relate co-expression modules to biological and technical variables. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">hdWGCNA basics</a>.</p>
+<p>In this tutorial, we cover how to relate co-expression modules to
+biological and technical variables. Before starting this tutorial, make
+sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">hdWGCNA basics</a>.</p>
 <p>First Load the snRNA-seq data and the required libraries:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
@@ -116,7 +118,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># using the cowplot theme for ggplot</span></span>
@@ -127,16 +129,39 @@
 <div class="section level2">
 <h2 id="compute-correlations">Compute correlations<a class="anchor" aria-label="anchor" href="#compute-correlations"></a>
 </h2>
-<p>Here we use the function <code>ModuleTraitCorrelation</code> to correlate selected variables with module eigengenes. This function computes correlations for specified groupings of cells, since we can expect that some variables may be correlated with certain modules in certain cell groups but not in others. There are certain types of variables that can be used for this analysis while others should not be used.</p>
+<p>Here we use the function <code>ModuleTraitCorrelation</code> to
+correlate selected variables with module eigengenes. This function
+computes correlations for specified groupings of cells, since we can
+expect that some variables may be correlated with certain modules in
+certain cell groups but not in others. There are certain types of
+variables that can be used for this analysis while others should not be
+used.</p>
 <p><strong>Variables that can be used</strong></p>
 <ul>
 <li>Numeric variables</li>
-<li>Categorical variables with only 2 categories, such as “control” and “condition”.</li>
-<li>Categorical variables with a sequential relationship. For example, you may have a “disease stage” category ordered by “healthy”, “stage 1”, “stage 2”, “stage 3”, etc. In this case, you must ensure that the variable is stored as a factor and that the levels are set appropriately.</li>
+<li>Categorical variables with only 2 categories, such as “control” and
+“condition”.</li>
+<li>Categorical variables with a sequential relationship. For example,
+you may have a “disease stage” category ordered by “healthy”, “stage 1”,
+“stage 2”, “stage 3”, etc. In this case, you must ensure that the
+variable is stored as a factor and that the levels are set
+appropriately.</li>
 </ul>
 <p><strong>Variables that can not be used</strong></p>
 <ul>
-<li>Categorical variables with more than two categories that are not sequentially linked. For example, suppose you have a dataset consiting of three strains of transgenic mice and one control. Categorical variables must be converted to numeric before running the correlation, so you will end up with a correlation that is not at all biologically meaningful since there’s not a way to order the three different strains in a way that makes sense as a numeric variable. In this case, you should just set up a pairwise correlation between control and each strain separately. We often have a “Sample ID” variable indicating which cell came from which sample, and this is a variable that does not necessarily make sense to order in any particular way, so a variable like this would not be suitable for module-trait correlation analysis.</li>
+<li>Categorical variables with more than two categories that are not
+sequentially linked. For example, suppose you have a dataset consiting
+of three strains of transgenic mice and one control. Categorical
+variables must be converted to numeric before running the correlation,
+so you will end up with a correlation that is not at all biologically
+meaningful since there’s not a way to order the three different strains
+in a way that makes sense as a numeric variable. In this case, you
+should just set up a pairwise correlation between control and each
+strain separately. We often have a “Sample ID” variable indicating which
+cell came from which sample, and this is a variable that does not
+necessarily make sense to order in any particular way, so a variable
+like this would not be suitable for module-trait correlation
+analysis.</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># convert sex to factor</span></span>
@@ -153,7 +178,9 @@
 <span>  traits <span class="op">=</span> <span class="va">cur_traits</span>,</span>
 <span>  group.by<span class="op">=</span><span class="st">'cell_type'</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>For any categorical variables used, this function prints out a warning message to tell the user what order the categories are listed in, just to make sure that it makes sense.</p>
+<p>For any categorical variables used, this function prints out a
+warning message to tell the user what order the categories are listed
+in, just to make sure that it makes sense.</p>
 <details><summary>
 See warning message
 </summary><pre><code>Warning message:
@@ -162,15 +189,20 @@ In ModuleTraitCorrelation(seurat_obj, traits = cur_traits, group.by = "cell_type
 </details><div class="section level3">
 <h3 id="inspecting-the-output">Inspecting the output<a class="anchor" aria-label="anchor" href="#inspecting-the-output"></a>
 </h3>
-<p>We can run the function <code>GetModuleTraitCorrelation</code> to retrieve the output of this function.</p>
+<p>We can run the function <code>GetModuleTraitCorrelation</code> to
+retrieve the output of this function.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the mt-correlation results</span></span>
 <span><span class="va">mt_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleTraitCorrelation.html">GetModuleTraitCorrelation</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mt_cor</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "cor"  "pval" "fdr"</code></pre>
-<p><code>mt_cor</code> is a list containing three items; <code>cor</code> which holds the correlation results, <code>pval</code> which holds the correlation p-values, and <code>fdr</code> which holds the FDR-corrected p-values.</p>
-<p>Each of these items is a list where each element is a dataframe for each of the correlation tests that were performed.</p>
+<p><code>mt_cor</code> is a list containing three items;
+<code>cor</code> which holds the correlation results, <code>pval</code>
+which holds the correlation p-values, and <code>fdr</code> which holds
+the FDR-corrected p-values.</p>
+<p>Each of these items is a list where each element is a dataframe for
+each of the correlation tests that were performed.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mt_cor</span><span class="op">$</span><span class="va">cor</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "all_cells" "INH"       "EX"        "OPC"       "ODC"       "ASC"
@@ -189,7 +221,10 @@ nCount_RNA     -0.192697871 -0.176522750 -0.427046078 -0.41516830 -0.1119312303<
 <div class="section level2">
 <h2 id="plot-correlation-heatmap">Plot Correlation Heatmap<a class="anchor" aria-label="anchor" href="#plot-correlation-heatmap"></a>
 </h2>
-<p>We can plot the results of our correlation analysis using the <code>PlotModuleTraitCorrelation</code> function. This function creates a separate heatmap for each of the correlation matrices, and then assembles them into one plot using patchwork.</p>
+<p>We can plot the results of our correlation analysis using the
+<code>PlotModuleTraitCorrelation</code> function. This function creates
+a separate heatmap for each of the correlation matrices, and then
+assembles them into one plot using patchwork.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotModuleTraitCorrelation.html">PlotModuleTraitCorrelation</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -217,7 +252,7 @@ nCount_RNA     -0.192697871 -0.176522750 -0.427046078 -0.41516830 -0.1119312303<
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

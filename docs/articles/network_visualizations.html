@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Network Visualization">
 <meta name="description" content="Tutorial for visualizing the hdWGCNA networks using igraph.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,17 +109,29 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>In this tutorial, we demonstrate several ways of visualizing the co-expression networks made with hdWGCNA. Before starting this tutorial, make sure that you have constructed the co-expression network as in the <a href="articles/basics_tutorial.html">single-cell tutorial</a> or the <a href="articles/ST_basics.Rmd">spatial transcriptomics</a>. This tutorial covers three main network visualizations functions within hdWGCNA:</p>
+<p>In this tutorial, we demonstrate several ways of visualizing the
+co-expression networks made with hdWGCNA. Before starting this tutorial,
+make sure that you have constructed the co-expression network as in the
+<a href="articles/basics_tutorial.html">single-cell tutorial</a> or the
+<a href="articles/ST_basics.Rmd">spatial transcriptomics</a>. This
+tutorial covers three main network visualizations functions within
+hdWGCNA:</p>
 <ul>
 <li>
-<code>ModuleNetworkPlot</code>, visualizes a separate network plot for each module, showing the top 25 genes by kME.</li>
+<code>ModuleNetworkPlot</code>, visualizes a separate network plot
+for each module, showing the top 25 genes by kME.</li>
 <li>
-<code>HubGeneNetworkPlot</code>, visualizes the network comprisng all modules with a given number of hub genes per module.</li>
+<code>HubGeneNetworkPlot</code>, visualizes the network comprisng
+all modules with a given number of hub genes per module.</li>
 <li>
-<code>ModuleUMAPPlot</code>, visualizes all of the genes in the co-expression simultaneously using the UMAP dimensionality reduction algorithm.</li>
+<code>ModuleUMAPPlot</code>, visualizes all of the genes in the
+co-expression simultaneously using the UMAP dimensionality reduction
+algorithm.</li>
 </ul>
-<p>Finally, we provide guidance for making custom network visualizations using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> packages.</p>
-<p>Before we visualize anything, we first need to load the data and the required libraries.</p>
+<p>Finally, we provide guidance for making custom network visualizations
+using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> packages.</p>
+<p>Before we visualize anything, we first need to load the data and the
+required libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -131,7 +143,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -149,7 +161,11 @@
 <div class="section level2">
 <h2 id="individual-module-network-plots">Individual module network plots<a class="anchor" aria-label="anchor" href="#individual-module-network-plots"></a>
 </h2>
-<p>Here we demonstrate using the ModuleNetworkPlot function to visualize the network underlying the top 25 hub genes for each module. By default, this function creates a new folder called “ModuleNetworks”, and generates a .pdf figure for each module. There are a few parameters that you can adjust for this function:</p>
+<p>Here we demonstrate using the ModuleNetworkPlot function to visualize
+the network underlying the top 25 hub genes for each module. By default,
+this function creates a new folder called “ModuleNetworks”, and
+generates a .pdf figure for each module. There are a few parameters that
+you can adjust for this function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -157,17 +173,27 @@
 <span><span class="op">)</span></span></code></pre></div>
 <p>Here we can see what one of these network plots looks like:</p>
 <p><img src="figures/network_vis/INH-M12.png" width="500" height="500"></p>
-<p>In this network, each node represents a gene, and each edge represents the co-expression relationship between two genes in the network. Each of these module network plots are colored based on the <code>color</code> column in the hdWGCNA module assignment table <code>GetModules(seurat_obj)</code>. The top 10 hub genes by kME are placed in the center of the plot, while the remaining 15 genes are placed in the outer circle.</p>
-<p>Optionally, certain visualization parameters can be changed in this plot:</p>
+<p>In this network, each node represents a gene, and each edge
+represents the co-expression relationship between two genes in the
+network. Each of these module network plots are colored based on the
+<code>color</code> column in the hdWGCNA module assignment table
+<code>GetModules(seurat_obj)</code>. The top 10 hub genes by kME are
+placed in the center of the plot, while the remaining 15 genes are
+placed in the outer circle.</p>
+<p>Optionally, certain visualization parameters can be changed in this
+plot:</p>
 <ul>
 <li>
-<code>edge.alpha</code>: determines the opacity of the network edges</li>
+<code>edge.alpha</code>: determines the opacity of the network
+edges</li>
 <li>
 <code>vertex.size</code>: determines the size of the nodes</li>
 <li>
-<code>vertex.label.cex</code>: determines the font size of the gene label</li>
+<code>vertex.label.cex</code>: determines the font size of the gene
+label</li>
 </ul>
-<p>Here we run this function again with some of the options changed to show more genes:</p>
+<p>Here we run this function again with some of the options changed to
+show more genes:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ModuleNetworkPlot.html">ModuleNetworkPlot</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>, </span>
@@ -183,7 +209,15 @@
 <div class="section level2">
 <h2 id="combined-hub-gene-network-plots">Combined hub gene network plots<a class="anchor" aria-label="anchor" href="#combined-hub-gene-network-plots"></a>
 </h2>
-<p>Here we will make a network plot combining all of the modules together using the <code>HubGeneNetworkPlot</code> function. This function takes the top <em>n</em> hub genes as specified by the user, and other randomly selected genes, and constructs a joint network using the <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing" class="external-link">force-directed graph drawing algorithm</a>. For visual clarity, the number of edges in the network can be downsampled using the <code>edge_prop</code> parameter. In the following example, we visualize the top 3 hub genes and 6 other genes per module.</p>
+<p>Here we will make a network plot combining all of the modules
+together using the <code>HubGeneNetworkPlot</code> function. This
+function takes the top <em>n</em> hub genes as specified by the user,
+and other randomly selected genes, and constructs a joint network using
+the <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing" class="external-link">force-directed
+graph drawing algorithm</a>. For visual clarity, the number of edges in
+the network can be downsampled using the <code>edge_prop</code>
+parameter. In the following example, we visualize the top 3 hub genes
+and 6 other genes per module.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># hubgene network</span></span>
 <span><span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span></span>
@@ -193,10 +227,19 @@
 <span>  mods <span class="op">=</span> <span class="st">'all'</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/network_vis/hub_net.png" width="600" height="600"></p>
-<p>As in the previous network plot, each node represents a gene and each edge represents a co-expression relationship. In this network, we color intramodular edges with the module’s color, and intermodular edges gray. The opacity of edges in this network is scaled by the strength of the co-expression relationship. Additional network layout settings can be passed to the <a href="https://www.rdocumentation.org/packages/igraph/versions/1.2.11/topics/layout_with_fr" class="external-link"><code>layout_with_fr</code></a> function in igraph. The user can also specify <code>return_graph = TRUE</code> to return the igraph object to plot using their own custom code.</p>
+<p>As in the previous network plot, each node represents a gene and each
+edge represents a co-expression relationship. In this network, we color
+intramodular edges with the module’s color, and intermodular edges gray.
+The opacity of edges in this network is scaled by the strength of the
+co-expression relationship. Additional network layout settings can be
+passed to the <a href="https://www.rdocumentation.org/packages/igraph/versions/1.2.11/topics/layout_with_fr" class="external-link"><code>layout_with_fr</code></a>
+function in igraph. The user can also specify
+<code>return_graph = TRUE</code> to return the igraph object to plot
+using their own custom code.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/HubGeneNetworkPlot.html">HubGeneNetworkPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>Here we run <code>HubGeneNetworkPlot</code> again, this time only selecting 5 specific modules:</p>
+<p>Here we run <code>HubGeneNetworkPlot</code> again, this time only
+selecting 5 specific modules:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the list of modules:</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -214,9 +257,24 @@
 <div class="section level2">
 <h2 id="applying-umap-to-co-expression-networks">Applying UMAP to co-expression networks<a class="anchor" aria-label="anchor" href="#applying-umap-to-co-expression-networks"></a>
 </h2>
-<p>Previously we visualized a subset of the co-expression network with an emphasis on the hub genes. Here, we use an alternative approach to visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method for visualizing high-dimensional data in two dimensions, and here we apply UMAP to embed the hdWGCNA network in a low-dimensional manifold.</p>
-<p>hdWGCNA includes the function <code>RunModuleUMAP</code> to run the UMAP algorithm on the hdWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix (TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to only contain the top <em>n</em> hub genes by kME for each module, as specified by the user. Therefore, the organization of each gene in UMAP space is dependent on that gene’s connectivity with the network’s hub genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R package, so additional UMAP parameters for the <code><a href="https://jlmelville.github.io/uwot/reference/umap.html" class="external-link">uwot::umap</a></code> function such as <code>min_dist</code> or <code>spread</code> can be included in <code>RunModuleUMAP</code>.</p>
-<p>The following code demonstrates using the <code>RunModuleUMAP</code> function with 10 hub genes per module:</p>
+<p>Previously we visualized a subset of the co-expression network with
+an emphasis on the hub genes. Here, we use an alternative approach to
+visualize all genes in the co-expression network simultaneously. <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a> is a suitable method
+for visualizing high-dimensional data in two dimensions, and here we
+apply UMAP to embed the hdWGCNA network in a low-dimensional
+manifold.</p>
+<p>hdWGCNA includes the function <code>RunModuleUMAP</code> to run the
+UMAP algorithm on the hdWGCNA <a href="https://doi.org/10.1186/1471-2105-8-22" class="external-link">topological overlap matrix
+(TOM)</a>. For the UMAP analysis, we subset the columns in the TOM to
+only contain the top <em>n</em> hub genes by kME for each module, as
+specified by the user. Therefore, the organization of each gene in UMAP
+space is dependent on that gene’s connectivity with the network’s hub
+genes. This function leverages the UMAP implementation from the <a href="https://github.com/jlmelville/uwot" class="external-link"><code>uwot</code></a> R
+package, so additional UMAP parameters for the <code><a href="https://jlmelville.github.io/uwot/reference/umap.html" class="external-link">uwot::umap</a></code>
+function such as <code>min_dist</code> or <code>spread</code> can be
+included in <code>RunModuleUMAP</code>.</p>
+<p>The following code demonstrates using the <code>RunModuleUMAP</code>
+function with 10 hub genes per module:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -224,7 +282,8 @@
 <span>  n_neighbors<span class="op">=</span><span class="fl">15</span>, <span class="co"># neighbors parameter for UMAP</span></span>
 <span>  min_dist<span class="op">=</span><span class="fl">0.1</span> <span class="co"># min distance between points in UMAP space</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Next we will make a simple visualization of the UMAP using ggplot2:</p>
+<p>Next we will make a simple visualization of the UMAP using
+ggplot2:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the hub gene UMAP table from the seurat object</span></span>
 <span><span class="va">umap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModuleUMAP.html">GetModuleUMAP</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -237,7 +296,12 @@
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap.png" width="600" height="600"></p>
-<p>In this plot, each point represents a single gene. The size of each dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is sufficient to visualize the genes in the module UMAP, but here we are not visualizing the underlying network. We can use the function <code>ModuleUMAPPlot</code> to plot the genes and their co-expression relationships.</p>
+<p>In this plot, each point represents a single gene. The size of each
+dot is scaled by the gene’s kME for it’s assigned module. ggplot2 is
+sufficient to visualize the genes in the module UMAP, but here we are
+not visualizing the underlying network. We can use the function
+<code>ModuleUMAPPlot</code> to plot the genes and their co-expression
+relationships.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -249,13 +313,21 @@
 <span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_igraph.png" width="600" height="600"></p>
-<p>This plot is similar to the one that we made with ggplot2, but we are showing the co-expression network, and labeling 2 hub genes in each module. For visual clarity, the we downsample to keep only 10% of the edges in this network using the <code>edge_prop</code> parameter. We also allow the user to also return the igraph object to make their own custom plots or to perform downstream network analysis:</p>
+<p>This plot is similar to the one that we made with ggplot2, but we are
+showing the co-expression network, and labeling 2 hub genes in each
+module. For visual clarity, the we downsample to keep only 10% of the
+edges in this network using the <code>edge_prop</code> parameter. We
+also allow the user to also return the igraph object to make their own
+custom plots or to perform downstream network analysis:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleUMAPPlot.html">ModuleUMAPPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>,  return_graph<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="varying-the-number-of-hub-genes">Varying the number of hub genes<a class="anchor" aria-label="anchor" href="#varying-the-number-of-hub-genes"></a>
 </h3>
-<p>The number of hub genes that we include in the UMAP calculation influences the downstream visualization. Here we use <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a> to visually compare the UMAPs that are computed with different numbers of hub genes.</p>
+<p>The number of hub genes that we include in the UMAP calculation
+influences the downstream visualization. Here we use <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a> to visually
+compare the UMAPs that are computed with different numbers of hub
+genes.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -300,13 +372,27 @@ Code
 <span></span>
 <span><span class="fu">animate</span><span class="op">(</span><span class="va">p</span>, fps<span class="op">=</span><span class="fl">30</span>, duration<span class="op">=</span><span class="fl">25</span><span class="op">)</span></span></code></pre></div>
 </details><p><img src="figures/network_vis/hub_umap.gif"></p>
-<p>This animation shows each of the UMAPs generated using different numbers of hub genes.</p>
+<p>This animation shows each of the UMAPs generated using different
+numbers of hub genes.</p>
 </div>
 <div class="section level3">
 <h3 id="supervised-umap">Supervised UMAP<a class="anchor" aria-label="anchor" href="#supervised-umap"></a>
 </h3>
-<p>UMAP is often used as an unsupervised approach to project data points into a dimensionally-reduced spaced, but we can also supply UMAP with known labels to perform a supervised analysis. In principal, UMAP can better distinguish between different groups of data points in the embedding if the algorithm is aware of these groupings. Therefore, we allow the user to run a supervised UMAP using the RunModuleUMAP function, where each gene’s module assignment is supplied as the label.</p>
-<p>To perform a supervised UMAP analysis, we set <code>supervised=TRUE</code>, and we can optionally use the <code>target_weight</code> parameter to determine how much influnce the labels will have on the final embedding. A <code>target_weight</code> closer to 0 weights based on the structure of the data while a <code>target_weight</code> closer to 1 weights based on the labels. The following code shows how to run and visualize the supervised UMAP:</p>
+<p>UMAP is often used as an unsupervised approach to project data points
+into a dimensionally-reduced spaced, but we can also supply UMAP with
+known labels to perform a supervised analysis. In principal, UMAP can
+better distinguish between different groups of data points in the
+embedding if the algorithm is aware of these groupings. Therefore, we
+allow the user to run a supervised UMAP using the RunModuleUMAP
+function, where each gene’s module assignment is supplied as the
+label.</p>
+<p>To perform a supervised UMAP analysis, we set
+<code>supervised=TRUE</code>, and we can optionally use the
+<code>target_weight</code> parameter to determine how much influnce the
+labels will have on the final embedding. A <code>target_weight</code>
+closer to 0 weights based on the structure of the data while a
+<code>target_weight</code> closer to 1 weights based on the labels. The
+following code shows how to run and visualize the supervised UMAP:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run supervised UMAP:</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RunModuleUMAP.html">RunModuleUMAP</a></span><span class="op">(</span></span>
@@ -329,7 +415,9 @@ Code
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/network_vis/hubgene_umap_supervise.png" width="600" height="600"></p>
-<p>To demonstrate what the supervised UMAP looks like using different weights for the labels, we can make a different UMAP for several values of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
+<p>To demonstrate what the supervised UMAP looks like using different
+weights for the labels, we can make a different UMAP for several values
+of <code>target_weight</code> and compare the outputs using <a href="https://gganimate.com/" class="external-link"><code>gganimate</code></a>.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -381,12 +469,25 @@ Code
 <div class="section level2">
 <h2 id="customized-network-plots">Customized network plots<a class="anchor" aria-label="anchor" href="#customized-network-plots"></a>
 </h2>
-<p>There are many different packages within R and beyond for making network visualizations aside from the functions that are included in hdWGCNA. Here we provide a guided example of creating a customized network plot using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> R packages. Making a custom network plot to suit your specific needs will likely require writing custom code, so we consider this part an optional advanced topic.</p>
-<p>In this example, our goal is to make a custom network plot showing only the genes that are involved in “nervous system development” based on Gene Ontology. We start with a simple example and we gradually different customization options, which is the typical process of making a customized network plot. In principal this approach can be applied to any custom list of genes.</p>
+<p>There are many different packages within R and beyond for making
+network visualizations aside from the functions that are included in
+hdWGCNA. Here we provide a guided example of creating a customized
+network plot using the <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a> R packages.
+Making a custom network plot to suit your specific needs will likely
+require writing custom code, so we consider this part an optional
+advanced topic.</p>
+<p>In this example, our goal is to make a custom network plot showing
+only the genes that are involved in “nervous system development” based
+on Gene Ontology. We start with a simple example and we gradually
+different customization options, which is the typical process of making
+a customized network plot. In principal this approach can be applied to
+any custom list of genes.</p>
 <div class="section level3">
 <h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h3>
-<p>First, we need to install <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a>. We also need to install <a href="https://bioconductor.org/packages/release/bioc/html/fgsea.html" class="external-link">fgsea</a> in order to load the Gene Ontology lists from the EnrichR website.</p>
+<p>First, we need to install <a href="https://ggraph.data-imaginist.com/" class="external-link">ggraph</a> and <a href="https://tidygraph.data-imaginist.com/" class="external-link">tidygraph</a>. We also need
+to install <a href="https://bioconductor.org/packages/release/bioc/html/fgsea.html" class="external-link">fgsea</a>
+in order to load the Gene Ontology lists from the EnrichR website.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install fgsea:</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">'fgsea'</span><span class="op">)</span></span>
@@ -397,7 +498,11 @@ Code
 <span><span class="co"># load the packages:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidygraph.data-imaginist.com" class="external-link">tidygraph</a></span><span class="op">)</span></span></code></pre></div>
-<p>Next we need to get the genes associated with nervous system development and subset our co-expression network by these genes. <strong>Please follow <a href="https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&amp;libraryName=GO_Biological_Process_2021" class="external-link">this link</a> to download the GO Biological Process 2021 database from the EnrichR website.</strong></p>
+<p>Next we need to get the genes associated with nervous system
+development and subset our co-expression network by these genes.
+<strong>Please follow <a href="https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&amp;libraryName=GO_Biological_Process_2021" class="external-link">this
+link</a> to download the GO Biological Process 2021 database from the
+EnrichR website.</strong></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get modules and TOM from the seurat obj</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -411,7 +516,7 @@ Code
 <span><span class="va">mod_cp</span> <span class="op">&lt;-</span> <span class="va">mod_colors</span><span class="op">$</span><span class="va">color</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mod_cp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">mod_colors</span><span class="op">$</span><span class="va">module</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># load the GO Biological Pathways file (donwloaded from EnrichR website)</span></span>
-<span><span class="va">pathways</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu">gmtPathways</span><span class="op">(</span><span class="st">'GO_Biological_Process_2021.txt'</span><span class="op">)</span></span>
+<span><span class="va">pathways</span> <span class="op">&lt;-</span> <span class="fu">fgsea</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/fgsea/man/gmtPathways.html" class="external-link">gmtPathways</a></span><span class="op">(</span><span class="st">'GO_Biological_Process_2021.txt'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># remove GO Term ID for simplicity:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html" class="external-link">str_replace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pathways</span><span class="op">)</span>, <span class="st">" \\s*\\([^\\)]+\\)"</span>, <span class="st">""</span><span class="op">)</span></span>
@@ -429,7 +534,10 @@ Code
 <div class="section level3">
 <h3 id="basic-network-plot-with-ggraph">Basic network plot with ggraph<a class="anchor" aria-label="anchor" href="#basic-network-plot-with-ggraph"></a>
 </h3>
-<p>We now have a co-expression network which only contains our 136 genes of interest. Next we create a graph object with <code>igraph</code> and <code>tidygraph</code>, and then we make our network plot with <code>ggraph</code>.</p>
+<p>We now have a co-expression network which only contains our 136 genes
+of interest. Next we create a graph object with <code>igraph</code> and
+<code>tidygraph</code>, and then we make our network plot with
+<code>ggraph</code>.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up the graph object with igraph &amp; tidygraph</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_TOM</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -445,14 +553,27 @@ Code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net1.png" width="600" height="600"></p>
-<p>Here we have our first custom network plot showing 136 genes. Each node (dot) represents a gene, and the edges (lines) represent co-expression between two genes. There are a few problems with this plot that make it less meaningful.</p>
+<p>Here we have our first custom network plot showing 136 genes. Each
+node (dot) represents a gene, and the edges (lines) represent
+co-expression between two genes. There are a few problems with this plot
+that make it less meaningful.</p>
 <ul>
-<li>There are too many edges, we are showing all 136*136 co-expression links, so the resulting graph looks like a hairball.</li>
-<li>All of the links have the same thickness, color, and opacity, so we cannot tell which links are stronger or weaker.</li>
-<li>All of the nodes are colored the same, so we cannot tell which come from each module.</li>
-<li>All of the nodes are labeled, so this may be too much information to effectively display at once.</li>
+<li>There are too many edges, we are showing all 136*136 co-expression
+links, so the resulting graph looks like a hairball.</li>
+<li>All of the links have the same thickness, color, and opacity, so we
+cannot tell which links are stronger or weaker.</li>
+<li>All of the nodes are colored the same, so we cannot tell which come
+from each module.</li>
+<li>All of the nodes are labeled, so this may be too much information to
+effectively display at once.</li>
 </ul>
-<p>Let’s try to fix some of these problems. Next we will set the edges opacity (alpha) by the co-expression strength using <code>geom_edge_link</code> and we will color the nodes by each gene’s assigned module using <code>geom_node_point</code>. With <code>igrah</code>, we can use <code>V(graph)</code> to set attributes for the network’s nodes, in order to add the module information to the graph.</p>
+<p>Let’s try to fix some of these problems. Next we will set the edges
+opacity (alpha) by the co-expression strength using
+<code>geom_edge_link</code> and we will color the nodes by each gene’s
+assigned module using <code>geom_node_point</code>. With
+<code>igrah</code>, we can use <code>V(graph)</code> to set attributes
+for the network’s nodes, in order to add the module information to the
+graph.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up the graph object with igraph &amp; tidygraph</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">cur_TOM</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -472,12 +593,20 @@ Code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net2.png" width="600" height="600"></p>
-<p>This plot is a little bit more informative than the last one, however there are still some issues.</p>
+<p>This plot is a little bit more informative than the last one, however
+there are still some issues.</p>
 </div>
 <div class="section level3">
 <h3 id="manipulating-the-network">Manipulating the network<a class="anchor" aria-label="anchor" href="#manipulating-the-network"></a>
 </h3>
-<p>In the previous plot, there are so many edges here that it is still hard to interpret the plot. There are also still too many genes labeled so the plot is very crowded. To solve these problems, we can make some simple manipulations to the graph to make the plots much more interpretable. Next we make a new plot where we reduce the number of edges by keeping only the strongest connections. We will also color the edges based on if the genes are in the same module, and we will only label genes if they are in the top 25 hub genes of each module.</p>
+<p>In the previous plot, there are so many edges here that it is still
+hard to interpret the plot. There are also still too many genes labeled
+so the plot is very crowded. To solve these problems, we can make some
+simple manipulations to the graph to make the plots much more
+interpretable. Next we make a new plot where we reduce the number of
+edges by keeping only the strongest connections. We will also color the
+edges based on if the genes are in the same module, and we will only
+label genes if they are in the top 25 hub genes of each module.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># only keep the upper triangular part of the TOM:</span></span>
 <span><span class="va">cur_TOM</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">cur_TOM</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
@@ -550,7 +679,9 @@ Code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net3.png" width="600" height="600"></p>
-<p>We can also make a similar plot where we only keep edges between genes in the same module instead of just keeping the strongest edges.</p>
+<p>We can also make a similar plot where we only keep edges between
+genes in the same module instead of just keeping the strongest
+edges.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># subset to only keep edges between genes in the same module</span></span>
 <span><span class="va">cur_network</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -580,12 +711,18 @@ Code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net4.png" width="600" height="600"></p>
-<p>With the default settings, it seems that the layout of the nodes in this graph is making a very squished plot, partially because each of the modules are fully disconnected from one another.</p>
+<p>With the default settings, it seems that the layout of the nodes in
+this graph is making a very squished plot, partially because each of the
+modules are fully disconnected from one another.</p>
 </div>
 <div class="section level3">
 <h3 id="specifying-network-layouts">Specifying network layouts<a class="anchor" aria-label="anchor" href="#specifying-network-layouts"></a>
 </h3>
-<p>Under the hood, <code>ggraph</code> determines the 2D layout of the points on the graph. Next we will try some different layouts other than the default. Please consult <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">this documentation page</a> to learn more about <code>ggraph</code> layouts.</p>
+<p>Under the hood, <code>ggraph</code> determines the 2D layout of the
+points on the graph. Next we will try some different layouts other than
+the default. Please consult <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">this
+documentation page</a> to learn more about <code>ggraph</code>
+layouts.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># randomly sample 50% of the edges within the same module</span></span>
 <span><span class="va">cur_network1</span> <span class="op">&lt;-</span> <span class="va">cur_network_full</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -686,11 +823,20 @@ Code
 <span><span class="co"># make a combined plot</span></span>
 <span><span class="op">(</span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span> <span class="op">|</span> <span class="va">p3</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p4</span> <span class="op">|</span> <span class="va">p5</span> <span class="op">|</span> <span class="va">p6</span><span class="op">)</span> </span></code></pre></div>
 <p><img src="figures/network_vis/custom_net5.png" width="800" height="800"></p>
-<p>Here we show a combined plot of six different layouts of the same exact network. We can appreciate how different the results are when using different layout algorithms, and we encourage trying out different layouts which best suit your particular needs. The <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">ggraph documentation page</a> shows many more options for different graph layouts that you can use.</p>
-<p>We can also provide a “custom” layout, which can be any set of 2D coordinates for each of the nodes. Here we show how we can use the co-expression UMAP layout that we computed previously. We also make a few additional modifications.</p>
+<p>Here we show a combined plot of six different layouts of the same
+exact network. We can appreciate how different the results are when
+using different layout algorithms, and we encourage trying out different
+layouts which best suit your particular needs. The <a href="https://ggraph.data-imaginist.com/articles/Layouts.html" class="external-link">ggraph
+documentation page</a> shows many more options for different graph
+layouts that you can use.</p>
+<p>We can also provide a “custom” layout, which can be any set of 2D
+coordinates for each of the nodes. Here we show how we can use the
+co-expression UMAP layout that we computed previously. We also make a
+few additional modifications.</p>
 <ul>
 <li>Make the size of each node scaled by the kME.</li>
-<li>Highlight hub genes by giving them a black outline and plotting them on top.</li>
+<li>Highlight hub genes by giving them a black outline and plotting them
+on top.</li>
 </ul>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the UMAP df and subset by genes that are in our graph</span></span>
@@ -715,10 +861,13 @@ Code
 <span></span>
 <span><span class="va">p</span> </span></code></pre></div>
 <p><img src="figures/network_vis/custom_net_umap.png" width="800" height="800"></p>
-<p>We can easily modify this plot to add a background layer showing all of the other genes in our co-expression network. We will also change the shape of the selected genes to better differentiate them from the background.</p>
+<p>We can easily modify this plot to add a background layer showing all
+of the other genes in our co-expression network. We will also change the
+shape of the selected genes to better differentiate them from the
+background.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html" class="external-link">ggraph</a></span><span class="op">(</span><span class="va">lay</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>inherit.aes<span class="op">=</span><span class="cn">FALSE</span>, data<span class="op">=</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span>, color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>    dpi<span class="op">=</span><span class="fl">500</span></span>
 <span>   <span class="op">)</span> <span class="op">+</span></span>
@@ -731,11 +880,16 @@ Code
 <span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_text.html" class="external-link">geom_node_label</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label<span class="op">=</span><span class="va">hub</span><span class="op">)</span>, repel<span class="op">=</span><span class="cn">TRUE</span>, max.overlaps<span class="op">=</span><span class="cn">Inf</span>, fontface<span class="op">=</span><span class="st">'italic'</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net_umap2.png" width="800" height="800"></p>
-<p>In this plot, we show the hub genes as diamonds, non-hub genes as circles, and all genes not in our pathway of interest in the background.</p>
-<p>Since <code>ggraph</code> is based on <code>ggplot2</code>, we can easily add further customizations. In this final example, we change the gene label colors to match the assigned modules, we change the plot background to black, and we add a title in the upper right corner.</p>
+<p>In this plot, we show the hub genes as diamonds, non-hub genes as
+circles, and all genes not in our pathway of interest in the
+background.</p>
+<p>Since <code>ggraph</code> is based on <code>ggplot2</code>, we can
+easily add further customizations. In this final example, we change the
+gene label colors to match the assigned modules, we change the plot
+background to black, and we add a title in the upper right corner.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html" class="external-link">ggraph</a></span><span class="op">(</span><span class="va">lay</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>inherit.aes<span class="op">=</span><span class="cn">FALSE</span>, data<span class="op">=</span><span class="va">umap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span><span class="op">)</span>, color<span class="op">=</span><span class="va">umap_df</span><span class="op">$</span><span class="va">color</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>    dpi<span class="op">=</span><span class="fl">500</span></span>
 <span>   <span class="op">)</span> <span class="op">+</span></span>
@@ -758,7 +912,9 @@ Code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/network_vis/custom_net_umap3.png" width="800" height="800"></p>
-<p>We encourage users to learn from this example, and to leverage these powerful plotting libraries to create custom network visualizations that suit their particular study.</p>
+<p>We encourage users to learn from this example, and to leverage these
+powerful plotting libraries to create custom network visualizations that
+suit their particular study.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -772,7 +928,7 @@ Code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Consensus network analysis">
 <meta name="description" content="Tutorial for performing consensus co-expression network analysis.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,19 @@
 
     
     
-<p>In this tutorial, we perform <strong>consensus</strong> co-expression network analysis using hdWGCNA. Consensus co-expression network analysis differs from the standard co-expression network analysis workflow by constructing individual networks across distinct datasets, and then computing an integrated co-expression network. This framework can be used to identify networks that are conserved across a variety of biological conditions, and it can also be used as a way to construct a unified network from any number of different datasets. Here, we provide two examples of co-expression network analysis; <strong>1</strong>: consensus network analysis of astrocytes between biological sex in the Zhou <em>et al</em>. snRNA-seq dataset; <strong>2</strong>: cross-species consensus network analysis of astrocytes from mouse and human snRNA-seq datasets.</p>
+<p>In this tutorial, we perform <strong>consensus</strong> co-expression
+network analysis using hdWGCNA. Consensus co-expression network analysis
+differs from the standard co-expression network analysis workflow by
+constructing individual networks across distinct datasets, and then
+computing an integrated co-expression network. This framework can be
+used to identify networks that are conserved across a variety of
+biological conditions, and it can also be used as a way to construct a
+unified network from any number of different datasets. Here, we provide
+two examples of co-expression network analysis; <strong>1</strong>:
+consensus network analysis of astrocytes between biological sex in the
+Zhou <em>et al</em>. snRNA-seq dataset; <strong>2</strong>:
+cross-species consensus network analysis of astrocytes from mouse and
+human snRNA-seq datasets.</p>
 <p>First we load the required R libraries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
@@ -116,7 +128,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># network analysis &amp; visualization package:</span></span>
@@ -128,39 +140,59 @@
 <span><span class="co"># set random seed for reproducibility</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span></code></pre></div>
 <p>Download the tutorial dataset:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span></code></pre></div>
 <details><summary>
 Download not working?
 </summary>
-Please try downloading the file from this <a href="https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing" class="external-link">Google Drive link</a> instead.
+Please try downloading the file from this <a href="https://drive.google.com/drive/folders/1yxolklYrwFB9Snwr2Dp_W2eunBxaol4A?usp=sharing" class="external-link">Google
+Drive link</a> instead.
 </details><div class="section level2">
-<h2 id="example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors">Example 1: Consensus network analysis of astrocytes from male and female donors<a class="anchor" aria-label="anchor" href="#example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors"></a>
+<h2 id="example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors">Example 1: Consensus network analysis of astrocytes from male and
+female donors<a class="anchor" aria-label="anchor" href="#example-1-consensus-network-analysis-of-astrocytes-from-male-and-female-donors"></a>
 </h2>
-<p>In this section, we perform consensus network analysis between male and female donors from the Zhou <em>et al.</em> snRNA-seq dataset. We will also follow the “standard” workflow (not consensus), and compare the resulting gene module assignments.</p>
-<p>First, we setup the seurat object for hdWGCNA and we construct metacells. This part of the workflow is the same as the standard hdWGCNA workflow, <strong>but we must include the relevant metadata for consensus network analysis when running <code>MetacellsByGroups</code></strong>. This Seurat object has a metadata column called <code>msex</code>, which contains a 0 or 1 depending on the sex of the donor where a given cell originated from, so we must include <code>msex</code> in our <code>group.by</code> list within <code>MetacellsByGroups</code> in order to run consensus network analysis.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">'data/Zhou_control.rds'</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">SetupForWGCNA</span>(</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  seurat_obj,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_select =</span> <span class="st">"fraction"</span>,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">fraction =</span> <span class="fl">0.05</span>,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">wgcna_name =</span> <span class="st">'ASC_consensus'</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">MetacellsByGroups</span>(</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">seurat_obj =</span> seurat_obj,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">group.by =</span> <span class="fu">c</span>(<span class="st">"cell_type"</span>, <span class="st">"Sample"</span>, <span class="st">'msex'</span>),</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">ident.group =</span> <span class="st">'cell_type'</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">25</span>,</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_shared =</span> <span class="dv">12</span>,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_cells =</span> <span class="dv">50</span>,</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_metacells =</span> <span class="dv">250</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">reduction =</span> <span class="st">'harmony'</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">NormalizeMetacells</span>(seurat_obj)</span></code></pre></div>
-<p>Next we have to set up the expression dataset for consensus network analysis. In the standard workflow, we use the function <code>SetDatExpr</code> to set up the expression matrix that will be used for network analyis. Instead of <code>SetDatExpr</code>, here we use <code>SetMultiExpr</code> to set up a separate expression matrix for male and female donors. This allows us to perform network analysis individually on these expression matrices.</p>
+<p>In this section, we perform consensus network analysis between male
+and female donors from the Zhou <em>et al.</em> snRNA-seq dataset. We
+will also follow the “standard” workflow (not consensus), and compare
+the resulting gene module assignments.</p>
+<p>First, we setup the seurat object for hdWGCNA and we construct
+metacells. This part of the workflow is the same as the standard hdWGCNA
+workflow, <strong>but we must include the relevant metadata for
+consensus network analysis when running
+<code>MetacellsByGroups</code></strong>. This Seurat object has a
+metadata column called <code>msex</code>, which contains a 0 or 1
+depending on the sex of the donor where a given cell originated from, so
+we must include <code>msex</code> in our <code>group.by</code> list
+within <code>MetacellsByGroups</code> in order to run consensus network
+analysis.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># load the Zhou et al snRNA-seq dataset</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">'data/Zhou_control.rds'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">SetupForWGCNA</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  seurat_obj,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">gene_select =</span> <span class="st">"fraction"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">fraction =</span> <span class="fl">0.05</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">wgcna_name =</span> <span class="st">'ASC_consensus'</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>)</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">MetacellsByGroups</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">seurat_obj =</span> seurat_obj,</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="at">group.by =</span> <span class="fu">c</span>(<span class="st">"cell_type"</span>, <span class="st">"Sample"</span>, <span class="st">'msex'</span>),</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="at">ident.group =</span> <span class="st">'cell_type'</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">25</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="at">max_shared =</span> <span class="dv">12</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="at">min_cells =</span> <span class="dv">50</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  <span class="at">target_metacells =</span> <span class="dv">250</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="at">reduction =</span> <span class="st">'harmony'</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>)</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>seurat_obj <span class="ot">&lt;-</span> <span class="fu">NormalizeMetacells</span>(seurat_obj)</span></code></pre></div>
+<p>Next we have to set up the expression dataset for consensus network
+analysis. In the standard workflow, we use the function
+<code>SetDatExpr</code> to set up the expression matrix that will be
+used for network analyis. Instead of <code>SetDatExpr</code>, here we
+use <code>SetMultiExpr</code> to set up a separate expression matrix for
+male and female donors. This allows us to perform network analysis
+individually on these expression matrices.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetMultiExpr.html">SetMultiExpr</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -169,7 +201,14 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <span>  multi.group.by <span class="op">=</span><span class="st">"msex"</span>,</span>
 <span>  multi_groups <span class="op">=</span> <span class="cn">NULL</span> <span class="co"># this parameter can be used to select a subset of groups in the multi.group.by column</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Now that we have expression matrices for male and female donors, we must identify an appropriate soft power threshold for each of these matrices separately. Instead of the <code>TestSoftPowers</code> function which we use in the standard hdWGCNA workflow, we use <code>TestSoftPowersConsensus</code>, which will perform the test for each of the expression matrices. When we plot the results with <code>PlotSoftPowers</code>, we get a nested list of plots for each dataset, and we can assemble the plots using <code>patchwork</code>.</p>
+<p>Now that we have expression matrices for male and female donors, we
+must identify an appropriate soft power threshold for each of these
+matrices separately. Instead of the <code>TestSoftPowers</code> function
+which we use in the standard hdWGCNA workflow, we use
+<code>TestSoftPowersConsensus</code>, which will perform the test for
+each of the expression matrices. When we plot the results with
+<code>PlotSoftPowers</code>, we get a nested list of plots for each
+dataset, and we can assemble the plots using <code>patchwork</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run soft power test</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowersConsensus.html">TestSoftPowersConsensus</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -186,7 +225,14 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p_list</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/sex_consensus_ASC_softpowers.png" width="800" height="900"></p>
-<p>Now we construct the co-expression network and identify gene modules using the <code>ConstructNetwork</code> function, making sure to specify <code>consensus=TRUE</code>. Indicating <code>consensus=TRUE</code> tells hdWGCNA to construct a separate network for each expression matrix, followed by integrating the networks and identifying gene modules. Depending on the results of <code>TestSoftPowersConsensus</code>, we can supply a different soft power threshold for each dataset.</p>
+<p>Now we construct the co-expression network and identify gene modules
+using the <code>ConstructNetwork</code> function, making sure to specify
+<code>consensus=TRUE</code>. Indicating <code>consensus=TRUE</code>
+tells hdWGCNA to construct a separate network for each expression
+matrix, followed by integrating the networks and identifying gene
+modules. Depending on the results of
+<code>TestSoftPowersConsensus</code>, we can supply a different soft
+power threshold for each dataset.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># build consensus network</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span></span>
@@ -199,7 +245,8 @@ Please try downloading the file from this <a href="https://drive.google.com/driv
 <span><span class="co"># plot the dendogram</span></span>
 <span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'Sex consensus dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/Sex_dendro.png" width="800" height="900"></p>
-<p>We can compare the consensus network results to the standard hdWGCNA workflow.</p>
+<p>We can compare the consensus network results to the standard hdWGCNA
+workflow.</p>
 <details><summary>
 standard hdWGCNA workflow
 </summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -221,7 +268,9 @@ standard hdWGCNA workflow
 <span><span class="co"># plot the dendrogram</span></span>
 <span><span class="fu"><a href="../reference/PlotDendrogram.html">PlotDendrogram</a></span><span class="op">(</span><span class="va">seurat_obj</span>, main<span class="op">=</span><span class="st">'ASC standard Dendrogram'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/ASC_all_dendro.png" width="800" height="900"></p>
-</details><p>We can plot the gene module assignments from the standard workflow under those from the consensus analysis in the same dendrogram plot as a rough comparison.</p>
+</details><p>We can plot the gene module assignments from the standard workflow
+under those from the consensus analysis in the same dendrogram plot as a
+rough comparison.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get both sets of modules</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span>, <span class="st">'ASC_standard'</span><span class="op">)</span></span>
@@ -259,7 +308,11 @@ standard hdWGCNA workflow
 <span>  main <span class="op">=</span> <span class="st">"Sex consensus dendrogram"</span>,</span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/Sex_dendro_compare.png" width="800" height="900"></p>
-<p>We can see that many co-expression modules are identified by both the consensus and standard workflows, but there are also modules that are unique to each workflow. Now we can perform any of the downstream analysis tasks using the consensus network, for example network visualization:</p>
+<p>We can see that many co-expression modules are identified by both the
+consensus and standard workflows, but there are also modules that are
+unique to each workflow. Now we can perform any of the downstream
+analysis tasks using the consensus network, for example network
+visualization:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/reshape" class="external-link">reshape2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
@@ -294,17 +347,30 @@ standard hdWGCNA workflow
 <p><img src="figures/consensus/Sex_consensus_hubgene_umap_igraph.png" width="600" height="900"></p>
 </div>
 <div class="section level2">
-<h2 id="example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples">Example 2: Cross-species consensus network analysis of astrocytes from mouse and human samples<a class="anchor" aria-label="anchor" href="#example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples"></a>
+<h2 id="example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples">Example 2: Cross-species consensus network analysis of astrocytes
+from mouse and human samples<a class="anchor" aria-label="anchor" href="#example-2-cross-species-consensus-network-analysis-of-astrocytes-from-mouse-and-human-samples"></a>
 </h2>
-<p>In this section, we cover a more complex example of consensus network analysis using astrocytes from mouse and human cortex snRNA-seq datasets. The main difference between this section and Example 1 is that here we start from two different Seurat objects, so this section is more applicable for those who wish to perform consensus network analysis from two or more different datasets. For the cross-species analysis, we require a table that maps gene names between the different species, so we can convert the gene names such that they are consistent in both datasets. We provide this table for this analysis, which we obtained from <a href="http://uswest.ensembl.org/biomart/martview/604e1e1ec3cd6317d61fbae53cd6a6f1" class="external-link">BioMart</a>.</p>
+<p>In this section, we cover a more complex example of consensus network
+analysis using astrocytes from mouse and human cortex snRNA-seq
+datasets. The main difference between this section and Example 1 is that
+here we start from two different Seurat objects, so this section is more
+applicable for those who wish to perform consensus network analysis from
+two or more different datasets. For the cross-species analysis, we
+require a table that maps gene names between the different species, so
+we can convert the gene names such that they are consistent in both
+datasets. We provide this table for this analysis, which we obtained
+from <a href="http://uswest.ensembl.org/biomart/martview/604e1e1ec3cd6317d61fbae53cd6a6f1" class="external-link">BioMart</a>.</p>
 <p>First, download the human and mouse datasets.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020_mouse.rds</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/hg38_mm10_orthologs_2021.txt</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020.rds</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/Zhou_2020_mouse.rds</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">wget</span> https://swaruplab.bio.uci.edu/public_data/hg38_mm10_orthologs_2021.txt</span></code></pre></div>
 <div class="section level3">
 <h3 id="formatting-mouse-and-human-datasets">Formatting mouse and human datasets<a class="anchor" aria-label="anchor" href="#formatting-mouse-and-human-datasets"></a>
 </h3>
-<p>Next, we load the data, convert the mouse gene names to human, and construct a merged Seurat object. Note that when using datasets from different sources, metadata columns may be named differently, so be careful to ensure that any relevant metadata is properly renamed.</p>
+<p>Next, we load the data, convert the mouse gene names to human, and
+construct a merged Seurat object. Note that when using datasets from
+different sources, metadata columns may be named differently, so be
+careful to ensure that any relevant metadata is properly renamed.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load mouse &lt;-&gt; human gene name table:</span></span>
 <span><span class="va">hg38_mm10_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"hg38_mm10_orthologs_2021.txt"</span>, sep<span class="op">=</span><span class="st">'\t'</span>, header<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -324,7 +390,9 @@ Show table
 19 ENSG00000198712 ENSMUSG00000064354    mt-Co2    MT-CO2
 21 ENSG00000228253 ENSMUSG00000064356   mt-Atp8   MT-ATP8
 22 ENSG00000198899 ENSMUSG00000064357   mt-Atp6   MT-ATP6</code></pre>
-</details><p>The <code>hg38_mm10_genes</code> table contains a gene ID and gene symbol (name) for mm10 and hg38, which we can use to translate the gene names in the mouse dataset to their human orthologs.</p>
+</details><p>The <code>hg38_mm10_genes</code> table contains a gene ID and gene
+symbol (name) for mm10 and hg38, which we can use to translate the gene
+names in the mouse dataset to their human orthologs.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load seurat objects</span></span>
 <span><span class="va">seurat_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'Zhou_2020_mouse.rds'</span><span class="op">)</span></span>
@@ -374,7 +442,8 @@ Show table
 <span><span class="va">seurat_m</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="st">'mouse'</span></span>
 <span><span class="va">seurat_h</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="st">'human'</span></span>
 <span><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">seurat_m</span>, <span class="va">seurat_h</span><span class="op">)</span></span></code></pre></div>
-<p>We run the Seurat workflow to process this dataset, using Harmony to integrate cells across species.</p>
+<p>We run the Seurat workflow to process this dataset, using Harmony to
+integrate cells across species.</p>
 <details><summary>
 Code
 </summary><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -393,7 +462,9 @@ Code
 <div class="section level3">
 <h3 id="consensus-network-analysis">Consensus network analysis<a class="anchor" aria-label="anchor" href="#consensus-network-analysis"></a>
 </h3>
-<p>Now we have a Seurat object that is ready for consensus network analysis. We perform consensus network analysis with hdWGCNA using a similar approach as in Example 1.</p>
+<p>Now we have a Seurat object that is ready for consensus network
+analysis. We perform consensus network analysis with hdWGCNA using a
+similar approach as in Example 1.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_merged</span>,</span>
@@ -450,7 +521,10 @@ Code
 Soft power plots
 </summary><p><img src="figures/consensus/Species_consensus_ASC_softpowers.png" width="800" height="900"></p>
 </details><p><img src="figures/consensus/cross_species_dendro.png" width="800" height="900"></p>
-<p>We can compare the consensus network results to the standard hdWGCNA workflow. By checking the resulting dendrogram from the standard workflow, it is clearthat much of the underlying co-expression structure is lost.</p>
+<p>We can compare the consensus network results to the standard hdWGCNA
+workflow. By checking the resulting dendrogram from the standard
+workflow, it is clearthat much of the underlying co-expression structure
+is lost.</p>
 <details><summary>
 Standard hdWGCNA workflow
 </summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -503,7 +577,11 @@ Standard hdWGCNA workflow
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/cross_species_dendro_compare.png" width="800" height="900"></p>
-<p>It is clear to see that much of the co-expression structure is missing when using the standard workflow when the dataset contains vast differences coming from the individual species. Once again, we can take the consensus network and perform any of the downstream hdWGCNA analysis steps.</p>
+<p>It is clear to see that much of the co-expression structure is
+missing when using the standard workflow when the dataset contains vast
+differences coming from the individual species. Once again, we can take
+the consensus network and perform any of the downstream hdWGCNA analysis
+steps.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># change the active WGCNA back to the consensus</span></span>
 <span><span class="va">seurat_merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_merged</span>, <span class="st">'ASC_consensus'</span><span class="op">)</span></span>
@@ -533,7 +611,10 @@ Standard hdWGCNA workflow
 <span>  label_hubs<span class="op">=</span><span class="fl">0</span> <span class="co"># how many hub genes to plot per module?</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/consensus/cross-species_hubgene_umap_igraph.png" width="600" height="900"></p>
-<p>In summary, consensus co-expression network analysis is a useful alternative to the standard hdWGCNA workflow for cases where you want to build an integrated co-expression network using different datasets/batches or biological conditions.</p>
+<p>In summary, consensus co-expression network analysis is a useful
+alternative to the standard hdWGCNA workflow for cases where you want to
+build an integrated co-expression network using different
+datasets/batches or biological conditions.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -547,7 +628,7 @@ Standard hdWGCNA workflow
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

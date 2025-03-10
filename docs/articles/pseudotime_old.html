@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Co-expression module dynamics with pseudotime">
 <meta name="description" content="Full Seurat clustering and hdWGCNA analysis tutorial of PacBio MAS-Seq PBMC dataset.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,12 +104,22 @@
 
     
     
-<p>This tutorial covers co-expression network analysis in a dataset with pseudotime information. We will use a dataset of human hematopietic stem cells to identify co-expression modules, perform pseudotime trajectory analysis with <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle3</a>, and study module dynamics throughout the cellular transitions from stem cells to mature cell types. Refer to the Monocle3 documentation for a more thorough explanation of pseudotime analysis, and see the <a href="basic_tutorial.Rmd">hdWGCNA single-cell tutorial</a> for an explanation of the co-expression network analysis steps.</p>
+<p>This tutorial covers co-expression network analysis in a dataset with
+pseudotime information. We will use a dataset of human hematopietic stem
+cells to identify co-expression modules, perform pseudotime trajectory
+analysis with <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle3</a>, and
+study module dynamics throughout the cellular transitions from stem
+cells to mature cell types. Refer to the Monocle3 documentation for a
+more thorough explanation of pseudotime analysis, and see the <a href="basic_tutorial.Rmd">hdWGCNA single-cell tutorial</a> for an
+explanation of the co-expression network analysis steps.</p>
 <div class="section level2">
 <h2 id="download-the-tutorial-data">Download the tutorial data<a class="anchor" aria-label="anchor" href="#download-the-tutorial-data"></a>
 </h2>
-<p>First, download <a href="https://drive.google.com/file/d/1hxOXQo1Qbo1PYvdxcl2lKiwwc-SVOAQF/view?usp=drive_link" class="external-link">the .rds file from this Google Drive link</a> containing the processed hematopoetic stem cell scRNA-seq Seurat object.</p>
-<p>Next, load the dataset into R and the necessary packages for hdWGCNA and Monocle3.</p>
+<p>First, download <a href="https://drive.google.com/file/d/1hxOXQo1Qbo1PYvdxcl2lKiwwc-SVOAQF/view?usp=drive_link" class="external-link">the
+.rds file from this Google Drive link</a> containing the processed
+hematopoetic stem cell scRNA-seq Seurat object.</p>
+<p>Next, load the dataset into R and the necessary packages for hdWGCNA
+and Monocle3.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -120,7 +130,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># using the cowplot theme for ggplot</span></span>
@@ -145,22 +155,24 @@
 <div class="section level2">
 <h2 id="monocle3-pseudotime-analysis">Monocle3 pseudotime analysis<a class="anchor" aria-label="anchor" href="#monocle3-pseudotime-analysis"></a>
 </h2>
-<p>In this section, we use Monocle3 to perform pseudotime trajectory analysis in this dataset. Follow <a href="https://cole-trapnell-lab.github.io/monocle3/docs/installation/" class="external-link">these instructions</a> to install Monocle3.</p>
+<p>In this section, we use Monocle3 to perform pseudotime trajectory
+analysis in this dataset. Follow <a href="https://cole-trapnell-lab.github.io/monocle3/docs/installation/" class="external-link">these
+instructions</a> to install Monocle3.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">monocle3</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SeuratWrappers</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># convert the seurat object to CDS</span></span>
-<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">as.cell_data_set</span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
+<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratWrappers/man/as.cell_data_set.html" class="external-link">as.cell_data_set</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># run the monocle clustering</span></span>
-<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">cluster_cells</span><span class="op">(</span><span class="va">cds</span>, reduction_method<span class="op">=</span><span class="st">'UMAP'</span><span class="op">)</span></span>
+<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/cluster_cells.html" class="external-link">cluster_cells</a></span><span class="op">(</span><span class="va">cds</span>, reduction_method<span class="op">=</span><span class="st">'UMAP'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># learn graph for pseudotime</span></span>
-<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">learn_graph</span><span class="op">(</span><span class="va">cds</span><span class="op">)</span></span>
+<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/learn_graph.html" class="external-link">learn_graph</a></span><span class="op">(</span><span class="va">cds</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># plot the pseudotime graph:</span></span>
-<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">plot_cells</span><span class="op">(</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/plot_cells.html" class="external-link">plot_cells</a></span><span class="op">(</span></span>
 <span>  cds <span class="op">=</span> <span class="va">cds</span>,</span>
 <span>  color_cells_by <span class="op">=</span> <span class="st">"celltype"</span>,</span>
 <span>  show_trajectory_graph <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -168,7 +180,7 @@
 <span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># plot the UMAP partitions from the clustering algorithm</span></span>
-<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">plot_cells</span><span class="op">(</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/plot_cells.html" class="external-link">plot_cells</a></span><span class="op">(</span></span>
 <span>  cds <span class="op">=</span> <span class="va">cds</span>,</span>
 <span>  color_cells_by <span class="op">=</span> <span class="st">"partition"</span>,</span>
 <span>  show_trajectory_graph <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -176,14 +188,20 @@
 <span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="figures/pseudotime/umap_monocle.png" width="900" height="900"></p>
-<p>The Monocle3 <code>learn_graph</code> function builds a principal graph in a dimensionally reduced space of the dataset. Here we can see the principal graph overlaid on the UMAP. The principal graph will serve as the basis of the pseudotime trajectories. Next, we have to select the starting node, or principal node, of the graph as the origin of the pseudotime. We select node <code>Y_26</code> as the prinicipal node since that overlaps with the stem cell population.</p>
+<p>The Monocle3 <code>learn_graph</code> function builds a principal
+graph in a dimensionally reduced space of the dataset. Here we can see
+the principal graph overlaid on the UMAP. The principal graph will serve
+as the basis of the pseudotime trajectories. Next, we have to select the
+starting node, or principal node, of the graph as the origin of the
+pseudotime. We select node <code>Y_26</code> as the prinicipal node
+since that overlaps with the stem cell population.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get principal node &amp; order cells</span></span>
 <span><span class="va">principal_node</span> <span class="op">&lt;-</span> <span class="st">'Y_26'</span></span>
-<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">order_cells</span><span class="op">(</span><span class="va">cds</span>,root_pr_nodes <span class="op">=</span> <span class="va">principal_node</span><span class="op">)</span></span>
+<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/order_cells.html" class="external-link">order_cells</a></span><span class="op">(</span><span class="va">cds</span>,root_pr_nodes <span class="op">=</span> <span class="va">principal_node</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># add pseudotime to seurat object:</span></span>
-<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">pseudotime</span> <span class="op">&lt;-</span> <span class="fu">pseudotime</span><span class="op">(</span><span class="va">cds</span><span class="op">)</span></span>
+<span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">pseudotime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/pseudotime.html" class="external-link">pseudotime</a></span><span class="op">(</span><span class="va">cds</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># separate pseudotime trajectories by the different mature cells</span></span>
 <span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">ery_pseudotime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">celltype</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HSC"</span>, <span class="st">"MEP"</span>, <span class="st">'Ery'</span><span class="op">)</span>, <span class="va">seurat_obj</span><span class="op">$</span><span class="va">pseudotime</span>, <span class="cn">NA</span><span class="op">)</span></span>
@@ -198,28 +216,28 @@ See pseudotime plotting code
 <span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span>, color<span class="op">=</span><span class="va">ery_pseudotime</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradientn</a></span><span class="op">(</span>colors<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">plasma</a></span><span class="op">(</span><span class="fl">256</span><span class="op">)</span>, na.value<span class="op">=</span><span class="st">'grey'</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span>, color<span class="op">=</span><span class="va">mono_pseudotime</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradientn</a></span><span class="op">(</span>colors<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">256</span><span class="op">)</span>, na.value<span class="op">=</span><span class="st">'grey'</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span>, color<span class="op">=</span><span class="va">dc_pseudotime</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradientn</a></span><span class="op">(</span>colors<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">inferno</a></span><span class="op">(</span><span class="fl">256</span><span class="op">)</span>, na.value<span class="op">=</span><span class="st">'grey'</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p4</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">UMAP1</span>, y<span class="op">=</span><span class="va">UMAP2</span>, color<span class="op">=</span><span class="va">clp_pseudotime</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu">rasterise</span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggrastr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggrastr/man/rasterise.html" class="external-link">rasterise</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, dpi<span class="op">=</span><span class="fl">500</span>, scale<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradientn</a></span><span class="op">(</span>colors<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">mako</a></span><span class="op">(</span><span class="fl">256</span><span class="op">)</span>, na.value<span class="op">=</span><span class="st">'grey'</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/umap_theme.html">umap_theme</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -231,7 +249,9 @@ See pseudotime plotting code
 <div class="section level2">
 <h2 id="co-expression-network-analysis">Co-expression network analysis<a class="anchor" aria-label="anchor" href="#co-expression-network-analysis"></a>
 </h2>
-<p>In this section, we perform the essential steps of co-expression network analysis on this dataset. See <a href="basic_tutorial.Rmd">this tutorial</a> for a more detailed explaination of these steps.</p>
+<p>In this section, we perform the essential steps of co-expression
+network analysis on this dataset. See <a href="basic_tutorial.Rmd">this
+tutorial</a> for a more detailed explaination of these steps.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set up the WGCNA experiment in the Seurat object</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
@@ -316,8 +336,16 @@ See DotPlot code
 <div class="section level2">
 <h2 id="module-dynamics">Module dynamics<a class="anchor" aria-label="anchor" href="#module-dynamics"></a>
 </h2>
-<p>In this section we use the hdWGCNA function <code>PlotModuleTrajectory</code> to visualize how the module eigengenes change throughout the pseudotime trajectories for each co-expression module. This function requires you to specify the name of the column in the Seurat object’s meta data where the pseudotime information is stored. Since we split our pseudotime into four different trajectories, first we will plot the ME trajectory dynamics for the erythrocytes.</p>
-<p>Importantly, we note that module dynamics can be studied using different pseudotime inference approaches, we simply chose to run Monocle3 as an example.</p>
+<p>In this section we use the hdWGCNA function
+<code>PlotModuleTrajectory</code> to visualize how the module eigengenes
+change throughout the pseudotime trajectories for each co-expression
+module. This function requires you to specify the name of the column in
+the Seurat object’s meta data where the pseudotime information is
+stored. Since we split our pseudotime into four different trajectories,
+first we will plot the ME trajectory dynamics for the erythrocytes.</p>
+<p>Importantly, we note that module dynamics can be studied using
+different pseudotime inference approaches, we simply chose to run
+Monocle3 as an example.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">ery_pseudotime</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
@@ -328,8 +356,12 @@ See DotPlot code
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/pseudotime/MEs_pseudotime_ery.png" width="900" height="900"></p>
-<p>Based on these dynamics, we can see which co-expression modules are turning their expression programs on or off throughout the transition from stem cells to mature erythrocytes.</p>
-<p>We can also compare module dynamics for multiple trajectories simultaneously by passing more than one <code>pseudotime_col</code> parameters to <code>PlotModuleTrajectory</code>.</p>
+<p>Based on these dynamics, we can see which co-expression modules are
+turning their expression programs on or off throughout the transition
+from stem cells to mature erythrocytes.</p>
+<p>We can also compare module dynamics for multiple trajectories
+simultaneously by passing more than one <code>pseudotime_col</code>
+parameters to <code>PlotModuleTrajectory</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># loading this package for color schemes, purely optional</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MetBrewer</span><span class="op">)</span></span>
@@ -337,7 +369,7 @@ See DotPlot code
 <span><span class="va">p</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PlotModuleTrajectory.html">PlotModuleTrajectory</a></span><span class="op">(</span></span>
 <span>    <span class="va">seurat_obj</span>,</span>
 <span>    pseudotime_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'ery_pseudotime'</span>, <span class="st">'dc_pseudotime'</span>, <span class="st">'mono_pseudotime'</span>, <span class="st">'clp_pseudotime'</span><span class="op">)</span>,</span>
-<span>    group_colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu">met.brewer</span><span class="op">(</span><span class="st">"Lakota"</span>, n<span class="op">=</span><span class="fl">4</span>, type<span class="op">=</span><span class="st">'discrete'</span><span class="op">)</span><span class="op">)</span></span>
+<span>    group_colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MetBrewer/man/met.brewer.html" class="external-link">met.brewer</a></span><span class="op">(</span><span class="st">"Lakota"</span>, n<span class="op">=</span><span class="fl">4</span>, type<span class="op">=</span><span class="st">'discrete'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
@@ -354,7 +386,7 @@ See DotPlot code
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

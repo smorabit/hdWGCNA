@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Differential module eigengene (DME) analysis">
 <meta name="description" content="Tutorial for performing differential module eigengene analysis.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,8 +106,15 @@
     
 <p>Compiled: 27-02-2024</p>
 <p>Source: <code>vignettes/differential_MEs.Rmd</code></p>
-<p>In this tutorial, we demonstrate how to perform differential expression analysis for our co-expression network modules. We refer to this analysis as “differential module eigengene” (DME) analysis, which reveals modules that are up- or down-regulated in specified groups of cells. For this analysis we take advantage of Seurat’s <code>FindMarkers</code> function to perform differential testing, so we have access to all of the same options.</p>
-<p>First we load the single-cell dataset processed through the basics tutorial and the required R libraries for this tutorial.</p>
+<p>In this tutorial, we demonstrate how to perform differential
+expression analysis for our co-expression network modules. We refer to
+this analysis as “differential module eigengene” (DME) analysis, which
+reveals modules that are up- or down-regulated in specified groups of
+cells. For this analysis we take advantage of Seurat’s
+<code>FindMarkers</code> function to perform differential testing, so we
+have access to all of the same options.</p>
+<p>First we load the single-cell dataset processed through the basics
+tutorial and the required R libraries for this tutorial.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># single-cell analysis package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -119,7 +126,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/" class="external-link">ggrepel</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># co-expression network analysis packages:</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/" class="external-link">WGCNA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">WGCNA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://smorabit.github.io/hdWGCNA/">hdWGCNA</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># using the cowplot theme for ggplot</span></span>
@@ -133,8 +140,17 @@
 <div class="section level2">
 <h2 id="dme-analysis-comparing-two-groups">DME analysis comparing two groups<a class="anchor" aria-label="anchor" href="#dme-analysis-comparing-two-groups"></a>
 </h2>
-<p>Here we discuss how to perform DME testing between two different groups. We use the hdWGCNA function <code>FindDMEs</code>, the syntax of which is similar to the Seurat function <code>FindMarkers</code>. Here we use the Mann-Whitney U test, also known as the Wilcoxon test, to compare two groups, but other tests can be specified with the <code>test.use</code> parameter.</p>
-<p>Since the tutorial dataset only contains control brain samples, we will use sex to define our two groups. <code>FindDMEs</code> requires a list of barcodes for group1 and for group2. Further, we are only going to compare cells from the INH cluster since that is the group that we performed network analysis on.</p>
+<p>Here we discuss how to perform DME testing between two different
+groups. We use the hdWGCNA function <code>FindDMEs</code>, the syntax of
+which is similar to the Seurat function <code>FindMarkers</code>. Here
+we use the Mann-Whitney U test, also known as the Wilcoxon test, to
+compare two groups, but other tests can be specified with the
+<code>test.use</code> parameter.</p>
+<p>Since the tutorial dataset only contains control brain samples, we
+will use sex to define our two groups. <code>FindDMEs</code> requires a
+list of barcodes for group1 and for group2. Further, we are only going
+to compare cells from the INH cluster since that is the group that we
+performed network analysis on.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
 <span><span class="va">group2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
@@ -160,7 +176,9 @@ INH-M2  7.565615e-05 -0.18746938 0.661 0.738 1.361811e-03  INH-M2
 INH-M15 1.496899e-03 -0.06603535 0.969 0.977 2.694417e-02 INH-M15
 INH-M10 1.513458e-02 -0.07774661 0.975 0.980 2.724224e-01 INH-M10
 INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
-<p>We can visualize the results using the hdWGNCA functions <code>PlotDMEsLollipop</code> or <code>PlotDMEsVolcano</code>. First we make a lollipop plot to visualize the DME results.</p>
+<p>We can visualize the results using the hdWGNCA functions
+<code>PlotDMEsLollipop</code> or <code>PlotDMEsVolcano</code>. First we
+make a lollipop plot to visualize the DME results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotDMEsLollipop.html">PlotDMEsLollipop</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, </span>
@@ -169,8 +187,14 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <span>  pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/DMEs/test_DME_lollipop.png" width="800" height="900"></p>
-<p>This plot shows the fold-change for each of the modules, and the size of each dot corresponds to the number of genes in that module. An “X” is placed over each point that does not reach statistical significance.</p>
-<p>For <code>PlotDMEsLollipop</code>, if we have other self-defined columns in the DMEs data frame, we can use <code>group.by</code> parameter to supply the column names and comparison arguments for one comparison group or a list of comparison groups for plotting. For example:</p>
+<p>This plot shows the fold-change for each of the modules, and the size
+of each dot corresponds to the number of genes in that module. An “X” is
+placed over each point that does not reach statistical significance.</p>
+<p>For <code>PlotDMEsLollipop</code>, if we have other self-defined
+columns in the DMEs data frame, we can use <code>group.by</code>
+parameter to supply the column names and comparison arguments for one
+comparison group or a list of comparison groups for plotting. For
+example:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotDMEsLollipop.html">PlotDMEsLollipop</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>, </span>
@@ -180,7 +204,9 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <span>  comparison <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"group1_vs_control"</span>, <span class="st">"group2_vs_control"</span><span class="op">)</span>,  </span>
 <span>  pvalue <span class="op">=</span> <span class="st">"p_val_adj"</span></span>
 <span><span class="op">)</span> </span></code></pre></div>
-<p>Alternatively, we can use <code>PlotDMEsVolcano</code> to make a volcano plot to show the effect size and the significance level together.</p>
+<p>Alternatively, we can use <code>PlotDMEsVolcano</code> to make a
+volcano plot to show the effect size and the significance level
+together.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/PlotDMEsVolcano.html">PlotDMEsVolcano</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
@@ -191,7 +217,9 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <div class="section level3">
 <h3 id="looping-through-multiple-clusters">Looping through multiple clusters<a class="anchor" aria-label="anchor" href="#looping-through-multiple-clusters"></a>
 </h3>
-<p>We can run DME analysis in a loop to perform the comparison in multiple groups. Here we will loop through the 5 INH subclusters and run <code>FindDMEs</code> in each cluster.</p>
+<p>We can run DME analysis in a loop to perform the comparison in
+multiple groups. Here we will loop through the 5 INH subclusters and run
+<code>FindDMEs</code> in each cluster.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># list of clusters to loop through</span></span>
 <span><span class="va">clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"INH1 VIP+"</span>, <span class="st">"INH2 PVALB+"</span>, <span class="st">"INH3 SST+"</span>, <span class="st">'INH4 LAMP5+'</span>, <span class="st">"INH5 PVALB+"</span><span class="op">)</span></span>
@@ -222,7 +250,9 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <span>  <span class="co"># append the table</span></span>
 <span>  <span class="va">DMEs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">DMEs</span>, <span class="va">cur_DMEs</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Here we will use ggplot2 to make a heatmap showing the DME effect sizes. Since we are just using ggplot2 here you can easily customize this heatmap to suit your needs.</p>
+<p>Here we will use ggplot2 to make a heatmap showing the DME effect
+sizes. Since we are just using ggplot2 here you can easily customize
+this heatmap to suit your needs.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the modules table:</span></span>
 <span><span class="va">modules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetModules.html">GetModules</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -273,7 +303,11 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <div class="section level2">
 <h2 id="one-versus-all-dme-analysis">One-versus-all DME analysis<a class="anchor" aria-label="anchor" href="#one-versus-all-dme-analysis"></a>
 </h2>
-<p>Similar to the Seurat function <code>FindAllMarkers</code>, we can perform a one-versus-all DME test using the function <code>FindAllDMEs</code> when specifying a column to group cells. Here we will <code>group.by</code> each cell type for the one-versus-all test.</p>
+<p>Similar to the Seurat function <code>FindAllMarkers</code>, we can
+perform a one-versus-all DME test using the function
+<code>FindAllDMEs</code> when specifying a column to group cells. Here
+we will <code>group.by</code> each cell type for the one-versus-all
+test.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">group.by</span> <span class="op">=</span> <span class="st">'cell_type'</span></span>
 <span></span>
@@ -284,7 +318,9 @@ INH-M17 2.034644e-02  0.24035946 0.589 0.557 3.662360e-01 INH-M17</code></pre>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">DMEs_all</span><span class="op">)</span></span></code></pre></div>
-<p>The output looks similar to <code>FindDMEs</code>, but there is an extra column called <code>group</code> containing the information for each cell grouping.</p>
+<p>The output looks similar to <code>FindDMEs</code>, but there is an
+extra column called <code>group</code> containing the information for
+each cell grouping.</p>
 <pre><code>p_val avg_log2FC pct.1 pct.2 p_val_adj module group
 EX.INH-M1     0 -10.313763 0.003 0.621         0 INH-M1    EX
 EX.INH-M2     0   1.007115 0.670 0.445         0 INH-M2    EX
@@ -309,14 +345,18 @@ EX.INH-M6     0   2.448315 0.877 0.209         0 INH-M6    EX</code></pre>
 <div class="section level2">
 <h2 id="using-modulescores-instead-of-mes">Using ModuleScores instead of MEs<a class="anchor" aria-label="anchor" href="#using-modulescores-instead-of-mes"></a>
 </h2>
-<p>We can also perform differential analysis using module expression scores instead of module eigengenes. These must first be calculated using the function <code>ModuleExprScore</code>, as shown below.</p>
+<p>We can also perform differential analysis using module expression
+scores instead of module eigengenes. These must first be calculated
+using the function <code>ModuleExprScore</code>, as shown below.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleExprScore.html">ModuleExprScore</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_obj</span>,</span>
 <span>  n_genes <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>  method<span class="op">=</span><span class="st">'UCell'</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Next we can perform differential analysis using these module scores by specifying <code>features = 'ModuleScores'</code> in the <code>FindDMEs</code> function.</p>
+<p>Next we can perform differential analysis using these module scores
+by specifying <code>features = 'ModuleScores'</code> in the
+<code>FindDMEs</code> function.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">group1</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
 <span><span class="va">group2</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">cell_type</span> <span class="op">==</span> <span class="st">'INH'</span> <span class="op">&amp;</span> <span class="va">msex</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">rownames</span></span>
@@ -351,7 +391,7 @@ EX.INH-M6     0   2.448315 0.877 0.209         0 INH-M6    EX</code></pre>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>
