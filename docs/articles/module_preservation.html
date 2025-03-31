@@ -456,13 +456,57 @@ intramodular connectivity. Additionally,
 <code>ModuleTopologyBarplot</code> complements this by showing the
 connectivity of each gene (network degree or kME value) in each
 module.</p>
+<p>In order to compare the module topology between a reference and a
+query dataset, we require a co-expression network (TOM) for both
+datasets. The TOM is only calculated by the
+<code>ConstructNetwork</code> function, not <code>ProjectModules</code>,
+so we first need to run this step on the query dataset.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get the list of genes in the reference object</span></span>
+<span><span class="va">genes_use</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_ref</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  features <span class="op">=</span> <span class="va">genes_use</span>,</span>
+<span>  wgcna_name <span class="op">=</span> <span class="st">"INH"</span>,</span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># construct metacells:</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MetacellsByGroups.html">MetacellsByGroups</a></span><span class="op">(</span></span>
+<span>  seurat_obj <span class="op">=</span> <span class="va">seurat_query</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"Sample"</span><span class="op">)</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  max_shared <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  reduction <span class="op">=</span> <span class="st">'harmony'</span>,</span>
+<span>  ident.group <span class="op">=</span> <span class="st">'cell_type'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeMetacells.html">NormalizeMetacells</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetDatExpr.html">SetDatExpr</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  group_name <span class="op">=</span> <span class="st">"INH"</span>, </span>
+<span>  group.by<span class="op">=</span><span class="st">'cell_type'</span>, </span>
+<span>  assay <span class="op">=</span> <span class="st">'RNA'</span>, </span>
+<span>  layer <span class="op">=</span> <span class="st">'data'</span> </span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/TestSoftPowers.html">TestSoftPowers</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ConstructNetwork.html">ConstructNetwork</a></span><span class="op">(</span><span class="va">seurat_query</span>, tom_name <span class="op">=</span> <span class="st">'INH_query'</span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleEigengenes.html">ModuleEigengenes</a></span><span class="op">(</span><span class="va">seurat_query</span><span class="op">)</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModuleConnectivity.html">ModuleConnectivity</a></span><span class="op">(</span></span>
+<span>  <span class="va">seurat_query</span>,</span>
+<span>  group.by <span class="op">=</span> <span class="st">'cell_type'</span>, group_name <span class="op">=</span> <span class="st">'INH'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># reset the active WGCNA to the projected</span></span>
+<span><span class="va">seurat_query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetActiveWGCNA.html">SetActiveWGCNA</a></span><span class="op">(</span><span class="va">seurat_query</span>, <span class="st">'projected'</span><span class="op">)</span></span></code></pre></div>
 <p>We will make a patchwork plot showing the correlation heatmap, the
 TOM heatmap, the degree barplot, and the kME barplot for module INH-M9,
 which showed significant preservation based on both module preservation
 approaches. To better visually compare these plots side-by-side, we must
 ensure that the genes are ordered the same way. Here we will order the
 genes based on the reference dataset.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select the module to plot</span></span>
 <span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M9'</span></span>
 <span></span>
@@ -573,7 +617,7 @@ genes based on the reference dataset.</p>
 was not significantly preserved in the query dataset, INH-M2.</p>
 <details><summary>
 See code to plot network topology for INH-M2
-</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># select the module to plot</span></span>
 <span><span class="va">cur_mod</span> <span class="op">&lt;-</span> <span class="st">'INH-M2'</span></span>
 <span></span>

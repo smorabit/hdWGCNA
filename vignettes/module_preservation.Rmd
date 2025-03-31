@@ -458,6 +458,51 @@ the correlation value or the edge weight in the TOM. In this plot, genes are sor
 their intramodular connectivity. Additionally, `ModuleTopologyBarplot` complements this 
 by showing the connectivity of each gene (network degree or kME value) in each module. 
 
+In order to compare the module topology between a reference and a query dataset, we require a co-expression network (TOM) for both datasets. The TOM is only calculated by the `ConstructNetwork` function, not `ProjectModules`, so we first need to run this step on the query dataset.
+
+```{r eval=FALSE}
+
+# get the list of genes in the reference object
+genes_use <- GetWGCNAGenes(seurat_ref)
+
+seurat_query <- SetupForWGCNA(
+  seurat_query,
+  features = genes_use,
+  wgcna_name = "INH",
+)
+
+# construct metacells:
+seurat_query <- MetacellsByGroups(
+  seurat_obj = seurat_query,
+  group.by = c("cell_type", "Sample"),
+  k = 25,
+  max_shared = 12,
+  reduction = 'harmony',
+  ident.group = 'cell_type'
+)
+seurat_query <- NormalizeMetacells(seurat_query)
+
+seurat_query <- SetDatExpr(
+  seurat_query,
+  group_name = "INH", 
+  group.by='cell_type', 
+  assay = 'RNA', 
+  layer = 'data' 
+)
+
+seurat_query <- TestSoftPowers(seurat_query)
+seurat_query <- ConstructNetwork(seurat_query, tom_name = 'INH_query')
+seurat_query <- ModuleEigengenes(seurat_query)
+seurat_query <- ModuleConnectivity(
+  seurat_query,
+  group.by = 'cell_type', group_name = 'INH'
+)
+
+# reset the active WGCNA to the projected
+seurat_query <- SetActiveWGCNA(seurat_query, 'projected')
+
+```
+
 We will make a patchwork plot showing the correlation heatmap, the TOM heatmap, 
 the degree barplot, and the kME barplot for module INH-M9, which showed significant 
 preservation based on both module preservation approaches. To better visually compare 
