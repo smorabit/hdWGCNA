@@ -3020,7 +3020,7 @@ ModuleRadarPlot <- function(
     }
 
     # subset:
-    MEs <- MEs[barcodes,]
+    MEs <- MEs[barcodes, , drop = FALSE]
     meta <- meta[barcodes,]
     cell_grouping <- cell_grouping[barcodes]
   }
