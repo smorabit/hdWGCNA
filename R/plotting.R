@@ -3010,7 +3010,7 @@ ModuleRadarPlot <- function(
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
 
   # get the MEs
-  MEs <- GetMEs(seurat_obj)
+  MEs <- GetMEs(seurat_obj, wgcna_name = wgcna_name)
   MEs <- MEs[,colnames(MEs) != 'grey', drop = FALSE]
 
   # are we subsetting?
