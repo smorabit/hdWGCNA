@@ -358,6 +358,11 @@ ModuleExprScore <- function(
 
   mod_scores <- mod_scores[,(ncol(mod_scores)-length(mods)+1):ncol(mod_scores)]
 
+  # When there's only 1 module mod_scores becomes an array instead of data.frame and causes Error during colnames
+  if (!is.data.frame(mod_scores)) {
+    mod_scores <- as.data.frame(mod_scores)
+  }
+  
   # rename module scores:
   colnames(mod_scores) <- mods
 
