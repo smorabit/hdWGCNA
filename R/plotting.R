@@ -3011,7 +3011,7 @@ ModuleRadarPlot <- function(
 
   # get the MEs
   MEs <- GetMEs(seurat_obj)
-  MEs <- MEs[,colnames(MEs) != 'grey']
+  MEs <- MEs[,colnames(MEs) != 'grey', drop = FALSE]
 
   # are we subsetting?
   if(!is.null(barcodes)){
