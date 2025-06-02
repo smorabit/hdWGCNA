@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,15 +174,15 @@ containing the Seurat seurat_vhd to the cluster for subsequent
 analysis.</p>
 </details><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># package to install the mouse brain dataset</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SeuratData</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.satijalab.org/seurat" class="external-link">SeuratData</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># download the mouse brain ST dataset (stxBrain)</span></span>
-<span><span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">InstallData</span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span></span>
+<span><span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/InstallData.html" class="external-link">InstallData</a></span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># load the anterior and posterior samples</span></span>
-<span><span class="va">brain</span> <span class="op">&lt;-</span> <span class="fu">LoadData</span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></span>
+<span><span class="va">brain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></span>
 <span><span class="va">brain</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'anterior'</span></span>
-<span><span class="va">brain2</span> <span class="op">&lt;-</span> <span class="fu">LoadData</span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"posterior1"</span><span class="op">)</span></span>
+<span><span class="va">brain2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"posterior1"</span><span class="op">)</span></span>
 <span><span class="va">brain2</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">'posterior'</span></span>
 <span></span>
 <span><span class="co"># merge into one seurat seurat_vhd</span></span>
@@ -400,7 +400,7 @@ See cluster labels
 <span><span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span> <span class="op">&lt;-</span> <span class="va">annotations</span><span class="op">$</span><span class="va">annotation</span><span class="op">[</span><span class="va">ix</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># set idents</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span></span>
 <span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialDimPlot</a></span><span class="op">(</span><span class="va">seurat_obj</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, label.size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html" class="external-link">NoLegend</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -639,7 +639,7 @@ information, so cells that are close together in biological space will
 be aggregated into metacells.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Change the default assay to "RNA", SCTransform is generally not recommended for hdWGCNA.</span></span>
-<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_curio</span>, <span class="st">'RNA'</span><span class="op">)</span></span>
+<span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_curio</span>, <span class="st">'RNA'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">seurat_curio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_curio</span>,</span>
@@ -804,6 +804,18 @@ convenience to demonstrate hdWGCNA.</p>
 <span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors</a></span><span class="op">(</span><span class="va">seurat_vhd</span>, reduction <span class="op">=</span> <span class="st">"pca"</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
 <span><span class="va">seurat_vhd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># get the image coordinates from the seurat obj and add to the metadata</span></span>
+<span><span class="va">spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span><span class="op">@</span><span class="va">cell.embeddings</span><span class="op">)</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">spatial_1</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">spatial_2</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add this as a dim reduct</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span>  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">spatial_coords</span><span class="op">)</span>,</span>
+<span>  key <span class="op">=</span> <span class="st">'spatial'</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_vhd</span>, </span>
 <span>  split.by<span class="op">=</span><span class="st">'seurat_clusters'</span>,</span>
@@ -830,9 +842,9 @@ reduction” in the Seurat object that contains the spatial
 coordinates.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create the spatial reduction</span></span>
-<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="st">'y'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="st">'y'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'spatial_1'</span>, <span class="st">'spatial_2'</span><span class="op">)</span></span>
-<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
 <span>  embeddings <span class="op">=</span> <span class="va">coords</span>,</span>
 <span>  assay <span class="op">=</span> <span class="st">'RNA'</span>,</span>
 <span>  key <span class="op">=</span> <span class="st">'spatial_'</span></span>
@@ -872,8 +884,8 @@ Show code for calculating metacell spatial coordinates
 <span></span>
 <span><span class="co"># get the image coordinates from the seurat obj and add to the metadata</span></span>
 <span><span class="va">spatial_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span><span class="op">@</span><span class="va">cell.embeddings</span><span class="op">)</span></span>
-<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">Spatial_1</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span></span>
-<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">Spatial_2</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_x</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">spatial_1</span> <span class="op">*</span> <span class="op">-</span><span class="fl">1</span></span>
+<span><span class="va">seurat_vhd</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">spatial_y</span> <span class="op">&lt;-</span> <span class="va">spatial_coords</span><span class="op">$</span><span class="va">spatial_2</span></span>
 <span><span class="va">seurat_vhd</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">seurat_vhd</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># loop over each metacell and calculate the average X and Y</span></span>
@@ -888,7 +900,7 @@ Show code for calculating metacell spatial coordinates
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">m_obj</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># add this as a dim reduct</span></span>
-<span><span class="va">m_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span><span class="va">m_obj</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
 <span>  embeddings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">meta_spatial_coords</span><span class="op">)</span>,</span>
 <span>  key <span class="op">=</span> <span class="st">'spatial'</span></span>
 <span><span class="op">)</span></span>

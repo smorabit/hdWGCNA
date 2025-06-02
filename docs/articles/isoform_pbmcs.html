@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -188,7 +188,7 @@ the unprocessed Seurat object here</a>.</p>
 <span></span>
 <span><span class="co"># create individual Seurat objects for each sample</span></span>
 <span><span class="va">seurat_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sample_dirs</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">cur</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">gene_X_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, min.cells<span class="op">=</span><span class="fl">5</span><span class="op">)</span>;</span>
+<span>  <span class="va">cur</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">gene_X_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, min.cells<span class="op">=</span><span class="fl">5</span><span class="op">)</span>;</span>
 <span></span>
 <span>  <span class="co"># add a column for the original barcode</span></span>
 <span>  <span class="va">cur</span><span class="op">$</span><span class="va">barcode</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">cur</span><span class="op">)</span></span>
@@ -197,7 +197,7 @@ the unprocessed Seurat object here</a>.</p>
 <span>  <span class="va">cur</span><span class="op">$</span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_dirs</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span>  <span class="co"># add the iso assay to the seurat object to contain the isoform counts matrix</span></span>
-<span>  <span class="va">cur</span><span class="op">[[</span><span class="st">"iso"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateAssayObject.html" class="external-link">CreateAssayObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">iso_X_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, min.cells<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
+<span>  <span class="va">cur</span><span class="op">[[</span><span class="st">"iso"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateAssayObject.html" class="external-link">CreateAssayObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">iso_X_list</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, min.cells<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
 <span>  <span class="va">cur</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
@@ -266,7 +266,7 @@ the results without integration. In general this section follows the
 generic Seurat clustering workflow.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># change the assay to the gene counts matrix</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
 <span></span>
 <span><span class="co"># run normalization, feature selection, scaling, and linear dimensional reduction</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -363,7 +363,7 @@ us a set of variable isoforms for the whole dataset. The rest of the
 steps are identical to the gene-level analysis.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to the isoform assay </span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
 <span></span>
 <span><span class="co"># log normalize data</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span></span>
@@ -372,7 +372,7 @@ steps are identical to the gene-level analysis.</p>
 <span><span class="va">selected_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span><span class="va">seurat_obj</span>, split.by <span class="op">=</span> <span class="st">'Sample'</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">x</span>, nfeatures<span class="op">=</span><span class="fl">20000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">VariableFeatures</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">intersect</span>, <span class="va">selected_features</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">intersect</span>, <span class="va">selected_features</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># scale data and run PCA</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -438,7 +438,7 @@ the gene and isoform assays. Note that this analysis first requires you
 to have already processed both of your assays of interest.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch back to genes assay</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
 <span></span>
 <span><span class="co"># run the WNN</span></span>
 <span><span class="va">seurat_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindMultiModalNeighbors.html" class="external-link">FindMultiModalNeighbors</a></span><span class="op">(</span></span>
@@ -746,14 +746,14 @@ network analysis, so we increase the number of variable features to
 50000.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to isoform assay:</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'iso'</span></span>
 <span></span>
 <span><span class="co"># Get top 50k variable isoforms in each sample and take the intersection</span></span>
 <span><span class="va">selected_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span><span class="va">seurat_obj</span>, split.by <span class="op">=</span> <span class="st">'Sample'</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">x</span>, nfeatures<span class="op">=</span><span class="fl">50000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">VariableFeatures</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">intersect</span>, <span class="va">selected_features</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">intersect</span>, <span class="va">selected_features</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] 9265</code></pre>
 <p>This approach gives us 9265 isoforms to perform network analysis on.
 Next we run the <code>SetupForWGCNA</code> function and indicate that we
@@ -951,10 +951,10 @@ identifying <strong>marker genes</strong> and not marker isoforms for
 this step.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># switch to the RNA assay because we want marker genes</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
 <span></span>
 <span><span class="co"># change the idents to your desired clusters, cell annotations, etc</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">seurat_obj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">$</span><span class="va">annotation</span></span>
 <span></span>
 <span><span class="co"># Run FindAllMarkers to get cluster marker genes!!</span></span>
 <span><span class="va">cluster_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">FindAllMarkers</a></span><span class="op">(</span></span>

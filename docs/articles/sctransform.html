@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -164,7 +164,7 @@ residuals are typically only output for the highly variable features. We
 can check this by extracting the expression matrix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract sct expression data</span></span>
-<span><span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_subset</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span></span>
+<span><span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">seurat_subset</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># print the shape of this matrix (genes by cells)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sct_data</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -191,7 +191,7 @@ SCTransform.</p>
 <code class="sourceCode R"><span><span class="co"># only supply features that were used for SCTransform!!!</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>
 <span>  <span class="va">seurat_subset</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span>,</span>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span>,</span>
 <span>  wgcna_name <span class="op">=</span> <span class="st">"SCT"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Next, we construct metacells while specifying
@@ -275,7 +275,7 @@ previously.</p>
 <span><span class="va">mobj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SCTransform.html" class="external-link">SCTransform</a></span><span class="op">(</span><span class="va">mobj</span>, vars.to.regress <span class="op">=</span> <span class="st">"percent.mt"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, return.only.var.genes<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># only keep genes that were used for SCTransform</span></span>
-<span><span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">mobj</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span></span>
+<span><span class="va">sct_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">mobj</span>, slot<span class="op">=</span><span class="st">'scale.data'</span>, assay<span class="op">=</span><span class="st">'SCT'</span><span class="op">)</span></span>
 <span><span class="va">sct_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sct_data</span><span class="op">)</span></span>
 <span><span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetWGCNAGenes.html">GetWGCNAGenes</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span></span>
 <span><span class="va">gene_list</span> <span class="op">&lt;-</span> <span class="va">gene_list</span><span class="op">[</span><span class="va">gene_list</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">sct_genes</span><span class="op">]</span></span>
@@ -319,7 +319,7 @@ that we did above when using SCTransform.</p>
 Show standard hdWGCNA
 </summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set default assay to RNA so we don't use SCTransform data</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_subset</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
 <span></span>
 <span><span class="co"># setup hdWGCNA experiment</span></span>
 <span><span class="va">seurat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SetupForWGCNA.html">SetupForWGCNA</a></span><span class="op">(</span></span>

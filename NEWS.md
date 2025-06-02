@@ -1,3 +1,12 @@
+# hdWGCNA 0.4.06 (2025-06-02)
+## Added
+- None
+
+## Changes
+- Fixed issue with `ModuleRadarPlot` when `group.by` is a factor.
+- Fixed an internal issue with `ModulePreservationNetRep`.
+- Updated some typos in the Visium HD tutorial.
+
 # hdWGCNA 0.4.05 (2025-03-10)
 ## Added
 - None

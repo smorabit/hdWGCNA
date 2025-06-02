@@ -115,7 +115,6 @@ ConstructPseudobulk <- function(
         cur
     }))
 
-    print('here')
     print(class(datExpr))
     print(length(pseudobulk_list))
     print(dim(pseudobulk_list[[1]]))

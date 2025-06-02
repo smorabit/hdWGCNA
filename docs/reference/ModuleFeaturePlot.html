@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -142,7 +142,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>         module_names &lt;- levels(modules$module)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         module_names &lt;- module_names[module_names != "grey"]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     umap &lt;- seurat_obj@reductions[[reduction]]@cell.embeddings</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     umap &lt;- seurat_obj@reductions[[reduction]]@cell.embeddings[, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1:2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     x_name &lt;- colnames(umap)[1]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     y_name &lt;- colnames(umap)[2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_df &lt;- cbind(umap, MEs) %&gt;% as.data.frame()</span>
@@ -210,7 +211,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9f44164580&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f98147bf130&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -212,7 +212,7 @@ matrix from the snATAC-seq dataset rather than the chromatin
 accessibility matrix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set assay to RNA (Gene Activity matrix)</span></span>
-<span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
+<span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">seurat_atac</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'RNA'</span></span>
 <span></span>
 <span><span class="co"># project modules</span></span>
 <span><span class="va">seurat_atac</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProjectModules.html">ProjectModules</a></span><span class="op">(</span></span>
@@ -521,8 +521,8 @@ Code
 </h3>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load 10X genomics visium dataset</span></span>
-<span><span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">InstallData</span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span></span>
-<span><span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu">LoadData</span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></span>
+<span><span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/InstallData.html" class="external-link">InstallData</a></span><span class="op">(</span><span class="st">"stxBrain"</span><span class="op">)</span></span>
+<span><span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="fu">SeuratData</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/LoadData.html" class="external-link">LoadData</a></span><span class="op">(</span><span class="st">"stxBrain"</span>, type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># process the Visium dataset with Seurat:</span></span>
 <span><span class="va">seurat_vis</span> <span class="op">&lt;-</span> <span class="va">seurat_vis</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -589,7 +589,7 @@ Code
 <span><span class="co"># make a spatial "reduction"</span></span>
 <span><span class="va">image_emb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">image_df</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'col'</span>, <span class="st">'row'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">image_emb</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Spatial_1"</span>, <span class="st">"Spatial_2"</span><span class="op">)</span></span>
-<span><span class="va">seurat_vis</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
+<span><span class="va">seurat_vis</span><span class="op">@</span><span class="va">reductions</span><span class="op">$</span><span class="va">spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateDimReducObject.html" class="external-link">CreateDimReducObject</a></span><span class="op">(</span></span>
 <span>  <span class="va">image_emb</span>,</span>
 <span>  key <span class="op">=</span> <span class="st">'Spatial'</span></span>
 <span><span class="op">)</span></span>

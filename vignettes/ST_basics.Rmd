@@ -758,6 +758,18 @@ seurat_vhd <- RunPCA(seurat_vhd)
 seurat_vhd <- FindNeighbors(seurat_vhd, reduction = "pca", dims = 1:30)
 seurat_vhd <- FindClusters(seurat_vhd)
 
+# get the image coordinates from the seurat obj and add to the metadata
+spatial_coords <- as.data.frame(seurat_vhd@reductions$spatial@cell.embeddings)
+seurat_vhd@meta.data$spatial_x <- spatial_coords$spatial_1 * -1
+seurat_vhd@meta.data$spatial_y <- spatial_coords$spatial_2
+seurat_vhd$barcode <- colnames(seurat_vhd)
+
+# add this as a dim reduct
+seurat_vhd@reductions$spatial <- CreateDimReducObject(
+  embeddings = as.matrix(spatial_coords),
+  key = 'spatial'
+)
+
 p <- DimPlot(
   seurat_vhd, 
   split.by='seurat_clusters',
@@ -821,8 +833,8 @@ m_obj$seurat_clusters <- factor(
 
 # get the image coordinates from the seurat obj and add to the metadata
 spatial_coords <- as.data.frame(seurat_vhd@reductions$spatial@cell.embeddings)
-seurat_vhd@meta.data$spatial_x <- spatial_coords$Spatial_1 * -1
-seurat_vhd@meta.data$spatial_y <- spatial_coords$Spatial_2
+seurat_vhd@meta.data$spatial_x <- spatial_coords$spatial_1 * -1
+seurat_vhd@meta.data$spatial_y <- spatial_coords$spatial_2
 seurat_vhd$barcode <- colnames(seurat_vhd)
 
 # loop over each metacell and calculate the average X and Y

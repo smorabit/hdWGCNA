@@ -1,0 +1,133 @@
+
+```{r eval=FALSE}
+
+
+# load R packages
+library(Seurat)
+library(ggplot2)
+library(cowplot)
+library(viridis)
+library(dplyr)
+library(Matrix)
+library(hdWGCNA)
+theme_set(theme_cowplot())
+
+# local dir 
+setwd('/Users/sam.morabito/Library/CloudStorage/GoogleDrive-smorabit@uci.edu/Shared drives/Bioinfo_SwarupLab/Sam_Dropbox/pipelines/hdWGCNA/')
+
+# # TF functions
+# files <- dir('R/')
+# for(f in files){
+#     print(f)
+#     source(paste0('R/', f))
+# }
+
+# load the seurat obj 
+seurat_obj <- readRDS('../mpa/data/Zhou_2020_control.rds')
+
+# # update to Seurat object v5
+# seurat_obj <- SeuratObject::UpdateSeuratObject(seurat_obj)
+
+```
+
+```{r eval=FALSE}
+
+seurat_obj <- readRDS('../mpa/data/Zhou_2020_control.rds')
+seurat_obj <- subset(seurat_obj, cell_type == 'ODC')
+dim(seurat_obj)
+
+# stratified sample
+
+g1_bcs <- seurat_obj@meta.data %>% 
+    group_by(Sample) %>%
+    sample_frac(0.5) %>% 
+    .$barcode
+
+seurat_obj$Group <- ifelse(seurat_obj$barcode %in% g1_bcs, "Group 1", "Group 2")
+
+table(seurat_obj$Group, seurat_obj$annotation)
+
+# split the objects
+obj1 <- subset(seurat_obj, Group == "Group 1")
+obj2 <- subset(seurat_obj, Group == "Group 2")
+
+seurat_list <- list(obj1, obj2); names(seurat_list) <- c('Group 1', 'Group 2')
+
+for(cur_group in names(seurat_list)){
+
+    print(cur_group)
+
+    seurat_obj <- seurat_list[[cur_group]]
+
+    seurat_obj <- SetupForWGCNA(
+        seurat_obj,
+        gene_select = "fraction", 
+        fraction = 0.05, 
+        wgcna_name = cur_group
+    )
+
+    # construct metacells  in each group
+    seurat_obj <- MetacellsByGroups(
+        seurat_obj = seurat_obj,
+        group.by = c("cell_type", "Sample"), 
+        reduction = 'harmony', 
+        k = 25, 
+        max_shared = 10, 
+        ident.group = 'cell_type' 
+    )
+
+    print(dim(GetMetacellObject(seurat_obj)))
+
+    seurat_obj <- NormalizeMetacells(seurat_obj)
+    seurat_obj <- SetDatExpr(seurat_obj)
+    seurat_obj <- TestSoftPowers(seurat_obj)
+    seurat_obj <- ConstructNetwork(
+        seurat_obj,
+        overwrite_tom=TRUE,
+        tom_name = cur_group 
+    )
+
+    modules <- GetModules(seurat_obj)
+    table(modules$module)
+
+    seurat_obj <- ScaleData(seurat_obj, features = rownames(seurat_obj)[1:100])
+    seurat_obj <- ModuleEigengenes(seurat_obj)
+    seurat_obj <- ModuleConnectivity(seurat_obj)
+
+    seurat_list[[cur_group]] <- seurat_obj
+
+}
+
+# project modules:
+
+# Project modules from query to reference dataset
+seurat_list[["Group 2"]] <- ProjectModules(
+    seurat_obj = seurat_list[["Group 2"]],
+    seurat_ref = seurat_list[["Group 1"]],
+    wgcna_name_proj="Group 1",
+    wgcna_name = "Group 1" 
+)
+
+seurat_list[["Group 1"]] <- ProjectModules(
+    seurat_obj = seurat_list[["Group 1"]],
+    seurat_ref = seurat_list[["Group 2"]],
+    wgcna_name_proj="Group 2",
+    wgcna_name = "Group 2" 
+)
+
+library(NetRep)
+
+# run NetRep module preservation
+seurat_list[["Group 1"]] <- ModulePreservationNetRep(
+  seurat_query = seurat_list[["Group 1"]],
+  seurat_ref = seurat_list[["Group 2"]],
+  name = 'testing_NetRep',
+  n_permutations = 5000,
+  n_threads=8, # number of threads to run in Parallel
+  TOM_use="Group 1", 
+  wgcna_name = 'Group 1',
+  wgcna_name_ref = 'Group 2'
+)
+
+
+```

@@ -115,6 +115,11 @@ ConstructMetacells <- function(
   shared_old <- shared
   cell_sample <- nn_map[chosen, ]
 
+   if(length(chosen) <= 1){
+      warning('Metacell failed')
+      return(NULL)
+    }
+
   # get a list of the cell barcodes that have been merged:
   cells_merged <- apply(cell_sample, 1, function(x){
     paste0(colnames(seurat_obj)[x], collapse=',')

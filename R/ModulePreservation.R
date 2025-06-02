@@ -178,7 +178,9 @@ ModulePreservationNetRep <- function(
 
   # get datExpr for reference and query:
   datExpr_ref <- as.matrix(GetDatExpr(seurat_ref, wgcna_name_ref))
-  datExpr_query <- as.matrix(GetDatExpr(seurat_query, wgcna_name))
+
+  # does this work? could be different genes.
+  datExpr_query <- as.matrix(GetDatExpr(seurat_query, TOM_use))
 
   # get TOMs for reference and query:
   TOM_ref <- GetTOM(seurat_ref, wgcna_name_ref)
@@ -208,9 +210,9 @@ ModulePreservationNetRep <- function(
   n_list <- list(TOM_ref, TOM_query)
   d_list <- list(datExpr_ref, datExpr_query)
   c_list <- list(cor_mat_ref, cor_mat_query)
-  names(n_list) <- c(wgcna_name_ref, wgcna_name)
-  names(d_list) <- c(wgcna_name_ref, wgcna_name)
-  names(c_list) <- c(wgcna_name_ref, wgcna_name)
+  names(n_list) <- c('ref', 'query')
+  names(d_list) <- c('ref', 'query')
+  names(c_list) <- c('ref', 'query')
 
   # Assess the preservation of modules in the test dataset.
   preservation_test <- NetRep::modulePreservation(
@@ -218,8 +220,8 @@ ModulePreservationNetRep <- function(
       data=d_list, 
       correlation=c_list, 
       moduleAssignments=module_labels, 
-      discovery=wgcna_name_ref, 
-      test=wgcna_name, 
+      discovery='ref', 
+      test='query', 
       nPerm=n_permutations, 
       nThreads=n_threads
   )

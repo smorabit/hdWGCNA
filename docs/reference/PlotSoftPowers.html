@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.05</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.06</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -121,7 +121,6 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     pt &lt;- GetPowerTable(seurat_obj, wgcna_name)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if ("group" %in% colnames(pt)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         print("here")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         power_tables &lt;- pt %&gt;% dplyr::group_split(group)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         soft_powers &lt;- sapply(power_tables, function(power_table) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             power_table %&gt;% subset(SFT.R.sq &gt;= 0.8) %&gt;% .$Power %&gt;% </span>
@@ -216,7 +215,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     plot_list</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9f3783add8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f9817c1abe8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

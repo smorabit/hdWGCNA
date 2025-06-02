@@ -26,7 +26,6 @@ PlotSoftPowers <- function(
   pt <- GetPowerTable(seurat_obj, wgcna_name)
 
   if("group" %in% colnames(pt)){
-    print("here")
     # select soft power for each group:
     power_tables <- pt %>% dplyr::group_split(group)
     soft_powers <- sapply(power_tables, function(power_table){
@@ -514,7 +513,7 @@ ModuleFeaturePlot<- function(
   }
 
   # get  reduction from seurat obj
-  umap <- seurat_obj@reductions[[reduction]]@cell.embeddings
+  umap <- seurat_obj@reductions[[reduction]]@cell.embeddings[,1:2]
   x_name <- colnames(umap)[1]
   y_name <- colnames(umap)[2]
 
@@ -2487,6 +2486,7 @@ PlotLollipop <- function(
 #' @param return_genes logical indicating whether or not to return 
 #' @param genes_order a character vector of genes to plot in this specific order, this option will override the order_by parameter
 #' @param TOM_use  The name of the hdWGCNA experiment containing the TOM that will be used for plotting
+#' @param datExpr_use  The name of the hdWGCNA experiment containing the datExpr that will be used for calculating the correlation matrix
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
 #' ModuleTopologyHeatmap generates a triangular heatmap plot showing the network "topology" of a 
@@ -2512,6 +2512,7 @@ ModuleTopologyHeatmap <- function(
     return_genes=FALSE,
     genes_order = NULL,
     TOM_use = NULL,
+    datExpr_use = NULL,
     wgcna_name=NULL,
     ... # pass to WGCNA::adjacency
 ){
@@ -2519,6 +2520,7 @@ ModuleTopologyHeatmap <- function(
     if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
     CheckWGCNAName(seurat_obj, wgcna_name)
     if(is.null(TOM_use)){TOM_use <- wgcna_name}
+    if(is.null(datExpr_use)){datExpr_use <- wgcna_name}
 
     # is ggrastr available?
     raster_avail <- require('ggrastr')
@@ -2565,10 +2567,12 @@ ModuleTopologyHeatmap <- function(
         mat <- GetTOM(seurat_obj, TOM_use)
         matrix_name <- matrix
     } else if(matrix == 'Cor'){
+
         # get the expression matrix:
-        datExpr <- as.matrix(GetDatExpr(seurat_obj, wgcna_name))
+        datExpr <- as.matrix(GetDatExpr(seurat_obj, datExpr_use))
 
         # calculate the unsigned adjacency matrix
+        # this calculation is slow as heck (idk why)
         mat <- WGCNA::adjacency(
             datExpr, 
             power=1,
@@ -2597,6 +2601,9 @@ ModuleTopologyHeatmap <- function(
     tmp <- mat[cur_genes,cur_genes]
     tmp[lower.tri(tmp)] <- 0
     plot_df <- reshape2::melt(tmp) %>% subset(Var1 != Var2)
+
+    print('plot_df:')
+    print(head(plot_df))
 
     # set the order for the genes
     plot_df$Var1 <- factor(plot_df$Var1, levels = cur_genes)
@@ -2972,6 +2979,7 @@ ModuleRadarPlot <- function(
   barcodes = NULL,
   combine = TRUE,
   ncol=4, 
+  features = 'hMEs',
   wgcna_name = NULL,
   fill=TRUE,
   draw.points=FALSE,
@@ -2998,19 +3006,25 @@ ModuleRadarPlot <- function(
     names(cell_grouping) <- colnames(seurat_obj)
   }
 
-  if(is.factor(cell_grouping)){
-    group_order <- levels(cell_grouping)
-  } else{
-    group_order <- unique(cell_grouping)
-  }
-
   # get the module info
   modules <- GetModules(seurat_obj, wgcna_name)
   mod_colors <- modules %>% dplyr::select(c(module, color)) %>% dplyr::distinct()
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
 
   # get the MEs
-  MEs <- GetMEs(seurat_obj)
+  if(features == 'hMEs'){
+    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
+  } else if(features == 'MEs'){
+    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
+  } else if(features == 'scores'){
+    MEs <- GetModuleScores(seurat_obj, wgcna_name)
+  } else if(features == 'average'){
+    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
+    restrict_range <- FALSE
+  } else(
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
+
   MEs <- MEs[,colnames(MEs) != 'grey']
 
   # are we subsetting?
@@ -3034,6 +3048,8 @@ ModuleRadarPlot <- function(
     dplyr::summarise_all(mean) %>%
     as.data.frame() 
 
+  #print(head(plot_df))
+
   # re-format the dataframe
   rownames(plot_df) <- plot_df$cluster
   plot_df <- dplyr::select(plot_df, -cluster) 
@@ -3041,12 +3057,17 @@ ModuleRadarPlot <- function(
   plot_df[plot_df < 0] <- 0 
   plot_df$group <- rownames(plot_df)
   plot_df <- plot_df[,c('group', clusters)]
-  print(head(plot_df))
 
   # set module factor levels
   plot_df$group <- factor(as.character(plot_df$group), levels=mods)
   plot_df <- plot_df %>% dplyr::arrange(group) %>% as.data.frame()
   colnames(plot_df) <- c('group', clusters)
+
+  if(is.factor(cell_grouping)){
+    group_order <- levels(droplevels(cell_grouping))
+  } else{
+    group_order <- unique(cell_grouping)
+  }
 
   # set the group factor levels
   plot_df <- plot_df[,c('group', group_order)]
