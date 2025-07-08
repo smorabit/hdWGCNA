@@ -2227,6 +2227,11 @@ PlotDMEsVolcano <- function(
   # module names
   mods <- levels(modules$module)
   mods <- mods[mods %in% DMEs$module]
+  if (length(mods) == 0) {
+    mods <- levels(modules$module)
+    mods <- gsub("_", "-", mods) # (Probably fine to only add this line)
+    mods <- mods[mods %in% DMEs$module]
+  }
   mod_colors <- module_colors$color; names(mod_colors) <- as.character(module_colors$module)
 
   # annotate modules with significant DME
