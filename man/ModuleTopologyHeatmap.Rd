@@ -19,6 +19,7 @@ ModuleTopologyHeatmap(
   return_genes = FALSE,
   genes_order = NULL,
   TOM_use = NULL,
+  datExpr_use = NULL,
   wgcna_name = NULL,
   ...
 )
@@ -51,6 +52,8 @@ ModuleTopologyHeatmap(
 \item{genes_order}{a character vector of genes to plot in this specific order, this option will override the order_by parameter}
 
 \item{TOM_use}{The name of the hdWGCNA experiment containing the TOM that will be used for plotting}
+
+\item{datExpr_use}{The name of the hdWGCNA experiment containing the datExpr that will be used for calculating the correlation matrix}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }

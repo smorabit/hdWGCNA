@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.07 (2025-09-04)
+## Added
+- None
+
+## Changes
+- Update to `ReassignModules` to add the option of automatically re-assigning selected genes to the module with the highest kME. Helpful in particular cases where some gene(s) of interest were assigned to the grey module. 
+
 # hdWGCNA 0.4.06 (2025-06-02)
 ## Added
 - None

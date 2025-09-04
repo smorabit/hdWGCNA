@@ -10,6 +10,7 @@ ModuleRadarPlot(
   barcodes = NULL,
   combine = TRUE,
   ncol = 4,
+  features = "hMEs",
   wgcna_name = NULL,
   fill = TRUE,
   draw.points = FALSE,

@@ -9,6 +9,7 @@
 #' @param features character vector containing features for manual module reassignment,
 #' @param new_modules character vector containing modules to reassign the genes
 #' @param ignore logical indicating whether or not to ignore error message about reassigning non-grey features
+#' @param auto_reassign logical, automatically re-assign selected features to the module with the highest kME?
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
 #' ReassignModules reassigns features with negative kMEs in their assigned module to the
@@ -26,6 +27,7 @@ ReassignModules <- function(
   features=NULL,
   new_modules=NULL,
   ignore=FALSE,
+  auto_reassign = FALSE,
   wgcna_name=NULL
 ){
 
@@ -40,14 +42,14 @@ ReassignModules <- function(
   mods <- levels(modules$module); mods <- mods[mods != 'grey']
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-  if(!is.null(features)){
+  if(!is.null(features) & !(auto_reassign)){
  
     # check validity of input features
     if(!all(features %in% genes_use)){
       stop('Some features are not found in GetWGCNAGenes(seurat_obj).')
     }
 
-     ##############################
+    ##############################
     # Manual reassignment
     ##############################
 
@@ -83,7 +85,7 @@ ReassignModules <- function(
       return(seurat_obj)
 
     }
-  } else{
+  } else if(is.null(features)){
 
     ##############################
     # reassignment by kME
@@ -130,7 +132,7 @@ ReassignModules <- function(
   modules[features,'module'] <- reassigned
   modules[features,'color'] <- reassigned_colors
 
-
+  print(head(reassigned))
 
   # set the modules table
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)

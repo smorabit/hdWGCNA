@@ -10,6 +10,7 @@ ReassignModules(
   features = NULL,
   new_modules = NULL,
   ignore = FALSE,
+  auto_reassign = FALSE,
   wgcna_name = NULL
 )
 }
@@ -23,6 +24,8 @@ ReassignModules(
 \item{new_modules}{character vector containing modules to reassign the genes}
 
 \item{ignore}{logical indicating whether or not to ignore error message about reassigning non-grey features}
+
+\item{auto_reassign}{logical, automatically re-assign selected features to the module with the highest kME?}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }

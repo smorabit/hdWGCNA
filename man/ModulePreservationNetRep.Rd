@@ -14,6 +14,8 @@ ModulePreservationNetRep(
   genome_ref_col = NULL,
   genome_query_col = NULL,
   TOM_use = NULL,
+  ref_power = 1,
+  query_power = 1,
   wgcna_name = NULL,
   wgcna_name_ref = NULL,
   ...

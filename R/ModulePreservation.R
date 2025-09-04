@@ -151,6 +151,8 @@ ModulePreservationNetRep <- function(
   genome_ref_col = NULL,
   genome_query_col = NULL,
   TOM_use = NULL,
+  ref_power = 1,
+  query_power = 1,
   wgcna_name = NULL,
   wgcna_name_ref = NULL,
   ...
@@ -187,14 +189,13 @@ ModulePreservationNetRep <- function(
   TOM_query <- GetTOM(seurat_query, TOM_use)
 
   # change the gene names to match:
-  # this is totally untested so I should test it
   if(!is.null(gene_mapping)){
     gene_match <- match(colnames(datExpr_query), gene_mapping[,genome_query_col])
     gene_mapping <- na.omit(gene_mapping[gene_match,])
     colnames(datExpr_query)  <- gene_mapping[,genome_ref_col]
   }
 
-  # genes to use in teh query dataset
+  # genes to use in the query dataset
   genes_use_query <- genes_use_ref[genes_use_ref %in% colnames(TOM_query)]
 
   datExpr_ref <- datExpr_ref[,genes_use_ref]
@@ -203,8 +204,8 @@ ModulePreservationNetRep <- function(
   TOM_query <- TOM_query[genes_use_query, genes_use_query]
 
   # calculate adjacency:
-  cor_mat_ref <- WGCNA::adjacency(datExpr_ref, type = "unsigned", power = 1)
-  cor_mat_query <- WGCNA::adjacency(datExpr_query, type = "unsigned", power = 1)
+  cor_mat_ref <- WGCNA::adjacency(datExpr_ref, type = "unsigned", power = ref_power)
+  cor_mat_query <- WGCNA::adjacency(datExpr_query, type = "unsigned", power = query_power)
 
   # set up data lists:
   n_list <- list(TOM_ref, TOM_query)
