@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.07 (2025-10-23)
+## Added
+- None
+
+## Changes
+- Improved error handling in the function `EnrichrDotPlot`.
+
 # hdWGCNA 0.4.07 (2025-09-04)
 ## Added
 - None
@@ -20,7 +27,6 @@
 
 ## Changes
 - Fixed compatibility issue causing an error in `ModuleEigengenes` when using `SCTransform` datasets in `Seurat v5`.
-
 
 # hdWGCNA 0.4.04 (2025-02-21)
 ## Added

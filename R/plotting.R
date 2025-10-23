@@ -775,26 +775,29 @@ EnrichrBarPlot <- function(
 #'
 #' @return A ggplot2 object representing the dot plot of enriched terms for the specified modules and database.
 #' @export
+#' 
 EnrichrDotPlot <- function(
   seurat_obj, 
   database, 
-  mods="all",
+  mods = "all",
   n_terms = 3, 
   p_cutoff = 0.05,
   p_adj = TRUE,
-  break_ties=TRUE,
-  term_size=10,
-  wgcna_name=NULL
+  break_ties = TRUE,
+  term_size = 10,
+  wgcna_name = NULL
 ){
 
   # get data from active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
 
-  # get modules:
+  # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
 
   # using all modules?
-  if(mods == 'all'){
+  if (mods == 'all') {
     mods <- levels(modules$module)
     mods <- mods[mods != 'grey']
   }
@@ -802,10 +805,25 @@ EnrichrDotPlot <- function(
   # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
 
-  # subset based on significance level:
-  if(p_adj){
+  # --- ✅ CHECK 1: validate that the requested database exists ---
+  if (!"db" %in% colnames(enrichr_df)) {
+    stop("The Enrichr table does not contain a 'db' column. Please check the enrichment results.")
+  }
+
+  available_dbs <- unique(enrichr_df$db)
+  if (!(database %in% available_dbs)) {
+    stop(
+      paste0(
+        "Database '", database, "' not found in enrichment results.\n",
+        "Available databases: ", paste(available_dbs, collapse = ", ")
+      )
+    )
+  }
+
+  # subset based on significance level
+  if (p_adj) {
     enrichr_df <- subset(enrichr_df, Adjusted.P.value <= p_cutoff)
-  } else{
+  } else {
     enrichr_df <- subset(enrichr_df, P.value <= p_cutoff)
   }
 
@@ -815,33 +833,66 @@ EnrichrDotPlot <- function(
 
   # helper function to wrap text
   wrapText <- function(x, len) {
-      sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), USE.NAMES = FALSE)
+    sapply(x, function(y) paste(strwrap(y, len), collapse = "\n"), USE.NAMES = FALSE)
   }
 
-  # get data to plot
+  # get top terms
   top_terms <- enrichr_df %>%
     subset(db == database & module %in% mods) %>%
-    group_by(module) %>%
-    slice_max(order_by=Combined.Score, n=n_terms) %>% 
+    dplyr::group_by(module) %>%
+    dplyr::slice_max(order_by = Combined.Score, n = n_terms) %>% 
     .$Term
 
-  plot_df <- subset(enrichr_df, Term %in% top_terms)
+  plot_df <- subset(enrichr_df, Term %in% top_terms & db == database & module %in% mods)
 
-  # sometimes top_n returns more than the desired number if there are ties. so here
-  # we just randomly sample to break ties:
-  if(break_ties){
-    plot_df <- do.call(rbind, lapply(plot_df %>% group_by(module) %>% group_split, function(x){x[sample(n_terms),]}))
+  # --- ✅ CHECK 2: warn if no terms or missing modules ---
+  if (nrow(plot_df) == 0) {
+    warning(
+      paste0(
+        "No enriched terms to plot for database '", database, 
+        "' with p_cutoff = ", p_cutoff, 
+        " and selected modules: ", paste(mods, collapse = ", ")
+      )
+    )
+    return(NULL)
   }
 
-  plot_df <- plot_df %>% mutate(Term = stringr::str_replace(Term, " \\s*\\([^\\)]+\\)", "")) 
+  # identify modules missing any significant terms
+  plotted_modules <- unique(plot_df$module)
+  missing_modules <- setdiff(mods, plotted_modules)
+  if (length(missing_modules) > 0) {
+    warning(
+      paste0(
+        "No enriched terms found for the following modules in database '", database, "': ",
+        paste(missing_modules, collapse = ", ")
+      )
+    )
+  }
+
+  # randomly break ties if requested
+  if (break_ties) {
+    plot_df <- do.call(
+      rbind,
+      lapply(
+        plot_df %>% dplyr::group_by(module) %>% dplyr::group_split(),
+        function(x) {
+          if (nrow(x) > n_terms) x <- x[sample(seq_len(nrow(x)), n_terms), ]
+          return(x)
+        }
+      )
+    )
+  }
+
+  plot_df <- plot_df %>%
+    dplyr::mutate(Term = stringr::str_replace(Term, " \\s*\\([^\\)]+\\)", "")) 
   plot_df$Term <- wrapText(plot_df$Term, 45)
 
-  # set modules factor and re-order:
+  # set module factor order
   plot_df$module <- factor(
     as.character(plot_df$module),
-    levels=levels(modules$module)
+    levels = levels(modules$module)
   )
-  plot_df <- arrange(plot_df, module)
+  plot_df <- dplyr::arrange(plot_df, module)
 
   # set Terms factor
   plot_df$Term <- factor(
@@ -849,39 +900,34 @@ EnrichrDotPlot <- function(
     levels = unique(as.character(plot_df$Term))
   )
 
-  if(p_adj){
-    plot_df$p <- plot_df$Adjusted.P.value
-  } else{
-    plot_df$p <- plot_df$P.value
-  }
+  # p-value column
+  plot_df$p <- if (p_adj) plot_df$Adjusted.P.value else plot_df$P.value
+  plot_df$p <- ifelse(is.na(plot_df$p), 1, plot_df$p)
 
   max_p <- quantile(-log(plot_df$p), 0.95)
+  plot_df$logp <- pmin(-log(plot_df$p), max_p)
 
-  plot_df$logp <- -log(plot_df$p)
-  plot_df$logp <- ifelse(plot_df$logp > max_p, max_p, plot_df$logp)
-
-  p <- plot_df  %>%
-    ggplot(aes(x=module, y=Term, size=log10(Combined.Score), color=logp)) +
+  p <- plot_df %>%
+    ggplot(aes(x = module, y = Term, size = log10(Combined.Score), color = logp)) +
     geom_point() +
-    #geom_point(aes(size=p), color=plot_df$color) +
     Seurat::RotatedAxis() +
     ylab('') + xlab('') + 
     labs(
-        color = bquote("-log"[10]~"(P)"),
-        size= bquote("log"[10]~"(Enrich)")
+      color = bquote("-log"[10]~"(P)"),
+      size  = bquote("log"[10]~"(Enrich)")
     ) + 
-    scale_y_discrete(limits=rev) +
+    scale_y_discrete(limits = rev) +
     ggtitle(database) +
     theme(
       plot.title = element_text(hjust = 0.5),
       axis.line.x = element_blank(),
       axis.line.y = element_blank(),
-      axis.text.y = element_text(size=term_size),
-      panel.border = element_rect(colour = "black", fill=NA, size=1),
-      panel.grid = element_line(size=0.25, color='lightgrey')
+      axis.text.y = element_text(size = term_size),
+      panel.border = element_rect(colour = "black", fill = NA, size = 1),
+      panel.grid = element_line(size = 0.25, color = 'lightgrey')
     )
 
-  p
+  return(p)
 }
 
 
