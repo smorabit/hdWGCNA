@@ -20,42 +20,47 @@
 #' @examples
 #' ProjectModules
 ProjectModules <- function(
-  seurat_obj,
-  seurat_ref,
-  modules=NULL,
-  group.by.vars=NULL,
-  gene_mapping=NULL, # table mapping genes from species 1 to species 2
-  genome1_col=NULL, genome2_col=NULL,
-  overlap_proportion = 0.5,
-  vars.to.regress = NULL,
-  scale.model.use = 'linear',
-  wgcna_name=NULL, wgcna_name_proj=NULL,
-  ...
+    seurat_obj,
+    seurat_ref=NULL,
+    modules=NULL,
+    group.by.vars=NULL,
+    gene_mapping=NULL, # table mapping genes from species 1 to species 2
+    genome1_col=NULL, genome2_col=NULL,
+    overlap_proportion = 0.5,
+    vars.to.regress = NULL,
+    scale.model.use = 'linear',
+    wgcna_name=NULL, wgcna_name_proj=NULL,
+    ...
 ){
-
+  
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
-  CheckWGCNAName(seurat_ref, wgcna_name)
-
+  
+  # check reference if provided
+  if(!is.null(seurat_ref)){CheckWGCNAName(seurat_ref, wgcna_name)}
+  
   # get modules to be projected:
   if(is.null(modules)){
+    if(is.null(seurat_ref)){
+      stop('Either reference Seurat or modules table have to be provided. They cannot be both NULL')
+    }
     modules <- GetModules(seurat_ref, wgcna_name)
   } else{
     if(!all(c("gene_name", "module", "color") %in% colnames(modules))){
       stop('Missing columns in modules table. Required columns are gene_name, module, color')
     }
   }
-
+  
   # cast "modules" to a factor
   if(!is.factor(modules$module)){
     modules$module <- as.factor(modules$module)
   }
-
+  
   # are we mapping gene names?
   if(!is.null(gene_mapping)){
     modules <- TransferModuleGenome(modules, gene_mapping, genome1_col, genome2_col)
   }
-
+  
   # what is the proportion of genes in each module that are in seurat_obj?
   mods <- as.character(unique(modules$module))
   mod_props <- unlist(lapply(mods, function(x){
@@ -64,22 +69,22 @@ ProjectModules <- function(
   }))
   mods_keep <- mods[mod_props >= overlap_proportion]
   mods_remove <- mods[mod_props < overlap_proportion]
-
+  
   if(length(mods) > 0){
     warning(paste0("The following modules will not be projected because too few genes are present in seurat_obj: ", paste(mods_remove, collapse=', ')))
   }
-
+  
   # only keep modules that have enough overlapping genes
   modules <- subset(modules, module %in% mods_keep) %>%
     dplyr::mutate(module = droplevels(module))
-
+  
   # get genes that overlap between WGCNA genes & seurat_obj genes:
   gene_names <- modules$gene_name
   genes_use <- intersect(gene_names, rownames(seurat_obj))
-
+  
   # subset modules by genes in this seurat object:
   modules <- modules %>% subset(gene_name %in% genes_use)
-
+  
   # setup new seurat obj for wgcna:
   if(!(wgcna_name_proj %in% names(seurat_obj@misc))){
     seurat_obj <- SetupForWGCNA(
@@ -100,9 +105,9 @@ ProjectModules <- function(
     wgcna_name = wgcna_name_proj,
     ...
   )
-
+  
   seurat_obj
-
+  
 }
 
 
@@ -121,41 +126,41 @@ ProjectModules <- function(
 #' @examples
 #' TransferModuleGenome
 TransferModuleGenome <- function(
-  modules, gene_mapping,
-  genome1_col=NULL, genome2_col=NULL
+    modules, gene_mapping,
+    genome1_col=NULL, genome2_col=NULL
 ){
-
+  
   # use the first & second columns if these are null
   if(is.null(genome1_col)){genome1_col <- colnames(gene_mapping)[1]}
   if(is.null(genome2_col)){genome2_col <- colnames(gene_mapping)[2]}
-
+  
   # need to add a check that there's a one to one mapping
   if(!all(table(gene_mapping[[genome2_col]]) == 1)){
     stop("There can only be one value for each feature in genome2_col in the gene_mapping table.")
   }
-
+  
   # switch gene names to human:
   gene_mapping <- gene_mapping[,c(genome1_col, genome2_col)]
-
+  
   # only keep genome1 genes that are in the WGCNA gene list:
   gene_list <- modules$gene_name
   gene_mapping <- gene_mapping[gene_mapping[,genome1_col] %in% gene_list,]
-
+  
   # subset modules
   modules <- subset(modules, gene_name %in% gene_mapping[,genome1_col])
-
+  
   # match the order of the given gene list, and remove NA entries
   gene_match <- match(gene_list, gene_mapping[,genome1_col])
   gene_mapping <- na.omit(gene_mapping[gene_match,])
-
+  
   # update modules table with the new gene names
   # modules <- na.omit(modules[gene_match,])
-
+  
   print(head(gene_mapping))
-
+  
   modules$gene_name <- gene_mapping[,genome2_col]
   rownames(modules) <- modules$gene_name
-
+  
   modules
-
+  
 }
