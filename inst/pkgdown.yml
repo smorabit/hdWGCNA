@@ -1,5 +1,5 @@
-pandoc: '3.5'
-pkgdown: 2.1.1
+pandoc: '2.12'
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   basic_tutorial: basic_tutorial.html
@@ -23,7 +23,7 @@ articles:
   sctransform: sctransform.html
   ST_basics: ST_basics.html
   tf_network: tf_network.html
-last_built: 2025-10-23T14:36Z
+last_built: 2026-01-07T15:28Z
 urls:
   reference: https://smorabit.github.io/hdWGCNA/reference
   article: https://smorabit.github.io/hdWGCNA/articles

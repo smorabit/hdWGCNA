@@ -332,14 +332,26 @@ MetacellsByGroups <- function(
   }
 
   # check slot/layer:
-  if(!(slot %in% c('counts', 'data', 'scale.data'))){
-    stop('Invalid input for slot. Valid choices are counts, data, scale.data.')
-  } else{
-
-    # check the shape of the slot
-    slot_dim <- dim(Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot))
-    if(any(slot_dim) == 0){
-      stop(paste(c("Selected slot ", slot, " not found in this assay.")))
+  if(CheckSeurat5()){
+    if(!(layer %in% c('counts', 'data', 'scale.data'))){
+      stop('Invalid input for layer. Valid choices are counts, data, scale.data.')
+    } else{
+      # check the shape of the matrix
+      layer_dim <- dim(SeuratObject::LayerData(seurat_obj, assay=assay, layer=layer))
+      if(any(layer_dim) == 0){
+        stop(paste(c("Selected layer ", layer, " not found in this assay.")))
+      }
+    }
+  }
+  else{
+    if(!(slot %in% c('counts', 'data', 'scale.data'))){
+      stop('Invalid input for slot. Valid choices are counts, data, scale.data.')
+    } else{
+      # check the shape of the matrix
+      slot_dim <- dim(Seurat::GetAssayData(seurat_obj, assay=assay, slot=slot))
+      if(any(slot_dim) == 0){
+        stop(paste(c("Selected slot ", slot, " not found in this assay.")))
+      }
     }
   }
 

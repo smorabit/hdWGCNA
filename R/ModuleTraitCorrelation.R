@@ -40,6 +40,10 @@ ModuleTraitCorrelation <- function(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
   }
 
+  if(!is.factor(group.by)){
+    stop('group.by variable must be a factor in the seurat object metadata.')
+  }
+
   # subset?
   if(!is.null(subset_by)){
     print('subsetting')

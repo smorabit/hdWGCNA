@@ -21,7 +21,7 @@
 #' ProjectModules
 ProjectModules <- function(
   seurat_obj,
-  seurat_ref,
+  seurat_ref = NULL,
   modules=NULL,
   group.by.vars=NULL,
   gene_mapping=NULL, # table mapping genes from species 1 to species 2
@@ -34,8 +34,10 @@ ProjectModules <- function(
 ){
 
   # get data from active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
-  CheckWGCNAName(seurat_ref, wgcna_name)
+  if(!is.null(seurat_ref)){
+    if(is.null(wgcna_name)){wgcna_name <- seurat_ref@misc$active_wgcna}
+    CheckWGCNAName(seurat_ref, wgcna_name)
+  }
 
   # get modules to be projected:
   if(is.null(modules)){
@@ -44,6 +46,10 @@ ProjectModules <- function(
     if(!all(c("gene_name", "module", "color") %in% colnames(modules))){
       stop('Missing columns in modules table. Required columns are gene_name, module, color')
     }
+  }
+
+  if(is.null(modules) & is.null(seurat_ref)){
+    stop('Either seurat_ref or modules must be provided.')
   }
 
   # cast "modules" to a factor

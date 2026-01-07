@@ -19,7 +19,8 @@
 #'
 #' @export
 SetupForWGCNA <- function(
-  seurat_obj, wgcna_name,
+  seurat_obj, 
+  wgcna_name,
   features = NULL,
   metacell_location = NULL,
   ...

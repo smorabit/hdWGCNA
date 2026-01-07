@@ -6,7 +6,7 @@
 \usage{
 ProjectModules(
   seurat_obj,
-  seurat_ref,
+  seurat_ref = NULL,
   modules = NULL,
   group.by.vars = NULL,
   gene_mapping = NULL,

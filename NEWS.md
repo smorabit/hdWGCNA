@@ -1,4 +1,14 @@
-# hdWGCNA 0.4.07 (2025-10-23)
+# hdWGCNA 0.4.09 (2026-01-06)
+## Added
+- None
+
+## Changes
+- Improved error handling in the function `ModuleTraitCorrelation`
+- Updated the installation instructions in README.md to fix conda environment creation command.
+- Bugfix in `ProjectModules` when using a user-defined modules table rather than a reference seurat object.
+- Bugfix in MetacellsByGroups when using Seurat v5. 
+
+# hdWGCNA 0.4.08 (2025-10-23)
 ## Added
 - None
 

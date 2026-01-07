@@ -1,13 +1,11 @@
 
 # high dimensional WGCNA <img src="man/figures/logo.png" align="right" height="20%" width="20%" />
 
-
 [![R](https://img.shields.io/github/r-package/v/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/tree/dev)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/issues)
 [![Publication](https://img.shields.io/badge/publication-Cell%20Rep%20Meth-%2300A1D7)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
 [![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/smorabit/hdWGCNA)
 [![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
-
 
 hdWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://doi.org/10.1186/1471-2105-9-559) in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct context-specific co-expression networks across cellular and spatial hierarchies. hdWGNCA identifies modules of highly co-expressed genes and provides context for these modules via statistical testing and biological knowledge sources. hdWGCNA uses datasets formatted as [Seurat](https://satijalab.org/seurat/index.html) objects. Check out the [hdWGCNA in single-cell data tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) or the [hdWGCNA in spatial transcriptomics data tutorial](https://smorabit.github.io/hdWGCNA/articles/ST_basics.html) to get started.
 
@@ -24,42 +22,27 @@ We recommend creating an R [conda environment](https://docs.conda.io/en/latest/)
 
 ```bash
 # create new conda environment for R
-conda create -n hdWGCNA -c conda-forge r-base r-essentials
+conda create -n hdWGCNA -c conda-forge -c bioconda r-base=4.4 mamba
 
 # activate conda environment
 conda activate hdWGCNA
+
+# install critical R packages
+mamba install -c conda-forge -c bioconda r-seurat r-hdf5r r-wgcna r-igraph r-tidyverse r-ggraph r-harmony r-enrichr r-devtools
+
+# install Bioconductor packages
+mamba install -c conda-forge -c bioconda bioconductor-ucell bioconductor-genomicranges bioconductor-geneoverlap 
+
 ```
 
-Next open R and install the required dependencies:
-
-* [Bioconductor](https://www.bioconductor.org/), an R-based software ecosystem for bioinformatics and biostatistics.
-* [devtools](https://devtools.r-lib.org/), a package for package development in R.
-* [Seurat](https://satijalab.org/seurat/index.html), a general-purpose toolkit for single-cell data science.
+Next open R and install hdWGCNA.
 
 ```r
-# install BiocManager
+# install Bioconductor
 install.packages("BiocManager")
-
-# install Bioconductor core packages
 BiocManager::install()
 
-# install devtools
-BiocManager::install("devtools")
-
-# install additional packages
-BiocManager::install(c("WGCNA", "UCell", "GenomicRanges", "GeneOverlap"))
-
-# install latest version of Seurat from CRAN
-install.packages("Seurat")
-
-# alternatively, install Seurat v4
-install.packages("Seurat", repos = c("https://satijalab.r-universe.dev', 'https://cloud.r-project.org"))
-
-```
-
-Now you can install the hdWGCNA package using `devtools`.
-
-```r
+# install hdWGCNA from GitHub
 devtools::install_github('smorabit/hdWGCNA', ref='dev')
 ```
 
