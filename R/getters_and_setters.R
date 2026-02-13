@@ -143,33 +143,60 @@ GetWGCNAGenes <- function(seurat_obj, wgcna_name=NULL){
   seurat_obj@misc[[wgcna_name]]$wgcna_genes
 }
 
-############################
-# datExpr
-###########################
 
-
-#' SetDatExpr
+#' Set Expression Data (Standard WGCNA)
 #'
-#' This function specifies the gene expression matrix for co-expression network analysis.
+#' This function sets up the expression matrix input for standard (non-consensus) WGCNA
+#' based on the metacell expression matrix, the full expression matrix, or a provided
+#' pseudobulk expression matrix.
 #'
-#' @param seurat_obj A Seurat object
-#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
-#' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
-#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
-#' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
-#' @param multi_group_name A string containing the name of a group present in the multi.group.by column.
-#' @param assay The name of the assay in the Seurat object
-#' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
-#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
-#' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
-#' @param features A list of features to use to override the features that have been previously set.
-#' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
+#' @description
+#' The function operates in three modes:
+#' 1. **Internal Seurat/Metacell Mode (Default):** Extracts expression data directly from the
+#'    Seurat object (either single-cell or metacell data).
+#' 2. **Pseudobulk Mode (SummarizedExperiment):** Extracts expression data from a provided
+#'    SummarizedExperiment object (passed to `mat`). This is the recommended approach for
+#'    pseudobulk analysis.
+#' 3. **External Matrix Mode:** Sets the expression data from a provided matrix (passed to `mat`).
+#'
+#' @param seurat_obj A Seurat object containing the hdWGCNA experiment.
+#' @param group_name A string containing the group to subset the data by (e.g., a specific
+#'   cluster or cell type). Only used if pulling data from `seurat_obj`.
+#' @param use_metacells Logical; if TRUE (default), use the metacell expression matrix.
+#'   If FALSE, use the full single-cell expression matrix. Ignored if `mat` is provided.
+#' @param group.by A string containing the name of a column in the Seurat object with
+#'   cell groups (clusters, cell types, etc). If NULL (default), uses Seurat Idents.
+#' @param multi.group.by A string containing the name of a column in the Seurat object
+#'   with groups to subset further (e.g. dataset, sample). Only used if pulling data
+#'   from `seurat_obj`.
+#' @param multi_group_name A string or character vector specifying which groups from
+#'   `multi.group.by` to include.
+#' @param return_seurat Logical; if TRUE (default), returns the Seurat object with the
+#'   `datExpr` slot populated. If FALSE, returns the data frame of expression data.
+#' @param assay The name of the assay in the Seurat object (e.g., "RNA", "SCT").
+#' @param slot The name of the slot in the Seurat object (e.g., "counts", "data").
+#'   Used for Seurat v4 compatibility.
+#' @param layer The name of the layer in the Seurat object (e.g., "counts", "data")
+#'   OR the name of the assay in the SummarizedExperiment (e.g., "VST", "counts")
+#'   if `mat` is provided.
+#' @param mat A Matrix or SummarizedExperiment object containing gene expression data.
+#'   - **SummarizedExperiment:** The function extracts the assay specified by `layer`
+#'     and subsets genes to match `GetWGCNAGenes(seurat_obj)`.
+#'   - **Matrix:** The function assumes columns are genes and rows are samples.
+#' @param features A character vector of genes to use. If NULL (default), uses the
+#'   genes stored in the hdWGCNA experiment.
+#' @param wgcna_name A string containing the name of the WGCNA slot in `seurat_obj@misc`.
+#'   Default = NULL, which retrieves the currently active WGCNA data.
+#' @param ... Additional arguments passed to `WGCNA::goodGenes`.
+#'
+#' @return A Seurat object with the `datExpr` slot populated in the specified `wgcna_name`
+#'   experiment, or a data frame if `return_seurat = FALSE`.
+#'
 #' @details
-#' SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession 
-#' matrix that will be used for network analysis. We typically use this function to select a 
-#' cell type or group of cell types for network analysis using the group.by parameter, but we provide 
-#' additional parameters for further customization.
-#' @keywords scRNA-seq
+#' This function automatically runs `WGCNA::goodGenes` to exclude genes with zero variance
+#' or excessive missingness. If `mat` is a SummarizedExperiment, the function automatically
+#' transposes the assay to the required (Samples x Genes) format.
+#'
 #' @export
 SetDatExpr <- function(
   seurat_obj,
@@ -192,19 +219,10 @@ SetDatExpr <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
 
+  # Check assay validity (only strictly needed if pulling from Seurat)
   if(is.null(assay)){
       assay <- DefaultAssay(seurat_obj)
-      warning(paste0('assay not specified, trying to use assay ', assay))
-  }
-
-  # check that selected assay is in the seurat object 
-  if(!(assay %in% names(seurat_obj))){
-    stop(paste0('Invalid choice of assay: ', assay, ' not found in Assays(seurat_obj).'))
-  }
-
-  # check that slot is valid 
-  if(!(slot %in% c('counts', 'data', 'scale.data'))){
-    stop('Invalid choice of slot. Valid choices are counts, data, or scale.data.')
+      if(is.null(mat)) warning(paste0('assay not specified, trying to use assay ', assay))
   }
 
   # get parameters from seurat object
@@ -212,8 +230,7 @@ SetDatExpr <- function(
 
   if(is.null(features)){
     genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
-  }
-  else{
+  } else{
     if(all(features %in% rownames(seurat_obj))){
       genes_use <- features 
     } else{
@@ -221,9 +238,28 @@ SetDatExpr <- function(
     }
   }
 
-  # was a matrix supplied?
+  # -------------------------------------------------------
+  # Logic: Determine Source of Data
+  # -------------------------------------------------------
+
+  # Case 1: Pulling from Seurat/Metacells (No external matrix)
   if(is.null(mat)){
       
+    # check that selected assay is in the seurat object 
+    if(!(assay %in% names(seurat_obj))){
+      stop(paste0('Invalid choice of assay: ', assay, ' not found in Assays(seurat_obj).'))
+    }
+    
+    # check that slot is valid 
+    if(!(slot %in% c('counts', 'data', 'scale.data'))){
+      stop('Invalid choice of slot. Valid choices are counts, data, or scale.data.')
+    }
+
+    # check that layer is valid 
+    if(!(layer %in% c('counts', 'data', 'scale.data'))){
+      stop('Invalid choice of layer. For seurat objects, valid choices are counts, data, or scale.data.')
+    }
+
     # get metacell object
     m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
 
@@ -240,49 +276,23 @@ SetDatExpr <- function(
 
     # check the group.by params
     if(!is.null(group.by)){
-
-      # check that group.by is in the Seurat object & in the metacell object:
       if(!(group.by %in% colnames(s_obj@meta.data))){
         m_cell_message <- ""
         if(use_metacells){m_cell_message <- "metacell"}
         stop(paste0(group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
       }
-
-      # check that the selected groups are in the Seurat object:
       if(!all(group_name %in% s_obj@meta.data[[group.by]])){
         groups_not_found <- group_name[!(group_name %in% s_obj@meta.data[[group.by]])]
-        stop(
-          paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
-        )
+        stop(paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', ')))
       }
-    }
-
-    # check the multi.group.by params
-    if(!is.null(multi.group.by)){
-
-      # check that group.by is in the Seurat object & in the metacell object:
-      if(!(multi.group.by %in% colnames(s_obj@meta.data))){
-        m_cell_message <- ""
-        if(use_metacells){m_cell_message <- "metacell"}
-        stop(paste0(multi.group.by, ' not found in the meta data of the ', m_cell_message, ' Seurat object'))
-      }
-
-      # check that the selected groups are in the Seurat object:
-      if(!all(multi_group_name %in% s_obj@meta.data[[multi.group.by]])){
-        groups_not_found <- multi_group_name[!(multi_group_name %in% s_obj@meta.data[[multi.group.by]])]
-        stop(
-          paste0("Some groups in group_name are not found in the seurat_obj: ", paste(groups_not_found, collapse=', '))
-        )
-      }
-    }
-
-    # columns to group by for cluster/celltype
-    if(!is.null(group.by)){
       seurat_meta <- seurat_meta %>% subset(get(group.by) %in% group_name)
     }
 
     # subset further if multiExpr:
     if(!is.null(multi.group.by)){
+      if(!(multi.group.by %in% colnames(s_obj@meta.data))){
+        stop(paste0(multi.group.by, ' not found in the meta data.'))
+      }
       seurat_meta <- seurat_meta %>% subset(get(multi.group.by) %in% multi_group_name)
     }
 
@@ -295,47 +305,81 @@ SetDatExpr <- function(
     } else{
       exp <- Seurat::GetAssayData(s_obj, assay=assay, slot=slot)
     }
-    datExpr <- as.data.frame(exp)[genes_use,cells]
     
-    # transpose data
-    datExpr <- as.data.frame(t(datExpr))
-  } else{
+    # Subset to WGCNA genes and selected cells
+    # We transpose here to get Samples x Genes
+    datExpr <- as.data.frame(t(as.matrix(exp[genes_use, cells, drop=FALSE])))
+    
+  } else {
+      
+    # Case 2: SummarizedExperiment provided
+    if(inherits(mat, "SummarizedExperiment")){
+        
+        # Check if the requested assay/layer exists
+        # We reuse the 'layer' argument here to select the SE assay (e.g. 'VST')
+        if(!(layer %in% SummarizedExperiment::assayNames(mat))){
+            stop(paste0("Assay '", layer, "' not found in SummarizedExperiment. Available assays: ", 
+                        paste(SummarizedExperiment::assayNames(mat), collapse=", ")))
+        }
+        
+        # Intersect SE genes with WGCNA genes
+        genes_keep <- intersect(rownames(mat), genes_use)
+        
+        if(length(genes_keep) == 0){
+             stop("No intersection between SummarizedExperiment rownames and selected WGCNA genes.")
+        }
+        
+        # Extract, subset genes, and transpose to (Samples x Genes)
+        # Note: We rely on the user to have filtered samples/pseudobulks in the SE object 
+        # prior to calling this function if they wanted to subset groups.
+        datExpr <- t(as.matrix(SummarizedExperiment::assay(mat, layer)[genes_keep, , drop=FALSE]))
+        datExpr <- as.data.frame(datExpr)
+        
+    } else {
+        
+        # Case 3: Standard Matrix provided
+        datExpr <- mat
 
-    datExpr <- mat
+        # cast it to a dataframe
+        if(!is.data.frame(datExpr)){
+          datExpr <- as.data.frame(datExpr)
+        }
 
-    # cast it to a dataframe
-    if(any(class(datExpr) != 'data.frame')){
-      datExpr <- as.data.frame(datExpr)
+        # are the colnames genes?
+        if(!all(colnames(datExpr) %in% rownames(seurat_obj))){
+          stop("colnames of the provided matrix are invalid. Make sure that the colnames are features (genes), and that all of these features are in the seurat_obj")
+        }
     }
-
-    # are the colnames genes?
-    if(!all(colnames(datExpr) %in% rownames(seurat_obj))){
-      stop("colnames of the provided matrix are invalid. Make sure that the colnames are features (genes), and that all of these features are in the seurat_obj")
-    }
-
-    # subset the datExpr by the WGCNA genes:
-    genes_use <- colnames(datExpr)
-    #datExpr <- datExpr[,genes_use]
-
   }
 
   if(return_seurat){
-    gene_list <- genes_use[WGCNA::goodGenes(datExpr, ...)]
-    datExpr <- datExpr[,gene_list]
+    
+    # Run WGCNA's goodGenes check
+    # We pass '...' so users can control verbose, minFraction, etc.
+    is_good <- WGCNA::goodGenes(datExpr, ...)
+    
+    if(sum(is_good) < 2) {
+        stop("Too few genes remaining after goodGenes check.")
+    }
+    
+    # Subset datExpr
+    datExpr <- datExpr[, is_good]
+    
+    # Update the gene list to match valid genes
+    gene_list <- colnames(datExpr)
 
-    # update the WGCNA gene list:
+    # update the WGCNA gene list in the object:
     seurat_obj <- SetWGCNAGenes(seurat_obj, gene_list, wgcna_name)
 
     # set the datExpr in the Seurat object
     seurat_obj@misc[[wgcna_name]]$datExpr <- datExpr
     out <- seurat_obj
+    
   } else{
     out <- datExpr
   }
   out
 }
-
-
 
 #' GetDatExpr
 #'
@@ -355,23 +399,62 @@ GetDatExpr <- function(seurat_obj, wgcna_name=NULL){
 }
 
 
-#' SetMultiExpr
+' Set Multi-Set Expression Data (Consensus WGCNA)
 #'
-#' This function sets up the expression matrix input for consensus WGCNA based on
-#' the metacell expression matrix, the full expression matrix, or a provided pseudobulk expression matrix.
+#' This function prepares the expression data for Consensus WGCNA analysis. It populates
+#' the `multiExpr` slot in the Seurat object, which contains a list of expression matrices
+#' (one for each consensus group, e.g., dataset, sample, condition).
 #'
-#' @param seurat_obj A Seurat object
-#' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents.
-#' @param use_metacells A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)
-#' @param group.by A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.
-#' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
-#' @param multi_groups A character vecrtor containing the names of groups to select
-#' @param assay The name of the assay in the Seurat object
-#' @param slot The name of the slot in the Seurat object (counts, data)
-#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
-#' @param mat A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.
-#' @param wgcna_name A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data
-#' @keywords scRNA-seq
+#' @description
+#' The function operates in three modes:
+#' 1. **Internal Seurat/Metacell Mode (Default):** Extracts expression data directly from the
+#'    Seurat object (either single-cell or metacell data) based on `group_name`.
+#' 2. **Pseudobulk Mode (SummarizedExperiment):** Extracts expression data from a provided
+#'    SummarizedExperiment object (passed to `mat`). This is the recommended approach for
+#'    pseudobulk consensus analysis.
+#' 3. **External Matrix Mode:** Extracts expression data from a provided large matrix
+#'    (passed to `mat`) where row names contain delimited group identifiers.
+#'
+#' @param seurat_obj A Seurat object containing the hdWGCNA experiment.
+#' @param group_name A string containing the specific group to analyze (e.g., a specific
+#'   cluster or cell type). This filters the data when using Internal Seurat/Metacell Mode.
+#' @param use_metacells Logical; if TRUE (default), use the metacell expression matrix
+#'   stored in the hdWGCNA experiment. If FALSE, use the full single-cell expression matrix.
+#'   Ignored if `mat` is provided.
+#' @param group.by A string containing the name of a column in the Seurat object with
+#'   cell groups (clusters, cell types, etc). If NULL (default), uses Seurat Idents.
+#' @param multi.group.by A string containing the name of the column that defines the
+#'   consensus groups (e.g., "dataset", "sample", "condition").
+#'   - If using **Seurat/Metacells**, this must be a column in `seurat_obj@meta.data`.
+#'   - If using **Pseudobulk (SE)**, this must be a column in `colData(mat)`.
+#' @param multi_groups A character vector specifying which groups from `multi.group.by`
+#'   to include. If NULL, all unique groups are used.
+#' @param assay The name of the assay in the Seurat object (e.g., "RNA", "SCT").
+#' @param slot The name of the slot in the Seurat object (e.g., "counts", "data").
+#'   Used for Seurat v4 compatibility.
+#' @param layer The name of the layer in the Seurat object (e.g., "counts", "data")
+#'   OR the name of the assay in the SummarizedExperiment (e.g., "VST", "counts")
+#'   if `mat` is provided.
+#' @param mat A Matrix or SummarizedExperiment object containing gene expression data.
+#'   - **SummarizedExperiment:** The function extracts the assay specified by `layer`
+#'     and subsets columns based on `multi.group.by` in `colData`.
+#'   - **Matrix:** The function assumes row names are delimited (e.g., "Cluster1:SampleA")
+#'     and splits them using `mat_group_delim`.
+#' @param mat_group_delim Character; the delimiter used in the row names of `mat`
+#'   if `mat` is a matrix (default is ":"). Ignored if `mat` is a SummarizedExperiment.
+#' @param wgcna_name A string containing the name of the WGCNA slot in `seurat_obj@misc`.
+#'   Default = NULL, which retrieves the currently active WGCNA data.
+#' @param ... Additional arguments passed to internal helper functions.
+#'
+#' @return A Seurat object with the `multiExpr` slot populated in the specified `wgcna_name`
+#'   experiment.
+#'
+#' @details
+#' This function automatically aligns the genes in the provided data (`mat` or `seurat_obj`)
+#' with the genes selected for WGCNA (via `SetupForWGCNA` or `GetWGCNAGenes`). It also
+#' runs `WGCNA::goodGenesMS` to exclude genes with zero variance or excessive missingness
+#' across the consensus groups.
+#'
 #' @export
 SetMultiExpr <- function(
   seurat_obj,
@@ -407,11 +490,16 @@ SetMultiExpr <- function(
 
   # get the different groups present if not specified by the user:
   if(is.null(multi_groups)){
-    multi_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
+    if(is.null(mat) || !inherits(mat, "SummarizedExperiment")){
+       multi_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
+    }
   } else{
-    seurat_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
-    if(sum(multi_groups %in% seurat_groups) != length(multi_groups)){
-      stop('Some or all groups specified in multi_groups not found in seurat_obj@meta.data[,multi.group.by]')
+    # Validate groups if we are using the internal Seurat object
+    if(is.null(mat)){
+        seurat_groups <- as.character(unique(s_obj@meta.data[[multi.group.by]]))
+        if(sum(multi_groups %in% seurat_groups) != length(multi_groups)){
+          stop('Some or all groups specified in multi_groups not found in seurat_obj@meta.data[,multi.group.by]')
+        }
     }
   }
 
@@ -443,12 +531,63 @@ SetMultiExpr <- function(
       as.matrix(cur_datExpr)
     })
 
-  } else{
-    sample_groups <- do.call(rbind, strsplit(rownames(mat), ':'))[,mat_group_delim]
-    datExpr_list <- list()
-    for(cur_group in multi_groups){
-      cur_datExpr <- as.data.frame(mat[which(sample_groups == cur_group),])
-      datExpr_list[[cur_group]]<- cur_datExpr
+  } else {
+      
+    # CASE 2: SummarizedExperiment provided (Pseudobulk)
+    if(inherits(mat, "SummarizedExperiment")){
+        
+        # Validation
+        if(is.null(multi.group.by)){
+            stop("You must provide 'multi.group.by' (the column name in colData) when using a SummarizedExperiment.")
+        }
+        if(!(multi.group.by %in% names(SummarizedExperiment::colData(mat)))){
+            stop(paste0("Column '", multi.group.by, "' not found in SummarizedExperiment colData."))
+        }
+        
+        # Check if the requested assay/layer exists
+        # NOTE: We use the 'layer' argument to select the SE assay (e.g., 'VST', 'counts')
+        if(!(layer %in% SummarizedExperiment::assayNames(mat))){
+            stop(paste0("Assay '", layer, "' not found in SummarizedExperiment. Available assays: ", 
+                        paste(SummarizedExperiment::assayNames(mat), collapse=", ")))
+        }
+
+        # Determine groups if not provided
+        group_vec <- SummarizedExperiment::colData(mat)[[multi.group.by]]
+        if(is.null(multi_groups)){
+            multi_groups <- unique(as.character(group_vec))
+        }
+
+        # Extract data list
+        datExpr_list <- lapply(multi_groups, function(x){
+            
+            # Identify columns for this group
+            cells_keep <- group_vec == x
+            
+            # Subset the SE object to the WGCNA genes and the group cells
+            # We use 'gene_names' here to ensure alignment with SetupForWGCNA
+            genes_keep <- intersect(rownames(mat), gene_names)
+            
+            if(length(genes_keep) == 0){
+                stop("No intersection between SummarizedExperiment rownames and selected WGCNA genes.")
+            }
+            
+            # Extract, subset, and transpose to (Samples x Genes)
+            dat <- SummarizedExperiment::assay(mat, layer)[genes_keep, cells_keep, drop=FALSE]
+            t(as.matrix(dat))
+        })
+        names(datExpr_list) <- multi_groups
+
+    # CASE 3: Large Matrix provided (Delimited rownames)
+    } else {
+        
+        # Ensure we are splitting by the correct delimiter
+        sample_groups <- do.call(rbind, strsplit(rownames(mat), ':'))[,mat_group_delim]
+        datExpr_list <- list()
+        
+        for(cur_group in multi_groups){
+          cur_datExpr <- as.data.frame(mat[which(sample_groups == cur_group),])
+          datExpr_list[[cur_group]]<- cur_datExpr
+        }
     }
 
   }
@@ -456,6 +595,8 @@ SetMultiExpr <- function(
   # convert to multiExpr, get good genes:
   multiExpr <- WGCNA::list2multiData(datExpr_list)
   genes_use <- WGCNA::goodGenesMS(multiExpr)
+  
+  # Update the gene_names based on the goodGenes check
   gene_names <- gene_names[genes_use]
 
   # subset the multiExpr by the good genes::
@@ -470,7 +611,8 @@ SetMultiExpr <- function(
 
   # set the multiExpr in the Seurat object
   seurat_obj@misc[[wgcna_name]]$multiExpr <- multiExpr
-  seurat_obj
+  
+  return(seurat_obj)
 
 }
 

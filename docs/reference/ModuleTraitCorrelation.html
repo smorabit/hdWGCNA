@@ -129,17 +129,17 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Invalid feature selection. Valid choices: hMEs, MEs, scores, average")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.factor(group.by)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         stop("group.by variable must be a factor in the seurat object metadata.")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(subset_by)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         print("subsetting")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_full &lt;- seurat_obj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         MEs &lt;- MEs[seurat_obj@meta.data[[subset_by]] %in% subset_groups, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             ]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         seurat_obj &lt;- seurat_obj[, seurat_obj@meta.data[[subset_by]] %in% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             subset_groups]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     common_cells &lt;- rownames(seurat_obj@meta.data)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!all(common_cells %in% rownames(MEs))) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         stop("Some cells in the Seurat object are missing from the WGCNA MEs. Please re-run ModuleEigengenes.")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     MEs &lt;- MEs[common_cells, ]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (sum(traits %in% colnames(seurat_obj@meta.data)) != length(traits)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         stop(paste("Some of the provided traits were not found in the Seurat obj:", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             paste(traits[!(traits %in% colnames(seurat_obj@meta.data))], </span>
@@ -185,8 +185,8 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     fdr_list &lt;- list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     temp &lt;- Hmisc::rcorr(as.matrix(trait_df), as.matrix(MEs), </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         type = cor_method)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_cor &lt;- temp$r[traits, mods]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_p &lt;- temp$P[traits, mods]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_cor &lt;- temp$r[traits, mods, drop = FALSE]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     cur_p &lt;- temp$P[traits, mods, drop = FALSE]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     p_df &lt;- cur_p %&gt;% reshape2::melt()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (length(traits) == 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         tmp &lt;- rep(mods, length(traits))</span>
@@ -216,12 +216,18 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         group_names &lt;- levels(as.factor(seurat_obj@meta.data[, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             group.by]))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trait_list &lt;- dplyr::group_split(trait_df, group, .keep = FALSE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ME_list &lt;- dplyr::group_split(MEs, group, .keep = FALSE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     names(trait_list) &lt;- group_names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     names(ME_list) &lt;- group_names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in names(trait_list)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         temp &lt;- Hmisc::rcorr(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     combined_data &lt;- cbind(trait_df, MEs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     combined_data$group_label_column &lt;- seurat_obj@meta.data[, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         group.by]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     split_data &lt;- split(combined_data, combined_data$group_label_column)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (cur_group in names(split_data)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         dat &lt;- split_data[[cur_group]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_traits &lt;- dat[, traits, drop = FALSE]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cur_MEs &lt;- dat[, mods, drop = FALSE]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (nrow(dat) &lt; 5) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             next</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         temp &lt;- Hmisc::rcorr(as.matrix(cur_traits), as.matrix(cur_MEs), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             type = cor_method)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_cor &lt;- temp$r[traits, mods]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_p &lt;- temp$P[traits, mods]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         p_df &lt;- cur_p %&gt;% reshape2::melt()</span>
@@ -240,9 +246,9 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_fdr &lt;- reshape2::dcast(p_df, Var1 ~ Var2, value.var = "fdr")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         rownames(cur_fdr) &lt;- cur_fdr$Var1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         cur_fdr &lt;- cur_fdr[, -1]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         cor_list[[i]] &lt;- cur_cor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         pval_list[[i]] &lt;- cur_p</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         fdr_list[[i]] &lt;- as.matrix(cur_fdr)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cor_list[[cur_group]] &lt;- cur_cor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pval_list[[cur_group]] &lt;- cur_p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         fdr_list[[cur_group]] &lt;- as.matrix(cur_fdr)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mt_cor &lt;- list(cor = cor_list, pval = pval_list, fdr = fdr_list)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (!is.null(subset_by)) {</span>
@@ -256,7 +262,7 @@ Traits must be a categorical variable (not a character vector), or a numeric var
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     seurat_obj</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7f8804b0d078&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fd423be8770&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:hdWGCNA&gt;</span>
 </code></pre></div>
     </div>

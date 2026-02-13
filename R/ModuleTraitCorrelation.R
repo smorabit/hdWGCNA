@@ -1,19 +1,41 @@
-
-#' ModuleTraitCorrelation'
+#' Module-Trait Correlation
 #'
-#' Correlates categorical and numeric variables with Module Eigengenes or hub-gene scores.
+#' Computes the correlation between WGCNA modules (eigengenes or scores) and
+#' biological/clinical traits (metadata columns) for single cells.
 #'
+#' @param seurat_obj A Seurat object containing the hdWGCNA experiment.
+#' @param traits A character vector of column names in `seurat_obj@meta.data`
+#'   to correlate with each module. Traits must be numeric, integer, or factor.
+#'   Character vectors should be converted to factors before running this function.
+#' @param group.by A string containing the name of a column in `seurat_obj@meta.data`.
+#'   If provided, correlations are computed separately for each group (e.g., per cell type).
+#'   If NULL (default), all cells are correlated together (global).
+#' @param features Character; which feature to use to summarize each module?
+#'   - "hMEs": Harmonized Module Eigengenes
+#'   - "MEs": Standard Module Eigengenes.
+#'   - "scores": Module Scores (Seurat `AddModuleScore`).
+#' @param cor_method Character; method used for correlation. Valid choices:
+#'   "pearson", "spearman", "kendall".
+#' @param subset_by A string containing the name of a column to subset the data
+#'   before correlation.
+#' @param subset_groups A character vector specifying which groups from `subset_by`
+#'   to include in the analysis.
+#' @param wgcna_name The name of the hdWGCNA experiment in `seurat_obj@misc`.
+#'   Default = NULL (uses active WGCNA).
+#' @param ... Additional arguments passed to internal functions.
 #'
-#' @param seurat_obj A Seurat object
-#' @param seurat_obj A list of column names in the Seurat object's metadata that you wish to correlate with each module.
-#' Traits must be a categorical variable (not a character vector), or a numeric variable.
-#' @param features Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores
-#' @param cor_meth Which method to use for correlation? Valid choices are pearson, spearman, kendall.
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @return A Seurat object with the module-trait correlation results added to
+#'   `seurat_obj@misc[[wgcna_name]]$mt_cor`. The results include correlation matrices,
+#'   p-values, and FDR-corrected p-values for all cells and for each group specified
+#'   in `group.by`.
+#'
+#' @details
+#' This function calculates the correlation between module eigengenes and user-specified
+#' traits. If a trait is a factor, it is converted to numeric based on the order of its
+#' levels. The function computes p-values and False Discovery Rates (FDR) for each correlation.
+#'
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ModuleTraitCorrelation
 ModuleTraitCorrelation <- function(
   seurat_obj,
   traits,
@@ -40,17 +62,21 @@ ModuleTraitCorrelation <- function(
     stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
   }
 
-  if(!is.factor(group.by)){
-    stop('group.by variable must be a factor in the seurat object metadata.')
-  }
-
   # subset?
   if(!is.null(subset_by)){
     print('subsetting')
     seurat_full <- seurat_obj
-    MEs <- MEs[seurat_obj@meta.data[[subset_by]] %in% subset_groups,]
     seurat_obj <- seurat_obj[,seurat_obj@meta.data[[subset_by]] %in% subset_groups]
   }
+
+  # Ensure MEs only contains the cells currently in seurat_obj, in the EXACT same order
+  common_cells <- rownames(seurat_obj@meta.data)
+  
+  # Check if MEs contains these cells
+  if(!all(common_cells %in% rownames(MEs))){
+     stop("Some cells in the Seurat object are missing from the WGCNA MEs. Please re-run ModuleEigengenes.")
+  }
+  MEs <- MEs[common_cells, ]
 
   # check if traits are in the seurat object:
   if(sum(traits %in% colnames(seurat_obj@meta.data)) != length(traits)){
@@ -109,8 +135,8 @@ ModuleTraitCorrelation <- function(
   temp <- Hmisc::rcorr(as.matrix(trait_df), as.matrix(MEs), type=cor_method)
 
   # get the coefficient & p-val
-  cur_cor <- temp$r[traits,mods]
-  cur_p <- temp$P[traits,mods]
+  cur_cor <- temp$r[traits,mods, drop=FALSE]
+  cur_p <- temp$P[traits,mods, drop=FALSE]
 
   # compute FDR:
   p_df <- cur_p %>%
@@ -155,24 +181,28 @@ ModuleTraitCorrelation <- function(
   }
 
   # do the correlation for each group:
-  trait_list <- dplyr::group_split(trait_df, group, .keep=FALSE)
-  ME_list <- dplyr::group_split(MEs, group, .keep=FALSE)
-  names(trait_list) <- group_names
-  names(ME_list) <- group_names
+  combined_data <- cbind(trait_df, MEs)
+  combined_data$group_label_column <- seurat_obj@meta.data[, group.by]
+  split_data <- split(combined_data, combined_data$group_label_column)
 
-  for(i in names(trait_list)){
-    # cor_list[[i]] <- cor(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]), method=cor_method)
+  for(cur_group in names(split_data)){
+      
+    dat <- split_data[[cur_group]]
+    
+    # Separate traits and MEs back out
+    cur_traits <- dat[, traits, drop=FALSE]
+    cur_MEs    <- dat[, mods, drop=FALSE] 
+
+    if(nrow(dat) < 5) next
 
     # testing other correlation function:
-    temp <- Hmisc::rcorr(as.matrix(trait_list[[i]]), as.matrix(ME_list[[i]]))
-
+    temp <- Hmisc::rcorr(as.matrix(cur_traits), as.matrix(cur_MEs), type=cor_method)
     cur_cor <- temp$r[traits,mods]
     cur_p <- temp$P[traits,mods]
 
     # compute FDR:
     p_df <- cur_p %>%
       reshape2::melt()
-
 
     if(length(traits) == 1){
 
@@ -196,9 +226,9 @@ ModuleTraitCorrelation <- function(
     cur_fdr <- cur_fdr[,-1]
 
     # add to list
-    cor_list[[i]] <- cur_cor
-    pval_list[[i]] <- cur_p
-    fdr_list[[i]] <- as.matrix(cur_fdr)
+    cor_list[[cur_group]] <- cur_cor
+    pval_list[[cur_group]] <- cur_p
+    fdr_list[[cur_group]] <- as.matrix(cur_fdr)
 
   }
 

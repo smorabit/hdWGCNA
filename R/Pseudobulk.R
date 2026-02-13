@@ -1,3 +1,367 @@
+
+#' AggregatePseudobulk
+#'
+#' Create pseudobulk samples by aggregating single-cell (or single-nucleus) counts
+#' according to replicate and group annotations, and return a SummarizedExperiment.
+#'
+#' @description
+#' This function aggregates a gene-by-cell count matrix into gene-by-pseudobulk
+#' counts. Pseudobulk groups are defined by the interaction of a replicate
+#' identifier and a group identifier (for example: sample_id × cell_type). The
+#' function builds a sparse design matrix that maps cells to pseudobulks,
+#' multiplies the counts matrix by that mapping to obtain aggregated counts,
+#' filters pseudobulks with too few contributing cells, removes genes with zero
+#' variance across the kept pseudobulks, and returns a SummarizedExperiment
+#' containing assay(s) and per-pseudobulk metadata (including nCells, nUMI and
+#' nFeatures).
+#'
+#' @param X matrix or Matrix
+#'   Gene-by-cell count matrix. Can be a base R matrix or a sparse Matrix
+#'   (from the Matrix package). Columns must be cell identifiers that match
+#'   the row names of `meta`.
+#' @param meta data.frame
+#'   Per-cell metadata. Row names must correspond to column names of `X`.
+#'   Must contain the columns specified by `replicate_col` and `group_col`.
+#' @param replicate_col character(1)
+#'   Name of the column in `meta` indicating the biological replicate (for
+#'   example sample or individual). Used as the first component of the
+#'   interaction that defines pseudobulks.
+#' @param group_col character(1)
+#'   Name of the column in `meta` indicating the grouping factor (for example
+#'   cell type, cluster, condition). Used as the second component of the
+#'   interaction that defines pseudobulks.
+#' @param min_cells integer(1), optional
+#'   Minimum number of cells required for a pseudobulk to be retained. Pseudobulks
+#'   with strictly greater than `min_cells` contributing cells are kept. Default
+#'   value is 10.
+#' @param assay_name character(1), optional
+#'   Name to assign to the assay in the returned SummarizedExperiment. Default
+#'   is "counts".
+#'
+#' @return SummarizedExperiment
+#'   An object with:
+#'   - assays: a named list with a single matrix-like assay (genes × pseudobulks)
+#'     containing aggregated counts. The assay name equals `assay_name`.
+#'   - colData: a data.frame with one row per pseudobulk (metadata built by
+#'     `make_pseudobulk_metadata(meta, pb_groups)` and subset to kept pseudobulks).
+#'   Additional columns added to colData:
+#'     - nCells: number of cells that contributed to each pseudobulk
+#'     - nUMI: sum of counts across genes for each pseudobulk
+#'     - nFeatures: number of genes with non-zero counts in the pseudobulk
+#'
+#' @details
+#' - Input checks:
+#'   - `X` must be matrix-like (dense matrix or Matrix sparse object).
+#'   - `meta` must be a data.frame with rownames matching `colnames(X)`.
+#'   - `replicate_col` and `group_col` must exist in `meta` and contain no NAs.
+#' - Grouping:
+#'   - Pseudobulk groups are created by interaction(meta[[replicate_col]],
+#'     meta[[group_col]], drop = TRUE). This produces factor levels representing
+#'     unique replicate × group combinations.
+#'   - A sparse model matrix (~0 + pb_groups) is constructed to map cells to
+#'     pseudobulks. Columns of the resulting aggregated matrix are renamed by
+#'     removing the "pb_groups" prefix that is created by the model matrix.
+#' - Filtering:
+#'   - The function computes the number of cells per pseudobulk (`n_cells`) and
+#'     keeps only pseudobulks with n_cells > min_cells (strict inequality).
+#'   - Genes with zero standard deviation across the retained pseudobulks are
+#'     removed.
+#' - Post-processing:
+#'   - The returned SummarizedExperiment's colData receives nCells, nUMI and
+#'     nFeatures. nUMI is computed as column sums of the aggregated counts.
+#'     nFeatures is computed after thresholding counts to binary (counts > 1
+#'     set to 1) and summing per column.
+#'
+#' @section Edge cases and warnings:
+#' - If column names of `X` are not present in rownames(meta), the function
+#'   will stop and report the mismatch (it reports the missing cell ids).
+#' - If all pseudobulks are filtered out by the `min_cells` threshold, the
+#'   function will produce an empty SummarizedExperiment or fail in downstream
+#'   steps; callers should check the returned object.
+#' - The function assumes the existence of a helper `make_pseudobulk_metadata()`
+#'   in the calling environment or package; this function must accept the same
+#'   `meta` and `pb_groups` and return rownames corresponding to pseudobulk
+#'   column order.
+#' 
+#' @seealso
+#' make_pseudobulk_metadata, SummarizedExperiment, Matrix::sparse.model.matrix
+#' 
+#' @importFrom SummarizedExperiment SummarizedExperiment assay assay<- assays colData colData<-
+#' @importFrom Matrix sparse.model.matrix
+#' @export
+AggregatePseudobulk <- function(
+    X,
+    meta,
+    replicate_col, 
+    group_col,
+    min_cells = 10,
+    assay_name = 'counts'
+){
+
+    # ------------------------------------------------------------
+    # Input sanity checks
+    # ------------------------------------------------------------
+
+    # X must be a matrix-like object
+    if (!inherits(X, "Matrix") && !is.matrix(X)) {
+        stop("'X' must be a dense matrix or a sparse 'Matrix' object from the Matrix package.")
+    }
+
+    # meta must be a data.frame-like object
+    if (!is.data.frame(meta)) {
+        stop("'meta' must be a data.frame")
+    }
+
+    # Ensure that X and meta have matching cells
+    if (!all(colnames(X) %in% rownames(meta))) {
+        missing <- setdiff(colnames(X), rownames(meta))
+        stop("Mismatch between cells in colnames(X) and rownames(meta)")
+    }
+
+    # Optionally reorder meta to match X
+    meta <- meta[colnames(X), , drop = FALSE]
+
+    cols_to_check <- c(replicate_col, group_col)
+
+    for (col in cols_to_check) {
+
+        # Ensure column exists
+        if (!(col %in% colnames(meta))) {
+            stop(sprintf("Column '%s' not found in meta.", col))
+        }
+
+        # Check for missing values
+        if (any(is.na(meta[[col]]))) {
+            stop(sprintf("Column '%s' contains NA values.", col))
+        }
+    }
+
+    # define the pseudobulk grouping based on replicate_col
+    pb_groups <- interaction(meta[,replicate_col], meta[,group_col], drop=TRUE)
+    
+    # calculate the number of cells per grouping
+    n_cells <- table(pb_groups)
+
+    # Create group indicator matrix: cells × pseudobulks
+    G <- Matrix::sparse.model.matrix(~0 + pb_groups)
+
+    # Pseudobulk = counts × G   (genes × cells  %*%  cells × groups)
+    pb <- X %*% G
+    colnames(pb) <- gsub('pb_groups', '', colnames(pb))
+
+    # remove pseudobulk reps with insufficient cells
+    pb <- pb[,as.logical(n_cells >= min_cells)]
+
+    # calculate the standard deviation of each gene:
+    good_genes <- names(which(apply(pb, 1, sd) != 0))
+    pb <- pb[good_genes,]
+
+    # create the pseudobulk meta-data table:
+    pb_meta <- make_pseudobulk_metadata(meta, pb_groups)
+    pb_meta <- pb_meta[colnames(pb),]
+
+    assay_list <- list('tmp' = pb)
+    names(assay_list) <- assay_name
+
+    # Create a SummarizedExperiment object
+    se <- SummarizedExperiment(
+        assays = assay_list,
+        colData = pb_meta
+    )
+
+    # add the number of cells
+    colData(se)$nCells <- as.numeric(n_cells[colnames(se)])
+
+    # nUMI and nFeatures detected:
+    colData(se)$nUMI <- colSums(pb)
+    pb[pb > 1] <- 1
+    colData(se)$nFeatures <- colSums(pb)
+
+    # return the SummarizedExperiment object:
+    return(se)
+}
+
+#' Find Replicate Columns
+#'
+#' Internal helper to identify metadata columns that are invariant within 
+#' pseudobulk groups.
+#'
+#' @param meta data.frame of cell metadata.
+#' @param group factor defining the pseudobulk groups.
+#'
+#' @return Character vector of column names.
+#' @noRd
+#' @keywords internal
+find_replicate_columns <- function(meta, group){
+  is_replicate_col <- function(col) {
+    # For each group, check if all entries in that cluster-sample group are identical
+    all(tapply(col, group, function(x) length(unique(x)) == 1))
+  }
+  
+  replicate_cols <- names(meta)[sapply(meta, is_replicate_col)]
+  replicate_cols
+}
+
+#' Create Pseudobulk Metadata
+#'
+#' Internal helper function to collapse single-cell metadata into pseudobulk-level
+#' metadata. It iterates through the metadata columns and identifies those that
+#' are consistent (invariant) within each pseudobulk group (e.g., "Age", "Sex",
+#' "Condition"), retaining them in the output.
+#'
+#' @param meta data.frame
+#'   The original cell-level metadata.
+#' @param group factor
+#'   A factor vector defining the pseudobulk groups (e.g. interaction of sample and cluster).
+#'   Must be the same length as the number of rows in `meta`.
+#'
+#' @return data.frame
+#'   A data frame with one row per pseudobulk group and columns corresponding
+#'   to the invariant metadata fields.
+#' @noRd
+#' @keywords internal
+make_pseudobulk_metadata <- function(meta, group) {
+  
+  # identify which columns are consistent within groups
+  replicate_cols <- find_replicate_columns(meta, group)
+  unique_levels <- levels(group)
+  first_indices <- match(unique_levels, group)
+  
+  # subset the original metadata using these indices
+  out <- meta[first_indices, replicate_cols, drop = FALSE]
+  rownames(out) <- unique_levels
+  return(out)
+}
+
+#' NormalizeCounts
+#'
+#' Perform per-sample normalization of a count assay stored in a
+#' SummarizedExperiment and add the normalized matrix as a new assay.
+#'
+#' @param se A SummarizedExperiment containing a raw counts assay.
+#' @param method Character; one of "CPM", "logCPM", "logNorm", "VST", "rlog".
+#'   - "CPM": counts per million.
+#'   - "logCPM": log2(CPM + pseudocount).
+#'   - "logNorm": Seurat-style log1p(counts / size_factor * 1e4) where
+#'     size_factor = colSums(counts) / median(colSums(counts)).
+#'   - "VST", "rlog": variance-stabilizing transform or rlog via DESeq2.
+#' @param assay_name Character scalar; name of the assay in `se` to normalize
+#'   (default: "counts").
+#' @param new_assay_name Character or NULL; name to assign the normalized assay.
+#'   If NULL, defaults to the chosen `method`.
+#' @param pseudocount Numeric scalar added to CPM before log2 in "logCPM"
+#'   (default: 1).
+#' @param ... Additional arguments forwarded to DESeq2::vst or DESeq2::rlog when
+#'   `method` is "VST" or "rlog".
+#'
+#' @return A SummarizedExperiment identical to `se` but with a new assay named
+#'   `new_assay_name` containing the normalized matrix.
+#'
+#' @details The function checks that `se` is a SummarizedExperiment and that
+#'   `assay_name` exists and is a (possibly sparse) matrix. For "VST" and
+#'   "rlog", DESeq2 must be installed; the function converts the assay to a
+#'   dense matrix and constructs a DESeqDataSet with design ~ 1 before
+#'   applying the transform. Errors are raised for invalid inputs.
+#'
+#' @examples
+#' # Basic usage (assuming `se` is a SummarizedExperiment with a "counts" assay)
+#' # se_norm <- NormalizeSE(se, method = "logCPM")
+#'
+#' @seealso DESeq2::vst, DESeq2::rlog
+#' 
+#' @importFrom SummarizedExperiment SummarizedExperiment assay assay<- assays colData colData<-
+#' @importFrom Matrix sparse.model.matrix
+#' @export
+NormalizeCounts <- function(
+    se,
+    method = c("CPM", "logCPM", "logNorm", "VST", "rlog"),
+    assay_name = "counts",
+    new_assay_name = NULL,
+    pseudocount = 1,
+    ...
+){
+    method <- match.arg(method)
+
+    # --- Check inputs ---------------------------------------------------------
+    if (!inherits(se, "SummarizedExperiment")) {
+        stop("'se' must be a SummarizedExperiment object.")
+    }
+    if (!assay_name %in% names(assays(se))) {
+        stop(paste0("Assay '", assay_name, "' not found in se."))
+    }
+
+    X <- assay(se, assay_name)
+
+    if (!is.matrix(X) && !inherits(X, "Matrix")) {
+        stop("The assay must be a matrix or sparse Matrix.")
+    }
+
+    # default name for normalized assay
+    if (is.null(new_assay_name)) {
+        new_assay_name <- method
+    }
+
+    # --- Normalization methods -----------------------------------------------
+    
+    ## CPM ---------------------------------------------------------------------
+    if (method == "CPM") {
+        lib.size <- colSums(X)
+        norm <- t(t(X) / lib.size) * 1e6
+    }
+
+    ## log CPM -----------------------------------------------------------------
+    if (method == "logCPM") {
+        lib.size <- colSums(X)
+        cpm <- t(t(X) / lib.size) * 1e6
+        norm <- log2(cpm + pseudocount)
+    }
+
+    ## Log-normalization (like Seurat: log1p(counts / size factor * 1e4)) ------
+    if (method == "logNorm") {
+        size.factor <- colSums(X) / median(colSums(X))
+        scaled <- t(t(X) / size.factor) * 1e4
+        norm <- log1p(scaled)
+    }
+
+    ## VST using DESeq2 --------------------------------------------------------
+    if (method %in% c("VST", "rlog")) {
+        if (!requireNamespace("DESeq2", quietly = TRUE)) {
+            stop("DESeq2 must be installed for VST / rlog.")
+        }
+
+        # Extract the raw counts and convert to a dense matrix
+        mat_dense <- as.matrix(SummarizedExperiment::assay(se, assay_name))
+
+        # Rebuild a SE object with dense assay for DESeq2
+        se_dense <- SummarizedExperiment::SummarizedExperiment(
+            assays  = list(counts = mat_dense),
+            colData = SummarizedExperiment::colData(se)
+        )
+
+        # Construct DESeqDataSet
+        dds <- DESeq2::DESeqDataSet(se_dense, design = ~ 1)
+
+        # Run DESeq2 normalization transform
+        if (method == "VST") {
+            norm <- SummarizedExperiment::assay(DESeq2::vst(dds, ...))
+        } else {  # rlog
+            norm <- SummarizedExperiment::assay(DESeq2::rlog(dds, ...))
+        }
+    }
+
+    # --- Add normalized assay and return --------------------------------------
+    assay(se, new_assay_name) <- norm
+    return(se)
+}
+
+
+
+
+
+
+
+
+
 #' ConstructPseudobulk
 #'
 #' Constructs a "pseudobulk" gene expression matrix summarizing the expression levels 
@@ -26,6 +390,7 @@
 #' 
 #' @import Seurat
 #' @import Matrix
+#' @keywords internal
 #' @export
 ConstructPseudobulk <- function(
   seurat_obj,

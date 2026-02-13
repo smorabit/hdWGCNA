@@ -9,62 +9,32 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Compiled: 27-02-2024
+Compiled: 11-02-2026
 
 Source: `vignettes/pseudobulk.Rmd`
 
-In this tutorial, we demonstrate how to run hdWGCNA using pseudobulk data instead of 
-using metacells or metaspots. Pseudobulk can be advantageous for very large datasets 
-where the metacell calculations can be slow. First we discuss why we would use pseudobulk instead of 
-metacells / metaspots, and what considerations must be made. We will then perform a co-expression network analysis in the 
-Zhou et al 2020 human brain dataset using six major cell types together. This tutorial assumes that you are already 
-familiar with hdWGCNA from our other tutorials.
+In this tutorial, we demonstrate how to run hdWGCNA using **pseudobulk data** as an alternative to metacells or metaspots. Pseudobulking is particularly advantageous for very large datasets where metacell construction can be computationally prohibitive.
 
-## Considerations and motivation for pseudobulk hdWGCNA 
+## Considerations and motivation for pseudobulk hdWGCNA
 
-"Pseudobulk" refers to aggregating gene expression profiles from all of the cells of a particular group 
-(cluster, cell type, etc) from a single biological replicate. This is somewhat comparable to sorting a cell population 
-of interest (ie via FACS) and then performing bulk RNA-seq, thus the name "pseudobulk". However, it is worth noting that 
-pseudobulk aggregates from single-cell data are still somewhat different than actual bulk RNA-seq data. This pseudobulk 
-procedure helps alleviate the sparsity of single-cell data in a similar way to our previous aggregation approaches.
-We used this pseduobulking approach in our [recent spatial transcriptomic study of Alzheimer's Disease](https://www.biorxiv.org/content/10.1101/2023.07.24.550282v1).
- 
+"Pseudobulk" refers to aggregating gene expression profiles from all cells belonging to a specific group (e.g., cluster or cell type) within a single biological replicate. This process is analogous to physically sorting a cell population (e.g., via FACS) and performing bulk RNA-seq. While distinct from true bulk RNA-seq, this aggregation strategy effectively alleviates the sparsity of single-cell data, similar to our metacell approach.
 
-Due to the cost of performing single-cell or spatial RNA-seq experiments, the number of biological replicates 
-tends to be low for many studies. While we have not thoroughly tested the number of replicates that are required for
-pseudobulk hdWGCNA, the [original WGCNA FAQ page](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html) recommends at least 20 samples.
-Without a sufficient number of samples, gene-gene correlations will essentially be too noisy to be meaningful or reproducible. 
-
-In our example dataset, we only have N=11 samples. Therefore, when we compute pseudobulk replicates for each sample across the 6 major cell types, 
-we end up with 66 replicates. Based on the advice from the original WGCNA authors, we do not have enough 
-replicates in this case to perform pseudobulk hdWGCNA on an individual cell type. Therefore for the purpose of this 
-tutorial we will construct a network using pseudobulk data from all 6 cell types together.
+A critical consideration for pseudobulk hdWGCNA is the number of biological replicates. Because single-cell and spatial experiments are costly, studies often feature a limited number of replicates.The [original WGCNA FAQ page](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html) recommends a minimum of 20 samples to ensure that gene-gene correlations are robust and reproducible.
 
 ## Load the dataset and required libraries
 
-First we need to load the required libraries into R. 
+First we need to load the required libraries and the tutorial dataset into R. 
 
 ```{r eval=FALSE}
-
-# single-cell analysis package
 library(Seurat)
-
-# plotting and data science packages
 library(tidyverse)
 library(cowplot)
 library(patchwork)
-
-# co-expression network analysis packages:
 library(WGCNA)
 library(hdWGCNA)
-
-# using the cowplot theme for ggplot
+library(SummarizedExperiment)
 theme_set(theme_cowplot())
-
-# set random seed for reproducibility
 set.seed(12345)
-
-# optionally enable multithreading
 enableWGCNAThreads(nThreads = 8)
 
 # load the Zhou et al snRNA-seq dataset
@@ -72,22 +42,34 @@ seurat_obj <- readRDS('Zhou_2020.rds')
 
 ```
 
-## Create the pseudobulk data matrix 
+```{r eval=FALSE, echo=FALSE}
 
-Here we make the pseudobulk data matrix using the hdWGCNA function `ConstructPseudobulk`.
-This function adds up the UMI counts for all cells in a given group based on `group.by`
-in each biological replicate based on `replicate_col`, which should be metadata 
-columns in `seurat_obj@meta.data`. We will then compute a log CPM normalization 
-of this matrix, but other normalization methods can be used instead if desired. Finally 
-we allow hdWGCNA to use this matrix for downstream processing by passing the matrix directly 
-to the `SetDatExpr` function. After setting up the pseudobulk matrix, we can continue to use 
-the other hdWGCNA functions as we normally would.
+# Note:
+# running this script internally on the CNAG cluster to get all of the outputs for this tutorial 
+# conda activate compact
 
-Since we recommend having at least 20 replicates for this analysis, `ConstructPseudobulk` has a 
-parameter called `min_reps` to control the minimum number of allowed replicates. Here we will 
-set `min_reps=10` so it does not give us an error message. 
+setwd("/home/groups/singlecell/smorabito/analysis/hdWGCNA/")
+data_dir <- 'data/'
+fig_dir <- 'tutorials/pseudobulk/'
 
-```{r eval=FALSE}
+# single-cell analysis package
+library(Seurat)
+library(tidyverse)
+library(cowplot)
+library(patchwork)
+library(WGCNA)
+library(hdWGCNA)
+library(SummarizedExperiment)
+theme_set(theme_cowplot())
+set.seed(12345)
+enableWGCNAThreads(nThreads = 8)
+
+# load the Zhou et al snRNA-seq dataset
+seurat_obj <- readRDS(paste0(data_dir,'Zhou_2020_control.rds'))
+
+#------------------------------------------------------#
+# normal pseudobulk 
+#------------------------------------------------------#
 
 seurat_obj <- SetupForWGCNA(
   seurat_obj,
@@ -97,68 +79,31 @@ seurat_obj <- SetupForWGCNA(
 )
 length(GetWGCNAGenes(seurat_obj))
 
-# Construt the pseudobulk expression profiles
-datExpr <- ConstructPseudobulk(
-  seurat_obj,
-  group.by = 'cell_type',
-  replicate_col = 'Sample',
-  assay = 'RNA',
-  slot = 'counts', # this should always be counts!
-  min_reps = 10
+# get the counts matrix and the meta-data
+X <- GetAssayData(seurat_obj, layer='counts')
+meta <- seurat_obj@meta.data
+
+# create a pseudo-bulk SummarizedExperiment object
+se <- AggregatePseudobulk(
+    X, meta, 
+    replicate_col = "Sample", 
+    group_col = "cell_type",
+    assay_name = 'counts'
 )
 
-# compute log2CPM normalization
-# You can substitute this with another normalization of your choosing.
-cpm <- t(apply(datExpr, 1, function(x){
-    y <- (x) / sum(x) * 1000000
-    log2(y + 1)
-}))
+# normalize the pseudobulk SummarizedExperiment
+se <- NormalizeCounts(
+    se, 
+    method = 'VST',
+    assay_name = 'counts'
+)
+
+
 
 seurat_obj <- SetDatExpr(
   seurat_obj,
-  mat = cpm
+  mat = se, layer = 'VST'
 )
-
-
-```
-
-Note that `ConstructPseudobulk` gives us an important warning about the number of replicates.
-
-```
-Warning message:
-In ConstructPseudobulk(seurat_obj, group.by = "cell_type", replicate_col = "Sample",  :
-  We strongly recommend at least 20 replicates for pseudobulk hdWGCNA, and there are only 11 replicates detected. Results may not be reproducible or informative with low numbers of replicates so proceed at your own risk.
-```
-
-While there are only 11 samples in this dataset, in this case, our total number of "replicates" for network analysis 
-is actually higher since we are performing network analysis for all 6 cell types together,
-therefore giving us 66 pseudobulk "replicates". 
-
-Since we often want to perform hdWGCNA on one cell type at a time, we can easily subset the 
-pseudobulk matrix to just contain one cell type for downstream analysis. Note that this is 
-an example and was not run for this tutorial. 
-
-```{r eval=FALSE}
-
-# we only want the data from the astrocytes 
-cur_group <- 'ASC'
-
-# subset the matrix for just this cell type
-cur_cpm <- cpm[grepl(cur_group, rownames(cpm)),]
-
-seurat_obj <- SetDatExpr(
-  seurat_obj,
-  mat = cur_cpm
-)
-
-
-```
-
-## Co-expression network analysis 
-
-Now that we have our pseudobulk matrix, we can perform co-expression network analysis.
-
-```{r eval=FALSE}
 
 # select the soft power threshold
 seurat_obj <- TestSoftPowers(seurat_obj)
@@ -171,8 +116,284 @@ seurat_obj <- ConstructNetwork(
     mergeCutHeight=0.15
 )
 
+png(paste0(fig_dir, 'dendro_pseudobulk.png'), width=9, height=3,res=400, units='in')
 PlotDendrogram(seurat_obj, main='pseudobulk dendrogram')
+dev.off()
 
+
+# compute the MEs and kMEs
+seurat_obj <- ModuleEigengenes(seurat_obj)
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+seurat_obj <- ModuleTraitCorrelation(
+  seurat_obj,
+  group.by = 'cell_type',
+  traits = c('msex', 'braaksc')
+)
+
+GetModuleTraitCorrelation(seurat_obj)
+
+# get MEs from seurat object
+MEs <- GetMEs(seurat_obj)
+mods <- colnames(MEs); mods <- mods[mods != 'grey']
+
+# add MEs to Seurat meta-data for plotting:
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
+
+# reset the metadata
+seurat_obj@meta.data <- meta
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient(high='red', low='grey95') + 
+  xlab('') + ylab('')
+
+png(paste0(fig_dir, 'dotplot_pseudobulk.png'), width=12, height=5,res=400, units='in')
+p 
+dev.off()
+
+
+# compute the co-expression network umap 
+seurat_obj <- RunModuleUMAP(
+  seurat_obj,
+  n_hubs = 5,
+  n_neighbors=10,
+  min_dist=0.4,
+  spread=3,
+  supervised=TRUE,
+  target_weight=0.3
+)
+
+# get the hub gene UMAP table from the seurat object
+umap_df <- GetModuleUMAP(seurat_obj)
+
+# plot with ggplot
+p <- ggplot(umap_df, aes(x=UMAP1, y=UMAP2)) +
+  geom_point(
+   color=umap_df$color,
+   size=umap_df$kME*2
+  ) + 
+  umap_theme() 
+
+# add the module names to the plot by taking the mean coordinates
+centroid_df <- umap_df %>% 
+  dplyr::group_by(module) %>%
+  dplyr::summarise(UMAP1 = mean(UMAP1), UMAP2 = mean(UMAP2))
+ 
+p <- p + geom_label(
+  data = centroid_df, 
+  label=as.character(centroid_df$module), 
+  fontface='bold', size=2) + 
+  theme(panel.background = element_rect(fill='black'))
+
+
+png(paste0(fig_dir, 'pseudobulk_hubgene_umap_ggplot.png'), width=7, height=7,res=400, units='in')
+p
+dev.off()
+
+
+
+
+#------------------------------------------------------#
+# Consensus
+#------------------------------------------------------#
+
+
+
+#------------------------------------------------------#
+# Consensus 
+#
+# TODO: update the SetMultiExpr function to accept a 
+# list of matrices instead of having to format the matrix in a specific way.
+#------------------------------------------------------#
+
+# set up a new wgcna experiment for the consensus analysis
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "fraction",
+  fraction = 0.05,
+  wgcna_name = "pseudobulk_consensus"
+)
+
+seurat_obj <- SetMultiExpr(
+  seurat_obj,
+  layer = 'VST',
+  multi.group.by='msex',
+  mat = se
+)
+tmp <- GetMultiExpr(seurat_obj)
+
+# multi.group.by <- 'msex'
+# multi_groups <- unique(colData(se)[,multi.group.by])
+# datExpr_list <- lapply(multi_groups, function(x){
+#   datExpr <- t(assay(se, 'VST')[,colData(se)[,multi.group.by] == x])
+#   return(datExpr)
+# })
+# names(datExpr_list) <- multi_groups
+# multiExpr <- WGCNA::list2multiData(datExpr_list)
+# genes_use <- WGCNA::goodGenesMS(multiExpr)
+
+# # subset the multiExpr by the good genes::
+# datExpr_list <- lapply(1:length(multiExpr), function(i){
+#   multiExpr[[i]]$data[,genes_use]
+# })
+# multiExpr <- WGCNA::list2multiData(datExpr_list)
+# names(multiExpr) <- multi_groups
+
+# # manually set the multiExpr slot in the seurat object since SetMultiExpr only accepts a single matrix right now.
+# seurat_obj@misc$pseudobulk_consensus$multiExpr <- multiExpr
+
+
+seurat_obj <- TestSoftPowersConsensus(seurat_obj)
+
+# generate plots
+plot_list <-  PlotSoftPowers(seurat_obj)
+
+# get just the scale-free topology fit plot for each group
+consensus_groups <- unique(seurat_obj$msex)
+p_list <- lapply(1:length(consensus_groups), function(i){
+  cur_group <- consensus_groups[[i]]
+  plot_list[[i]][[1]] + ggtitle(paste0('Sex: ', cur_group)) + theme(plot.title=element_text(hjust=0.5))
+})
+
+png(paste0(fig_dir, 'pseudobulk_consensus_softpowers.png'), width=8, height=4,res=400, units='in')
+wrap_plots(p_list, ncol=2)
+dev.off()
+
+# maybe try a different cut height
+seurat_obj <- ConstructNetwork(
+  seurat_obj,
+  consensus=TRUE,
+  tom_name = "pseudobulk_consensus",
+  overwrite_tom=TRUE,
+  mergeCutHeight=0.2
+)
+
+table(GetModules(seurat_obj)$module) %>% length
+
+# plot the dendrogram
+png(paste0(fig_dir, 'dendro_pseudobulk_consensus.png'), width=9, height=3,res=400, units='in')
+PlotDendrogram(seurat_obj, main='pseudobulk consensus dendrogram')
+dev.off()
+
+# compute the MEs and kMEs
+seurat_obj <- ModuleEigengenes(seurat_obj)
+seurat_obj <- ModuleConnectivity(seurat_obj)
+
+# get MEs from seurat object
+MEs <- GetMEs(seurat_obj)
+mods <- colnames(MEs); mods <- mods[mods != 'grey']
+
+# add MEs to Seurat meta-data for plotting:
+meta <- seurat_obj@meta.data
+seurat_obj@meta.data <- cbind(meta, MEs)
+
+# plot with Seurat's DotPlot function
+p <- DotPlot(seurat_obj, features=mods, group.by = 'cell_type')
+
+# reset the metadata to remove the MEs
+seurat_obj@meta.data <- meta
+
+# flip the x/y axes, rotate the axis labels, and change color scheme:
+p <- p +
+  RotatedAxis() +
+  scale_color_gradient(high='red', low='grey95') + 
+  xlab('') + ylab('')
+
+p
+
+
+
+png(paste0(fig_dir, 'dotplot_consensus_pseudobulk.png'), width=15, height=5, res=400, units='in')
+p 
+dev.off()
+
+
+```
+
+
+## Create the pseudobulk data matrix 
+
+Here we make the pseudobulk data matrix using the hdWGCNA function `AggregatePseudobulk`.
+This function sums the counts for all cells in a given group based on `group_col`
+in each biological replicate based on `replicate_col`, which should be metadata 
+columns in `seurat_obj@meta.data`. This procedure returns a `SummarizedExperiment` object containing the pseudobulk dataset, with the corresponding meta-data automatically transferred from the Seurat object. We also normalize these pseudobulk counts using the `NormalizeCounts` function, which applies variance stabilizing transformation (VST) from the DESeq2 package by default.
+
+```{r eval=FALSE}
+
+seurat_obj <- SetupForWGCNA(
+  seurat_obj,
+  gene_select = "fraction", 
+  fraction = 0.05, 
+  wgcna_name = "pseudobulk"
+)
+length(GetWGCNAGenes(seurat_obj))
+
+# get the counts matrix and the meta-data
+X <- GetAssayData(seurat_obj, layer='counts')
+meta <- seurat_obj@meta.data
+
+# create a pseudo-bulk SummarizedExperiment object
+se <- AggregatePseudobulk(
+    X, meta, 
+    replicate_col = "Sample", 
+    group_col = "cell_type",
+    assay_name = 'counts'
+)
+
+# normalize the pseudobulk SummarizedExperiment
+se <- NormalizeCounts(
+    se, 
+    method = 'VST',
+    assay_name = 'counts'
+)
+
+```
+
+## Co-expression network analysis 
+
+Now that we have our pseudobulk matrix, we can perform co-expression network analysis. First, we define the matrix that will be used for the analysis and we perform soft power thresholding.
+
+```{r eval=FALSE}
+# Set the pseudobulk matrix using the SummarizedExperiment object
+seurat_obj <- SetDatExpr(
+  seurat_obj,
+  mat = se, layer = 'VST'
+)
+
+# select the soft power threshold
+seurat_obj <- TestSoftPowers(seurat_obj)
+```
+
+We often want to subset to a specific group before constructing the co-expression network. This can easily be done by directly subsetting the `SummarizedExperiment` object and passing that to `SetDatExpr`.
+
+```{r eval=FALSE}
+# example only, not run for this tutorial.
+seurat_obj <- SetDatExpr(
+  seurat_obj,
+  mat = se[,colData(se)$cell_type == 'ASC'], 
+  layer = 'VST'
+)
+```
+
+
+Now we are ready to construct the co-expression network and identify gene modules, which is done in the same way as with the metacell/metaspot data.
+
+```{r eval=FALSE}
+# construct the co-expression network and identify gene modules
+seurat_obj <- ConstructNetwork(
+    seurat_obj, 
+    tom_name='pseudobulk', 
+    overwrite_tom=TRUE,
+    mergeCutHeight=0.15
+)
+
+PlotDendrogram(seurat_obj, main='pseudobulk dendrogram')
 ```
 
 ```{r eval=FALSE, echo=FALSE}
@@ -183,8 +404,6 @@ dev.off()
 
 <img src="figures/pseudobulk/dendro_pseudobulk.png" width="900" height="600">
 
-We can see that this analysis has resulted in 36 co-expression modules across the 
-six cell types.
 
 Next we compute the module eigengenes (MEs) and eigengene-based 
 connectivity (kMEs) at the single-cell level, and we can plot the 
@@ -215,7 +434,6 @@ p <- p +
   RotatedAxis() +
   scale_color_gradient(high='red', low='grey95') + 
   xlab('') + ylab('')
-
 
 p 
 
@@ -305,61 +523,32 @@ seurat_obj <- SetupForWGCNA(
 # casting sex to a factor or else it will give an error!!
 seurat_obj$msex <- as.factor(seurat_obj$msex)
 
-# make the pseudobulk matrix
-datExpr <- ConstructPseudobulk(
-  seurat_obj,
-  group.by = 'cell_type',
-  replicate_col = 'Sample',
-  label_col = 'msex',
-  min_reps = 10
+# get the counts matrix and the meta-data
+X <- GetAssayData(seurat_obj, layer='counts')
+meta <- seurat_obj@meta.data
+
+# create a pseudo-bulk SummarizedExperiment object (same as before)
+se <- AggregatePseudobulk(
+    X, meta, 
+    replicate_col = "Sample", 
+    group_col = "cell_type",
+    assay_name = 'counts'
 )
 
-# compute CPM normalized matrix:
-cpm <- t(apply(datExpr, 1, function(x){
-    y <- (x) / sum(x) * 1000000
-    log2(y + 1)
-}))
+# normalize the pseudobulk SummarizedExperiment (same as before)
+se <- NormalizeCounts(
+    se, 
+    method = 'VST',
+    assay_name = 'counts'
+)
 
-print(head(rownames(cpm)))
-
-```
-
-```
-[1] "ASC:C1:0" "ASC:C3:0" "ASC:C5:0" "ASC:C6:0" "ASC:C7:0" "ASC:C8:0"
-```
-
-The rownames of the expression matrix denote the different pseudobulk replicates. By default 
-they are named with the `group.by` variable, the `replicate_col` variable, and the `label_col`
-variable.
-
-For consensus network analysis, we need to provide a list of gene expression matrices
-for each group of interest (male and female in this case), but `ConstructPseudobulk` only 
-returns a single matrix. We will next use `SetMultiExpr` to properly format the `cpm` matrix.
-Importantly, we will provide `SetMultiExpr` with the `multi.group.by` parameter telling it 
-how to split apart the matrix for the consensus network analysis, and this group should be the 
-same as what you chose for `label_col` in the `ConstructPseudobulk` function.
-
-```{r eval=FALSE}
-
+# set the multiExpr slot using the SummarizedExperiment object
 seurat_obj <- SetMultiExpr(
   seurat_obj,
+  layer = 'VST',
   multi.group.by='msex',
-  mat = cpm # provide the normalized pseudobulk matrix
+  mat = se
 )
-
-```
-
-For consensus network analysis, we need to perform the soft power threshold 
-testing for each group, so next we use `TestSoftPowersConsensus`.
-
-```{r eval=FALSE, echo=FALSE}
-
-seurat_obj@meta.data <- seurat_obj@meta.data[,1:36]
-
-
-```
-
-```{r eval=FALSE}
 
 seurat_obj <- TestSoftPowersConsensus(seurat_obj)
 
