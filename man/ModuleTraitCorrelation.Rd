@@ -2,7 +2,7 @@
 % Please edit documentation in R/ModuleTraitCorrelation.R
 \name{ModuleTraitCorrelation}
 \alias{ModuleTraitCorrelation}
-\title{ModuleTraitCorrelation'}
+\title{Module-Trait Correlation}
 \usage{
 ModuleTraitCorrelation(
   seurat_obj,
@@ -17,19 +17,50 @@ ModuleTraitCorrelation(
 )
 }
 \arguments{
-\item{seurat_obj}{A list of column names in the Seurat object's metadata that you wish to correlate with each module.
-Traits must be a categorical variable (not a character vector), or a numeric variable.}
+\item{seurat_obj}{A Seurat object containing the hdWGCNA experiment.}
 
-\item{features}{Which features to use to summarize each modules? Valid choices are hMEs, MEs, or scores}
+\item{traits}{A character vector of column names in \code{seurat_obj@meta.data}
+to correlate with each module. Traits must be numeric, integer, or factor.
+Character vectors should be converted to factors before running this function.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{group.by}{A string containing the name of a column in \code{seurat_obj@meta.data}.
+If provided, correlations are computed separately for each group (e.g., per cell type).
+If NULL (default), all cells are correlated together (global).}
 
-\item{cor_meth}{Which method to use for correlation? Valid choices are pearson, spearman, kendall.}
+\item{features}{Character; which feature to use to summarize each module?
+\itemize{
+\item "hMEs": Harmonized Module Eigengenes
+\item "MEs": Standard Module Eigengenes.
+\item "scores": Module Scores (Seurat \code{AddModuleScore}).
+}}
+
+\item{cor_method}{Character; method used for correlation. Valid choices:
+"pearson", "spearman", "kendall".}
+
+\item{subset_by}{A string containing the name of a column to subset the data
+before correlation.}
+
+\item{subset_groups}{A character vector specifying which groups from \code{subset_by}
+to include in the analysis.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in \code{seurat_obj@misc}.
+Default = NULL (uses active WGCNA).}
+
+\item{...}{Additional arguments passed to internal functions.}
+}
+\value{
+A Seurat object with the module-trait correlation results added to
+\code{seurat_obj@misc[[wgcna_name]]$mt_cor}. The results include correlation matrices,
+p-values, and FDR-corrected p-values for all cells and for each group specified
+in \code{group.by}.
 }
 \description{
-Correlates categorical and numeric variables with Module Eigengenes or hub-gene scores.
+Computes the correlation between WGCNA modules (eigengenes or scores) and
+biological/clinical traits (metadata columns) for single cells.
 }
-\examples{
-ModuleTraitCorrelation
+\details{
+This function calculates the correlation between module eigengenes and user-specified
+traits. If a trait is a factor, it is converted to numeric based on the order of its
+levels. The function computes p-values and False Discovery Rates (FDR) for each correlation.
 }
 \keyword{scRNA-seq}

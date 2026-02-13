@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hdWGCNA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.09</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -150,7 +150,7 @@
 <span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span></span>
 <span></span>
 <span><span class="co"># create a pseudo-bulk SummarizedExperiment object</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">AggregatePseudobulk</span><span class="op">(</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AggregatePseudobulk.html">AggregatePseudobulk</a></span><span class="op">(</span></span>
 <span>    <span class="va">X</span>, <span class="va">meta</span>, </span>
 <span>    replicate_col <span class="op">=</span> <span class="st">"Sample"</span>, </span>
 <span>    group_col <span class="op">=</span> <span class="st">"cell_type"</span>,</span>
@@ -158,7 +158,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># normalize the pseudobulk SummarizedExperiment</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">NormalizeCounts</span><span class="op">(</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeCounts.html">NormalizeCounts</a></span><span class="op">(</span></span>
 <span>    <span class="va">se</span>, </span>
 <span>    method <span class="op">=</span> <span class="st">'VST'</span>,</span>
 <span>    assay_name <span class="op">=</span> <span class="st">'counts'</span></span>
@@ -286,7 +286,7 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">seurat_obj</span><span class="op">@</span><span class="va">meta.data</span></span>
 <span></span>
 <span><span class="co"># create a pseudo-bulk SummarizedExperiment object (same as before)</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">AggregatePseudobulk</span><span class="op">(</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AggregatePseudobulk.html">AggregatePseudobulk</a></span><span class="op">(</span></span>
 <span>    <span class="va">X</span>, <span class="va">meta</span>, </span>
 <span>    replicate_col <span class="op">=</span> <span class="st">"Sample"</span>, </span>
 <span>    group_col <span class="op">=</span> <span class="st">"cell_type"</span>,</span>
@@ -294,7 +294,7 @@ with consensus co-expression network analysis, please visit our <a href="consens
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># normalize the pseudobulk SummarizedExperiment (same as before)</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">NormalizeCounts</span><span class="op">(</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NormalizeCounts.html">NormalizeCounts</a></span><span class="op">(</span></span>
 <span>    <span class="va">se</span>, </span>
 <span>    method <span class="op">=</span> <span class="st">'VST'</span>,</span>
 <span>    assay_name <span class="op">=</span> <span class="st">'counts'</span></span>

@@ -2,7 +2,9 @@
 % Please edit documentation in R/getters_and_setters.R
 \name{SetMultiExpr}
 \alias{SetMultiExpr}
-\title{SetMultiExpr}
+\title{This function prepares the expression data for Consensus WGCNA analysis. It populates
+the \code{multiExpr} slot in the Seurat object, which contains a list of expression matrices
+(one for each consensus group, e.g., dataset, sample, condition).}
 \usage{
 SetMultiExpr(
   seurat_obj,
@@ -21,30 +23,72 @@ SetMultiExpr(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object containing the hdWGCNA experiment.}
 
-\item{group_name}{A string containing a group present in the provided group.by column or in the Seurat Idents.}
+\item{group_name}{A string containing the specific group to analyze (e.g., a specific
+cluster or cell type). This filters the data when using Internal Seurat/Metacell Mode.}
 
-\item{use_metacells}{A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)}
+\item{use_metacells}{Logical; if TRUE (default), use the metacell expression matrix
+stored in the hdWGCNA experiment. If FALSE, use the full single-cell expression matrix.
+Ignored if \code{mat} is provided.}
 
-\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.}
+\item{group.by}{A string containing the name of a column in the Seurat object with
+cell groups (clusters, cell types, etc). If NULL (default), uses Seurat Idents.}
 
-\item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
+\item{multi.group.by}{A string containing the name of the column that defines the
+consensus groups (e.g., "dataset", "sample", "condition").
+\itemize{
+\item If using \strong{Seurat/Metacells}, this must be a column in \code{seurat_obj@meta.data}.
+\item If using \strong{Pseudobulk (SE)}, this must be a column in \code{colData(mat)}.
+}}
 
-\item{multi_groups}{A character vecrtor containing the names of groups to select}
+\item{multi_groups}{A character vector specifying which groups from \code{multi.group.by}
+to include. If NULL, all unique groups are used.}
 
-\item{assay}{The name of the assay in the Seurat object}
+\item{assay}{The name of the assay in the Seurat object (e.g., "RNA", "SCT").}
 
-\item{slot}{The name of the slot in the Seurat object (counts, data)}
+\item{slot}{The name of the slot in the Seurat object (e.g., "counts", "data").
+Used for Seurat v4 compatibility.}
 
-\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
+\item{layer}{The name of the layer in the Seurat object (e.g., "counts", "data")
+OR the name of the assay in the SummarizedExperiment (e.g., "VST", "counts")
+if \code{mat} is provided.}
 
-\item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
+\item{mat}{A Matrix or SummarizedExperiment object containing gene expression data.
+\itemize{
+\item \strong{SummarizedExperiment:} The function extracts the assay specified by \code{layer}
+and subsets columns based on \code{multi.group.by} in \code{colData}.
+\item \strong{Matrix:} The function assumes row names are delimited (e.g., "Cluster1:SampleA")
+and splits them using \code{mat_group_delim}.
+}}
 
-\item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
+\item{mat_group_delim}{Character; the delimiter used in the row names of \code{mat}
+if \code{mat} is a matrix (default is ":"). Ignored if \code{mat} is a SummarizedExperiment.}
+
+\item{wgcna_name}{A string containing the name of the WGCNA slot in \code{seurat_obj@misc}.
+Default = NULL, which retrieves the currently active WGCNA data.}
+
+\item{...}{Additional arguments passed to internal helper functions.}
+}
+\value{
+A Seurat object with the \code{multiExpr} slot populated in the specified \code{wgcna_name}
+experiment.
 }
 \description{
-This function sets up the expression matrix input for consensus WGCNA based on
-the metacell expression matrix, the full expression matrix, or a provided pseudobulk expression matrix.
+The function operates in three modes:
+\enumerate{
+\item \strong{Internal Seurat/Metacell Mode (Default):} Extracts expression data directly from the
+Seurat object (either single-cell or metacell data) based on \code{group_name}.
+\item \strong{Pseudobulk Mode (SummarizedExperiment):} Extracts expression data from a provided
+SummarizedExperiment object (passed to \code{mat}). This is the recommended approach for
+pseudobulk consensus analysis.
+\item \strong{External Matrix Mode:} Extracts expression data from a provided large matrix
+(passed to \code{mat}) where row names contain delimited group identifiers.
 }
-\keyword{scRNA-seq}
+}
+\details{
+This function automatically aligns the genes in the provided data (\code{mat} or \code{seurat_obj})
+with the genes selected for WGCNA (via \code{SetupForWGCNA} or \code{GetWGCNAGenes}). It also
+runs \code{WGCNA::goodGenesMS} to exclude genes with zero variance or excessive missingness
+across the consensus groups.
+}

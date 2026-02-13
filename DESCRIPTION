@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: hdWGCNA
-Version: 0.4.09
+Version: 0.4.10
 Authors@R: c(
     person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
@@ -31,4 +31,6 @@ Depends:
     ggrepel,
     UCell, 
     GeneOverlap,
-    GenomicRanges
+    GenomicRanges,
+    SummarizedExperiment,
+    enrichR

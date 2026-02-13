@@ -30,6 +30,7 @@
 <url><loc>https://smorabit.github.io/hdWGCNA/authors.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/index.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/news/index.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/AggregatePseudobulk.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/AssignTFRegulons.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/AvgModuleExpr.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/BinPseudotime.html</loc></url>
@@ -110,6 +111,7 @@
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifOverlapBarPlot.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifScan.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/MotifTargetScore.html</loc></url>
+<url><loc>https://smorabit.github.io/hdWGCNA/reference/NormalizeCounts.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/NormalizeMetacells.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapBarPlot.html</loc></url>
 <url><loc>https://smorabit.github.io/hdWGCNA/reference/OverlapDotPlot.html</loc></url>

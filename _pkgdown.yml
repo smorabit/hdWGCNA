@@ -247,7 +247,8 @@ reference:
 - title: Other
   desc: Other functions
   contents:
-  - '`ConstructPseudobulk`'
+  - '`AggregatePseudobulk`'
+  - '`NormalizeCounts`'
   - '`ReassignModules`'
   - '`GetActiveWGCNAName`'
 - title: internal
@@ -276,6 +277,7 @@ reference:
   - PlotLollipop
   - BinPseudotime
   - MotifOverlapBarPlot
+  - ConstructPseudobulk
 
 deploy:
   install_metadata: true

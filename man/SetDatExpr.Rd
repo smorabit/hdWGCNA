@@ -2,7 +2,7 @@
 % Please edit documentation in R/getters_and_setters.R
 \name{SetDatExpr}
 \alias{SetDatExpr}
-\title{SetDatExpr}
+\title{Set Expression Data (Standard WGCNA)}
 \usage{
 SetDatExpr(
   seurat_obj,
@@ -22,37 +22,72 @@ SetDatExpr(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object containing the hdWGCNA experiment.}
 
-\item{group_name}{A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.}
+\item{group_name}{A string containing the group to subset the data by (e.g., a specific
+cluster or cell type). Only used if pulling data from \code{seurat_obj}.}
 
-\item{use_metacells}{A logical determining if we use the metacells (TRUE) or the full expression matrix (FALSE)}
+\item{use_metacells}{Logical; if TRUE (default), use the metacell expression matrix.
+If FALSE, use the full single-cell expression matrix. Ignored if \code{mat} is provided.}
 
-\item{group.by}{A string containing the name of a column in the Seurat object with cell groups (clusters, cell types, etc). If NULL (default), hdWGCNA uses the Seurat Idents as the group.}
+\item{group.by}{A string containing the name of a column in the Seurat object with
+cell groups (clusters, cell types, etc). If NULL (default), uses Seurat Idents.}
 
-\item{multi.group.by}{A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)}
+\item{multi.group.by}{A string containing the name of a column in the Seurat object
+with groups to subset further (e.g. dataset, sample). Only used if pulling data
+from \code{seurat_obj}.}
 
-\item{multi_group_name}{A string containing the name of a group present in the multi.group.by column.}
+\item{multi_group_name}{A string or character vector specifying which groups from
+\code{multi.group.by} to include.}
 
-\item{assay}{The name of the assay in the Seurat object}
+\item{return_seurat}{Logical; if TRUE (default), returns the Seurat object with the
+\code{datExpr} slot populated. If FALSE, returns the data frame of expression data.}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
+\item{assay}{The name of the assay in the Seurat object (e.g., "RNA", "SCT").}
 
-\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
+\item{slot}{The name of the slot in the Seurat object (e.g., "counts", "data").
+Used for Seurat v4 compatibility.}
 
-\item{mat}{A Matrix containing gene expression data. Supplying a matrix using this parameter ignores other options. This is almost exclusively used for pseudobulk analysis.}
+\item{layer}{The name of the layer in the Seurat object (e.g., "counts", "data")
+OR the name of the assay in the SummarizedExperiment (e.g., "VST", "counts")
+if \code{mat} is provided.}
 
-\item{features}{A list of features to use to override the features that have been previously set.}
+\item{mat}{A Matrix or SummarizedExperiment object containing gene expression data.
+\itemize{
+\item \strong{SummarizedExperiment:} The function extracts the assay specified by \code{layer}
+and subsets genes to match \code{GetWGCNAGenes(seurat_obj)}.
+\item \strong{Matrix:} The function assumes columns are genes and rows are samples.
+}}
 
-\item{wgcna_name}{A string containing the name of the WGCNA slot in seurat_obj@misc. Default = NULL which retrieves the currently active WGCNA data}
+\item{features}{A character vector of genes to use. If NULL (default), uses the
+genes stored in the hdWGCNA experiment.}
+
+\item{wgcna_name}{A string containing the name of the WGCNA slot in \code{seurat_obj@misc}.
+Default = NULL, which retrieves the currently active WGCNA data.}
+
+\item{...}{Additional arguments passed to \code{WGCNA::goodGenes}.}
+}
+\value{
+A Seurat object with the \code{datExpr} slot populated in the specified \code{wgcna_name}
+experiment, or a data frame if \code{return_seurat = FALSE}.
 }
 \description{
-This function specifies the gene expression matrix for co-expression network analysis.
+The function operates in three modes:
+\enumerate{
+\item \strong{Internal Seurat/Metacell Mode (Default):} Extracts expression data directly from the
+Seurat object (either single-cell or metacell data).
+\item \strong{Pseudobulk Mode (SummarizedExperiment):} Extracts expression data from a provided
+SummarizedExperiment object (passed to \code{mat}). This is the recommended approach for
+pseudobulk analysis.
+\item \strong{External Matrix Mode:} Sets the expression data from a provided matrix (passed to \code{mat}).
+}
 }
 \details{
-SetDatExpr is a critical function of the hdWGCNA pipeline that determines the gene expession
-matrix that will be used for network analysis. We typically use this function to select a
-cell type or group of cell types for network analysis using the group.by parameter, but we provide
-additional parameters for further customization.
+This function sets up the expression matrix input for standard (non-consensus) WGCNA
+based on the metacell expression matrix, the full expression matrix, or a provided
+pseudobulk expression matrix.
+
+This function automatically runs \code{WGCNA::goodGenes} to exclude genes with zero variance
+or excessive missingness. If \code{mat} is a SummarizedExperiment, the function automatically
+transposes the assay to the required (Samples x Genes) format.
 }
-\keyword{scRNA-seq}

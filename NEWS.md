@@ -1,3 +1,12 @@
+# hdWGCNA 0.4.10 (2026-02-12)
+## Added
+- `AggregatePseudobulk` function to replace the older and slower `ConstructPseudobulk` function.
+
+## Changes
+- BugFix in `ModuleTraitCorrelation`
+- Updated the pseudobulk vignette to include the new function.
+- Updated `SetDatExpr` and `SetMultiExpr` to accept the new pseudobulk format with `SummarizedExperiment` objects.
+
 # hdWGCNA 0.4.09 (2026-01-06)
 ## Added
 - None
