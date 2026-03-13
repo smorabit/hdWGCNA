@@ -45,14 +45,14 @@ ConstructTFNetwork <- function(
         stop('gene_name column missing in motif table (GetMotifs(seurat_obj)). Please add a column indicating the gene_name in the seurat_obj for each motif.' )
     }
 
-    check_xgboost2 <- startsWith(as.character(packageVersion('xgboost')), '2')
+    check_xgboost1 <- startsWith(as.character(packageVersion('xgboost')), '1')
 
-    # define XGBoost callback function based on the installed version, because between v1 and v2 they changed the names of some parameters
+    # define XGBoost callback function based on the installed version, because after v1 they changed some parameters
     if(is.null(callbacks)){
-        if(check_xgboost2){
-            callbacks <- list(xgboost::xgb.cb.cv.predict(save_models = TRUE))
-        } else{
+        if(check_xgboost1){
             callbacks = list(xgboost::cb.cv.predict(save_models=TRUE))
+        } else{
+            callbacks <- list(xgboost::xgb.cb.cv.predict(save_models = TRUE))
         }
     }
 
@@ -123,10 +123,10 @@ ConstructTFNetwork <- function(
 
         # average the importance score from each fold
         importance <- Reduce('+', lapply(1:nfold, function(i){
-            if(check_xgboost2){
-                cur_model <- xgb$cv_predict$models[[i]]
-            } else{
+            if(check_xgboost1){
                 cur_model <- xgb$models[[i]]
+            } else{
+                cur_model <- xgb$cv_predict$models[[i]]
             }
             cur_imp <- xgboost::xgb.importance(feature_names = colnames(x_vars), model = cur_model)
             ix <- match(colnames(x_vars),  as.character(cur_imp$Feature))

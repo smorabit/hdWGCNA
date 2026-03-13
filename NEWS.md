@@ -1,3 +1,10 @@
+# hdWGCNA 0.4.11 (2026-03-13)
+## Added
+- None
+
+## Changes
+- BugFix in `ConsructTFNetwork` regarding XGBoost version
+
 # hdWGCNA 0.4.10 (2026-02-12)
 ## Added
 - `AggregatePseudobulk` function to replace the older and slower `ConstructPseudobulk` function.
