@@ -1,0 +1,117 @@
+# ModuleTopologyHeatmap
+
+Plots a heatmap of the co-expression network topology of a given module.
+
+## Usage
+
+``` r
+ModuleTopologyHeatmap(
+  seurat_obj,
+  mod,
+  matrix = "TOM",
+  matrix_name = NULL,
+  order_by = "kME",
+  high_color = NULL,
+  low_color = "white",
+  raster = TRUE,
+  raster_dpi = 200,
+  plot_max = "q99",
+  plot_min = 0,
+  return_genes = FALSE,
+  genes_order = NULL,
+  TOM_use = NULL,
+  datExpr_use = NULL,
+  wgcna_name = NULL,
+  ...
+)
+```
+
+## Arguments
+
+- seurat_obj:
+
+  A Seurat object
+
+- mod:
+
+  the name of the co-expression module to plot
+
+- matrix:
+
+  specify which matrix to plot, use 'TOM' (topological overlap matrix)
+  or 'Cor' (correlation matrix), or pass a custom square matrix where
+  the rownames and colnames match the genes in this module
+
+- matrix_name:
+
+  name of the matrix plotted that will be used as the label in the plot
+  legend
+
+- order_by:
+
+  order genes in this module by 'kME' (default) or by 'degree' (sum of
+  all connections to this gene in the co-expression network)
+
+- high_color:
+
+  color used for high values in the heatmap, default is the module's
+  unique color
+
+- low_color:
+
+  color used for low values in the heatmap, default is 'white'
+
+- raster:
+
+  logical indicating whether or not to rasterise the plot
+
+- raster_dpi:
+
+  dpi used for a rasterised plot
+
+- plot_max:
+
+  maximum value to plot on the heatmap, can pass a numeric value or a
+  string indicating the quantile ('q99' would be the 99th percentile)
+
+- plot_min:
+
+  minimum value to plot on the heatmap, can pass a numeric value or a
+  string indicating the quantile ('q1' would be the 1st percentile)
+
+- return_genes:
+
+  logical indicating whether or not to return
+
+- genes_order:
+
+  a character vector of genes to plot in this specific order, this
+  option will override the order_by parameter
+
+- TOM_use:
+
+  The name of the hdWGCNA experiment containing the TOM that will be
+  used for plotting
+
+- datExpr_use:
+
+  The name of the hdWGCNA experiment containing the datExpr that will be
+  used for calculating the correlation matrix
+
+- wgcna_name:
+
+  The name of the hdWGCNA experiment in the seurat_obj@misc slot
+
+## Value
+
+ggplot object containing the ModuleTopologyHeatmap
+
+## Details
+
+ModuleTopologyHeatmap generates a triangular heatmap plot showing the
+network "topology" of a specific co-expression module. Each cell in the
+heatmap represents a gene-gene pair, and the the heatmap is colored by
+the strength of the connection between these two genes. By default the
+genes in this heatmap are ordered in both the rows and the columns based
+on their importance in the module, ranked either by eigengene-based
+connectivity (kME) or by network degree.

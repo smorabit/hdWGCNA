@@ -1,0 +1,84 @@
+# ModuleEigengenes
+
+Computes module eigengenes for co-expression modules
+
+## Usage
+
+``` r
+ModuleEigengenes(
+  seurat_obj,
+  group.by.vars = NULL,
+  modules = NULL,
+  vars.to.regress = NULL,
+  scale.model.use = "linear",
+  verbose = TRUE,
+  assay = NULL,
+  pc_dim = 1,
+  wgcna_name = NULL,
+  ...
+)
+```
+
+## Arguments
+
+- seurat_obj:
+
+  A Seurat object
+
+- group.by.vars:
+
+  groups to harmonize by
+
+- modules:
+
+  table containing module / gene assignments, as in
+  GetModules(seurat_obj).
+
+- vars.to.regress:
+
+  character vector of variables in seurat_obj@meta.data to regress when
+  running ScaleData
+
+- scale.model.use:
+
+  model to scale data when running ScaleData choices are "linear",
+  "poisson", or "negbinom"
+
+- verbose:
+
+  logical indicating whether to print messages
+
+- assay:
+
+  Assay in seurat_obj to compute module eigengenes. Default is
+  DefaultAssay(seurat_obj)
+
+- pc_dim:
+
+  Which PC to use as the module eigengene? Default to 1.
+
+- wgcna_name:
+
+  name of the WGCNA experiment
+
+## Value
+
+seurat_obj with the module eigengenes computed for the selected wgcna
+experiment
+
+## Details
+
+ModuleEigengenes summarizes the gene expression signatures of entire
+co-expression modules. This is done by performing singular value
+decomposition (SVD) on a subset of the scaled expression matrix
+containing only features assigned to each module. The module eigengene
+(ME), defined as the first dimension of the SVD matrix, retains the most
+variation, and we use this vector as a summary of gene expression for
+the whole module.
+
+The module gene expression matrix is first scaled using the Seurat
+ScaleData function. The user can optionally adjust for covariates of
+interest in this step using the vars.to.regress parameter. Additionally,
+the module eigengenes themselves can be adjusted for technical biases
+such as sequencing batch, dataset of origin, or other factors using the
+Harmony algorithm with the group.by.vars parameter.

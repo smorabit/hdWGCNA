@@ -130,7 +130,11 @@ test_that("Normalizing the metacell object works",{
 
     test_seurat <- NormalizeMetacells(test_seurat, verbose=FALSE)
     m_obj <- GetMetacellObject(test_seurat)
-    expr <- Seurat::GetAssayData(test_seurat, slot='data')
+    if(CheckSeurat5()){
+        expr <- SeuratObject::LayerData(test_seurat, layer='data')
+    } else {
+        expr <- Seurat::GetAssayData(test_seurat, slot='data')
+    }
 
     check <- all.equal(ceiling(expr), expr) == TRUE
     expect_equal(check, FALSE)

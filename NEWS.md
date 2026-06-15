@@ -1,3 +1,12 @@
+# hdWGCNA 0.4.12 (2026-06-15)
+## Added
+- `SetTOM`: new setter function to store the topological overlap matrix (TOM) directly within the Seurat object.
+- `ConstructNetwork`: new `store_tom_in_seurat` parameter (default `FALSE`) to optionally store the TOM in the Seurat object in addition to writing it to disk.
+
+## Changes
+- `GetTOM`: updated to first check for an in-object TOM (stored via `SetTOM` or `ConstructNetwork(store_tom_in_seurat=TRUE)`) before falling back to loading from the `.rda` file on disk.
+- Testthat: fixed pre-existing Seurat v5 compatibility issue in `test-Metacells.R` (`GetAssayData(slot=)` replaced with `CheckSeurat5()` branch).
+
 # hdWGCNA 0.4.11 (2026-03-13)
 ## Added
 - None

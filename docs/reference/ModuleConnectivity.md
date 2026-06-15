@@ -1,0 +1,112 @@
+# ModuleConnectivity
+
+Computes eigengene-based connectivity (kME) based on module eigengenes
+and the feature expression in selected cell populations / spatial
+regions.
+
+## Usage
+
+``` r
+ModuleConnectivity(
+  seurat_obj,
+  group.by = NULL,
+  group_name = NULL,
+  corFnc = "bicor",
+  corOptions = "use='p'",
+  harmonized = TRUE,
+  assay = NULL,
+  slot = "data",
+  layer = "data",
+  sparse = TRUE,
+  reassign_modules = TRUE,
+  TOM_use = NULL,
+  wgcna_name = NULL,
+  ...
+)
+```
+
+## Arguments
+
+- seurat_obj:
+
+  A Seurat object
+
+- group.by:
+
+  column in seurat_obj@meta.data containing grouping info, ie clusters
+  or celltypes
+
+- group_name:
+
+  name of the group(s) in group.by to use for kME calculation
+
+- corFnc:
+
+  character string specifying the function to be used to calculate
+  co-expression similarity. Defaults to bicor. Any function returning
+  values
+
+- corOptions:
+
+  character string specifying additional arguments to be passed to the
+  function given by corFnc. Use "use = 'p', method = 'spearman'" to
+  obtain Spearman correlation. Use "use = 'p'" to obtain Pearson
+  correlation.
+
+- harmonized:
+
+  logical determining whether to use harmonized MEs for kME calculation
+
+- assay:
+
+  Assay in seurat_obj containing expression information.
+
+- slot:
+
+  Slot in seurat_obj, default to normalized 'data' slot.
+
+- sparse:
+
+  logical indicating whether or not to run the correlation using a
+  sparse matrix.
+
+- reassign_modules:
+
+  logical indicating whether or not to reassign genes to different
+  co-expression modules if their kME value in the assigned module is
+  negative.
+
+- TOM_use:
+
+  name of the hdWGCNA experiment that contains the TOM which will be
+  used to compute the intramodular degree of each gene. If the TOM is
+  not found, this calculation will be skipped.
+
+- wgcna_name:
+
+  The name of the hdWGCNA experiment in the seurat_obj@misc slot
+
+## Value
+
+seurat_obj with the kMEs computed for the selected wgcna experiment
+
+## Details
+
+ModuleConnectivity computes the eigengene-based connectivity (kME) of
+each feature and each module. This is done by correlating the gene
+expression signal with the module eigengenes for each module. Features
+with high kME values have greater network connectivity within that
+module, and we can identify module hub genes by taking the top genes for
+each module by kME values.
+
+We recommend using the group.by and group_name parameters that were
+previously used in the SetDatExpr function, so only the relevant cell
+populations / spatial regions are considered for computing kMEs.
+
+Depending on the parameters for network analysis, sometimes a feature
+has a negative kME in the module that it was originally assigned. This
+discrepancy arises since the network construction is done on the
+metacell/metaspot matrix but the kME calculation is done on the
+cell/spot matrix. By default, we account for this by reassigning
+features with negative kMEs in their assigned module to the module that
+had the highest kME for that feature.

@@ -42,6 +42,7 @@ ConstructNetwork <- function(
   tom_name = NULL,
   consensus = FALSE,
   overwrite_tom = FALSE,
+  store_tom_in_seurat = FALSE,
   wgcna_name = NULL,
   blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
   consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
@@ -54,6 +55,10 @@ ConstructNetwork <- function(
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
+
+  if(store_tom_in_seurat && !saveConsensusTOMs){
+    stop("store_tom_in_seurat = TRUE requires saveConsensusTOMs = TRUE.")
+  }
 
   # suffix for the tom
   if(is.null(tom_name)){
@@ -178,6 +183,15 @@ ConstructNetwork <- function(
       "color" = mods
     ), wgcna_name
   )
+
+  if(store_tom_in_seurat){
+    load(renamed)
+    TOM_mat <- as.matrix(consTomDS)
+    gene_names <- names(mods)
+    rownames(TOM_mat) <- gene_names
+    colnames(TOM_mat) <- gene_names
+    seurat_obj <- SetTOM(seurat_obj, TOM_mat, wgcna_name)
+  }
 
   seurat_obj
 

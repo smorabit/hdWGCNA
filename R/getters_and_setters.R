@@ -1134,6 +1134,20 @@ GetAvgModuleExpr <- function(seurat_obj,  wgcna_name=NULL){
 # TOM
 ###########################
 
+#' SetTOM
+#'
+#' @param seurat_obj A Seurat object
+#' @param TOM a named matrix containing the topological overlap matrix
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetTOM <- function(seurat_obj, TOM, wgcna_name=NULL){
+  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$wgcna_TOM <- TOM
+  seurat_obj
+}
+
 #' GetTOM
 #'
 #' @param seurat_obj A Seurat object
@@ -1144,11 +1158,16 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get modules 
+  # check if TOM is stored in-object first
+  tom_in_obj <- seurat_obj@misc[[wgcna_name]]$wgcna_TOM
+  if(!is.null(tom_in_obj)){
+    return(tom_in_obj)
+  }
+
+  # fall back to file-based loading
   modules <- GetModules(seurat_obj, wgcna_name)
   gene_names <- modules$gene_name
 
-  # load TOM
   tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
 
   if(!file.exists(tom_files[[1]])){

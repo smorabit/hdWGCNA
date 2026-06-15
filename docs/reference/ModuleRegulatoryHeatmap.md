@@ -1,0 +1,103 @@
+# ModuleRegulatoryHeatmap
+
+This function visualizes the regulatory network between gene modules as
+a heatmap, where each cell represents the regulatory score between a
+source and target module. The heatmap can display either positive,
+negative, or delta (positive minus negative) regulatory scores.
+Optionally, a dendrogram can be plotted to cluster modules based on
+their regulatory interactions.
+
+## Usage
+
+``` r
+ModuleRegulatoryHeatmap(
+  seurat_obj,
+  feature = "delta",
+  TFs_only = TRUE,
+  dendrogram = TRUE,
+  coord_fixed = TRUE,
+  max_val = 1,
+  min_val_label = 3,
+  high_color = "orange2",
+  mid_color = "white",
+  low_color = "dodgerblue",
+  wgcna_name = NULL
+)
+```
+
+## Arguments
+
+- seurat_obj:
+
+  A Seurat object containing single-cell data and WGCNA results.
+
+- feature:
+
+  A character string specifying the type of regulatory score to plot.
+  Options are 'positive' (positive regulatory score), 'negative'
+  (negative regulatory score), or 'delta' (difference between positive
+  and negative scores). Default is 'delta'.
+
+- TFs_only:
+
+  Logical; if TRUE (default), only transcription factor (TF) genes are
+  included in the heatmap. If FALSE, all genes are considered in the
+  regulatory network.
+
+- dendrogram:
+
+  Logical; if TRUE (default), a dendrogram is added to the heatmap to
+  cluster modules based on their regulatory interactions. Default is
+  TRUE.
+
+- coord_fixed:
+
+  Logical; if TRUE (default), aspect ratio in x and y axes are equal.
+  Default is TRUE.
+
+- max_val:
+
+  Numeric; sets the maximum absolute value for the regulatory score. Any
+  values exceeding this threshold are capped. Default is 1.
+
+- min_val_label:
+
+  Numeric; the minimum number of interactions required for a label to be
+  displayed on a heatmap cell. Default is 3.
+
+- high_color:
+
+  Character string; the color representing high regulatory scores in the
+  heatmap. Default is 'orange2'.
+
+- mid_color:
+
+  Character string; the color representing intermediate regulatory
+  scores in the heatmap. Default is 'white'.
+
+- low_color:
+
+  Character string; the color representing low regulatory scores in the
+  heatmap. Default is 'dodgerblue'.
+
+- wgcna_name:
+
+  The name of the hdWGCNA experiment in the seurat_obj@misc slot
+
+## Value
+
+A ggplot2 object visualizing the module regulatory network as a heatmap,
+which can be further customized or displayed using
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html).
+
+## Details
+
+The function visualizes the regulatory network between gene modules by
+plotting regulatory scores as a heatmap. Each cell in the heatmap
+represents the regulatory interaction between a source module (columns)
+and a target module (rows). The color of the cell represents the
+magnitude and direction (positive or negative) of the regulatory score.
+Users can choose to plot positive, negative, or delta scores and can
+adjust the color gradient and score thresholds. A dendrogram can be
+added to cluster modules based on their regulatory patterns, and labels
+can be shown for cells with a sufficient number of interactions.
