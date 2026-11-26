@@ -1,0 +1,5 @@
+# Formatting-only commits, skipped by git blame (git config blame.ignoreRevsFile .git-blame-ignore-revs)
+# and by GitHub blame view.
+
+# Apply code style (styler)
+dcd888ebf12c9f5d13ac785e37cd57d36446f5b4
