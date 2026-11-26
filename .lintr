@@ -1,0 +1,17 @@
+linters: lintr::linters_with_defaults(
+    quotes_linter(delimiter = "'"),
+    line_length_linter(100L),
+    indentation_linter(indent = 2L),
+    object_name_linter(styles = c("snake_case", "CamelCase", "dotted.case", "symbols")),
+    object_length_linter(40L),
+    return_linter(return_style = "implicit"),
+    object_usage_linter = NULL,
+    cyclocomp_linter = NULL
+  )
+exclusions: list(
+    "data-raw",
+    "bench",
+    "vignettes",
+    "docs"
+  )
+encoding: "UTF-8"
