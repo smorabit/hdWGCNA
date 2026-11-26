@@ -27,7 +27,4 @@ OverlapBarPlot(
 \description{
 Plots the results from OverlapModulesDEGs as a bar plot
 }
-\examples{
-OverlapBarPlot
-}
 \keyword{scRNA-seq}

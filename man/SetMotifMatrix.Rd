@@ -14,7 +14,4 @@ SetMotifMatrix(seurat_obj, tf_match)
 \description{
 SetMotifMatrix
 }
-\examples{
-SetMotifMatrix
-}
 \keyword{scRNA-seq}

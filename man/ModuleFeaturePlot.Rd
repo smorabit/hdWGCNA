@@ -33,7 +33,4 @@ ModuleFeaturePlot(
 \description{
 Plot module eigengenes as a FeaturePlot
 }
-\examples{
-ModuleFeaturePlot
-}
 \keyword{scRNA-seq}

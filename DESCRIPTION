@@ -22,24 +22,62 @@ URL: https://smorabit.github.io/hdWGCNA/, https://github.com/smorabit/hdWGCNA
 BugReports: https://github.com/smorabit/hdWGCNA/issues
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
-Imports: WGCNA, Seurat, Matrix, harmony, igraph, enrichR, ggplot2, dplyr, tester, proxy
-Suggests: testthat (>= 3.0.0)
-Config/testthat/edition: 3
 Depends:
-    R (>= 2.10),
-    harmony (>= 1.0.1),
-    Seurat (>= 4.0.0),
-    ggrepel (>= 0.9.0),
-    WGCNA,
+    R (>= 4.1.0),
+    Seurat (>= 5.0.0)
+Imports:
     dplyr,
-    igraph,
+    fastcluster,
+    FNN,
+    future.apply,
+    ggplot2,
     ggraph,
-    tidygraph,
     ggrepel,
-    UCell,
-    GeneOverlap,
-    GenomicRanges,
+    grDevices,
+    gtools,
+    harmony (>= 1.0.1),
+    Hmisc,
+    igraph,
+    magrittr,
+    Matrix,
+    methods,
+    patchwork,
+    proxy,
+    purrr,
+    reshape2,
+    scales,
+    SeuratObject (>= 5.0.0),
+    stats,
+    stringr,
     SummarizedExperiment,
-    enrichR
+    tidygraph,
+    utils,
+    uwot,
+    WGCNA
+Suggests:
+    BiocGenerics,
+    corrplot,
+    DESeq2,
+    enrichR,
+    ensembldb,
+    GeneOverlap,
+    GenomeInfoDb,
+    GenomicRanges,
+    ggrastr,
+    ggseqlogo,
+    IRanges,
+    knitr,
+    motifmatchr,
+    NetRep,
+    qgraph,
+    rmarkdown,
+    SingleCellExperiment,
+    testthat (>= 3.0.0),
+    tidyr,
+    UCell,
+    xgboost
+VignetteBuilder: knitr
+Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0

@@ -27,7 +27,4 @@ OverlapDotPlot(
 \description{
 Makes barplots from Enrichr data
 }
-\examples{
-OverlapDotPlot
-}
 \keyword{scRNA-seq}

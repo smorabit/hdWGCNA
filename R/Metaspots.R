@@ -9,10 +9,6 @@
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @export
-#' @import proxy
-#' @import Seurat 
-#' @import SeuratObject
-#' @import Matrix
 ConstructMetaspots <- function(
   cur_seurat,
   mode = 'sum',
@@ -130,8 +126,9 @@ ConstructMetaspots <- function(
 
     })
 
+    # skip blocks with fewer than two spots (returning NULL; dropped below)
     if(length(tmp) <= 1){
-      next
+      return(NULL)
     }
 
     # get bc-neighbor results
@@ -146,6 +143,9 @@ ConstructMetaspots <- function(
     list(bcs, cur_neighbors, cur_X)
 
   })
+
+  # drop empty blocks
+  tmp <- Filter(Negate(is.null), tmp)
 
   # get bc-neighbor results
   bcs <- unlist(lapply(1:length(tmp), function(k){tmp[[k]][[1]]}))
@@ -176,7 +176,7 @@ ConstructMetaspots <- function(
   # make metaspot object:
   metaspot_obj <- CreateSeuratObject(
     counts = agg_X,
-    meta = cur_meta,
+    meta.data = cur_meta,
     assay = assay
   )
   if(slot == 'scale.data'){
@@ -218,10 +218,6 @@ ConstructMetaspots <- function(
 #' @param min_spots the minimum number of spots in a particular grouping to construct metaspots
 #' @param wgcna_name name of the WGCNA experiment
 #' @export
-#' @import proxy
-#' @import Seurat 
-#' @import SeuratObject
-#' @import Matrix
 MetaspotsByGroups <- function(
   seurat_obj,
   group.by=c('seurat_clusters'),

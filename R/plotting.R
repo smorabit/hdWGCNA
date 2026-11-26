@@ -10,8 +10,6 @@
 #' @param wgcna_name The name of the WGCNA experiment in seurat_obj
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' PlotSoftPowers
 PlotSoftPowers <- function(
   seurat_obj,
   selected_power = NULL,
@@ -187,8 +185,6 @@ PlotSoftPowers <- function(
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' PlotDendrogram
 PlotDendrogram <- function(
   seurat_obj, groupLabels="Module colors", wgcna_name=NULL,
   dendroLabels = FALSE, hang = 0.03, addGuide = TRUE, guideHang = 0.05,
@@ -223,8 +219,6 @@ PlotDendrogram <- function(
 #' @param features What to plot? Can select hMEs, MEs, scores, or average
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' MECorrelogram
 ModuleCorrelogram <- function(
   seurat_obj, MEs2=NULL,
   features = 'hMEs',
@@ -236,6 +230,8 @@ ModuleCorrelogram <- function(
   pch.cex=0.7, col=NULL, ncolors=200,
   wgcna_name=NULL, wgcna_name2=NULL, ...
 ){
+
+  check_suggests('corrplot', feature = 'ModuleCorrelogram')
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -312,14 +308,14 @@ ModuleCorrelogram <- function(
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ModuleCorrNetwork
 ModuleCorrNetwork <- function(
   seurat_obj, cluster_col=NULL, exclude_grey=TRUE,
   features = 'hMEs',
   reduction='umap', cor_cutoff=0.2, label_vertices=FALSE, edge_scale=5,
   vertex_size=15, niter=100, vertex_frame=FALSE, wgcna_name=NULL
 ){
+
+  check_suggests('qgraph', feature = 'ModuleCorrNetwork')
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -418,7 +414,7 @@ ModuleCorrNetwork <- function(
   )
 
   # igraph layout
-  e <-  get.edgelist(g, name=FALSE)
+  e <-  igraph::as_edgelist(g, names=FALSE)
   # l <- igraph::layout_with_fr(
   #   g,
   #   weights=igraph::E(g)$value,
@@ -476,8 +472,6 @@ ModuleCorrNetwork <- function(
 #' @param order TRUE, FALSE, or "shuffle" are valid options
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ModuleFeaturePlot
 ModuleFeaturePlot<- function(
   seurat_obj, module_names=NULL, wgcna_name = NULL,
   reduction='umap', features = 'hMEs',
@@ -556,6 +550,7 @@ ModuleFeaturePlot<- function(
 
     # rasterise?
     if(raster){
+      check_suggests('ggrastr', feature = 'ModuleFeaturePlot(raster = TRUE)')
       p <- p + ggrastr::rasterise(geom_point(size=point_size, alpha=alpha), dpi=raster_dpi, scale=raster_scale)
     } else{
       p <- p + geom_point(size=point_size, alpha=alpha)
@@ -948,7 +943,6 @@ EnrichrDotPlot <- function(
 #' @param edge.width value determining the width of the network edges
 #' @param vertex.label.cex vertex label font size
 #' @param vertex.size vertex size
-#' @import igraph 
 #' @export
 ModuleNetworkPlot <- function(
   seurat_obj,
@@ -1042,9 +1036,9 @@ ModuleNetworkPlot <- function(
     edge_df$color_alpha <- alpha(cur_color, alpha=edge_df$value)
 
     # top 10 as center
-    gA <- graph.adjacency(as.matrix(reducedTOM[1:n_inner,1:n_inner]),mode="undirected",weighted=TRUE,diag=FALSE)
-    gB <- graph.adjacency(as.matrix(reducedTOM[(n_inner + 1):n_genes,(n_inner+1):n_genes]),mode="undirected",weighted=TRUE,diag=FALSE)
-    layoutCircle <- rbind(layout.circle(gA)/2,layout.circle(gB))
+    gA <- igraph::graph_from_adjacency_matrix(as.matrix(reducedTOM[1:n_inner,1:n_inner]),mode="undirected",weighted=TRUE,diag=FALSE)
+    gB <- igraph::graph_from_adjacency_matrix(as.matrix(reducedTOM[(n_inner + 1):n_genes,(n_inner+1):n_genes]),mode="undirected",weighted=TRUE,diag=FALSE)
+    layoutCircle <- rbind(igraph::layout_in_circle(gA)/2,igraph::layout_in_circle(gB))
 
     g1 <- igraph::graph_from_data_frame(
         edge_df,
@@ -1096,8 +1090,6 @@ ModuleNetworkPlot <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' HubGeneNetworkPlot
 HubGeneNetworkPlot <- function(
   seurat_obj, mods="all",
   n_hubs=6, n_other=3,
@@ -1261,8 +1253,6 @@ HubGeneNetworkPlot <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ModuleUMAPPlot
 ModuleUMAPPlot <- function(
   seurat_obj,
   sample_edges = TRUE, # TRUE if we sample edges randomly, FALSE if we take the top edges
@@ -1450,8 +1440,6 @@ ModuleUMAPPlot <- function(
 #' @param plot_significance logical controlling whether to plot the significance levels on top of the dots
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' OverlapDotPlot
 OverlapDotPlot <- function(
   overlap_df, plot_var = 'odds_ratio',
   logscale=TRUE,
@@ -1504,8 +1492,6 @@ OverlapDotPlot <- function(
 #' @param label_size the size of the module labels in the bar plot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' OverlapBarPlot
 OverlapBarPlot <- function(
   overlap_df,
   plot_var = 'odds_ratio',
@@ -1577,8 +1563,6 @@ OverlapBarPlot <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' MotifOverlapBarPlot
 MotifOverlapBarPlot <- function(
   seurat_obj,
   n_tfs = 10,
@@ -1588,6 +1572,8 @@ MotifOverlapBarPlot <- function(
   module_names = NULL,
   wgcna_name=NULL
 ){
+
+  check_suggests('ggseqlogo', feature = 'MotifOverlapBarPlot')
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -1682,8 +1668,6 @@ MotifOverlapBarPlot <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' DoHubGeneHeatmap
 DoHubGeneHeatmap <- function(
   seurat_obj,
   n_hubs = 10,
@@ -2238,7 +2222,9 @@ PlotKMEs <- function(
 #' @examples
 #' # Example usage:
 #' # Assuming `seurat_obj` is your Seurat object and `DMEs` is the output from FindDMEs
+#' \dontrun{
 #' PlotDMEsVolcano(seurat_obj, DMEs, wgcna_name = "MG")
+#' }
 PlotDMEsVolcano <- function(
   seurat_obj,
   DMEs,
@@ -2361,12 +2347,6 @@ PlotDMEsLollipop <- function(
   avg_log2FC = 'avg_log2FC'
 ){
 
-  if (!require("ggforestplot")) {
-    print('Missing package: ggforestplot')
-    print('Installing package: ggforestplot')
-    devtools::install_github("NightingaleHealth/ggforestplot")
-  }
-
   if(!(pvalue %in% colnames(DMEs))){
   stop('Selected pvalue is not found in DMEs dataframe column names.')
   }
@@ -2399,7 +2379,7 @@ PlotDMEsLollipop <- function(
         #
         p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
-        p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+        p <- p + ggtitle(cur_title) + NoLegend() +  geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
         plot_list[[cur_comp]] <- p
 
@@ -2431,7 +2411,7 @@ PlotDMEsLollipop <- function(
         # set plotting attributes for shape
         p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
-        p <- p + ggtitle(cur_title) + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+        p <- p + ggtitle(cur_title) + NoLegend() +  geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
         plot_list[[cur_comp]] <- p
 
@@ -2448,7 +2428,7 @@ PlotDMEsLollipop <- function(
     # set plotting attributes for shape
     p <- PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = 'avg_log2FC')
 
-    p <- p + NoLegend() +  ggforestplot::geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
+    p <- p + NoLegend() +  geom_stripes(aes(y=module), inherit.aes=FALSE, data=cur_DMEs)
 
     plot_list <- p
 
@@ -2472,7 +2452,11 @@ PlotDMEsLollipop <- function(
 #' @keywords scRNA-seq
 #' @return A ggplot object
 #' @examples
-#' plot_list <- PlotLollipop(modules, DMEs, cur_title= c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC')
+#' \dontrun{
+#' plot_list <- PlotLollipop(
+#'   modules, DMEs, cur_title = c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC'
+#' )
+#' }
 PlotLollipop <- function(
   modules,
   cur_DMEs,
@@ -2546,7 +2530,6 @@ PlotLollipop <- function(
 #' the genes in this heatmap are ordered in both the rows and the columns based on their importance 
 #' in the module, ranked either by eigengene-based connectivity (kME) or by network degree.  
 #'
-#' @import Seurat
 #' @export
 ModuleTopologyHeatmap <- function(
     seurat_obj,
@@ -2574,7 +2557,7 @@ ModuleTopologyHeatmap <- function(
     if(is.null(datExpr_use)){datExpr_use <- wgcna_name}
 
     # is ggrastr available?
-    raster_avail <- require('ggrastr')
+    raster_avail <- requireNamespace('ggrastr', quietly = TRUE)
     if(!raster_avail){raster <- FALSE}
 
     # get the modules table
@@ -2661,14 +2644,14 @@ ModuleTopologyHeatmap <- function(
     plot_df$Var2 <- factor(plot_df$Var2, levels = cur_genes)
     
     # maximum plot values
-    if(class(plot_max) == 'character'){
+    if(is.character(plot_max)){
         maxquant <- as.numeric(gsub('q', '', plot_max ))/100
         plot_max <- as.numeric(quantile(plot_df$value, maxquant))
     } 
     plot_df$value <- ifelse(plot_df$value > plot_max, plot_max, plot_df$value)
 
     # minimum plot values
-    if(class(plot_min) == 'character'){
+    if(is.character(plot_min)){
         minquant <- as.numeric(gsub('q', '', plot_min ))/100
         plot_min <- as.numeric(quantile(plot_df$value, minquant))
     } 
@@ -2739,7 +2722,6 @@ ModuleTopologyHeatmap <- function(
 #' ordering can be supplied, which is helpful when comparing the module topologies side by side with 
 #' more than one dataset.
 #' 
-#' @import Seurat
 #' @export
 ModuleTopologyBarplot <- function(
     seurat_obj,
@@ -2841,7 +2823,6 @@ ModuleTopologyBarplot <- function(
 #' preservation statistic. If the analysis was performed using NetRep, then the statistic that will be shown is 
 #' the FDR corrected averaged p-values from the module preservation permutation test.
 #' 
-#' @import Seurat
 #' @export
 PlotModulePreservationLollipop <- function(
     seurat_obj,
@@ -3022,7 +3003,6 @@ PlotModulePreservationLollipop <- function(
 #' is plotted radially. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are 
 #' expressing each module.
 #' 
-#' @import Seurat
 #' @export
 ModuleRadarPlot <- function(
   seurat_obj,
@@ -3040,11 +3020,7 @@ ModuleRadarPlot <- function(
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  if (!require("ggradar")) {
-    print('Missing package: ggradar')
-    print('Installing package: ggradar')
-    devtools::install_github("ricardo-bion/ggradar", dependencies = TRUE)
-  }
+  check_suggests('ggradar', feature = 'ModuleRadarPlot')
 
   # get seurat metadata
   meta <- seurat_obj@meta.data 
@@ -3149,3 +3125,56 @@ ModuleRadarPlot <- function(
   }
 
 }
+
+
+# Alternating horizontal background stripes for plots with a discrete y axis
+# (e.g. one row per module). Same approach as ggforestplot::geom_stripes (MIT licence,
+# NightingaleHealth), reimplemented here so hdWGCNA doesn't depend on a GitHub-only package.
+geom_stripes <- function(
+  mapping = NULL,
+  data = NULL,
+  stat = 'identity',
+  position = 'identity',
+  ...,
+  show.legend = NA,
+  inherit.aes = TRUE
+) {
+  ggplot2::layer(
+    geom = GeomStripes,
+    mapping = mapping,
+    data = data,
+    stat = stat,
+    position = position,
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(...)
+  )
+}
+
+GeomStripes <- ggplot2::ggproto(
+  'GeomStripes',
+  ggplot2::Geom,
+  required_aes = c('y'),
+  default_aes = ggplot2::aes(
+    xmin = -Inf, xmax = Inf,
+    odd = '#22222222', even = '#00000000',
+    alpha = NA, colour = NA, linetype = 'solid', linewidth = 0.5
+  ),
+  draw_key = ggplot2::draw_key_blank,
+  draw_panel = function(data, panel_params, coord) {
+    y <- round(data$y)
+    rects <- unique(data.frame(
+      xmin = data$xmin, xmax = data$xmax,
+      ymin = y - 0.5, ymax = y + 0.5,
+      odd = data$odd, even = data$even,
+      alpha = data$alpha, colour = data$colour,
+      linetype = data$linetype, linewidth = data$linewidth,
+      PANEL = data$PANEL, group = -1
+    ))
+    rects <- rects[order(rects$ymin), ]
+    rects$fill <- ifelse(seq_len(nrow(rects)) %% 2 == 1, rects$odd, rects$even)
+    rects$odd <- NULL
+    rects$even <- NULL
+    ggplot2::GeomRect$draw_panel(rects, panel_params, coord)
+  }
+)

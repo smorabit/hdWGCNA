@@ -49,7 +49,9 @@ It can handle both two-group comparisons (using the output of \code{FindDMEs}) a
 \examples{
 # Example usage:
 # Assuming `seurat_obj` is your Seurat object and `DMEs` is the output from FindDMEs
+\dontrun{
 PlotDMEsVolcano(seurat_obj, DMEs, wgcna_name = "MG")
+}
 }
 \keyword{WGCNA}
 \keyword{differential}

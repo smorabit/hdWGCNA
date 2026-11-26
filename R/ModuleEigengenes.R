@@ -3,7 +3,7 @@
 #' Internal helper function that computes module eigengene for a single module.
 #'
 #' @param seurat_obj A Seurat object
-#' @param cur_mod name of a module found in seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_net$colors
+#' @param cur_mod name of a module found in the modules table of the active hdWGCNA experiment (see [GetModules()])
 #' @param modules table containing module / gene assignments, as in GetModules(seurat_obj).
 #' @param group.by.vars groups to harmonize by
 #' @param verbose logical indicating whether to print messages
@@ -12,8 +12,6 @@
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
 #' @param wgcna_name name of the WGCNA experiment
-#' @import Seurat
-#' @import harmony
 ComputeModuleEigengene <- function(
   seurat_obj,
   cur_mod,
@@ -179,7 +177,6 @@ ComputeModuleEigengene <- function(
 #' be adjusted for technical biases such as sequencing batch, dataset of origin,
 #' or other factors using the Harmony algorithm with the group.by.vars parameter.
 #'
-#' @import Seurat
 #' @export
 ModuleEigengenes <- function(
   seurat_obj,
@@ -351,6 +348,7 @@ ModuleExprScore <- function(
       seurat_obj, features=gene_list, ...
     )@meta.data
   } else if(method == "UCell"){
+    check_suggests('UCell', feature = 'ModuleExprScore(method = "UCell")')
     mod_scores <- UCell::AddModuleScore_UCell(
       seurat_obj, features=gene_list, ...
     )@meta.data

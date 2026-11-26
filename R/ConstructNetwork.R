@@ -33,8 +33,6 @@
 #' have found to provide reasonable results on a variety of single-cell and
 #' spatial transcriptomic datasets.
 #'
-#' @import WGCNA
-#' @import Seurat
 #' @export
 ConstructNetwork <- function(
   seurat_obj, soft_power=NULL, min_power=3,

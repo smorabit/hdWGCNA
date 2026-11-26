@@ -280,7 +280,6 @@ ConstructMetacells <- function(
 #' considerably less sparse than the original single-cell dataset, which is preferable for 
 #' co-expression network analysis or othter analyses that rely on correlations. 
 #' 
-#' @import Seurat
 #' @export
 MetacellsByGroups <- function(
   seurat_obj, group.by=c('seurat_clusters'),

@@ -29,7 +29,4 @@ PlotSoftPowers(
 \description{
 Plot Soft Power Threshold results
 }
-\examples{
-PlotSoftPowers
-}
 \keyword{scRNA-seq}

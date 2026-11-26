@@ -17,8 +17,6 @@
 #' selects the top TFs for each gene, strategy "B" selects the top genes for each TF, and 
 #' strategy "C" retains all TF-gene pairs above a certain regulatory score (reg_thresh). 
 #' 
-#' @import Seurat
-#' @import Matrix
 #' @export
 AssignTFRegulons <- function(
     seurat_obj,
@@ -108,9 +106,6 @@ AssignTFRegulons <- function(
 #' conveniently summarize the expression levels of the entire TF regulon, similar to module eigengenes
 #' for the co-expression network analyssis. 
 #' 
-#' @import Seurat
-#' @import Matrix 
-#' @import UCell
 #' @export
 RegulonScores <- function(
     seurat_obj,
@@ -120,6 +115,8 @@ RegulonScores <- function(
     wgcna_name = NULL,
     ... # options to pass to UCell
 ){
+
+  check_suggests('UCell', feature = 'RegulonScores')
 
     if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
     CheckWGCNAName(seurat_obj, wgcna_name)
@@ -212,8 +209,6 @@ RegulonScores <- function(
 #' @return A data frame containing the TF-target interactions at each specified depth level, 
 #' with additional information such as regulatory score, correlation, and depth.
 #' 
-#' @import dplyr
-#' @import Seurat
 #' @export
 GetTFTargetGenes <- function(
     seurat_obj, 

@@ -21,7 +21,7 @@ ComputeModuleEigengene(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{cur_mod}{name of a module found in seurat_obj@misc[\link{seurat_obj@misc$active_wgcna}]$wgcna_net$colors}
+\item{cur_mod}{name of a module found in the modules table of the active hdWGCNA experiment (see \code{\link[=GetModules]{GetModules()}})}
 
 \item{modules}{table containing module / gene assignments, as in GetModules(seurat_obj).}
 

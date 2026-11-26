@@ -46,7 +46,4 @@ HubGeneNetworkPlot(
 \description{
 Construct a unified network plot comprising hub genes for multiple modules.
 }
-\examples{
-HubGeneNetworkPlot
-}
 \keyword{scRNA-seq}

@@ -14,7 +14,4 @@ OverlapModulesMotifs(seurat_obj, wgcna_name = NULL)
 \description{
 Overlap modules with TF target genes
 }
-\examples{
-OverlapModulesDEGs
-}
 \keyword{scRNA-seq}

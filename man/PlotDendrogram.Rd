@@ -22,7 +22,4 @@ PlotDendrogram(
 \description{
 Plot WGCNA dendrogram
 }
-\examples{
-PlotDendrogram
-}
 \keyword{scRNA-seq}

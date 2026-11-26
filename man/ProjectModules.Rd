@@ -48,7 +48,4 @@ ProjectModules(
 \description{
 Project a set of co-expression modules from a reference to a query dataset
 }
-\examples{
-ProjectModules
-}
 \keyword{scRNA-seq}

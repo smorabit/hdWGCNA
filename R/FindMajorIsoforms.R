@@ -25,9 +25,6 @@
 #' 
 #' Optionally, the user may supply a marker gene table for each cell population (formatted like the output of Seurat 
 #' FindAllMarkers), and then the algorithm will only return major isoforms of the given marker genes.
-#' @import Seurat
-#' @import Matrix
-#' @import magrittr
 #' @export
 FindMajorIsoforms <- function(
   seurat_obj,

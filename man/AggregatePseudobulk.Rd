@@ -81,8 +81,7 @@ according to replicate and group annotations, and return a SummarizedExperiment.
 }
 \item Grouping:
 \itemize{
-\item Pseudobulk groups are created by interaction(meta[\link{replicate_col}],
-meta[\link{group_col}], drop = TRUE). This produces factor levels representing
+\item Pseudobulk groups are created by \code{interaction(meta[[replicate_col]], meta[[group_col]], drop = TRUE)}. This produces factor levels representing
 unique replicate × group combinations.
 \item A sparse model matrix (~0 + pb_groups) is constructed to map cells to
 pseudobulks. Columns of the resulting aggregated matrix are renamed by

@@ -1193,7 +1193,6 @@ GetTOM <- function(seurat_obj, wgcna_name=NULL){
 #' @param tf_match matrix containing tf-promoter matches
 #' @keywords scRNA-seq
 #' @export
-#' @examples SetMotifMatrix
 SetMotifMatrix <- function(seurat_obj, tf_match){
 
   # make a spot for the motif info if it's not already there:
@@ -1209,7 +1208,6 @@ SetMotifMatrix <- function(seurat_obj, tf_match){
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples GetMotifMatrix
 GetMotifMatrix <- function(seurat_obj){
   seurat_obj@misc$motifs$tf_match_matrix
 }
@@ -1225,7 +1223,6 @@ GetMotifMatrix <- function(seurat_obj){
 #' @param motif_df dataframe containing info about the motifs being analyzed
 #' @keywords scRNA-seq
 #' @export
-#' @examples SetMotifs
 SetMotifs <- function(seurat_obj, motif_df){
 
   # make a spot for the motif info if it's not already there:
@@ -1243,7 +1240,6 @@ SetMotifs <- function(seurat_obj, motif_df){
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples GetMotifs
 GetMotifs <- function(seurat_obj){
   seurat_obj@misc$motifs$motif_df
 }
@@ -1259,7 +1255,6 @@ GetMotifs <- function(seurat_obj){
 #' @param pfm_list list of pfm objects
 #' @keywords scRNA-seq
 #' @export
-#' @examples SetPFMList
 SetPFMList <- function(seurat_obj, pfm_list){
 
   # make a spot for the motif info if it's not already there:
@@ -1275,7 +1270,6 @@ SetPFMList <- function(seurat_obj, pfm_list){
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples GetPFMList
 GetPFMList <- function(seurat_obj){
   seurat_obj@misc$motifs$pfm_list
 }
@@ -1291,7 +1285,6 @@ GetPFMList <- function(seurat_obj){
 #' @param motif_targets list of motifs and their target genes
 #' @keywords scRNA-seq
 #' @export
-#' @examples SetMotifTargets
 SetMotifTargets <- function(seurat_obj, motif_targets){
 
   # make a spot for the motif info if it's not already there:
@@ -1308,7 +1301,6 @@ SetMotifTargets <- function(seurat_obj, motif_targets){
 #' @param seurat_obj A Seurat object
 #' @keywords scRNA-seq
 #' @export
-#' @examples GetMotifTargets
 GetMotifTargets <- function(seurat_obj){
   seurat_obj@misc$motifs$motif_targets
 }

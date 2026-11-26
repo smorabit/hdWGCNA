@@ -14,7 +14,4 @@ SetMotifTargets(seurat_obj, motif_targets)
 \description{
 SetMotifTargets
 }
-\examples{
-SetMotifTargets
-}
 \keyword{scRNA-seq}

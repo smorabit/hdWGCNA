@@ -22,7 +22,6 @@
 #' assess biological differences in networks, as well as technical differences / reproducibility across different 
 #' batches. 
 #'
-#' @import Seurat
 #' @export
 ModulePreservation <- function(
   seurat_obj,
@@ -139,7 +138,6 @@ ModulePreservation <- function(
 #' installation of the NetRep package, which is not directly included as a dependency in hdWGCNA.
 #' 
 #' @return A Seurat Object containing the module preservation statistics from NetRep.
-#' @import Seurat
 #' @export
 ModulePreservationNetRep <- function(
   seurat_query,
@@ -158,12 +156,7 @@ ModulePreservationNetRep <- function(
   ...
 ){
 
-  # This package is not required for the rest of hdWGCNA so we don't make it a formal dependency
-  if (!require("NetRep")) {
-    print('Missing package: NetRep')
-    print('Installing package: NetRep')
-    install.packages('NetRep')
-  }
+  check_suggests('NetRep', feature = 'ModulePreservationNetRep')
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_query@misc$active_wgcna}
   CheckWGCNAName(seurat_query, wgcna_name)

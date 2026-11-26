@@ -22,7 +22,4 @@ MotifOverlapBarPlot(
 \description{
 Displays the top n TFs in a set of modules as a bar plot
 }
-\examples{
-MotifOverlapBarPlot
-}
 \keyword{scRNA-seq}

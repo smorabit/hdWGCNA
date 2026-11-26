@@ -12,7 +12,4 @@ GetPFMList(seurat_obj)
 \description{
 GetPFMList
 }
-\examples{
-GetPFMList
-}
 \keyword{scRNA-seq}

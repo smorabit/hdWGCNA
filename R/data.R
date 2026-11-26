@@ -45,3 +45,12 @@
 #' @seealso \code{\link{hdw_sim}}
 #' @source Simulated; see \code{data-raw/hdw_sim.R}.
 "hdw_sim_modules"
+
+#' Small Seurat object used by the legacy unit tests
+#'
+#' A small single-cell dataset used by the original hdWGCNA unit tests. It will be
+#' replaced by \code{\link{hdw_sim}}.
+#'
+#' @format A Seurat object.
+#' @keywords internal
+"test_seurat"

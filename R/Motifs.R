@@ -29,8 +29,6 @@
 #' - `seurat_obj@misc$motif_targets`: A list of genes targeted by each motif.
 #' - `seurat_obj@misc$pfm`: The original PFMs used for the motif scan.
 #'
-#' @import Seurat 
-#' @import GenomicRanges
 #' @export
 MotifScan <- function(
     seurat_obj,
@@ -39,6 +37,11 @@ MotifScan <- function(
     species_genome, 
     wgcna_name=NULL
 ){
+
+    check_suggests(
+        c('motifmatchr', 'ensembldb', 'GenomeInfoDb', 'GenomicRanges', 'IRanges', 'BiocGenerics'),
+        feature = 'MotifScan'
+    )
 
     if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
     CheckWGCNAName(seurat_obj, wgcna_name)
@@ -79,11 +82,11 @@ MotifScan <- function(
     GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
 
     # set up promoters object that only has the necessary info for motifmatchr
-    my_promoters <- GRanges(
+    my_promoters <- GenomicRanges::GRanges(
         seqnames =  droplevels(GenomeInfoDb::seqnames(gene.promoters)),
-        IRanges(
-          start = start(gene.promoters),
-          end = end(gene.promoters)
+        IRanges::IRanges(
+          start = BiocGenerics::start(gene.promoters),
+          end = BiocGenerics::end(gene.promoters)
         ),
         symbol = gene.promoters$symbol,
         genome=species_genome
@@ -179,11 +182,11 @@ MotifScan <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' OverlapModulesDEGs
 OverlapModulesMotifs <- function(
   seurat_obj, wgcna_name = NULL
 ){
+
+  check_suggests('GeneOverlap', feature = 'OverlapModulesMotifs')
 
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -207,7 +210,7 @@ OverlapModulesMotifs <- function(
   overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
     cur_overlap_df <- do.call(rbind, lapply(tf_targets, function(cur_targets){
-      cur_overlap <- testGeneOverlap(newGeneOverlap(
+      cur_overlap <- GeneOverlap::testGeneOverlap(GeneOverlap::newGeneOverlap(
           cur_module_genes,
           as.character(unlist(cur_targets)),
           genome.size=genome.size

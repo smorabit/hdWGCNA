@@ -44,7 +44,4 @@ A dataframe contaning differential ME results
 \description{
 Function to compare expression levels of co-expression modules between two sets of cell barcodes.
 }
-\examples{
-FindDMEs
-}
 \keyword{scRNA-seq}

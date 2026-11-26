@@ -40,7 +40,4 @@ ModuleUMAPPlot(
 \description{
 Makes a igraph network plot using the module UMAP
 }
-\examples{
-ModuleUMAPPlot
-}
 \keyword{scRNA-seq}

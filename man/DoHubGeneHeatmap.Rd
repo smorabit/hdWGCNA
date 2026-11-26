@@ -26,7 +26,4 @@ DoHubGeneHeatmap(
 This function makes an expression heatmap of the top n hub genes per module
 using Seurat's DoHeatmap, and then assembles them all into one big heatmap.
 }
-\examples{
-DoHubGeneHeatmap
-}
 \keyword{scRNA-seq}

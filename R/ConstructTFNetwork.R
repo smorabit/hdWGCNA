@@ -18,8 +18,6 @@
 #' regulators of each gene. This process is done on the gene expression matrix stored with SetDatExpr,
 #' which is typically the hdWGCNA metacell gene expression matrix.  
 #' 
-#' @import Seurat
-#' @import Matrix
 #' @export
 ConstructTFNetwork <- function(
     seurat_obj,
@@ -28,6 +26,8 @@ ConstructTFNetwork <- function(
     callbacks = NULL,
     wgcna_name=NULL
 ){
+
+  check_suggests('xgboost', feature = 'ConstructTFNetwork')
 
     if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
     CheckWGCNAName(seurat_obj, wgcna_name)
@@ -49,11 +49,9 @@ ConstructTFNetwork <- function(
 
     # define XGBoost callback function based on the installed version, because after v1 they changed some parameters
     if(is.null(callbacks)){
-        if(check_xgboost1){
-            callbacks = list(xgboost::cb.cv.predict(save_models=TRUE))
-        } else{
-            callbacks <- list(xgboost::xgb.cb.cv.predict(save_models = TRUE))
-        }
+        # looked up by name: the function only exists in the installed xgboost version
+        cb_name <- ifelse(check_xgboost1, 'cb.cv.predict', 'xgb.cb.cv.predict')
+        callbacks <- list(getExportedValue('xgboost', cb_name)(save_models = TRUE))
     }
 
     # subset the motif_df by genes that are in the seurat obj:

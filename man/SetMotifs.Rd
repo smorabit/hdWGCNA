@@ -14,7 +14,4 @@ SetMotifs(seurat_obj, motif_df)
 \description{
 SetMotifs
 }
-\examples{
-SetMotifs
-}
 \keyword{scRNA-seq}

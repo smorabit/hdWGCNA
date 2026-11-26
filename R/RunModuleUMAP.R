@@ -8,8 +8,6 @@
 #' @param genes_use character vector of genes to use for the UMAP, must already be present in GetModules(seurat_obj)
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param ... Additional parameters supplied to uwot::umap
-#' @import uwot
-#' @import Seurat
 #' @export
 RunModuleUMAP <- function(
   seurat_obj,

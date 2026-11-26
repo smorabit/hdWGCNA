@@ -19,8 +19,6 @@
 #' interaction strength from XGBoost (Gain) multiplied by the sign of the correlation 
 #' between the TF and the target gene. 
 #' 
-#' @import Seurat
-#' @import ggplot2
 #' @export
 RegulonBarPlot <- function(
     seurat_obj, 

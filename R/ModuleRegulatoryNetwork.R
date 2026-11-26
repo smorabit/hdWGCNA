@@ -25,10 +25,6 @@
 #' \item{score_pos}{The number of positive links normalized by the number of TFs in the source module.}
 #' \item{score_neg}{The number of negative links normalized by the number of TFs in the source module.}
 #'
-#' @import Seurat 
-#' @import igraph 
-#' @import ggraph 
-#' @import tidygraph
 #' @export
 ModuleRegulatoryNetwork <- function(
     seurat_obj,
@@ -172,10 +168,6 @@ ModuleRegulatoryNetwork <- function(
 #' @return A ggplot2 object visualizing the regulatory network, which can be further customized or displayed 
 #' using \code{plot()}.
 #'
-#' @import Seurat 
-#' @import igraph 
-#' @import ggraph 
-#' @import tidygraph
 #' @export
 ModuleRegulatoryNetworkPlot <- function(
     seurat_obj,
@@ -400,9 +392,6 @@ ModuleRegulatoryNetworkPlot <- function(
 #' @return A ggplot2 object visualizing the module regulatory network as a heatmap, which can be 
 #' further customized or displayed using \code{plot()}.
 #'
-#' @import Seurat
-#' @import ggraph
-#' @import tidygraph
 #' @export
 ModuleRegulatoryHeatmap <- function(
     seurat_obj,
@@ -417,6 +406,8 @@ ModuleRegulatoryHeatmap <- function(
     low_color = 'dodgerblue',
     wgcna_name=NULL
 ){
+
+  check_suggests('tidyr', feature = 'ModuleRegulatoryHeatmap')
 
     if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
     CheckWGCNAName(seurat_obj, wgcna_name)
@@ -479,7 +470,7 @@ ModuleRegulatoryHeatmap <- function(
 
     # plot heatmap
     p <- plot_df %>% 
-        ggplot(aes(x=source, y=fct_rev(target), fill=score)) + 
+        ggplot(aes(x=source, y=factor(target, levels=rev(levels(factor(target)))), fill=score)) + 
         geom_tile() 
         
     # add labels

@@ -12,7 +12,4 @@ GetMotifs(seurat_obj)
 \description{
 GetMotifs
 }
-\examples{
-GetMotifs
-}
 \keyword{scRNA-seq}

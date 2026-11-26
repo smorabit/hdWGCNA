@@ -24,6 +24,10 @@ A ggplot object
 An Internal function for PlotDMEsLollipop to Plotting function for the results of FindDMEs and FindAllDMEs
 }
 \examples{
-plot_list <- PlotLollipop(modules, DMEs, cur_title= c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC')
+\dontrun{
+plot_list <- PlotLollipop(
+  modules, DMEs, cur_title = c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC'
+)
+}
 }
 \keyword{scRNA-seq}

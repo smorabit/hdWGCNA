@@ -14,7 +14,4 @@ SetPFMList(seurat_obj, pfm_list)
 \description{
 SetPFMList
 }
-\examples{
-SetPFMList
-}
 \keyword{scRNA-seq}

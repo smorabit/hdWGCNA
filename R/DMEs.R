@@ -13,8 +13,6 @@
 #' @keywords scRNA-seq
 #' @export
 #' @return A dataframe contaning differential ME results
-#' @examples
-#' FindAllDMEs
 FindAllDMEs <- function(
   seurat_obj,
   group.by,
@@ -117,8 +115,6 @@ FindAllDMEs <- function(
 #' @keywords scRNA-seq
 #' @export
 #' @return A dataframe contaning differential ME results
-#' @examples
-#' FindDMEs
 FindDMEs <- function(
   seurat_obj,
   barcodes1,

@@ -12,7 +12,4 @@ GetMotifMatrix(seurat_obj)
 \description{
 GetMotifMatrix
 }
-\examples{
-GetMotifMatrix
-}
 \keyword{scRNA-seq}

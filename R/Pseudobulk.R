@@ -55,8 +55,8 @@
 #'   - `meta` must be a data.frame with rownames matching `colnames(X)`.
 #'   - `replicate_col` and `group_col` must exist in `meta` and contain no NAs.
 #' - Grouping:
-#'   - Pseudobulk groups are created by interaction(meta[[replicate_col]],
-#'     meta[[group_col]], drop = TRUE). This produces factor levels representing
+#'   - Pseudobulk groups are created by `interaction(meta[[replicate_col]],
+#'     meta[[group_col]], drop = TRUE)`. This produces factor levels representing
 #'     unique replicate × group combinations.
 #'   - A sparse model matrix (~0 + pb_groups) is constructed to map cells to
 #'     pseudobulks. Columns of the resulting aggregated matrix are renamed by
@@ -86,8 +86,6 @@
 #' @seealso
 #' make_pseudobulk_metadata, SummarizedExperiment, Matrix::sparse.model.matrix
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assay assay<- assays colData colData<-
-#' @importFrom Matrix sparse.model.matrix
 #' @export
 AggregatePseudobulk <- function(
     X,
@@ -269,8 +267,6 @@ make_pseudobulk_metadata <- function(meta, group) {
 #'
 #' @seealso DESeq2::vst, DESeq2::rlog
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assay assay<- assays colData colData<-
-#' @importFrom Matrix sparse.model.matrix
 #' @export
 NormalizeCounts <- function(
     se,
@@ -325,9 +321,7 @@ NormalizeCounts <- function(
 
     ## VST using DESeq2 --------------------------------------------------------
     if (method %in% c("VST", "rlog")) {
-        if (!requireNamespace("DESeq2", quietly = TRUE)) {
-            stop("DESeq2 must be installed for VST / rlog.")
-        }
+        check_suggests('DESeq2', feature = 'NormalizeCounts(method = "VST" or "rlog")')
 
         # Extract the raw counts and convert to a dense matrix
         mat_dense <- as.matrix(SummarizedExperiment::assay(se, assay_name))
@@ -388,8 +382,6 @@ NormalizeCounts <- function(
 #' risks the results not being reproducible or robust, and therefore are not biologically meaningful due to 
 #' spurious noisy correlations.
 #' 
-#' @import Seurat
-#' @import Matrix
 #' @keywords internal
 #' @export
 ConstructPseudobulk <- function(
@@ -500,8 +492,8 @@ ConstructPseudobulk <- function(
 #' This function is 
 #' 
 #' @param input a single-cell matrix to be converted, with features (genes) in rows
-#'   and cells in columns. Alternatively, a \code{Seurat}, \code{monocole3}, or 
-#'   or \code{SingleCellExperiment} object can be directly input.
+#'   and cells in columns. Alternatively, a \code{Seurat} or \code{SingleCellExperiment} object
+#'   (including monocle3 \code{cell_data_set}) can be directly input.
 #' @param meta the accompanying meta data whereby the rownames match the column
 #'   names of \code{input}.
 #' @param replicate_col the vector in \code{meta} containing the replicate 
@@ -518,12 +510,7 @@ ConstructPseudobulk <- function(
 #'   for a gene to retain it. Defaults to \code{0}.
 #' @return a list of pseudobulk matrices, for each cell type.
 #'  
-#' @importFrom magrittr %<>% extract
-#' @importFrom dplyr %>% rename_ count group_by filter pull n_distinct distinct
 #'   summarise
-#' @importFrom purrr map map_int
-#' @importFrom Matrix rowSums colSums
-#' @importFrom stats setNames
 to_pseudobulk = function(input, 
                          meta = NULL, 
                          replicate_col = 'replicate',
@@ -618,8 +605,8 @@ to_pseudobulk = function(input,
 #'
 #'
 #' @param input a single-cell matrix to be converted, with features (genes) in rows
-#'   and cells in columns. Alternatively, a \code{Seurat}, \code{monocole3}, or
-#'   or \code{SingleCellExperiment} object can be directly input.
+#'   and cells in columns. Alternatively, a \code{Seurat} or \code{SingleCellExperiment} object
+#'   (including monocle3 \code{cell_data_set}) can be directly input.
 #' @param meta the accompanying meta data whereby the rownames match the column
 #'   names of \code{input}.
 #' @param replicate_col the vector in \code{meta} containing the replicate
@@ -636,10 +623,6 @@ to_pseudobulk = function(input,
 #'   for a gene to retain it. Defaults to \code{0}.
 #' @return a cleaned up expression matrix and meta data object
 #'
-#' @importFrom dplyr %>% rename_ n_distinct mutate_at vars
-#' @importFrom magrittr %<>%
-#' @importFrom tester is_numeric_matrix is_numeric_dataframe
-#' @importFrom methods is
 #'
 check_inputs = function(input,
                         meta = meta,
@@ -649,11 +632,6 @@ check_inputs = function(input,
 
   # extract cell types and label from metadata
   if ("Seurat" %in% class(input)) {
-    # confirm Seurat is installed
-    if (!requireNamespace("Seurat", quietly = TRUE)) {
-      stop("install \"Seurat\" R package for Augur compatibility with ",
-           "input Seurat object", call. = FALSE)
-    }
     meta = input@meta.data %>%
       droplevels()
     if (!is.null(replicate_col))
@@ -664,35 +642,12 @@ check_inputs = function(input,
       labels = as.character(meta[[label_col]])
     }
     cell_types = as.character(meta[[cell_type_col]])
-    expr = Seurat::GetAssayData(input, slot = 'counts')
-  } else if ("cell_data_set" %in% class(input)) {
-    # confirm monocle3 is installed
-    if (!requireNamespace("monocle3", quietly = TRUE)) {
-      stop("install \"monocle3\" R package for Augur compatibility with ",
-           "input monocle3 object", call. = FALSE)
-    }
-    meta = monocle3::pData(input) %>%
-      droplevels() %>%
-      as.data.frame()
-    if (!is.null(replicate_col))
-      replicates = as.character(meta[[replicate_col]])
-    if (!is.factor(meta[[label_col]])) {
-      labels = meta[[label_col]]
-    } else {
-      labels = as.character(meta[[label_col]])
-    }
-    cell_types = as.character(meta[[cell_type_col]])
-    expr = monocle3::exprs(input)
-  } else if ("SingleCellExperiment" %in% class(input)){
-    # confirm SingleCellExperiment is installed
-    if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-      stop("install \"SingleCellExperiment\" R package for Augur ",
-           "compatibility with input SingleCellExperiment object",
-           call. = FALSE)
-    }
-    meta = SummarizedExperiment::colData(input) %>%
-      droplevels() %>%
-      as.data.frame()
+    expr = SeuratObject::GetAssayData(input, layer = 'counts')
+  } else if (methods::is(input, 'SingleCellExperiment')) {
+    # SingleCellExperiment, or classes extending it such as monocle3's cell_data_set;
+    # the first assay holds the counts
+    meta = methods::as(SummarizedExperiment::colData(input), 'data.frame') %>%
+      droplevels()
     if (!is.null(replicate_col))
       replicates = as.character(meta[[replicate_col]])
     if (!is.factor(meta[[label_col]])) {
@@ -708,7 +663,7 @@ check_inputs = function(input,
       is_numeric_matrix(input) ||
       is_numeric_dataframe(input)
     if (!valid_input)
-      stop("input must be Seurat, monocle, sparse matrix, numeric matrix, or ",
+      stop("input must be Seurat, SingleCellExperiment, sparse matrix, numeric matrix, or ",
            "numeric data frame")
     if (is.null(meta))
       stop("input matrix must be accompanied by a metadata table")

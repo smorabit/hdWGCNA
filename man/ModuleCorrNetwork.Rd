@@ -25,7 +25,4 @@ ModuleCorrNetwork(
 \description{
 Plot Module Eigengene correlogram
 }
-\examples{
-ModuleCorrNetwork
-}
 \keyword{scRNA-seq}

@@ -103,7 +103,7 @@ SelectNetworkGenes <- function(
 
     # check the data type for gene list:
     if(!is.null(gene_list)){
-      if(class(gene_list) != 'character'){
+      if(!is.character(gene_list)){
         stop(paste0("Invalid type for gene_list, must be a character vector."))
       }
     }

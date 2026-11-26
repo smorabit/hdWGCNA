@@ -19,7 +19,6 @@
 #' advise reassigning features to new modules if they are in non-grey modules,
 #' but the user can do so at their own risk by setting ignore=TRUE.
 #'
-#' @import Seurat
 #' @export
 ReassignModules <- function(
   seurat_obj,
@@ -170,7 +169,7 @@ ResetModuleNames <- function(
   }
 
   # if it's a named list:
-  if(class(new_name) == 'list'){
+  if(is.list(new_name)){
     if(all(names(new_name) %in% old_mods)){
       ix <- match(names(new_name), old_mods)
       new_names <- old_mods
@@ -340,7 +339,7 @@ ResetModuleColors <- function(
   }
 
   # case where we give a named list:
-  if(class(new_colors) == 'list'){
+  if(is.list(new_colors)){
     ix <- match(names(new_colors), mod_colors_df$module)
     mod_colors_df[ix, 'color'] <- as.character(new_colors)
     new_colors <- mod_colors_df$color

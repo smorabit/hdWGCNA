@@ -25,10 +25,6 @@
 #' TFNetworkPlot plots a network of TFs and their predicted target genes, based on the results 
 #' from ConstructTFNetwork.
 #' 
-#' @import Seurat
-#' @import igraph
-#' @import ggraph
-#' @import tidygraph
 #' @export
 TFNetworkPlot <- function(
     seurat_obj,

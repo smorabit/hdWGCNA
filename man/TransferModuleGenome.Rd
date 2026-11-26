@@ -24,7 +24,4 @@ TransferModuleGenome(
 Takes a module table and a gene mapping table (like from biomart) with gene
 names from two genomes in order to switch
 }
-\examples{
-TransferModuleGenome
-}
 \keyword{scRNA-seq}

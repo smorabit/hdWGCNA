@@ -21,6 +21,8 @@ RunEnrichr <- function(
   wgcna_name=NULL, ...
 ){
 
+  check_suggests('enrichR', feature = 'RunEnrichr')
+
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
   CheckWGCNAName(seurat_obj, wgcna_name)
@@ -98,6 +100,8 @@ RunEnrichrRegulons <- function(
     wait_time = 5,
     wgcna_name=NULL, ...
 ){
+
+  check_suggests('enrichR', feature = 'RunEnrichrRegulons')
 
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
@@ -192,6 +196,8 @@ OverlapModulesDEGs <- function(
   ...
 ){
 
+  check_suggests('GeneOverlap', feature = 'OverlapModulesDEGs')
+
   # get data from active assay if wgcna_name is not given
   if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
 
@@ -222,7 +228,7 @@ OverlapModulesDEGs <- function(
     cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
     cur_overlap_df <- do.call(rbind, lapply(cell_groups, function(cur_group){
       cur_DEGs <- deg_df %>% subset(group == cur_group & p_val_adj <= 0.05 & avg_log2FC > fc_cutoff) %>% .$gene
-      cur_overlap <- testGeneOverlap(newGeneOverlap(
+      cur_overlap <- GeneOverlap::testGeneOverlap(GeneOverlap::newGeneOverlap(
           cur_module_genes,
           cur_DEGs,
           genome.size=genome.size

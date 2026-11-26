@@ -174,7 +174,7 @@ ModuleTraitCorrelation <- function(
   MEs <- cbind(as.data.frame(MEs), seurat_obj@meta.data[,group.by])
   colnames(MEs)[ncol(MEs)] <- 'group'
 
-  if(class(seurat_obj@meta.data[,group.by]) == 'factor'){
+  if(is.factor(seurat_obj@meta.data[,group.by])){
     group_names <- levels(seurat_obj@meta.data[,group.by])
   } else{
     group_names <- levels(as.factor(seurat_obj@meta.data[,group.by]))

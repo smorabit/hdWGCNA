@@ -31,7 +31,4 @@ ModuleCorrelogram(
 \description{
 Plot Module Eigengene correlogram
 }
-\examples{
-MECorrelogram
-}
 \keyword{scRNA-seq}

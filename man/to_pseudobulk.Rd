@@ -18,8 +18,8 @@ to_pseudobulk(
 }
 \arguments{
 \item{input}{a single-cell matrix to be converted, with features (genes) in rows
-and cells in columns. Alternatively, a \code{Seurat}, \code{monocole3}, or
-or \code{SingleCellExperiment} object can be directly input.}
+and cells in columns. Alternatively, a \code{Seurat} or \code{SingleCellExperiment} object
+(including monocle3 \code{cell_data_set}) can be directly input.}
 
 \item{meta}{the accompanying meta data whereby the rownames match the column
 names of \code{input}.}
@@ -44,6 +44,8 @@ for a gene to retain it. Defaults to \code{0}.}
 }
 \value{
 a list of pseudobulk matrices, for each cell type.
+
+summarise
 }
 \description{
 Convert a single-cell expression matrix (i.e., genes by cells)

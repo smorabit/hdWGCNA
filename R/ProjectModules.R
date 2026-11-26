@@ -17,8 +17,6 @@
 #' @param wgcna_name_proj The name of the hdWGCNA experiment to be created for the projected modules in seurat_obj
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' ProjectModules
 ProjectModules <- function(
   seurat_obj,
   seurat_ref = NULL,
@@ -124,8 +122,6 @@ ProjectModules <- function(
 #' @param genome2_col the column in gene_mapping that has gene names for the genome to transfer to
 #' @keywords scRNA-seq
 #' @export
-#' @examples
-#' TransferModuleGenome
 TransferModuleGenome <- function(
   modules, gene_mapping,
   genome1_col=NULL, genome2_col=NULL

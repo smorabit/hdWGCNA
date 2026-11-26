@@ -41,9 +41,6 @@ BinPseudotime <- function(
 #' @param se logical determining whether or not to show the standard error on the plot
 #' @param group_colors optional list of colors to differentiate multiple pseudotime trajectories. Must be the same length as pseudotime_col
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @import ggplot2
-#' @import Seurat
-#' @import patchwork
 #' @export
 PlotModuleTrajectory <- function(
     seurat_obj,

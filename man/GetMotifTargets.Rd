@@ -12,7 +12,4 @@ GetMotifTargets(seurat_obj)
 \description{
 GetMotifTargets
 }
-\examples{
-GetMotifTargets
-}
 \keyword{scRNA-seq}

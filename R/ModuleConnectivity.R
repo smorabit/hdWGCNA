@@ -35,9 +35,6 @@
 #' by reassigning features with negative kMEs in their assigned module to the
 #' module that had the highest kME for that feature.
 #'
-#' @import WGCNA
-#' @import Seurat
-#' @import Matrix
 #' @export
 ModuleConnectivity <- function(
   seurat_obj,

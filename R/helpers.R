@@ -65,7 +65,6 @@ shuffle_points <- function(df){
 #' @param cov return covariance matrix
 #' @export
 #' @author Michael Cysouw, Karsten Looschen
-#' @importMethodsFrom Matrix colMeans
 # covmat uses E[(X-muX)'(Y-muY)] = E[X'Y] - muX'muY
 # with sample correction n/(n-1) this leads to cov = ( X'Y - n*muX'muY ) / (n-1)
 #
@@ -111,4 +110,60 @@ corSparse <- function(X, Y = NULL, cov = FALSE) {
 #' @export
 CheckSeurat5 <- function(){
     startsWith(as.character(packageVersion('Seurat')), '5')
+}
+
+
+# Bioconductor packages among hdWGCNA's suggested dependencies (for install hints)
+bioc_suggests <- c(
+  'BiocGenerics', 'DESeq2', 'ensembldb', 'GeneOverlap', 'GenomeInfoDb', 'GenomicRanges',
+  'IRanges', 'motifmatchr', 'SingleCellExperiment', 'UCell'
+)
+
+# GitHub-only packages used by optional features (not installable from CRAN/Bioconductor)
+github_suggests <- c(ggradar = 'ricardo-bion/ggradar')
+
+# Stop with an informative message if packages needed by an optional feature are missing.
+# Use at the top of any function that calls a package listed in Suggests.
+check_suggests <- function(pkgs, feature = NULL) {
+  missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing) == 0) {
+    return(invisible(TRUE))
+  }
+
+  hints <- character(0)
+  cran <- setdiff(missing, c(bioc_suggests, names(github_suggests)))
+  bioc <- intersect(missing, bioc_suggests)
+  gh <- intersect(missing, names(github_suggests))
+  if (length(cran) > 0) {
+    hints <- c(hints, paste0("install.packages(c('", paste(cran, collapse = "', '"), "'))"))
+  }
+  if (length(bioc) > 0) {
+    hints <- c(hints, paste0("BiocManager::install(c('", paste(bioc, collapse = "', '"), "'))"))
+  }
+  if (length(gh) > 0) {
+    hints <- c(hints, paste0("remotes::install_github('", github_suggests[gh], "')"))
+  }
+
+  stop(
+    paste0(
+      ifelse(length(missing) > 1, 'Packages ', 'Package '),
+      paste0("'", missing, "'", collapse = ', '),
+      ifelse(length(missing) > 1, ' are', ' is'),
+      ' required',
+      ifelse(is.null(feature), '', paste0(' for ', feature)),
+      '. Install with:\n  ',
+      paste(hints, collapse = '\n  ')
+    ),
+    call. = FALSE
+  )
+}
+
+# TRUE if x is a base matrix with numeric values (replaces tester::is_numeric_matrix)
+is_numeric_matrix <- function(x) {
+  is.matrix(x) && is.numeric(x)
+}
+
+# TRUE if x is a data.frame whose columns are all numeric
+is_numeric_dataframe <- function(x) {
+  is.data.frame(x) && all(vapply(x, is.numeric, logical(1)))
 }
