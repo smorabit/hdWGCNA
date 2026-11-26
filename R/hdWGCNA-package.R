@@ -17,7 +17,7 @@
 #' @importFrom dplyr %>% all_of arrange desc distinct group_by mutate mutate_at n_distinct pull
 #'   sample_n select slice_max slice_min summarise summarise_all top_n vars
 #' @importFrom fastcluster hclust
-#' @importFrom ggplot2 aes aes_string annotate arrow coord_equal coord_fixed coord_flip
+#' @importFrom ggplot2 .data aes annotate arrow coord_equal coord_fixed coord_flip
 #'   element_blank element_line element_rect element_text facet_wrap geom_bar geom_hline
 #'   geom_point geom_rect geom_segment geom_smooth geom_text geom_tile geom_vline ggplot
 #'   ggplot_build ggtitle guide_colorbar guides labs margin scale_color_gradient

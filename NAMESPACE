@@ -208,8 +208,8 @@ importFrom(dplyr,
 )
 importFrom(fastcluster,hclust)
 importFrom(ggplot2,
+  .data,
   aes,
-  aes_string,
   annotate,
   arrow,
   coord_equal,

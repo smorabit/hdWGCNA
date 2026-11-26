@@ -92,7 +92,7 @@ PlotSoftPowers <- function(
       theme(
         axis.line.x = element_blank(),
         axis.line.y = element_blank(),
-        panel.border = element_rect(colour = "black", fill=NA, size=1)
+        panel.border = element_rect(colour = "black", fill=NA, linewidth=1)
       )
 
       if(plot_connectivity){
@@ -115,7 +115,7 @@ PlotSoftPowers <- function(
           theme(
             axis.line.x = element_blank(),
             axis.line.y = element_blank(),
-            panel.border = element_rect(colour = "black", fill=NA, size=1)
+            panel.border = element_rect(colour = "black", fill=NA, linewidth=1)
           )
 
           # plot for medianan connectivity:
@@ -136,7 +136,7 @@ PlotSoftPowers <- function(
             theme(
               axis.line.x = element_blank(),
               axis.line.y = element_blank(),
-              panel.border = element_rect(colour = "black", fill=NA, size=1)
+              panel.border = element_rect(colour = "black", fill=NA, linewidth=1)
             )
 
           # plot for mean connectivity:
@@ -157,7 +157,7 @@ PlotSoftPowers <- function(
             theme(
               axis.line.x = element_blank(),
               axis.line.y = element_blank(),
-              panel.border = element_rect(colour = "black", fill=NA, size=1)
+              panel.border = element_rect(colour = "black", fill=NA, linewidth=1)
             )
 
 
@@ -546,7 +546,7 @@ ModuleFeaturePlot<- function(
 
     # plot with ggplot
     p <- cur_plot_df %>%
-      ggplot(aes_string(x=x_name, y=y_name, color="val"))
+      ggplot(aes(x=.data[[x_name]], y=.data[[y_name]], color=val))
 
     # rasterise?
     if(raster){
@@ -918,8 +918,8 @@ EnrichrDotPlot <- function(
       axis.line.x = element_blank(),
       axis.line.y = element_blank(),
       axis.text.y = element_text(size = term_size),
-      panel.border = element_rect(colour = "black", fill = NA, size = 1),
-      panel.grid = element_line(size = 0.25, color = 'lightgrey')
+      panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
+      panel.grid = element_line(linewidth = 0.25, color = 'lightgrey')
     )
 
   return(p)
@@ -1470,7 +1470,7 @@ OverlapDotPlot <- function(
       plot.title = element_text(hjust = 0.5),
       axis.line.x = element_blank(),
       axis.line.y = element_blank(),
-      panel.border = element_rect(colour = "black", fill=NA, size=1)
+      panel.border = element_rect(colour = "black", fill=NA, linewidth=1)
     )
 
   # plot significance level?
@@ -2310,7 +2310,7 @@ PlotDMEsVolcano <- function(
     xlab(bquote("Average log"[2]~"(Fold Change)")) +
     ylab(bquote("-log"[10]~"(Adj. P-value)")) +
     theme(
-     panel.border = element_rect(color='black', fill=NA, size=1),
+     panel.border = element_rect(color='black', fill=NA, linewidth=1),
      panel.grid.major = element_blank(),
      axis.line = element_blank(),
      plot.title = element_text(hjust = 0.5),
@@ -2479,11 +2479,11 @@ PlotLollipop <- function(
     cp <- mod_colors$color; names(cp) <- mod_colors$module
 
     p <- cur_DMEs %>%
-    ggplot(aes(y=module, x=avg_log2FC, size=log(n_genes), color=module)) +
+    ggplot(aes(y=module, x=avg_log2FC, color=module)) +
     geom_vline(xintercept=0, color='black') +
     geom_segment(aes(y=module, yend=module, x=0, xend=avg_log2FC), linewidth=0.5, alpha=0.3) +
-    geom_point() +
-    geom_point(shape=cur_DMEs$shape, color='black', fill=NA) +
+    geom_point(aes(size=log(n_genes))) +
+    geom_point(aes(size=log(n_genes)), shape=cur_DMEs$shape, color='black', fill=NA) +
     scale_color_manual(values=cp, guide='none') +
     ylab('') +
     xlab(bquote("Avg. log"[2]~"(Fold Change)")) +
@@ -2921,14 +2921,14 @@ PlotModulePreservationLollipop <- function(
                 data = plot_df[1,],
                 aes(xmin=-Inf, ymax=Inf, ymin=-Inf, xmax=-log10(0.05)), fill='grey90', alpha=0.8, color=NA) +
         #geom_vline(xintercept=2, linewidth=0.5, linetype='dashed') +
-        geom_segment(aes(y=module, yend=module, x=0, xend=-log10(value)), size=0.5, alpha=0.5) +
+        geom_segment(aes(y=module, yend=module, x=0, xend=-log10(value)), linewidth=0.5, alpha=0.5) +
         geom_point(shape=21, color='black') +
         scale_color_manual(values=mod_cp, guide='none') +
         scale_fill_manual(values=mod_cp, guide='none') +
         ylab('') + labs(size=bquote("N"[genes])) +
         xlab(label) +
         theme(
-            panel.border = element_rect(size=1, color='black', fill=NA),
+            panel.border = element_rect(linewidth=1, color='black', fill=NA),
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             plot.title = element_text(hjust=0.5, face='bold')
@@ -2962,14 +2962,14 @@ PlotModulePreservationLollipop <- function(
             geom_rect(
             data=plot_df[1,],
             aes(ymin=-Inf, ymax=Inf, xmin=2, xmax=10), fill='grey92', alpha=0.8, color=NA) + 
-        geom_segment(aes(y=module, yend=module, x=0, xend=value), size=0.5, alpha=0.5) +
+        geom_segment(aes(y=module, yend=module, x=0, xend=value), linewidth=0.5, alpha=0.5) +
         geom_point(shape=21, color='black') +
         scale_color_manual(values=mod_cp, guide='none') +
         scale_fill_manual(values=mod_cp, guide='none') +
         ylab('') + xlab('') +
         ggtitle(features) +
         theme(
-            panel.border = element_rect(size=1, color='black', fill=NA),
+            panel.border = element_rect(linewidth=1, color='black', fill=NA),
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             plot.title = element_text(hjust=0.5, face='bold')

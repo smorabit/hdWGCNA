@@ -577,7 +577,7 @@ PlotDifferentialRegulons <- function(
         xlab(bquote("Avg. log"[2]~"(FC), Positive Regulons")) +
         ylab(bquote("Avg. log"[2]~"(FC), Negative Regulons")) +
         theme(
-            panel.border = element_rect(color='black', fill=NA, size=1),
+            panel.border = element_rect(color='black', fill=NA, linewidth=1),
             panel.grid.major = element_blank(),
             axis.line = element_blank(),
             plot.title = element_text(hjust = 0.5),

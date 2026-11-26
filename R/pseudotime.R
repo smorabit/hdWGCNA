@@ -122,7 +122,7 @@ PlotModuleTrajectory <- function(
             aes(x = bin, y=value, color=variable, fill=variable)
         ) + 
         geom_point(size=point_size) + 
-        geom_smooth(size=line_size, se=se) + 
+        geom_smooth(linewidth=line_size, se=se) + 
         geom_hline(yintercept=0, linetype='dashed', color='grey') +
         scale_color_manual(values=mod_colors) +
         scale_fill_manual(values=mod_colors) +
@@ -133,7 +133,7 @@ PlotModuleTrajectory <- function(
             axis.text.x = element_blank(),
             axis.line.x = element_blank(),
             axis.line.y = element_blank(),
-            panel.border = element_rect(size=1, fill=NA, color='black')
+            panel.border = element_rect(linewidth=1, fill=NA, color='black')
         ) +
         NoLegend()
 
@@ -145,7 +145,7 @@ PlotModuleTrajectory <- function(
             plot_df,
             aes(x = as.numeric(bin), y = value, color=group)
         ) +
-        geom_smooth(se=FALSE, size=line_size) +
+        geom_smooth(se=FALSE, linewidth=line_size) +
         geom_hline(yintercept=0, linetype='dashed', color='grey') +
         xlab('Pseudotime') +
         ylab('Module Eigengene') +
@@ -154,7 +154,7 @@ PlotModuleTrajectory <- function(
             axis.text.x = element_blank(),
                axis.line.x = element_blank(),
             axis.line.y = element_blank(),
-            panel.border = element_rect(size=1, fill=NA, color='black')
+            panel.border = element_rect(linewidth=1, fill=NA, color='black')
         ) +
         labs(color = 'Trajectory')
 
