@@ -271,14 +271,14 @@ MetaspotsByGroups <- function(
     stop(paste0('Assay ', assay, ' not found in seurat_obj. Select a valid assay: ', paste0(names(seurat_obj@assays), collapse = ', ')))
   }
 
-  # check slot:
-  if (!(slot %in% c('counts', 'data', 'scale.data'))) {
-    stop('Invalid input for slot. Valid choices are counts, data, scale.data.')
+  # check layer:
+  if (!(layer %in% c('counts', 'data', 'scale.data'))) {
+    stop('Invalid input for layer. Valid choices are counts, data, scale.data.')
   } else {
-    # check the shape of the slot
-    slot_dim <- dim(GetAssayData(seurat_obj, assay = assay, slot = slot))
-    if (any(slot_dim) == 0) {
-      stop(paste(c('Selected slot ', slot, ' not found in this assay.')))
+    # check the shape of the layer
+    layer_dim <- dim(SeuratObject::LayerData(seurat_obj, assay = assay, layer = layer))
+    if (any(layer_dim == 0)) {
+      stop(paste0('Selected layer ', layer, ' not found in this assay.'))
     }
   }
 

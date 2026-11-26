@@ -353,7 +353,7 @@ MetacellsByGroups <- function(
     } else {
       # check the shape of the matrix
       layer_dim <- dim(SeuratObject::LayerData(seurat_obj, assay = assay, layer = layer))
-      if (any(layer_dim) == 0) {
+      if (any(layer_dim == 0)) {
         stop(paste(c('Selected layer ', layer, ' not found in this assay.')))
       }
     }
@@ -363,7 +363,7 @@ MetacellsByGroups <- function(
     } else {
       # check the shape of the matrix
       slot_dim <- dim(Seurat::GetAssayData(seurat_obj, assay = assay, slot = slot))
-      if (any(slot_dim) == 0) {
+      if (any(slot_dim == 0)) {
         stop(paste(c('Selected slot ', slot, ' not found in this assay.')))
       }
     }
