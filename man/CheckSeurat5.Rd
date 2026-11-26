@@ -6,6 +6,9 @@
 \usage{
 CheckSeurat5()
 }
+\value{
+TRUE if Seurat >= 5.0.0 is installed
+}
 \description{
-Function to check if Seurat version is v5
+Function to check if the installed Seurat is version 5 or newer
 }

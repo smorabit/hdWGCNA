@@ -101,11 +101,12 @@ corSparse <- function(X, Y = NULL, cov = FALSE) {
 
 #' CheckSeurat5
 #'
-#' Function to check if Seurat version is v5
+#' Function to check if the installed Seurat is version 5 or newer
 #'
+#' @return TRUE if Seurat >= 5.0.0 is installed
 #' @export
 CheckSeurat5 <- function() {
-  startsWith(as.character(packageVersion('Seurat')), '5')
+  utils::packageVersion('Seurat') >= '5.0.0'
 }
 
 
