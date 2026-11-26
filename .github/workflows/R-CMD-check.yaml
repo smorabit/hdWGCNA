@@ -13,7 +13,7 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }}${{ matrix.config.seurat && format(', {0}', matrix.config.seurat) || '' }})
 
     strategy:
       fail-fast: false
@@ -23,6 +23,8 @@ jobs:
           - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'release'}
+          # oldest supported Seurat major version (hdWGCNA supports Seurat 5 and 6)
+          - {os: ubuntu-latest,  r: 'release', seurat: 'Seurat@5.5.1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +43,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck ${{ matrix.config.seurat }}
           needs: check
 
       # Vignettes use large external datasets and are not built in CI.
