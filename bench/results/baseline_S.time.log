@@ -1,0 +1,61 @@
+Warning messages:
+1: replacing previous import ‘GenomicRanges::intersect’ by ‘SeuratObject::intersect’ when loading ‘hdWGCNA’ 
+2: replacing previous import ‘GenomicRanges::setdiff’ by ‘dplyr::setdiff’ when loading ‘hdWGCNA’ 
+3: replacing previous import ‘GenomicRanges::union’ by ‘dplyr::union’ when loading ‘hdWGCNA’ 
+4: replacing previous import ‘dplyr::as_data_frame’ by ‘igraph::as_data_frame’ when loading ‘hdWGCNA’ 
+5: replacing previous import ‘Seurat::components’ by ‘igraph::components’ when loading ‘hdWGCNA’ 
+6: replacing previous import ‘dplyr::groups’ by ‘igraph::groups’ when loading ‘hdWGCNA’ 
+7: replacing previous import ‘dplyr::union’ by ‘igraph::union’ when loading ‘hdWGCNA’ 
+8: replacing previous import ‘GenomicRanges::subtract’ by ‘magrittr::subtract’ when loading ‘hdWGCNA’ 
+9: replacing previous import ‘Matrix::as.matrix’ by ‘proxy::as.matrix’ when loading ‘hdWGCNA’ 
+10: replacing previous import ‘igraph::groups’ by ‘tidygraph::groups’ when loading ‘hdWGCNA’ 
+simulate                    5.7 s      1178 MB
+preprocess                  2.9 s      1045 MB
+SetupForWGCNA               0.3 s       913 MB
+MetacellsByGroups          12.7 s      1361 MB
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+NormalizeMetacells          0.7 s       767 MB
+SetDatExpr                  0.1 s       811 MB
+TestSoftPowers              1.7 s       908 MB
+ConstructNetwork           19.8 s      1017 MB
+Centering and scaling data matrix
+  |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+Centering and scaling data matrix
+  |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+2460exists, retrying for cluster 71 1.66225
+Centering and scaling data matrix
+  |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+Centering and scaling data matrix
+  |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+2454exists, retrying for cluster 71 2.23207
+Centering and scaling data matrix
+  |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+2158exists, retrying for cluster 71 1.37872
+ModuleEigengenes           20.6 s      1081 MB
+There were 11 warnings (use warnings() to see them)
+ModuleConnectivity          0.1 s       789 MB
+Warning message:
+In value[[3L]](cond) : TOM not found
+written: bench/results/baseline_S.csv
+      154.39 real       206.51 user        16.09 sys
+          1691099136  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             3395018  page reclaims
+                 226  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   7  messages sent
+                   7  messages received
+                   0  signals received
+                 148  voluntary context switches
+             2214095  involuntary context switches
+        565522010488  instructions retired
+        815720172584  cycles elapsed
+          1586954240  peak memory footprint
