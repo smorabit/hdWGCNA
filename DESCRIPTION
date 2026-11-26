@@ -13,7 +13,6 @@ License: GNU GPLv3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 URL: https://smorabit.github.io/hdWGCNA/, https://github.com/smorabit/hdWGCNA
 Imports: WGCNA, Seurat, Matrix, harmony, igraph, enrichR, ggplot2, dplyr, tester, proxy
 Suggests: testthat (>= 3.0.0)
@@ -34,3 +33,4 @@ Depends:
     GenomicRanges,
     SummarizedExperiment,
     enrichR
+Config/roxygen2/version: 8.1.0

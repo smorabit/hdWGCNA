@@ -12,6 +12,7 @@ ConstructNetwork(
   tom_name = NULL,
   consensus = FALSE,
   overwrite_tom = FALSE,
+  store_tom_in_seurat = FALSE,
   wgcna_name = NULL,
   blocks = NULL,
   maxBlockSize = 30000,

@@ -24,8 +24,6 @@ FindMajorIsoforms(
 
 \item{replicate_col}{column in seurat_obj@meta.data denoting each replicate / sample}
 
-\item{isoform_delim}{}
-
 \item{proportion_thresh}{desired proportion of expression to define the set of major isoforms. Default = 0.8.}
 
 \item{low_thresh}{lower bound of expression level for considering an isoform as part of the major isoform set.}
