@@ -35,82 +35,87 @@
 #'
 #' @export
 ConstructNetwork <- function(
-  seurat_obj, soft_power=NULL, min_power=3,
-  tom_outdir="TOM",
+  seurat_obj, soft_power = NULL, min_power = 3,
+  tom_outdir = 'TOM',
   tom_name = NULL,
   consensus = FALSE,
   overwrite_tom = FALSE,
   store_tom_in_seurat = FALSE,
   wgcna_name = NULL,
-  blocks=NULL, maxBlockSize=30000, randomSeed=12345, corType="pearson",
-  consensusQuantile=0.3, networkType = "signed", TOMType = "signed",
-  TOMDenom = "min", scaleTOMs = TRUE, calibrationQuantile = 0.95,
+  blocks = NULL, maxBlockSize = 30000, randomSeed = 12345, corType = 'pearson',
+  consensusQuantile = 0.3, networkType = 'signed', TOMType = 'signed',
+  TOMDenom = 'min', scaleTOMs = TRUE, calibrationQuantile = 0.95,
   sampleForCalibration = TRUE, sampleForCalibrationFactor = 1000,
   useDiskCache = TRUE, chunkSize = NULL,
-  deepSplit = 4, pamStage=FALSE, detectCutHeight = 0.995, minModuleSize = 50,
+  deepSplit = 4, pamStage = FALSE, detectCutHeight = 0.995, minModuleSize = 50,
   mergeCutHeight = 0.2, saveConsensusTOMs = TRUE, ...
-){
-
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  if(store_tom_in_seurat && !saveConsensusTOMs){
-    stop("store_tom_in_seurat = TRUE requires saveConsensusTOMs = TRUE.")
+  if (store_tom_in_seurat && !saveConsensusTOMs) {
+    stop('store_tom_in_seurat = TRUE requires saveConsensusTOMs = TRUE.')
   }
 
   # suffix for the tom
-  if(is.null(tom_name)){
+  if (is.null(tom_name)) {
     tom_name <- gsub(' ', '_', wgcna_name)
   }
 
   # tom file name
   renamed <- paste0(tom_outdir, '/', tom_name, '_TOM.rda')
-  if(file.exists(renamed)){
-    if(overwrite_tom){
+  if (file.exists(renamed)) {
+    if (overwrite_tom) {
       warning(paste0('Overwriting TOM ', renamed))
-    } else{
-      stop(paste0("TOM ", renamed, " already exists. Set overwrite_tom = TRUE or change tom_name to proceed."))
+    } else {
+      stop(paste0('TOM ', renamed, ' already exists. Set overwrite_tom = TRUE or change tom_name to proceed.'))
     }
   }
 
   # constructing network on multiple datasets (consensus WGCNA)
-  if(consensus){
-
+  if (consensus) {
     multiExpr <- GetMultiExpr(seurat_obj, wgcna_name)
     checkSets(multiExpr) # check data size
 
-  # constructing network on a single dataset
-  } else{
-
+    # constructing network on a single dataset
+  } else {
     # get datExpr from seurat object
     datExpr <- GetDatExpr(seurat_obj, wgcna_name)
 
-    if(is.null(wgcna_name)){
+    if (is.null(wgcna_name)) {
       wgcna_name <- 'all'
     }
 
-    nSets = 1
-    setLabels = gsub(' ', '_', wgcna_name)
-    shortLabels = setLabels
+    nSets <- 1
+    setLabels <- gsub(' ', '_', wgcna_name)
+    shortLabels <- setLabels
     multiExpr <- list()
-    multiExpr[[wgcna_name]] <- list(data=datExpr)
+    multiExpr[[wgcna_name]] <- list(data = datExpr)
     checkSets(multiExpr) # check data size
   }
 
   # make output dir for the TOM
-  if(!dir.exists(tom_outdir)){
+  if (!dir.exists(tom_outdir)) {
     dir.create(tom_outdir)
   }
 
-  if(is.null(soft_power) & !consensus){
-    soft_power <- GetPowerTable(seurat_obj) %>% subset(SFT.R.sq >= 0.8 & Power > min_power) %>% .$Power %>% min
-    cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ", soft_power, "\n"))
-  } else if(is.null(soft_power)){
+  if (is.null(soft_power) & !consensus) {
+    soft_power <- GetPowerTable(seurat_obj) %>%
+      subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
+      .$Power %>%
+      min()
+    cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ', soft_power, '\n'))
+  } else if (is.null(soft_power)) {
     power_tables <- GetPowerTable(seurat_obj) %>% dplyr::group_split(group)
-    soft_power <- sapply(power_tables, function(power_table){
-      power_table %>% subset(SFT.R.sq >= 0.8 & Power > min_power) %>% .$Power %>% min
+    soft_power <- sapply(power_tables, function(power_table) {
+      power_table %>%
+        subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
+        .$Power %>%
+        min()
     })
-    cat(paste0("Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(", paste0(soft_power, collapse=','), ")\n"))
+    cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(', paste0(soft_power, collapse = ','), ')\n'))
   }
 
   # construct the network
@@ -125,19 +130,19 @@ ConstructNetwork <- function(
     networkType = networkType,
     TOMType = TOMType,
     TOMDenom = TOMDenom,
-    scaleTOMs = scaleTOMs, 
+    scaleTOMs = scaleTOMs,
     calibrationQuantile = calibrationQuantile,
-    sampleForCalibration = sampleForCalibration, 
+    sampleForCalibration = sampleForCalibration,
     sampleForCalibrationFactor = sampleForCalibrationFactor,
     useDiskCache = useDiskCache, chunkSize = chunkSize,
     deepSplit = deepSplit,
-    pamStage=pamStage,
+    pamStage = pamStage,
     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
     mergeCutHeight = mergeCutHeight,
     saveConsensusTOMs = saveConsensusTOMs,
-    consensusTOMFilePattern = paste0(tom_outdir, '/', tom_name, "_block.%b.rda"), 
+    consensusTOMFilePattern = paste0(tom_outdir, '/', tom_name, '_block.%b.rda'),
     ...
-    )
+  )
 
   # rename consensusTOM file:
   file.rename(paste0(tom_outdir, '/', tom_name, '_block.1.rda'), renamed)
@@ -157,7 +162,7 @@ ConstructNetwork <- function(
     sampleForCalibration = sampleForCalibration, sampleForCalibrationFactor = sampleForCalibrationFactor,
     useDiskCache = useDiskCache, chunkSize = chunkSize,
     deepSplit = deepSplit,
-    pamStage=pamStage,
+    pamStage = pamStage,
     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
     mergeCutHeight = mergeCutHeight,
     saveConsensusTOMs = saveConsensusTOMs
@@ -175,14 +180,15 @@ ConstructNetwork <- function(
   # set the modules df in the Seurat object
   mods <- GetNetworkData(seurat_obj)$colors
   seurat_obj <- SetModules(
-    seurat_obj, modules = data.frame(
-      "gene_name" = names(mods),
-      "module" = factor(mods, levels=unique(mods)),
-      "color" = mods
+    seurat_obj,
+    modules = data.frame(
+      'gene_name' = names(mods),
+      'module' = factor(mods, levels = unique(mods)),
+      'color' = mods
     ), wgcna_name
   )
 
-  if(store_tom_in_seurat){
+  if (store_tom_in_seurat) {
     load(renamed)
     TOM_mat <- as.matrix(consTomDS)
     gene_names <- names(mods)
@@ -192,5 +198,4 @@ ConstructNetwork <- function(
   }
 
   seurat_obj
-
 }

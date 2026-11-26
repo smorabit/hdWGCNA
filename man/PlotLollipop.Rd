@@ -26,7 +26,8 @@ An Internal function for PlotDMEsLollipop to Plotting function for the results o
 \examples{
 \dontrun{
 plot_list <- PlotLollipop(
-  modules, DMEs, cur_title = c("Group1_vs_Group2"), pvalue, avg_log2FC = 'avg_log2FC'
+  modules, DMEs,
+  cur_title = c('Group1_vs_Group2'), pvalue, avg_log2FC = 'avg_log2FC'
 )
 }
 }

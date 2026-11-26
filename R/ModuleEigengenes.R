@@ -16,59 +16,65 @@ ComputeModuleEigengene <- function(
   seurat_obj,
   cur_mod,
   modules,
-  group.by.vars=NULL,
-  verbose=TRUE,
+  group.by.vars = NULL,
+  verbose = TRUE,
   vars.to.regress = NULL,
   scale.model.use = 'linear',
   pc_dim = 1,
   assay = NULL,
-  wgcna_name=NULL, ...
-){
-
+  wgcna_name = NULL, ...
+) {
   # set as active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
 
   # get the assay
-  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
+  if (is.null(assay)) {
+    assay <- DefaultAssay(seurat_obj)
+  }
 
   # get genes in this module:
-  cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name %>% as.character()
+  cur_genes <- modules %>%
+    subset(module == cur_mod) %>%
+    .$gene_name %>%
+    as.character()
 
   # get the expression matrix:
-  if(CheckSeurat5()){
-    X_dat <- SeuratObject::LayerData(seurat_obj, layer='data', assay=assay)[cur_genes,]
-  } else{
-    X_dat <- Seurat::GetAssayData(seurat_obj, slot='data', assay=assay)[cur_genes,]
+  if (CheckSeurat5()) {
+    X_dat <- SeuratObject::LayerData(seurat_obj, layer = 'data', assay = assay)[cur_genes, ]
+  } else {
+    X_dat <- Seurat::GetAssayData(seurat_obj, slot = 'data', assay = assay)[cur_genes, ]
   }
 
   # create seurat obj with just these genes
   cur_seurat <- CreateSeuratObject(X_dat, assay = assay, meta.data = seurat_obj@meta.data)
 
-  if(CheckSeurat5()){
-    result <- try(cur_seurat <- SetAssayData(cur_seurat, layer='data', new.data=X_dat, assay=assay), silent=TRUE)
-    if("Seurat" %in% class(result)){
+  if (CheckSeurat5()) {
+    result <- try(cur_seurat <- SetAssayData(cur_seurat, layer = 'data', new.data = X_dat, assay = assay), silent = TRUE)
+    if ('Seurat' %in% class(result)) {
       cur_seurat <- result
-    } else{
-        cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
+    } else {
+      cur_seurat <- SetAssayData(cur_seurat, slot = 'data', new.data = X_dat, assay = assay)
     }
-  } else{
-    cur_seurat <- SetAssayData(cur_seurat, slot='data', new.data=X_dat, assay=assay)
+  } else {
+    cur_seurat <- SetAssayData(cur_seurat, slot = 'data', new.data = X_dat, assay = assay)
   }
 
   # scale the subsetted expression dataset:
-  if(is.null(vars.to.regress)){
-    cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use)
-  } else if(all(vars.to.regress %in% colnames(seurat_obj@meta.data))){
-    cur_seurat <- ScaleData(cur_seurat, features=rownames(cur_seurat), model.use=scale.model.use, vars.to.regress=vars.to.regress)
-  } else{
-    stop(paste0("Some variables specified in vars.to.regress are not found in seurat_obj@meta.data"))
+  if (is.null(vars.to.regress)) {
+    cur_seurat <- ScaleData(cur_seurat, features = rownames(cur_seurat), model.use = scale.model.use)
+  } else if (all(vars.to.regress %in% colnames(seurat_obj@meta.data))) {
+    cur_seurat <- ScaleData(cur_seurat, features = rownames(cur_seurat), model.use = scale.model.use, vars.to.regress = vars.to.regress)
+  } else {
+    stop(paste0('Some variables specified in vars.to.regress are not found in seurat_obj@meta.data'))
   }
 
   # compute average expression of each gene
-  if(CheckSeurat5()){
-    cur_expr <- SeuratObject::GetAssayData(cur_seurat, layer='data')
-  } else{
-    cur_expr <- Seurat::GetAssayData(cur_seurat, slot='data')
+  if (CheckSeurat5()) {
+    cur_expr <- SeuratObject::GetAssayData(cur_seurat, layer = 'data')
+  } else {
+    cur_expr <- Seurat::GetAssayData(cur_seurat, slot = 'data')
   }
   expr <- Matrix::t(cur_expr)
   averExpr <- Matrix::rowSums(expr) / ncol(expr)
@@ -77,18 +83,17 @@ ComputeModuleEigengene <- function(
   cur_pca <- Seurat::RunPCA(
     cur_seurat,
     features = cur_genes,
-    reduction.key=paste0('pca', cur_mod),
-    verbose=verbose, ...
+    reduction.key = paste0('pca', cur_mod),
+    verbose = verbose, ...
   )@reductions$pca
-  pc <- cur_pca@cell.embeddings[,pc_dim]
-  pc_loadings <- cur_pca@feature.loadings[,pc_dim]
+  pc <- cur_pca@cell.embeddings[, pc_dim]
+  pc_loadings <- cur_pca@feature.loadings[, pc_dim]
 
   # correlate average expression with eigengene
   pca_cor <- cor(averExpr, pc)
 
   # run harmony
-  if(!is.null(group.by.vars)){
-
+  if (!is.null(group.by.vars)) {
     # add this PCA as its own reduction in the seurat object
     seurat_obj@reductions$ME <- Seurat::CreateDimReducObject(
       embeddings = cur_pca@cell.embeddings,
@@ -97,16 +102,16 @@ ComputeModuleEigengene <- function(
 
     cur_harmony <- harmony::RunHarmony(
       seurat_obj,
-      group.by.vars=group.by.vars,
-      reduction.use="ME", 
-      verbose=verbose, 
+      group.by.vars = group.by.vars,
+      reduction.use = 'ME',
+      verbose = verbose,
       ...
     )@reductions$harmony
-    ha <- cur_harmony@cell.embeddings[,pc_dim]
-    ha_loadings <- cur_pca@feature.loadings[,pc_dim]
+    ha <- cur_harmony@cell.embeddings[, pc_dim]
+    ha_loadings <- cur_pca@feature.loadings[, pc_dim]
 
-    if(pca_cor < 0){
-      cur_harmony@cell.embeddings[,pc_dim] <- -ha
+    if (pca_cor < 0) {
+      cur_harmony@cell.embeddings[, pc_dim] <- -ha
       ha_loadings <- -ha_loadings
     }
 
@@ -118,15 +123,14 @@ ComputeModuleEigengene <- function(
 
     seurat_obj <- SetMELoadings(
       seurat_obj,
-      loadings=ha_loadings,
-      harmonized=TRUE,
-      wgcna_name=wgcna_name
+      loadings = ha_loadings,
+      harmonized = TRUE,
+      wgcna_name = wgcna_name
     )
-
   }
 
-  if(pca_cor < 0){
-    cur_pca@cell.embeddings[,pc_dim] <- -pc
+  if (pca_cor < 0) {
+    cur_pca@cell.embeddings[, pc_dim] <- -pc
     pc_loadings <- -pc_loadings
   }
 
@@ -138,14 +142,13 @@ ComputeModuleEigengene <- function(
 
   seurat_obj <- SetMELoadings(
     seurat_obj,
-    loadings=pc_loadings,
-    harmonized=FALSE,
-    wgcna_name=wgcna_name
+    loadings = pc_loadings,
+    harmonized = FALSE,
+    wgcna_name = wgcna_name
   )
 
   # return seurat object
   seurat_obj
-
 }
 
 #' ModuleEigengenes
@@ -180,29 +183,32 @@ ComputeModuleEigengene <- function(
 #' @export
 ModuleEigengenes <- function(
   seurat_obj,
-  group.by.vars=NULL,
-  modules=NULL,
+  group.by.vars = NULL,
+  modules = NULL,
   vars.to.regress = NULL,
   scale.model.use = 'linear',
-  verbose=TRUE,
+  verbose = TRUE,
   assay = NULL,
   pc_dim = 1,
-  wgcna_name=NULL, ...
-){
-
+  wgcna_name = NULL, ...
+) {
   # set as active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
-   
+
   # are we going to run Harmony?
   harmonized <- !is.null(group.by.vars)
 
-  if(harmonized & !any(grepl("ScaleData", seurat_obj@commands))){
-      stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
+  if (harmonized & !any(grepl('ScaleData', seurat_obj@commands))) {
+    stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
   }
 
   # get the assay
-  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
+  if (is.null(assay)) {
+    assay <- DefaultAssay(seurat_obj)
+  }
 
   me_list <- list()
   harmonized_me_list <- list()
@@ -210,24 +216,24 @@ ModuleEigengenes <- function(
   # re-set feature loadings:
   seurat_obj <- SetMELoadings(
     seurat_obj,
-    loadings=c(""),
-    harmonized=FALSE,
-    wgcna_name=wgcna_name
+    loadings = c(''),
+    harmonized = FALSE,
+    wgcna_name = wgcna_name
   )
-  if(harmonized){
+  if (harmonized) {
     seurat_obj <- SetMELoadings(
       seurat_obj,
-      loadings=c(""),
-      harmonized=TRUE,
-      wgcna_name=wgcna_name
+      loadings = c(''),
+      harmonized = TRUE,
+      wgcna_name = wgcna_name
     )
   }
 
   # get modules from Seurat object, else use provided modules
-  if(is.null(modules)){
+  if (is.null(modules)) {
     modules <- GetModules(seurat_obj, wgcna_name)
     projected <- FALSE
-  } else{
+  } else {
     projected <- TRUE
   }
 
@@ -236,54 +242,57 @@ ModuleEigengenes <- function(
   mods_loop <- mods
 
   # loop over modules:
-  for(cur_mod in mods_loop){
-
+  for (cur_mod in mods_loop) {
     print(cur_mod)
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
       seurat_obj = seurat_obj,
       cur_mod = cur_mod,
-      modules=modules,
-      group.by.vars=group.by.vars,
+      modules = modules,
+      group.by.vars = group.by.vars,
       vars.to.regress = vars.to.regress,
       scale.model.use = scale.model.use,
-      verbose=verbose,
+      verbose = verbose,
       pc_dim = pc_dim,
       assay = assay,
-      wgcna_name=wgcna_name,
+      wgcna_name = wgcna_name,
       ...
     )
 
     # add module eigengene to ongoing list
-    cur_me <- seurat_obj@reductions$ME@cell.embeddings[,pc_dim]
+    cur_me <- seurat_obj@reductions$ME@cell.embeddings[, pc_dim]
     me_list[[cur_mod]] <- cur_me
 
     # run harmony
-    if(harmonized){
+    if (harmonized) {
       # add module eigengene to ongoing list
-      cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[,pc_dim]
+      cur_harmonized_me <- seurat_obj@reductions$ME_harmony@cell.embeddings[, pc_dim]
       harmonized_me_list[[cur_mod]] <- cur_harmonized_me
     }
   }
 
   # merge module eigengene lists into a dataframe, order modules, add to Seurat obj
   me_df <- do.call(cbind, me_list)
-  if(!projected){me_df <- WGCNA::orderMEs(me_df)}
-  seurat_obj <- SetMEs(seurat_obj, me_df, harmonized=FALSE, wgcna_name)
+  if (!projected) {
+    me_df <- WGCNA::orderMEs(me_df)
+  }
+  seurat_obj <- SetMEs(seurat_obj, me_df, harmonized = FALSE, wgcna_name)
 
   # merge harmonized module eigengene lists into a dataframe, add to Seurat obj
-  if(!is.null(group.by.vars)){
+  if (!is.null(group.by.vars)) {
     hme_df <- do.call(cbind, harmonized_me_list)
-    if(!projected){hme_df <- WGCNA::orderMEs(hme_df)}
-    seurat_obj <- SetMEs(seurat_obj, hme_df, harmonized=TRUE, wgcna_name)
+    if (!projected) {
+      hme_df <- WGCNA::orderMEs(hme_df)
+    }
+    seurat_obj <- SetMEs(seurat_obj, hme_df, harmonized = TRUE, wgcna_name)
   }
 
   # set module factor levels based on order
   MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
   modules$module <- factor(
     as.character(modules$module),
-    levels=mods
+    levels = mods
   )
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)
 
@@ -314,13 +323,14 @@ ModuleEigengenes <- function(
 ModuleExprScore <- function(
   seurat_obj,
   n_genes = 25,
-  method='Seurat',
-  wgcna_name=NULL,
+  method = 'Seurat',
+  wgcna_name = NULL,
   ...
- ){
-
+) {
   # set as active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get modules:
@@ -329,34 +339,37 @@ ModuleExprScore <- function(
   mods <- mods[mods != 'grey']
 
   # use all genes in the module?
-  if(n_genes == "all"){
-    gene_list <- lapply(mods, function(cur_mod){
+  if (n_genes == 'all') {
+    gene_list <- lapply(mods, function(cur_mod) {
       subset(modules, module == cur_mod) %>% .$gene_name
     })
-  } else{
-    gene_list <- lapply(mods, function(cur_mod){
+  } else {
+    gene_list <- lapply(mods, function(cur_mod) {
       cur <- subset(modules, module == cur_mod)
-      cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-        top_n(n_genes) %>% .$gene_name
+      cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
+        top_n(n_genes) %>%
+        .$gene_name
     })
   }
   names(gene_list) <- mods
 
   # compute Module Scores with Seurat or UCell:
-  if(method == "Seurat"){
+  if (method == 'Seurat') {
     mod_scores <- Seurat::AddModuleScore(
-      seurat_obj, features=gene_list, ...
+      seurat_obj,
+      features = gene_list, ...
     )@meta.data
-  } else if(method == "UCell"){
+  } else if (method == 'UCell') {
     check_suggests('UCell', feature = 'ModuleExprScore(method = "UCell")')
     mod_scores <- UCell::AddModuleScore_UCell(
-      seurat_obj, features=gene_list, ...
+      seurat_obj,
+      features = gene_list, ...
     )@meta.data
-  } else{
-    stop("Invalid method selection. Valid choices are Seurat, UCell")
+  } else {
+    stop('Invalid method selection. Valid choices are Seurat, UCell')
   }
 
-  mod_scores <- mod_scores[,(ncol(mod_scores)-length(mods)+1):ncol(mod_scores)]
+  mod_scores <- mod_scores[, (ncol(mod_scores) - length(mods) + 1):ncol(mod_scores)]
 
   # rename module scores:
   colnames(mod_scores) <- mods
@@ -364,13 +377,12 @@ ModuleExprScore <- function(
   # order cols
   col_order <- levels(modules$module)
   col_order <- col_order[col_order != 'grey']
-  mod_scores <- mod_scores[,col_order]
+  mod_scores <- mod_scores[, col_order]
 
   # add module scores to seurat object
   seurat_obj <- SetModuleScores(seurat_obj, mod_scores, wgcna_name)
 
   seurat_obj
-
 }
 
 
@@ -380,10 +392,11 @@ ModuleExprScore <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @export
-AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
-
+AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name = NULL, ...) {
   # set as active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get modules:
@@ -397,31 +410,34 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name=NULL, ...){
   # datExpr for full expression dataset
   datExpr <- GetAssayData(
     seurat_obj,
-    assay=params$metacell_assay,
-    slot=params$metacell_slot
+    assay = params$metacell_assay,
+    slot = params$metacell_slot
   )
 
   # use all genes in the module?
-  if(n_genes == "all"){
-    gene_list <- lapply(mods, function(cur_mod){
+  if (n_genes == 'all') {
+    gene_list <- lapply(mods, function(cur_mod) {
       subset(modules, module == cur_mod) %>% .$gene_name
     })
-  } else{
-    gene_list <- lapply(mods, function(cur_mod){
+  } else {
+    gene_list <- lapply(mods, function(cur_mod) {
       cur <- subset(modules, module == cur_mod)
-      cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-        top_n(n_genes) %>% .$gene_name
+      cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
+        top_n(n_genes) %>%
+        .$gene_name
     })
   }
   names(gene_list) <- mods
 
   # for each module, compute average expression of genes:
-  avg_mods <- t(do.call(rbind,lapply(gene_list, function(cur_genes){colMeans(datExpr[cur_genes,])})))
+  avg_mods <- t(do.call(rbind, lapply(gene_list, function(cur_genes) {
+    colMeans(datExpr[cur_genes, ])
+  })))
 
   # order cols
   col_order <- levels(modules$module)
   col_order <- col_order[col_order != 'grey']
-  avg_mods <- avg_mods[,col_order]
+  avg_mods <- avg_mods[, col_order]
 
   # add avg module expression to Seurat object
   seurat_obj <- SetAvgModuleExpr(seurat_obj, avg_mods, wgcna_name)

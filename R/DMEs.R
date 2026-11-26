@@ -1,4 +1,3 @@
-
 #' FindAllDMEs
 #'
 #' Function to compare expression levels of co-expression modules between two sets of cell barcodes.
@@ -17,30 +16,31 @@ FindAllDMEs <- function(
   seurat_obj,
   group.by,
   features = 'MEs',
-  harmonized=TRUE,
-  add_missing=FALSE,
-  wgcna_name=NULL,
-  test.use='wilcox',
-  only.pos=FALSE,
+  harmonized = TRUE,
+  add_missing = FALSE,
+  wgcna_name = NULL,
+  test.use = 'wilcox',
+  only.pos = FALSE,
   logfc.threshold = 0,
-  min.pct=0,
-  verbose=FALSE,
-  pseudocount.use=0,
+  min.pct = 0,
+  verbose = FALSE,
+  pseudocount.use = 0,
   ...
-){
-
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get list of groups
   groups <- as.character(unique(seurat_obj@meta.data[[group.by]]))
 
   # what features are we using?
-  if(features == 'MEs'){
+  if (features == 'MEs') {
     MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
-  } else if(features == 'ModuleScores'){
+  } else if (features == 'ModuleScores') {
     MEs <- GetModuleScores(seurat_obj, wgcna_name)
-  } else{
+  } else {
     stop('Invalid selection for features. Valid choices are MEs or ModuleScores.')
   }
 
@@ -57,8 +57,7 @@ FindAllDMEs <- function(
   ME_assay <- Seurat::CreateAssayObject(MEs)
 
   DMEs_list <- list()
-  for(cur_group in groups){
-
+  for (cur_group in groups) {
     print(cur_group)
 
     barcodes1 <- colnames(seurat_obj)[seurat_obj@meta.data[[group.by]] == cur_group]
@@ -69,30 +68,29 @@ FindAllDMEs <- function(
       ME_assay,
       cells.1 = barcodes1,
       cells.2 = barcodes2,
-      slot='counts',
-      test.use=test.use,
-      only.pos=only.pos,
-      logfc.threshold=logfc.threshold,
-      min.pct=min.pct,
-      verbose=verbose,
-      pseudocount.use=pseudocount.use,
+      slot = 'counts',
+      test.use = test.use,
+      only.pos = only.pos,
+      logfc.threshold = logfc.threshold,
+      min.pct = min.pct,
+      verbose = verbose,
+      pseudocount.use = pseudocount.use,
       ...
     )
     DMEs$module <- rownames(DMEs)
     DMEs$group <- cur_group
 
     # add missing modules if specified
-    if(add_missing){
+    if (add_missing) {
       missing_mods <- rownames(MEs)[!(rownames(MEs) %in% DMEs$module)]
-      for(cur_mod in missing_mods){
-        DMEs[cur_mod,] <- NA
-        DMEs[cur_mod,'module'] <- cur_mod
+      for (cur_mod in missing_mods) {
+        DMEs[cur_mod, ] <- NA
+        DMEs[cur_mod, 'module'] <- cur_mod
       }
     }
 
     # add to ongoing list:
     DMEs_list[[cur_group]] <- DMEs
-
   }
 
   DMEs <- do.call(rbind, DMEs_list)
@@ -120,40 +118,41 @@ FindDMEs <- function(
   barcodes1,
   barcodes2,
   features = 'MEs',
-  harmonized=TRUE,
-  wgcna_name=NULL,
-  add_missing=FALSE,
-  test.use='wilcox',
-  only.pos=FALSE,
+  harmonized = TRUE,
+  wgcna_name = NULL,
+  add_missing = FALSE,
+  test.use = 'wilcox',
+  only.pos = FALSE,
   logfc.threshold = 0,
-  min.pct=0,
-  verbose=FALSE,
-  pseudocount.use=0,
+  min.pct = 0,
+  verbose = FALSE,
+  pseudocount.use = 0,
   ...
-){
-
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
   # ensure that selected barcodes are in the seurat obj
-  if(!(all(barcodes1 %in% colnames(seurat_obj)))){
+  if (!(all(barcodes1 %in% colnames(seurat_obj)))) {
     stop('Some barcodes in barcodes1 not found in colnames(seurat_obj).')
   }
-  if(!(all(barcodes2 %in% colnames(seurat_obj)))){
+  if (!(all(barcodes2 %in% colnames(seurat_obj)))) {
     stop('Some barcodes in barcodes2 not found in colnames(seurat_obj).')
   }
 
   # check for overlap in the two groups of bacrodes:
-  if(length(intersect(barcodes1, barcodes2)) > 0){
+  if (length(intersect(barcodes1, barcodes2)) > 0) {
     stop('Some barcodes overlap in barcodes1 and barcodes2')
   }
 
   # what features are we using?
-  if(features == 'MEs'){
+  if (features == 'MEs') {
     MEs <- GetMEs(seurat_obj, harmonized, wgcna_name)
-  } else if(features == 'ModuleScores'){
+  } else if (features == 'ModuleScores') {
     MEs <- GetModuleScores(seurat_obj, wgcna_name)
-  } else{
+  } else {
     stop('Invalid selection for features. Valid choices are MEs or ModuleScores.')
   }
 
@@ -174,26 +173,25 @@ FindDMEs <- function(
     ME_assay,
     cells.1 = barcodes1,
     cells.2 = barcodes2,
-    slot='counts',
-    test.use=test.use,
-    only.pos=only.pos,
-    logfc.threshold=logfc.threshold,
-    min.pct=min.pct,
-    verbose=verbose,
-    pseudocount.use=pseudocount.use,
+    slot = 'counts',
+    test.use = test.use,
+    only.pos = only.pos,
+    logfc.threshold = logfc.threshold,
+    min.pct = min.pct,
+    verbose = verbose,
+    pseudocount.use = pseudocount.use,
     ...
   )
   DMEs$module <- rownames(DMEs)
 
   # add missing modules if specified
-  if(add_missing){
+  if (add_missing) {
     missing_mods <- rownames(MEs)[!(rownames(MEs) %in% DMEs$module)]
-    for(cur_mod in missing_mods){
-      DMEs[cur_mod,] <- NA
-      DMEs[cur_mod,'module'] <- cur_mod
+    for (cur_mod in missing_mods) {
+      DMEs[cur_mod, ] <- NA
+      DMEs[cur_mod, 'module'] <- cur_mod
     }
   }
 
   DMEs
-
 }

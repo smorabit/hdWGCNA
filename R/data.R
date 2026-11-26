@@ -26,7 +26,7 @@
 #' }
 #' @seealso \code{\link{hdw_sim_modules}}
 #' @source Simulated; see \code{data-raw/hdw_sim.R}.
-"hdw_sim"
+'hdw_sim'
 
 #' Ground-truth modules of the simulated dataset
 #'
@@ -44,7 +44,7 @@
 #' }
 #' @seealso \code{\link{hdw_sim}}
 #' @source Simulated; see \code{data-raw/hdw_sim.R}.
-"hdw_sim_modules"
+'hdw_sim_modules'
 
 #' Small Seurat object used by the legacy unit tests
 #'
@@ -53,4 +53,4 @@
 #'
 #' @format A Seurat object.
 #' @keywords internal
-"test_seurat"
+'test_seurat'

@@ -42,7 +42,7 @@ ModuleConnectivity <- function(
   group_name = NULL,
   corFnc = 'bicor',
   corOptions = "use='p'",
-  harmonized=TRUE,
+  harmonized = TRUE,
   assay = NULL,
   slot = 'data',
   layer = 'data',
@@ -51,12 +51,15 @@ ModuleConnectivity <- function(
   TOM_use = NULL,
   wgcna_name = NULL,
   ...
-){
-
+) {
   # set as active assay if wgcna_name is not given
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
   CheckWGCNAName(seurat_obj, wgcna_name)
-  if(is.null(TOM_use)){TOM_use <- wgcna_name}
+  if (is.null(TOM_use)) {
+    TOM_use <- wgcna_name
+  }
 
   # get module df, wgcna genes, TOM, and wgcna params:
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -65,50 +68,57 @@ ModuleConnectivity <- function(
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
   # try to load the TOM
-  TOM <- tryCatch({
+  TOM <- tryCatch(
+    {
       GetTOM(seurat_obj, TOM_use)
-   },
-   error = function(e){
-    warning('TOM not found')
-   }
+    },
+    error = function(e) {
+      warning('TOM not found')
+    }
   )
 
   # get the assay
-  if(is.null(assay)){assay <- DefaultAssay(seurat_obj)}
-  
+  if (is.null(assay)) {
+    assay <- DefaultAssay(seurat_obj)
+  }
+
   # select which cells to use for this analysis
-  if(!is.null(group.by)){
-    cells.use <- seurat_obj@meta.data %>% subset(get(group.by) %in% group_name) %>% rownames
-    MEs <- MEs[cells.use,]
-  } else{
+  if (!is.null(group.by)) {
+    cells.use <- seurat_obj@meta.data %>%
+      subset(get(group.by) %in% group_name) %>%
+      rownames()
+    MEs <- MEs[cells.use, ]
+  } else {
     cells.use <- colnames(seurat_obj)
   }
 
   # get expression data:
-  if(CheckSeurat5()){
+  if (CheckSeurat5()) {
     exp_mat <- SeuratObject::LayerData(
-      seurat_obj, assay=assay, layer=layer
-    )[genes_use,cells.use]
-  } else{
+      seurat_obj,
+      assay = assay, layer = layer
+    )[genes_use, cells.use]
+  } else {
     exp_mat <- Seurat::GetAssayData(
-      seurat_obj, assay=assay, slot=slot
-    )[genes_use,cells.use]
+      seurat_obj,
+      assay = assay, slot = slot
+    )[genes_use, cells.use]
   }
 
   # are we using the sparse correlation? (faster!)
-  if(sparse){
+  if (sparse) {
     kMEs <- corSparse(
       X = Matrix::t(exp_mat),
       Y = as.matrix(MEs)
     )
     rownames(kMEs) <- genes_use
     kMEs <- as.data.frame(kMEs)
-  } else{
+  } else {
     datExpr <- t(as.matrix(exp_mat))
     kMEs <- WGCNA::signedKME(
       datExpr,
       MEs,
-      outputColumnName = "kME",
+      outputColumnName = 'kME',
       corFnc = corFnc,
       corOptions = corOptions,
       ...
@@ -116,60 +126,58 @@ ModuleConnectivity <- function(
   }
 
   # add module color to the kMEs table
-  modules <- modules[,1:3]
+  modules <- modules[, 1:3]
   mods <- levels(modules$module)
   colnames(kMEs) <- colnames(MEs)
-  kMEs <- kMEs[,mods]
-  colnames(kMEs) <- paste0("kME_", colnames(kMEs))
+  kMEs <- kMEs[, mods]
+  colnames(kMEs) <- paste0('kME_', colnames(kMEs))
   kMEs <- cbind(modules, kMEs)
 
   # update the modules table in the Seurat object:
   seurat_obj <- SetModules(seurat_obj, kMEs, wgcna_name)
 
   # reassign modules for genes with negative kME values
-  if(reassign_modules & length(mods) > 2){
-    seurat_obj <- ReassignModules(seurat_obj, harmonized=harmonized, wgcna_name=wgcna_name)
+  if (reassign_modules & length(mods) > 2) {
+    seurat_obj <- ReassignModules(seurat_obj, harmonized = harmonized, wgcna_name = wgcna_name)
   }
 
   # compute the intramodular degree for each gene
-  if('matrix' %in% class(TOM)){
-
+  if ('matrix' %in% class(TOM)) {
     degrees <- data.frame()
-    for(cur_mod in mods){
-
+    for (cur_mod in mods) {
       # get genes for this module
-      cur_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+      cur_genes <- modules %>%
+        subset(module == cur_mod) %>%
+        .$gene_name
       cur_genes <- cur_genes[cur_genes %in% rownames(TOM)]
 
       # subset TOM for genes in this module
       cur_TOM <- TOM[cur_genes, cur_genes]
-      cur_TOM[lower.tri(cur_TOM)] <- 0 
+      cur_TOM[lower.tri(cur_TOM)] <- 0
 
       # cast from from matrix to long dataframe, remove self-links
       cur_TOM_df <- reshape2::melt(cur_TOM) %>% subset(Var1 != Var2)
 
       # calculate degree for each gene and arrange by degree
-      cur_degrees <- cur_TOM_df %>% 
-        dplyr::group_by(Var1) %>% 
+      cur_degrees <- cur_TOM_df %>%
+        dplyr::group_by(Var1) %>%
         dplyr::summarise(degree = sum(value)) %>%
         dplyr::mutate(weighted_degree = degree / max(degree)) %>%
-        dplyr::arrange(-degree) %>% 
+        dplyr::arrange(-degree) %>%
         dplyr::rename(gene_name = Var1)
-      
-      cur_degrees$module <- cur_mod 
+
+      cur_degrees$module <- cur_mod
       degrees <- rbind(degrees, cur_degrees)
     }
     degrees <- degrees %>% dplyr::select(c(gene_name, module, degree, weighted_degree))
     degrees <- as.data.frame(degrees)
-    degrees$module <- factor(as.character(degrees$module), levels=levels(modules$module))
+    degrees$module <- factor(as.character(degrees$module), levels = levels(modules$module))
     degrees$gene_name <- as.character(degrees$gene_name)
 
     # update the degree df in the Seurat object:
     seurat_obj <- SetDegrees(seurat_obj, degrees, wgcna_name)
-
-}
+  }
 
   # return seurat obj
   seurat_obj
-
 }

@@ -13,7 +13,7 @@
 #' @param wgcna_name A character string specifying the name of the WGCNA experiment to associate with the motif data (optional).
 #' If NULL, the active WGCNA experiment in `seurat_obj@misc` will be used.
 #'
-#' @details 
+#' @details
 #' The `MotifScan` function performs the following steps:
 #' - It extracts promoter regions (typically 2 kb upstream of the transcription start site) of protein-coding genes from the provided `EnsDb`.
 #' - It uses the `motifmatchr` package to search these promoters for TF motifs, using the input PFMs.
@@ -31,148 +31,154 @@
 #'
 #' @export
 MotifScan <- function(
-    seurat_obj,
-    pfm, 
-    EnsDb, 
-    species_genome, 
-    wgcna_name=NULL
-){
+  seurat_obj,
+  pfm,
+  EnsDb,
+  species_genome,
+  wgcna_name = NULL
+) {
+  check_suggests(
+    c('motifmatchr', 'ensembldb', 'GenomeInfoDb', 'GenomicRanges', 'IRanges', 'BiocGenerics'),
+    feature = 'MotifScan'
+  )
 
-    check_suggests(
-        c('motifmatchr', 'ensembldb', 'GenomeInfoDb', 'GenomicRanges', 'IRanges', 'BiocGenerics'),
-        feature = 'MotifScan'
-    )
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-    if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
-    CheckWGCNAName(seurat_obj, wgcna_name)
+  # get a dataframe of just the motif name and the motif ID:
+  motif_df <- data.frame(
+    motif_name = purrr::map(1:length(pfm), function(i) {
+      pfm[[i]]@name
+    }) %>% unlist(),
+    motif_ID = purrr::map(1:length(pfm), function(i) {
+      pfm[[i]]@ID
+    }) %>% unlist()
+  )
 
-    # get a dataframe of just the motif name and the motif ID:
-    motif_df <- data.frame(
-        motif_name = purrr::map(1:length(pfm), function(i){pfm[[i]]@name}) %>% unlist,
-        motif_ID = purrr::map(1:length(pfm), function(i){pfm[[i]]@ID}) %>% unlist
-    )
+  # get promoter and gene coords:
+  gene.promoters <- ensembldb::promoters(EnsDb)
+  gene.coords <- ensembldb::genes(EnsDb)
 
-    # get promoter and gene coords:
-    gene.promoters <- ensembldb::promoters(EnsDb)
-    gene.coords <- ensembldb::genes(EnsDb)
+  # subset by protein coding
+  gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
+  gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
 
-    # subset by protein coding
-    gene.promoters <- gene.promoters[gene.promoters$tx_biotype == 'protein_coding']
-    gene.coords <- gene.coords[gene.coords$gene_biotype == 'protein_coding']
+  # subset by main chromosomes
+  gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X', 'Y')]
+  gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
 
-    # subset by main chromosomes
-    gene.promoters <- gene.promoters[as.character(GenomeInfoDb::seqnames(gene.promoters)) %in% c(1:100, 'X','Y')]
-    gene.coords <- gene.coords[as.character(GenomeInfoDb::seqnames(gene.coords)) %in% c(1:100, 'X', 'Y')]
+  # add the gene name to the promoter object
+  gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
 
-    # add the gene name to the promoter object
-    gene.promoters$symbol <- gene.coords$symbol[base::match(gene.promoters$gene_id, names(gene.coords))]
+  # drop unnecessary chromosomes
+  gene.promoters <- GenomeInfoDb::keepSeqlevels(
+    gene.promoters,
+    value = levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
+  )
 
-    # drop unnecessary chromosomes
-    gene.promoters <- GenomeInfoDb::keepSeqlevels(
-        gene.promoters, 
-        value=levels(droplevels(GenomeInfoDb::seqnames(gene.promoters)))
-    )
+  # rename seqlevels to add 'chr',
+  old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
+  new_levels <- paste0('chr', old_levels)
+  gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
 
-    # rename seqlevels to add 'chr', 
-    old_levels <- levels(GenomeInfoDb::seqnames(gene.promoters))
-    new_levels <- paste0('chr', old_levels)
-    gene.promoters <- GenomeInfoDb::renameSeqlevels(gene.promoters, new_levels)
+  # set the genome (not sure if we NEED to do this...)
+  GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
 
-    # set the genome (not sure if we NEED to do this...)
-    GenomeInfoDb::genome(GenomeInfoDb::seqinfo(gene.promoters)) <- species_genome
+  # set up promoters object that only has the necessary info for motifmatchr
+  my_promoters <- GenomicRanges::GRanges(
+    seqnames = droplevels(GenomeInfoDb::seqnames(gene.promoters)),
+    IRanges::IRanges(
+      start = BiocGenerics::start(gene.promoters),
+      end = BiocGenerics::end(gene.promoters)
+    ),
+    symbol = gene.promoters$symbol,
+    genome = species_genome
+  )
 
-    # set up promoters object that only has the necessary info for motifmatchr
-    my_promoters <- GenomicRanges::GRanges(
-        seqnames =  droplevels(GenomeInfoDb::seqnames(gene.promoters)),
-        IRanges::IRanges(
-          start = BiocGenerics::start(gene.promoters),
-          end = BiocGenerics::end(gene.promoters)
-        ),
-        symbol = gene.promoters$symbol,
-        genome=species_genome
-    )
 
-        
-    # scan these promoters for motifs:
-    print('Matching motifs...')
-    motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome=species_genome)
+  # scan these promoters for motifs:
+  print('Matching motifs...')
+  motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome = species_genome)
 
-    # get the matches
-    tf_match <- motifmatchr::motifMatches(motif_ix)
-    rownames(tf_match) <- my_promoters$symbol
+  # get the matches
+  tf_match <- motifmatchr::motifMatches(motif_ix)
+  rownames(tf_match) <- my_promoters$symbol
 
-    # use motif names as the column names:
-    # colnames(tf_match) <- motif_df$motif_name
-    colnames(tf_match) <- motif_df$motif_ID
+  # use motif names as the column names:
+  # colnames(tf_match) <- motif_df$motif_name
+  colnames(tf_match) <- motif_df$motif_ID
 
-    #
+  #
 
-    # only keep genes that are in the Seurat object and in the given EnsDb:
-    gene_list <- rownames(seurat_obj)
-    gene_list <- gene_list[gene_list %in% rownames(tf_match)]
-    tf_match <- tf_match[gene_list,]
+  # only keep genes that are in the Seurat object and in the given EnsDb:
+  gene_list <- rownames(seurat_obj)
+  gene_list <- gene_list[gene_list %in% rownames(tf_match)]
+  tf_match <- tf_match[gene_list, ]
 
-    # get list of target genes for each TF:
-    print('Getting putative TF target genes...')
-    tf_targets <- list()
-    n_targets <- list()
-    for(cur_tf in colnames(tf_match)){
-        tf_targets[[cur_tf]] <- names(tf_match[,cur_tf][tf_match[,cur_tf]])
-        n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]] )
+  # get list of target genes for each TF:
+  print('Getting putative TF target genes...')
+  tf_targets <- list()
+  n_targets <- list()
+  for (cur_tf in colnames(tf_match)) {
+    tf_targets[[cur_tf]] <- names(tf_match[, cur_tf][tf_match[, cur_tf]])
+    n_targets[[cur_tf]] <- length(tf_targets[[cur_tf]])
+  }
+  n_targets <- unlist(n_targets)
+
+  # add number of target genes to motif_df
+  motif_df$n_targets <- n_targets
+
+  # resolve cases where there's more than 1 motif per gene?
+  # maybe take the union or smth.
+  tfs_fix <- table(motif_df$motif_name)
+  tfs_fix <- names(tfs_fix[which(tfs_fix > 1)])
+  for (cur_tf in tfs_fix) {
+    cur_motifs <- subset(motif_df, motif_name == cur_tf)
+    cur_indices <- as.numeric(rownames(cur_motifs))
+    cur_targets <- unique(unlist(tf_targets[cur_indices]))
+    tf_targets[[cur_tf]] <- cur_targets
+  }
+
+  # add the gene name to the motif_df
+  # remove extra characters from the motif names
+  motif_names <- motif_df$motif_name
+  tmp <- gsub('\\(.*)', '', motif_names)
+  tmp <- gsub('::', ',', as.character(tmp))
+
+  motif_df$tmp <- tmp
+
+  # for motifs that correspond to two genes, split them apart
+  tmp <- motif_df$tmp
+  names(tmp) <- motif_df$motif_ID
+  motif_df_tmp <- do.call(rbind, lapply(1:length(tmp), function(i) {
+    x <- tmp[i]
+    id <- names(x)
+    if (grepl(',', x)) {
+      x <- as.character(unlist(do.call(rbind, strsplit(x, ','))))
     }
-    n_targets <- unlist(n_targets)
+    data.frame(motif_ID = id, gene_name = as.character(x))
+  }))
 
-    # add number of target genes to motif_df
-    motif_df$n_targets <- n_targets
+  # merge with the other motif df:
+  ix <- match(motif_df_tmp$motif_ID, motif_df$motif_ID)
+  motif_df_tmp <- cbind(motif_df_tmp, motif_df[ix, c('motif_name', 'n_targets')])
+  rownames(motif_df_tmp) <- 1:nrow(motif_df_tmp)
+  motif_df_tmp <- dplyr::select(motif_df_tmp, c(motif_ID, motif_name, n_targets, gene_name))
 
-    # resolve cases where there's more than 1 motif per gene?
-    # maybe take the union or smth. 
-    tfs_fix <- table(motif_df$motif_name)
-    tfs_fix <- names(tfs_fix[which(tfs_fix > 1)])
-    for(cur_tf in tfs_fix){
-        cur_motifs <- subset(motif_df, motif_name == cur_tf) 
-        cur_indices <- as.numeric(rownames(cur_motifs))
-        cur_targets <- unique(unlist(tf_targets[cur_indices]))
-        tf_targets[[cur_tf]] <- cur_targets
-    }
+  motif_df <- motif_df_tmp
 
-    # add the gene name to the motif_df
-    # remove extra characters from the motif names
-    motif_names <- motif_df$motif_name
-    tmp <- gsub("\\(.*)", "", motif_names)
-    tmp <- gsub('::', ',', as.character(tmp))
+  # subset to only contain genes in the seurat obj
+  motif_df <- subset(motif_df, gene_name %in% rownames(seurat_obj))
 
-    motif_df$tmp <- tmp
+  # add info to seurat object
+  seurat_obj <- SetMotifMatrix(seurat_obj, tf_match)
+  seurat_obj <- SetMotifs(seurat_obj, motif_df)
+  seurat_obj <- SetMotifTargets(seurat_obj, tf_targets)
+  seurat_obj <- SetPFMList(seurat_obj, pfm)
 
-    # for motifs that correspond to two genes, split them apart
-    tmp <- motif_df$tmp; names(tmp) <- motif_df$motif_ID
-    motif_df_tmp <- do.call(rbind,lapply(1:length(tmp), function(i){
-      x <- tmp[i]
-      id <- names(x)
-      if(grepl(',', x)){
-          x <- as.character(unlist(do.call(rbind, strsplit(x, ','))))
-      }
-      data.frame(motif_ID = id, gene_name = as.character(x))
-    }))
-
-    # merge with the other motif df:
-    ix <- match(motif_df_tmp$motif_ID, motif_df$motif_ID)
-    motif_df_tmp <- cbind(motif_df_tmp, motif_df[ix,c('motif_name', 'n_targets')])
-    rownames(motif_df_tmp) <- 1:nrow(motif_df_tmp)
-    motif_df_tmp <- dplyr::select(motif_df_tmp, c(motif_ID, motif_name, n_targets, gene_name))
-
-    motif_df <- motif_df_tmp
-
-    # subset to only contain genes in the seurat obj
-    motif_df <- subset(motif_df, gene_name %in% rownames(seurat_obj))
-
-    # add info to seurat object
-    seurat_obj <- SetMotifMatrix(seurat_obj, tf_match)
-    seurat_obj <- SetMotifs(seurat_obj, motif_df)
-    seurat_obj <- SetMotifTargets(seurat_obj, tf_targets)
-    seurat_obj <- SetPFMList(seurat_obj, pfm)
-
-    seurat_obj
+  seurat_obj
 }
 
 
@@ -184,11 +190,12 @@ MotifScan <- function(
 #' @export
 OverlapModulesMotifs <- function(
   seurat_obj, wgcna_name = NULL
-){
-
+) {
   check_suggests('GeneOverlap', feature = 'OverlapModulesMotifs')
 
-  if(is.null(wgcna_name)){wgcna_name <- seurat_obj@misc$active_wgcna}
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -204,31 +211,38 @@ OverlapModulesMotifs <- function(
   genome.size <- nrow(seurat_obj)
 
   cur_mod <- mods[1]
-  cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
+  cur_module_genes <- modules %>%
+    subset(module == cur_mod) %>%
+    .$gene_name
   cur_targets <- as.character(unlist(tf_targets[1]))
 
-  overlap_df <- do.call(rbind, lapply(mods, function(cur_mod){
-    cur_module_genes <- modules %>% subset(module == cur_mod) %>% .$gene_name
-    cur_overlap_df <- do.call(rbind, lapply(tf_targets, function(cur_targets){
+  overlap_df <- do.call(rbind, lapply(mods, function(cur_mod) {
+    cur_module_genes <- modules %>%
+      subset(module == cur_mod) %>%
+      .$gene_name
+    cur_overlap_df <- do.call(rbind, lapply(tf_targets, function(cur_targets) {
       cur_overlap <- GeneOverlap::testGeneOverlap(GeneOverlap::newGeneOverlap(
-          cur_module_genes,
-          as.character(unlist(cur_targets)),
-          genome.size=genome.size
+        cur_module_genes,
+        as.character(unlist(cur_targets)),
+        genome.size = genome.size
       ))
       c(cur_overlap@odds.ratio, cur_overlap@pval, cur_overlap@Jaccard, length(cur_overlap@intersection))
-    })) %>% as.data.frame
+    })) %>% as.data.frame()
 
     colnames(cur_overlap_df) <- c('odds_ratio', 'pval', 'Jaccard', 'size_intersection')
     cur_overlap_df$module <- cur_mod
     cur_overlap_df$tf <- names(tf_targets)
 
     # module color:
-    cur_overlap_df$color <- modules %>% subset(module == cur_mod) %>% .$color %>% unique
+    cur_overlap_df$color <- modules %>%
+      subset(module == cur_mod) %>%
+      .$color %>%
+      unique()
     cur_overlap_df
   }))
 
   # adjust for multiple comparisons:
-  overlap_df$fdr <- p.adjust(overlap_df$pval, method='fdr')
+  overlap_df$fdr <- p.adjust(overlap_df$pval, method = 'fdr')
 
   # significance level:
   overlap_df$Significance <- gtools::stars.pval(overlap_df$fdr)
@@ -238,7 +252,7 @@ OverlapModulesMotifs <- function(
   )
 
   # set factor levels for modules:
-  overlap_df$module <- factor(overlap_df$module, levels=mods)
+  overlap_df$module <- factor(overlap_df$module, levels = mods)
 
   # re-arrange columns:
   overlap_df <- overlap_df %>% dplyr::select(c(module, tf, color, odds_ratio, pval, fdr, Significance, Jaccard, size_intersection))
@@ -247,7 +261,4 @@ OverlapModulesMotifs <- function(
   seurat_obj <- SetMotifOverlap(seurat_obj, overlap_df, wgcna_name)
 
   seurat_obj
-
 }
-
-

@@ -24,26 +24,28 @@
 #' M5: cell type C specific, active only in "control" samples (not preserved in disease)
 default_module_design <- function() {
   data.frame(
-    module      = paste0("M", 1:5),
-    cell_types  = c("A,B,C", "A", "B", "A", "C"),
-    conditions  = c("control,disease", "control,disease", "control,disease",
-                    "control,disease", "control"),
-    disease_shift = c(0, 0, 0, 1, 0),  # shift of the latent factor mean in disease samples
+    module = paste0('M', 1:5),
+    cell_types = c('A,B,C', 'A', 'B', 'A', 'C'),
+    conditions = c(
+      'control,disease', 'control,disease', 'control,disease',
+      'control,disease', 'control'
+    ),
+    disease_shift = c(0, 0, 0, 1, 0), # shift of the latent factor mean in disease samples
     stringsAsFactors = FALSE
   )
 }
 
 simulate_hdwgcna_data <- function(
-    n_genes = 1000,
-    cells_per_sample = 500,
-    n_samples = 8,
-    cell_type_prob = c(A = 0.45, B = 0.35, C = 0.20),
-    module_design = default_module_design(),
-    genes_per_module = 50,
-    sigma = 1.2,
-    sample_effect = 0,
-    lib_loc = 7.5,
-    seed = 12345
+  n_genes = 1000,
+  cells_per_sample = 500,
+  n_samples = 8,
+  cell_type_prob = c(A = 0.45, B = 0.35, C = 0.20),
+  module_design = default_module_design(),
+  genes_per_module = 50,
+  sigma = 1.2,
+  sample_effect = 0,
+  lib_loc = 7.5,
+  seed = 12345
 ) {
   stopifnot(n_samples %% 2 == 0)
   set.seed(seed)
@@ -62,19 +64,19 @@ simulate_hdwgcna_data <- function(
     lib.loc = lib_loc,
     seed = seed
   )
-  sim <- splatter::splatSimulate(params, method = "groups", verbose = FALSE)
+  sim <- splatter::splatSimulate(params, method = 'groups', verbose = FALSE)
 
-  means <- SummarizedExperiment::assay(sim, "CellMeans")
+  means <- SummarizedExperiment::assay(sim, 'CellMeans')
   cd <- as.data.frame(SummarizedExperiment::colData(sim))
 
   # metadata -------------------------------------------------------------------
   ct_names <- names(cell_type_prob)
-  cell_type <- ct_names[as.integer(sub("Group", "", cd$Group))]
-  sample_idx <- as.integer(sub("Batch", "", cd$Batch))
-  sample <- sprintf("S%02d", sample_idx)
-  condition <- ifelse(sample_idx <= n_samples / 2, "control", "disease")
+  cell_type <- ct_names[as.integer(sub('Group', '', cd$Group))]
+  sample_idx <- as.integer(sub('Batch', '', cd$Batch))
+  sample <- sprintf('S%02d', sample_idx)
+  condition <- ifelse(sample_idx <= n_samples / 2, 'control', 'disease')
 
-  gene_names <- sprintf("Gene%04d", seq_len(n_genes))
+  gene_names <- sprintf('Gene%04d', seq_len(n_genes))
   rownames(means) <- gene_names
 
   # choose module genes among reasonably expressed genes ----------------------
@@ -92,13 +94,15 @@ simulate_hdwgcna_data <- function(
   )
 
   # plant modules ----------------------------------------------------------------
-  latent <- matrix(0, nrow = ncol(means), ncol = n_mod,
-                   dimnames = list(colnames(means), module_design$module))
+  latent <- matrix(0,
+    nrow = ncol(means), ncol = n_mod,
+    dimnames = list(colnames(means), module_design$module)
+  )
   for (i in seq_len(n_mod)) {
     md <- module_design[i, ]
-    active <- cell_type %in% strsplit(md$cell_types, ",")[[1]] &
-      condition %in% strsplit(md$conditions, ",")[[1]]
-    z <- stats::rnorm(sum(active), mean = md$disease_shift * (condition[active] == "disease"))
+    active <- cell_type %in% strsplit(md$cell_types, ',')[[1]] &
+      condition %in% strsplit(md$conditions, ',')[[1]]
+    z <- stats::rnorm(sum(active), mean = md$disease_shift * (condition[active] == 'disease'))
     latent[active, i] <- z
 
     idx <- picked[truth$module == md$module]
@@ -108,20 +112,24 @@ simulate_hdwgcna_data <- function(
     means[idx, active] <- means[idx, active] * f
   }
 
-  counts <- matrix(stats::rpois(length(means), means), nrow = nrow(means),
-                   dimnames = list(gene_names, paste0("cell", seq_len(ncol(means)))))
+  counts <- matrix(stats::rpois(length(means), means),
+    nrow = nrow(means),
+    dimnames = list(gene_names, paste0('cell', seq_len(ncol(means))))
+  )
   counts <- Matrix::Matrix(counts, sparse = TRUE)
   rownames(latent) <- colnames(counts)
 
   meta <- data.frame(
     cell_type = factor(cell_type, levels = ct_names),
     Sample = factor(sample),
-    condition = factor(condition, levels = c("control", "disease")),
+    condition = factor(condition, levels = c('control', 'disease')),
     row.names = colnames(counts)
   )
 
-  seurat_obj <- Seurat::CreateSeuratObject(counts = counts, meta.data = meta,
-                                           project = "hdWGCNA_sim")
+  seurat_obj <- Seurat::CreateSeuratObject(
+    counts = counts, meta.data = meta,
+    project = 'hdWGCNA_sim'
+  )
 
   list(
     seurat = seurat_obj,
@@ -142,7 +150,7 @@ preprocess_sim <- function(seurat_obj, npcs = 20, verbose = FALSE) {
 
 # For each true module, the best-matching inferred module and its Jaccard index.
 module_recovery <- function(inferred, truth, modules = unique(truth$module)) {
-  inferred <- inferred[inferred$module != "grey", ]
+  inferred <- inferred[inferred$module != 'grey', ]
   do.call(rbind, lapply(modules, function(m) {
     true_genes <- truth$gene_name[truth$module == m]
     jac <- vapply(split(inferred$gene_name, as.character(inferred$module)), function(g) {

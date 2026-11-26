@@ -1,5 +1,5 @@
 #' @keywords internal
-"_PACKAGE"
+'_PACKAGE'
 
 # Package-level imports.
 #
