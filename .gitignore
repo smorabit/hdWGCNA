@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+._*
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+*.Rcheck/
+check/
+
+# pixi
+.pixi/
+pixi.lock.bak
+
+# test / run artifacts
+TOM/

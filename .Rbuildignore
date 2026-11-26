@@ -1,0 +1,17 @@
+^\.github$
+^\.pixi$
+^pixi\.toml$
+^pixi\.lock$
+^check$
+^docs$
+^pkgdown$
+^reference$
+^_pkgdown\.yml$
+^\.DS_Store$
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^bench$
+^STYLE\.md$
+^tools$
+^\.lintr$
