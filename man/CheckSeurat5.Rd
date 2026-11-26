@@ -7,5 +7,5 @@
 CheckSeurat5()
 }
 \description{
-Function to check if Seurat version is v5
+Function to check if the installed Seurat is version 5 or newer
 }
