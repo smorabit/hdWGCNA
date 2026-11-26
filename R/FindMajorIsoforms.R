@@ -148,7 +148,7 @@ FindMajorIsoforms <- function(
       cur_iso_prop <- cur_iso_prop[rev(order(cur_iso_prop))]
 
       # identify the set of genes that reach the chosen propotion
-      prop_sums <- sapply(1:length(cur_iso_prop), function(i) {
+      prop_sums <- sapply(seq_along(cur_iso_prop), function(i) {
         sum(cur_iso_prop[1:i])
       })
       ix <- min(which(prop_sums >= proportion_thresh))

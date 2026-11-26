@@ -508,7 +508,7 @@ to_pseudobulk <- function(input,
                           min_cells = 3,
                           min_reps = 2,
                           min_features = 0,
-                          external = T) {
+                          external = TRUE) {
   if (external) {
     # first, make sure inputs are correct
     inputs <- check_inputs(

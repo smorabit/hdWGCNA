@@ -154,7 +154,7 @@ ModuleTraitCorrelation <- function(
 
     p_df$Var1 <- traits
     p_df$Var2 <- tmp
-    rownames(p_df) <- 1:nrow(p_df)
+    rownames(p_df) <- seq_len(nrow(p_df))
     p_df <- dplyr::select(p_df, c(Var1, Var2, value))
   }
 
@@ -214,7 +214,7 @@ ModuleTraitCorrelation <- function(
 
       p_df$Var1 <- traits
       p_df$Var2 <- tmp
-      rownames(p_df) <- 1:nrow(p_df)
+      rownames(p_df) <- seq_len(nrow(p_df))
       p_df <- dplyr::select(p_df, c(Var1, Var2, value))
     }
 

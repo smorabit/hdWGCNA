@@ -44,7 +44,7 @@ ReassignModules <- function(
   mods <- mods[mods != 'grey']
   genes_use <- GetWGCNAGenes(seurat_obj, wgcna_name)
 
-  if (!is.null(features) & !(auto_reassign)) {
+  if (!is.null(features) && !(auto_reassign)) {
     # check validity of input features
     if (!all(features %in% genes_use)) {
       stop('Some features are not found in GetWGCNAGenes(seurat_obj).')
@@ -64,7 +64,7 @@ ReassignModules <- function(
       orig_mods <- subset(modules, gene_name %in% features) %>%
         .$module %>%
         as.character()
-      if (!all(orig_mods == 'grey') & !ignore) {
+      if (!all(orig_mods == 'grey') && !ignore) {
         stop('Attempting to reassign non-grey genes to new modules. Proceed with caution. If you wish to reassign these genes, re-run this function and set ignore=TRUE')
       }
 
@@ -101,7 +101,7 @@ ReassignModules <- function(
     if (nrow(neg_df) == 0) {
       return(seurat_obj)
     }
-    rownames(neg_df) <- 1:nrow(neg_df)
+    rownames(neg_df) <- seq_len(nrow(neg_df))
     features <- neg_df$gene_name
   }
 

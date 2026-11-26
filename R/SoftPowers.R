@@ -85,7 +85,7 @@ TestSoftPowersConsensus <- function(
   }
 
   # add multiExpr if not already added:
-  if (!('multiExpr' %in% names(GetActiveWGCNA(seurat_obj))) | setDatExpr == TRUE) {
+  if (!('multiExpr' %in% names(GetActiveWGCNA(seurat_obj))) || setDatExpr == TRUE) {
     # set
     seurat_obj <- SetMultiExpr(
       seurat_obj,
@@ -100,7 +100,7 @@ TestSoftPowersConsensus <- function(
 
   # pick soft thresh for each consensus group:
   powerTables <- list()
-  for (i in 1:length(multiExpr)) {
+  for (i in seq_along(multiExpr)) {
     cur_group <- names(multiExpr)[i]
     print(cur_group)
 

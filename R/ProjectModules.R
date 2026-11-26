@@ -46,7 +46,7 @@ ProjectModules <- function(
     }
   }
 
-  if (is.null(modules) & is.null(seurat_ref)) {
+  if (is.null(modules) && is.null(seurat_ref)) {
     stop('Either seurat_ref or modules must be provided.')
   }
 

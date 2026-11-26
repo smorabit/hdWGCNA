@@ -137,7 +137,7 @@ ModuleConnectivity <- function(
   seurat_obj <- SetModules(seurat_obj, kMEs, wgcna_name)
 
   # reassign modules for genes with negative kME values
-  if (reassign_modules & length(mods) > 2) {
+  if (reassign_modules && length(mods) > 2) {
     seurat_obj <- ReassignModules(seurat_obj, harmonized = harmonized, wgcna_name = wgcna_name)
   }
 

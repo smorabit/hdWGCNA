@@ -79,7 +79,7 @@ ModuleRegulatoryNetwork <- function(
   # Identify the number of pos & neg regulatory links between mods
   reg_df <- data.frame()
   combos <- expand.grid(mods, mods)
-  for (i in 1:nrow(combos)) {
+  for (i in seq_len(nrow(combos))) {
     m1 <- as.character(combos[i, 'Var1'])
     m2 <- as.character(combos[i, 'Var2'])
 
@@ -293,7 +293,7 @@ ModuleRegulatoryNetworkPlot <- function(
     umap_layout <- centroid_df %>%
       dplyr::rename(c(x = UMAP1, y = UMAP2, name = module)) %>%
       as.data.frame()
-    rownames(umap_layout) <- 1:nrow(umap_layout)
+    rownames(umap_layout) <- seq_len(nrow(umap_layout))
 
     # create the layout
     lay <- ggraph::create_layout(graph, umap_layout)
@@ -309,7 +309,7 @@ ModuleRegulatoryNetworkPlot <- function(
   p <- ggraph(lay)
 
   # plot the module UMAP underneath?
-  if (layout == 'umap' & umap_background) {
+  if (layout == 'umap' && umap_background) {
     p <- p + geom_point(
       inherit.aes = FALSE, data = umap_df,
       aes(x = UMAP1, y = UMAP2, size = kME),

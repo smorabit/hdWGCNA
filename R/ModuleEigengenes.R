@@ -201,7 +201,7 @@ ModuleEigengenes <- function(
   # are we going to run Harmony?
   harmonized <- !is.null(group.by.vars)
 
-  if (harmonized & !any(grepl('ScaleData', seurat_obj@commands))) {
+  if (harmonized && !any(grepl('ScaleData', seurat_obj@commands))) {
     stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
   }
 

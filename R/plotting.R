@@ -49,7 +49,7 @@ PlotSoftPowers <- function(
 
   plot_list <- list()
 
-  for (i in 1:length(power_tables)) {
+  for (i in seq_along(power_tables)) {
     pt <- power_tables[[i]]
 
     if (!is.null(soft_powers)) {
@@ -388,7 +388,7 @@ ModuleCorrNetwork <- function(
 
 
   # get correlation matrix
-  cor_mat <- Hmisc::rcorr(as.matrix(MEs[, 1:ncol(MEs) - 1]))$r
+  cor_mat <- Hmisc::rcorr(as.matrix(MEs[, seq_len(ncol(MEs)) - 1]))$r
   cor_mat[lower.tri(cor_mat)] <- NA
 
   # melt matrix and remove NAs
@@ -449,7 +449,7 @@ ModuleCorrNetwork <- function(
     geom_point() +
     scale_color_gradient2(high = 'darkorchid1', mid = 'white', low = 'seagreen', midpoint = 0)
   temp <- ggplot_build(temp)
-  igraph::E(g)$color <- temp$data[[1]]$colour[1:nrow(cor_df)]
+  igraph::E(g)$color <- temp$data[[1]]$colour[seq_len(nrow(cor_df))]
 
   # label the vertices?
   if (label_vertices) {
@@ -702,7 +702,7 @@ EnrichrBarPlot <- function(
   }
 
   # loop through modules:
-  for (i in 1:length(mods)) {
+  for (i in seq_along(mods)) {
     cur_mod <- mods[i]
     cur_terms <- subset(enrichr_df, module == cur_mod)
     print(cur_mod)
@@ -1067,7 +1067,7 @@ ModuleNetworkPlot <- function(
 
     # only  keep top connections
     connections2keep <- orderind[1:cur_n_conns]
-    connections2drop <- orderind[n_conns + 1:length(orderind)]
+    connections2drop <- orderind[n_conns + seq_along(orderind)]
     reducedTOM[connections2drop] <- 0
 
     # scale between 0 and 1
@@ -1197,12 +1197,12 @@ HubGeneNetworkPlot <- function(
   selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
 
   # make sure all nodes have at least one edge!!
-  edge_cutoff <- min(sapply(1:nrow(subset_TOM), function(i) {
+  edge_cutoff <- min(sapply(seq_len(nrow(subset_TOM)), function(i) {
     max(subset_TOM[i, ])
   }))
   edge_df <- reshape2::melt(subset_TOM) %>% subset(value >= edge_cutoff)
 
-  edge_df$color <- future.apply::future_sapply(1:nrow(edge_df), function(i) {
+  edge_df$color <- future.apply::future_sapply(seq_len(nrow(edge_df)), function(i) {
     gene1 <- as.character(edge_df[i, 'Var1'])
     gene2 <- as.character(edge_df[i, 'Var2'])
 
@@ -1248,7 +1248,7 @@ HubGeneNetworkPlot <- function(
     group_by(color) %>%
     mutate(value = scale01(value))
 
-  edge_df$color <- sapply(1:nrow(edge_df), function(i) {
+  edge_df$color <- sapply(seq_len(nrow(edge_df)), function(i) {
     a <- edge_df$value[i]
     # if(edge_df$value[i] < 0.05){a=0.05}
     alpha(edge_df$color[i], alpha = a)
@@ -1371,7 +1371,7 @@ ModuleUMAPPlot <- function(
   print(dim(edge_df))
 
   # set color of each edge based on value:
-  edge_df$color <- future.apply::future_sapply(1:nrow(edge_df), function(i) {
+  edge_df$color <- future.apply::future_sapply(seq_len(nrow(edge_df)), function(i) {
     gene1 <- as.character(edge_df[i, 'Var1'])
     gene2 <- as.character(edge_df[i, 'Var2'])
 
@@ -1596,7 +1596,7 @@ OverlapBarPlot <- function(
         plot.title = element_text(hjust = 0.5)
       )
 
-    if (plot_var == 'fdr' | plot_var == 'odds_ratio') {
+    if (plot_var == 'fdr' || plot_var == 'odds_ratio') {
       p <- p + geom_hline(yintercept = yint, linetype = 'dashed', color = 'gray')
     }
 
@@ -1685,7 +1685,7 @@ MotifOverlapBarPlot <- function(
 
     # make the motif logo plots:
     plot_list <- list()
-    for (i in 1:nrow(plot_df)) {
+    for (i in seq_len(nrow(plot_df))) {
       cur_id <- plot_df[i, 'motif_ID']
       cur_name <- plot_df[i, 'tf']
       plot_list[[cur_id]] <- ggplot() +
@@ -1800,7 +1800,7 @@ DoHubGeneHeatmap <- function(
 
   # sample cells
   df <- data.frame()
-  for (i in 1:length(temp)) {
+  for (i in seq_along(temp)) {
     if (temp[[i]] < n_cells) {
       cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i])
     } else {
@@ -1815,7 +1815,7 @@ DoHubGeneHeatmap <- function(
   seurat_plot <- seurat_obj %>% subset(barcode %in% df$barcode)
 
   plot_list <- list()
-  for (i in 1:length(hub_list)) {
+  for (i in seq_along(hub_list)) {
     print(i)
     cur_mod <- names(hub_list)[i]
     print(i)
@@ -1864,7 +1864,7 @@ DoHubGeneHeatmap <- function(
   mod_colors$value <- n_hubs
   mod_colors$dummy <- 'colorbar'
   cbar_list <- list()
-  for (i in 1:nrow(mod_colors)) {
+  for (i in seq_len(nrow(mod_colors))) {
     cbar_list[[i]] <- mod_colors[i, ] %>% ggplot(aes(y = value, x = dummy)) +
       geom_bar(position = 'stack', stat = 'identity', fill = mod_colors[i, ]$color) +
       umap_theme() +
@@ -2137,11 +2137,11 @@ PlotModuleTraitCorrelation <- function(
         guide = guide_colorbar(ticks = FALSE, barwidth = 16, barheight = 0.5)
       ) +
       scale_y_continuous(
-        breaks = 1:length(levels(plot_df$Trait)),
+        breaks = seq_along(levels(plot_df$Trait)),
         labels = levels(plot_df$Trait),
         sec.axis = sec_axis(
           ~.,
-          breaks = 1:length(levels(plot_df$Trait)),
+          breaks = seq_along(levels(plot_df$Trait)),
           labels = levels(plot_df$Trait)
         )
       ) +
@@ -2171,7 +2171,7 @@ PlotModuleTraitCorrelation <- function(
     # plot_list <- c(plot_list, cbar)
     # names(plot_list)[length(plot_list)] <- 'module'
 
-    for (i in 1:length(plot_list)) {
+    for (i in seq_along(plot_list)) {
       plot_list[[i]] <- plot_list[[i]] +
         ylab(names(plot_list)[i]) +
         theme(
@@ -2448,7 +2448,7 @@ PlotDMEsLollipop <- function(
     subset(module != 'grey') %>%
     mutate(module = droplevels(module))
 
-  if (!missing(group.by) & !missing(comparison)) {
+  if (!missing(group.by) && !missing(comparison)) {
     comparisons <- comparison
     if (!(all(comparisons %in% DMEs[[group.by]]))) {
       stop('Not all selected comparisons are not found in DMEs[[group.by]] or the comparison column, DMEs[[group.by]], is not correctly supplied.')
@@ -3202,7 +3202,7 @@ ModuleRadarPlot <- function(
 
   # make the radar plots for each module
   plot_list <- list()
-  for (i in 1:nrow(plot_df)) {
+  for (i in seq_len(nrow(plot_df))) {
     cur_mod <- as.character(plot_df[i, 'group'])
     cur_color <- subset(mod_colors, module == cur_mod) %>% .$color
     plot_list[[cur_mod]] <- ggradar::ggradar(

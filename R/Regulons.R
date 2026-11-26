@@ -320,7 +320,7 @@ FindDifferentialRegulons <- function(
   # check regulon scores
   tmp1 <- GetRegulonScores(seurat_obj, 'positive', wgcna_name)
   tmp2 <- GetRegulonScores(seurat_obj, 'negative', wgcna_name)
-  if (is.null(tmp1) | is.null(tmp2)) {
+  if (is.null(tmp1) || is.null(tmp2)) {
     stop('Regulon scores not found, please run RegulonScores first for target_type="positive" and target_type="negative".')
   }
 

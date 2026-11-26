@@ -44,7 +44,7 @@ umap_theme <- function() {
 #' @keywords helper
 #' @export
 shuffle_points <- function(df) {
-  return(df[sample(1:dim(df)[1], dim(df)[1]), ])
+  df[sample(seq_len(nrow(df))), ]
 }
 
 

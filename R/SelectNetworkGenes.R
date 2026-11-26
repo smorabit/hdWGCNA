@@ -58,7 +58,7 @@ SelectNetworkGenes <- function(
     if (n_chunks == 1) {
       chunks <- factor(rep(1), levels = 1)
     } else {
-      chunks <- cut(1:nrow(expr_mat), n_chunks)
+      chunks <- cut(seq_len(nrow(expr_mat)), n_chunks)
     }
     expr_mat <- do.call(rbind, lapply(levels(chunks), function(x) {
       cur <- expr_mat[chunks == x, ]

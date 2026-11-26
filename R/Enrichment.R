@@ -31,7 +31,7 @@ RunEnrichr <- function(
   if (!is.numeric(wait_time)) {
     stop(paste0('wait_time must be a numeric.'))
   }
-  if (wait_time > 60 | wait_time < 1) {
+  if (wait_time > 60 || wait_time < 1) {
     stop(paste0('Invalid value selected for wait_time, must be greater than 0 and less than 60.'))
   }
 
@@ -47,7 +47,7 @@ RunEnrichr <- function(
 
   # run EnrichR for loop:
   combined_output <- data.frame()
-  for (i in 1:length(mods)) {
+  for (i in seq_along(mods)) {
     cur_mod <- mods[i]
     cur_info <- subset(hub_df, module == cur_mod)
     cur_genes <- as.character(cur_info$gene_name)
@@ -110,7 +110,7 @@ RunEnrichrRegulons <- function(
   if (!is.numeric(wait_time)) {
     stop(paste0('wait_time must be a numeric.'))
   }
-  if (wait_time > 60 | wait_time < 1) {
+  if (wait_time > 60 || wait_time < 1) {
     stop(paste0('Invalid value selected for wait_time, must be greater than 0 and less than 60.'))
   }
 
@@ -120,7 +120,7 @@ RunEnrichrRegulons <- function(
 
   # run EnrichR for loop:
   combined_output <- data.frame()
-  for (i in 1:length(tf_list)) {
+  for (i in seq_along(tf_list)) {
     cur_tf <- tf_list[i]
     cur_targets <- GetTFTargetGenes(seurat_obj, cur_tf, depth = depth, use_regulons = use_regulons, wgcna_name = wgcna_name)
     cur_pos <- subset(cur_targets, Cor > 0) %>%

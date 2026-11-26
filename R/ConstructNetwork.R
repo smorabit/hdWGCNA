@@ -101,7 +101,7 @@ ConstructNetwork <- function(
     dir.create(tom_outdir)
   }
 
-  if (is.null(soft_power) & !consensus) {
+  if (is.null(soft_power) && !consensus) {
     soft_power <- GetPowerTable(seurat_obj) %>%
       subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
       .$Power %>%

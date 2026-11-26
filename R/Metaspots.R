@@ -46,7 +46,7 @@ ConstructMetaspots <- function(
   col_bounds <- col_range[1]:col_range[2]
 
   if (length(col_bounds) >= 4) {
-    col_bounds <- col_bounds[which(1:length(col_bounds) %% 4 == 0)]
+    col_bounds <- col_bounds[which(seq_along(col_bounds) %% 4 == 0)]
   } else if (length(col_bounds) == 3) {
     warning('The selected grouping is spatially constrained and might fail the metaspot aggregation step. You may wish to change the group.by parameter to form larger groups.')
     col_bounds <- col_bounds[2]
@@ -86,9 +86,9 @@ ConstructMetaspots <- function(
   unique_cols <- unique_cols[order(unique_cols)]
   combine_list <- list()
 
-  tmp <- lapply(1:length(col_bounds), function(i) {
+  tmp <- lapply(seq_along(col_bounds), function(i) {
     x <- col_bounds[i]
-    tmp <- lapply(1:length(row_bounds), function(j) {
+    tmp <- lapply(seq_along(row_bounds), function(j) {
       y <- row_bounds[j]
       cur_coords <- coords %>% subset(row == y & col == x)
       out <- c()
@@ -135,17 +135,17 @@ ConstructMetaspots <- function(
     }
 
     # get bc-neighbor results
-    bcs <- unlist(lapply(1:length(tmp), function(k) {
+    bcs <- unlist(lapply(seq_along(tmp), function(k) {
       tmp[[k]][[1]]
     }))
-    cur_neighbors <- lapply(1:length(tmp), function(k) {
+    cur_neighbors <- lapply(seq_along(tmp), function(k) {
       tmp[[k]][[2]]
     })
     cur_neighbors[sapply(cur_neighbors, is.null)] <- NULL
     names(cur_neighbors) <- bcs
 
     # combine expression results
-    cur_X <- do.call(rbind, lapply(1:length(tmp), function(k) {
+    cur_X <- do.call(rbind, lapply(seq_along(tmp), function(k) {
       tmp[[k]][[3]]
     }))
 
@@ -156,12 +156,12 @@ ConstructMetaspots <- function(
   tmp <- Filter(Negate(is.null), tmp)
 
   # get bc-neighbor results
-  bcs <- unlist(lapply(1:length(tmp), function(k) {
+  bcs <- unlist(lapply(seq_along(tmp), function(k) {
     tmp[[k]][[1]]
   }))
 
   cur_neighbors <- list()
-  for (k in 1:length(tmp)) {
+  for (k in seq_along(tmp)) {
     cur_neighbors <- c(cur_neighbors, tmp[[k]][[2]])
   }
   names(cur_neighbors) <- bcs
@@ -171,7 +171,7 @@ ConstructMetaspots <- function(
     warning('Metaspot aggregation failed for this grouping.')
     return(NULL)
   }
-  agg_X <- do.call(rbind, lapply(1:length(tmp), function(k) {
+  agg_X <- do.call(rbind, lapply(seq_along(tmp), function(k) {
     tmp[[k]][[3]]
   }))
 
@@ -353,7 +353,7 @@ MetaspotsByGroups <- function(
   )
 
   spot_neighbors <- list()
-  for (k in 1:length(metaspot_list)) {
+  for (k in seq_along(metaspot_list)) {
     spot_neighbors <- c(spot_neighbors, metaspot_list[[k]]@misc$spot_neighbors)
   }
 

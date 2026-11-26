@@ -49,10 +49,10 @@ MotifScan <- function(
 
   # get a dataframe of just the motif name and the motif ID:
   motif_df <- data.frame(
-    motif_name = purrr::map(1:length(pfm), function(i) {
+    motif_name = purrr::map(seq_along(pfm), function(i) {
       pfm[[i]]@name
     }) %>% unlist(),
-    motif_ID = purrr::map(1:length(pfm), function(i) {
+    motif_ID = purrr::map(seq_along(pfm), function(i) {
       pfm[[i]]@ID
     }) %>% unlist()
   )
@@ -152,7 +152,7 @@ MotifScan <- function(
   # for motifs that correspond to two genes, split them apart
   tmp <- motif_df$tmp
   names(tmp) <- motif_df$motif_ID
-  motif_df_tmp <- do.call(rbind, lapply(1:length(tmp), function(i) {
+  motif_df_tmp <- do.call(rbind, lapply(seq_along(tmp), function(i) {
     x <- tmp[i]
     id <- names(x)
     if (grepl(',', x)) {
@@ -164,7 +164,7 @@ MotifScan <- function(
   # merge with the other motif df:
   ix <- match(motif_df_tmp$motif_ID, motif_df$motif_ID)
   motif_df_tmp <- cbind(motif_df_tmp, motif_df[ix, c('motif_name', 'n_targets')])
-  rownames(motif_df_tmp) <- 1:nrow(motif_df_tmp)
+  rownames(motif_df_tmp) <- seq_len(nrow(motif_df_tmp))
   motif_df_tmp <- dplyr::select(motif_df_tmp, c(motif_ID, motif_name, n_targets, gene_name))
 
   motif_df <- motif_df_tmp

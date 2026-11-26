@@ -68,7 +68,7 @@ ConstructMetacells <- function(
   if (!is.null(dims)) {
     # are these indices?
     if (is.numeric(dims)) {
-      if (!all(dims %in% 1:ncol(reduced_coordinates))) {
+      if (!all(dims %in% seq_len(ncol(reduced_coordinates)))) {
         stop('Invalid selection for dims. Check that the selected dims match the columns of the selected reduction.')
       }
     } else {
@@ -86,7 +86,7 @@ ConstructMetacells <- function(
 
   # set up variables for loop
   good_choices <- seq_len(nrow(nn_map))
-  choice <- sample(seq_len(length(good_choices)),
+  choice <- sample(seq_along(good_choices),
     size = 1,
     replace = FALSE
   )
@@ -99,9 +99,9 @@ ConstructMetacells <- function(
   }
 
   # loop to create metacells until convergencce
-  while (length(good_choices) > 0 & length(chosen) < target_metacells & it < max_iter) {
+  while (length(good_choices) > 0 && length(chosen) < target_metacells && it < max_iter) {
     it <- it + 1
-    choice <- sample(seq_len(length(good_choices)),
+    choice <- sample(seq_along(good_choices),
       size = 1,
       replace = FALSE
     )
@@ -178,9 +178,9 @@ ConstructMetacells <- function(
   if (mode == 'average') {
     new_exprs <- new_exprs / k
   }
-  colnames(new_exprs) <- paste0(name, '_', 1:ncol(new_exprs))
-  rownames(cell_sample) <- paste0(name, '_', 1:ncol(new_exprs))
-  colnames(cell_sample) <- paste0('knn_', 1:ncol(cell_sample))
+  colnames(new_exprs) <- paste0(name, '_', seq_len(ncol(new_exprs)))
+  rownames(cell_sample) <- paste0(name, '_', seq_len(ncol(new_exprs)))
+  colnames(cell_sample) <- paste0('knn_', seq_len(ncol(cell_sample)))
 
   # make seurat obj:
   metacell_obj <- CreateSeuratObject(
@@ -415,7 +415,7 @@ MetacellsByGroups <- function(
   colnames(meta_df) <- group.by
 
   # list of meta-data to pass to each metacell seurat object
-  meta_list <- lapply(1:nrow(meta_df), function(i) {
+  meta_list <- lapply(seq_len(nrow(meta_df)), function(i) {
     x <- list(as.character(meta_df[i, ]))[[1]]
     names(x) <- colnames(meta_df)
     x
@@ -461,8 +461,8 @@ MetacellsByGroups <- function(
   run_stats <- as.data.frame(do.call(rbind, lapply(metacell_list, function(x) {
     x@misc$run_stats
   })))
-  rownames(run_stats) <- 1:nrow(run_stats)
-  for (i in 1:length(group.by)) {
+  rownames(run_stats) <- seq_len(nrow(run_stats))
+  for (i in seq_along(group.by)) {
     run_stats[[group.by[i]]] <- do.call(rbind, strsplit(as.character(run_stats$name), '#'))[, i]
   }
 

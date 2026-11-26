@@ -268,7 +268,7 @@ SetDatExpr <- function(
     m_obj <- GetMetacellObject(seurat_obj, wgcna_name)
 
     # use metacells or whole seurat object?
-    if (use_metacells & !is.null(m_obj)) {
+    if (use_metacells && !is.null(m_obj)) {
       s_obj <- m_obj
     } else {
       if (is.null(m_obj)) {
@@ -599,7 +599,7 @@ SetMultiExpr <- function(
   gene_names <- gene_names[genes_use]
 
   # subset the multiExpr by the good genes::
-  datExpr_list <- lapply(1:length(multiExpr), function(i) {
+  datExpr_list <- lapply(seq_along(multiExpr), function(i) {
     multiExpr[[i]]$data[, genes_use]
   })
   multiExpr <- WGCNA::list2multiData(datExpr_list)
@@ -896,7 +896,7 @@ GetHubGenes <- function(
     cur <- dplyr::arrange(cur, desc(kME))
     cur %>% dplyr::slice_max(n = n_hubs, order_by = kME)
   }))
-  rownames(hub_df) <- 1:nrow(hub_df)
+  rownames(hub_df) <- seq_len(nrow(hub_df))
   hub_df
 }
 
