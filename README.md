@@ -3,18 +3,18 @@
 
 [![R](https://img.shields.io/github/r-package/v/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/tree/dev)
 [![ISSUES](https://img.shields.io/github/issues/smorabit/hdWGCNA)](https://github.com/smorabit/hdWGCNA/issues)
-[![Publication](https://img.shields.io/badge/publication-Cell%20Rep%20Meth-%2300A1D7)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
+[![Publication](https://img.shields.io/badge/publication-Cell%20Rep%20Meth-%2300A1D7)](https://doi.org/10.1016/j.crmeth.2023.100498)
 [![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/smorabit/hdWGCNA)
 [![Stars](https://img.shields.io/github/stars/smorabit/hdWGCNA?style=social)](https://github.com/smorabit/hdWGCNA/)
 
 hdWGCNA is an R package for performing weighted gene co-expression network analysis [(WGCNA)](https://doi.org/10.1186/1471-2105-9-559) in high dimensional transcriptomics data such as single-cell RNA-seq or spatial transcriptomics. hdWGCNA is highly modular and can construct context-specific co-expression networks across cellular and spatial hierarchies. hdWGNCA identifies modules of highly co-expressed genes and provides context for these modules via statistical testing and biological knowledge sources. hdWGCNA uses datasets formatted as [Seurat](https://satijalab.org/seurat/index.html) objects. Check out the [hdWGCNA in single-cell data tutorial](https://smorabit.github.io/hdWGCNA/articles/basic_tutorial.html) or the [hdWGCNA in spatial transcriptomics data tutorial](https://smorabit.github.io/hdWGCNA/articles/ST_basics.html) to get started.
 
-**New functionality:** hdWGCNA is now able to perform [Transcription Factor Regulatory Network Analysis](https://smorabit.github.io/hdWGCNA/articles/tf_network.html). This functionality was introduced in our publication [Childs & Morabito et al., Cell Reports (2024)](https://www.sciencedirect.com/science/article/pii/S2211124724002845).
+**New functionality:** hdWGCNA is now able to perform [Transcription Factor Regulatory Network Analysis](https://smorabit.github.io/hdWGCNA/articles/tf_network.html). This functionality was introduced in our publication [Childs & Morabito et al., Cell Reports (2024)](https://doi.org/10.1016/j.celrep.2024.113956).
 
 If you use hdWGCNA in your research, please cite the manuscript describing hdWGCNA in addition to the [original WGCNA publication](https://doi.org/10.1186/1471-2105-9-559):
 
 * [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.
- Morabito et al., Cell Reports Methods (2023)](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3)
+ Morabito et al., Cell Reports Methods (2023)](https://doi.org/10.1016/j.crmeth.2023.100498)
 
 ## Installation
 
@@ -62,8 +62,8 @@ For specific problems, please write a [GitHub issue](https://github.com/smorabit
 
 To learn more about the method and to see several examples of analyzing different datasets, please check out the paper describing hdWGCNA (Morabito et al 2023). We also suggest our follow-up paper introducing transcription factor regulatory network analysis with hdWGCNA (Childs & Morabito et al 2024). 
 
-* hdWGCNA method description: [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3) 
-* Transcription factor networks: [Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice](https://www.sciencedirect.com/science/article/pii/S2211124724002845)
+* hdWGCNA method description: [hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data](https://doi.org/10.1016/j.crmeth.2023.100498) 
+* Transcription factor networks: [Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice](https://doi.org/10.1016/j.celrep.2024.113956)
 
 For additional reading, we suggest the original WGCNA publication and papers describing relevant algorithms for co-expression network analysis.
 

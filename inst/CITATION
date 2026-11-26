@@ -1,35 +1,82 @@
-citEntry(
-  entry    = "article",
-  title    = "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.",
-  author   = "Samuel Morabito, Fairlie Reese, Negin Rahimzadeh, Emily Miyoshi, Vivek Swarup",
+bibentry(
+  bibtype  = "Article",
+  title    = "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data",
+  author   = c(
+    person("Samuel", "Morabito"),
+    person("Fairlie", "Reese"),
+    person("Negin", "Rahimzadeh"),
+    person("Emily", "Miyoshi"),
+    person("Vivek", "Swarup")
+  ),
   journal  = "Cell Reports Methods",
   year     = "2023",
-  url      = "https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(23)00127-3",
+  volume   = "3",
+  number   = "6",
+  pages    = "100498",
+  doi      = "10.1016/j.crmeth.2023.100498",
   textVersion = paste(
-    "Morabito et al. hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data. Cell Reports Methods (2023) [hdWGCNA]"
+    "Morabito S, Reese F, Rahimzadeh N, Miyoshi E, Swarup V (2023).",
+    "hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data.",
+    "Cell Reports Methods 3(6):100498. doi:10.1016/j.crmeth.2023.100498"
   )
 )
 
-citEntry(
-  entry    = "Article",
+bibentry(
+  bibtype  = "Article",
+  header   = "For transcription factor regulatory network analysis, please also cite:",
   title    = "Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice",
-  author   = "Jessica E. Childs, Samuel Morabito, Sudeshna Das, Caterina Santelli, Victoria Pham, Kelly Kusche, Vanessa Alizo Vera, Fairlie Reese, Rianne R. Campbell, Dina P. Matheos, Vivek Swarup, Marcelo A. Wood",
+  author   = c(
+    person("Jessica E.", "Childs"),
+    person("Samuel", "Morabito"),
+    person("Sudeshna", "Das"),
+    person("Caterina", "Santelli"),
+    person("Victoria", "Pham"),
+    person("Kelly", "Kusche"),
+    person("Vanessa", "Alizo Vera"),
+    person("Fairlie", "Reese"),
+    person("Rianne R.", "Campbell"),
+    person("Dina P.", "Matheos"),
+    person("Vivek", "Swarup"),
+    person("Marcelo A.", "Wood")
+  ),
   journal  = "Cell Reports",
   year     = "2024",
-  url      = "https://www.sciencedirect.com/science/article/pii/S2211124724002845",
+  volume   = "43",
+  number   = "3",
+  pages    = "113956",
+  doi      = "10.1016/j.celrep.2024.113956",
   textVersion = paste(
-    "Transcription Factor Regulatory Network Analysis in hdWGCNA"
+    "Childs JE, Morabito S, Das S, et al. (2024).",
+    "Relapse to cocaine seeking is regulated by medial habenula NR4A2/NURR1 in mice.",
+    "Cell Reports 43(3):113956. doi:10.1016/j.celrep.2024.113956"
   )
 )
 
-citEntry(
-  entry    = "Article",
-  title    = "Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer’s disease",
-  author   = "Samuel Morabito, Emily Miyoshi, Neethu Michael, Saba Shahin, Alessandra Cadete Martini, Elizabeth Head, Justine Silva, Kelsey Leavy, Mari Perez-Rosendahl, Vivek Swarup",
+bibentry(
+  bibtype  = "Article",
+  header   = "The original single-nucleus consensus WGCNA approach was introduced in:",
+  title    = "Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease",
+  author   = c(
+    person("Samuel", "Morabito"),
+    person("Emily", "Miyoshi"),
+    person("Neethu", "Michael"),
+    person("Saba", "Shahin"),
+    person("Alessandra Cadete", "Martini"),
+    person("Elizabeth", "Head"),
+    person("Justine", "Silva"),
+    person("Kelsey", "Leavy"),
+    person("Mari", "Perez-Rosendahl"),
+    person("Vivek", "Swarup")
+  ),
   journal  = "Nature Genetics",
   year     = "2021",
-  url      = "https://doi.org/10.1038/s41588-021-00894-z",
+  volume   = "53",
+  number   = "8",
+  pages    = "1143--1155",
+  doi      = "10.1038/s41588-021-00894-z",
   textVersion = paste(
-    "Original implementation of single-cell WGCNA (scWGCNA)"
+    "Morabito S, Miyoshi E, Michael N, et al. (2021).",
+    "Single-nucleus chromatin accessibility and transcriptomic characterization of Alzheimer's disease.",
+    "Nature Genetics 53(8):1143-1155. doi:10.1038/s41588-021-00894-z"
   )
 )

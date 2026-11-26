@@ -1,34 +1,43 @@
 Package: hdWGCNA
-Title: hdWGCNA
-Version: 0.4.12
+Title: High Dimensional Weighted Gene Co-Expression Network Analysis
+Version: 0.4.12.9000
 Authors@R: c(
-    person("Sam", "Morabito", , "smorabit@uci.edu", role = c("aut", "cre"),
+    person("Sam", "Morabito", , "sam.morabito@cnag.eu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),
-    person("Zechuan", "Shi", , "zechuas@uci.edu", role = c("ctb"),
-          comment = c(ORCID = "0000-0002-2844-5816")),
+    person("Zechuan", "Shi", , "zechuas@uci.edu", role = "ctb",
+           comment = c(ORCID = "0000-0002-2844-5816")),
     person("Swarup Lab", role = "fnd")
   )
-Description: hdWGCNA is an R package for performing weighted gene co-expression network analysis in high dimensional -omics such as single-cell RNA-seq or spatial transcriptomics.
-License: GNU GPLv3
+Description: Co-expression network analysis for high dimensional
+    transcriptomics data such as single-cell and spatial RNA sequencing.
+    Builds on 'WGCNA' and integrates with 'Seurat' to aggregate cells into
+    metacells or metaspots, infer co-expression networks, identify gene
+    modules, and compute module eigengenes and intramodular connectivity.
+    Downstream analyses include differential module expression, module-trait
+    correlation, module preservation and projection across datasets, gene set
+    enrichment, and transcription factor regulatory networks. The method is
+    described in Morabito et al. (2023) <doi:10.1016/j.crmeth.2023.100498>.
+License: GPL (>= 3)
+URL: https://smorabit.github.io/hdWGCNA/, https://github.com/smorabit/hdWGCNA
+BugReports: https://github.com/smorabit/hdWGCNA/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-URL: https://smorabit.github.io/hdWGCNA/, https://github.com/smorabit/hdWGCNA
 Imports: WGCNA, Seurat, Matrix, harmony, igraph, enrichR, ggplot2, dplyr, tester, proxy
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Depends: 
+Depends:
     R (>= 2.10),
     harmony (>= 1.0.1),
     Seurat (>= 4.0.0),
     ggrepel (>= 0.9.0),
-    WGCNA, 
+    WGCNA,
     dplyr,
     igraph,
     ggraph,
     tidygraph,
     ggrepel,
-    UCell, 
+    UCell,
     GeneOverlap,
     GenomicRanges,
     SummarizedExperiment,
