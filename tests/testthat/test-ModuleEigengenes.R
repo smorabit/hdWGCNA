@@ -27,3 +27,13 @@ test_that('ME Harmonization works', {
   check <- !is.logical(all.equal(hMEs, MEs)) & all.equal(dim(hMEs), dim(MEs))
   expect_equal(check, TRUE)
 })
+
+# regression test for #433: the ScaleData check failed when @commands had no ScaleData entry
+test_that('harmonized MEs do not depend on ScaleData having been recorded', {
+  so <- sim_wgcna('network')
+  so@commands <- list()
+  so <- ModuleEigengenes(so, group.by.vars = 'Sample', verbose = FALSE)
+  hMEs <- GetMEs(so, harmonized = TRUE)
+  expect_equal(nrow(hMEs), ncol(so))
+  expect_true(all(levels(GetModules(so)$module) %in% colnames(hMEs)))
+})

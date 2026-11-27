@@ -100,12 +100,18 @@ ComputeModuleEigengene <- function(
       assay = assay
     )
 
-    cur_harmony <- harmony::RunHarmony(
-      seurat_obj,
-      group.by.vars = group.by.vars,
-      reduction.use = 'ME',
-      verbose = verbose,
-      ...
+    # project.dim = FALSE: hdWGCNA uses the PCA loadings, not harmony's projected loadings,
+    # and projecting would require scale.data for every module gene
+    harmony_args <- list(...)
+    if (!('project.dim' %in% names(harmony_args))) {
+      harmony_args$project.dim <- FALSE
+    }
+    cur_harmony <- do.call(
+      harmony::RunHarmony,
+      c(
+        list(seurat_obj, group.by.vars = group.by.vars, reduction.use = 'ME', verbose = verbose),
+        harmony_args
+      )
     )@reductions$harmony
     ha <- cur_harmony@cell.embeddings[, pc_dim]
     ha_loadings <- cur_pca@feature.loadings[, pc_dim]
@@ -200,10 +206,6 @@ ModuleEigengenes <- function(
 
   # are we going to run Harmony?
   harmonized <- !is.null(group.by.vars)
-
-  if (harmonized && !any(grepl('ScaleData', seurat_obj@commands))) {
-    stop('Need to run ScaleData before running ModuleEigengenes with group.by.vars option.')
-  }
 
   # get the assay
   if (is.null(assay)) {
