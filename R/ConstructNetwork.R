@@ -118,8 +118,24 @@ ConstructNetwork <- function(
     cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(', paste0(soft_power, collapse = ','), ')\n'))
   }
 
+  # WGCNA writes temporary files (individual TOMs, disk cache) to the working directory by
+  # default; keep them in tom_outdir with the tom_name prefix so that parallel runs from the
+  # same directory don't overwrite each other's files. Users can still override them via ...
+  wgcna_args <- list(...)
+  if (!('individualTOMFileNames' %in% names(wgcna_args))) {
+    wgcna_args$individualTOMFileNames <- file.path(
+      tom_outdir, paste0(tom_name, '_individualTOM-Set%s-Block%b.RData')
+    )
+  }
+  if (!('cacheDir' %in% names(wgcna_args))) {
+    wgcna_args$cacheDir <- tom_outdir
+  }
+  if (!('cacheBase' %in% names(wgcna_args))) {
+    wgcna_args$cacheBase <- paste0('.', tom_name, '_blockConsModsCache')
+  }
+
   # construct the network
-  net <- WGCNA::blockwiseConsensusModules(
+  net <- do.call(WGCNA::blockwiseConsensusModules, c(list(
     multiExpr,
     power = soft_power,
     blocks = blocks,
@@ -140,9 +156,8 @@ ConstructNetwork <- function(
     detectCutHeight = detectCutHeight, minModuleSize = minModuleSize,
     mergeCutHeight = mergeCutHeight,
     saveConsensusTOMs = saveConsensusTOMs,
-    consensusTOMFilePattern = paste0(tom_outdir, '/', tom_name, '_block.%b.rda'),
-    ...
-  )
+    consensusTOMFilePattern = paste0(tom_outdir, '/', tom_name, '_block.%b.rda')
+  ), wgcna_args))
 
   # rename consensusTOM file:
   file.rename(paste0(tom_outdir, '/', tom_name, '_block.1.rda'), renamed)

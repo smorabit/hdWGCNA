@@ -134,3 +134,22 @@ test_that('ConstructNetwork uses wgcna_name, not the active experiment', {
   expect_equal(nrow(mods), length(GetWGCNAGenes(so, 'sim')))
   expect_true(length(setdiff(unique(mods$module), 'grey')) >= 3)
 })
+
+# regression test for #182: WGCNA temp files are kept in tom_outdir, and results don't change
+test_that('ConstructNetwork leaves no files in the working directory and keeps results', {
+  so <- sim_wgcna('powers')
+  wd <- withr::local_tempdir()
+  withr::local_dir(wd)
+  tom_dir <- file.path(tempdir(), 'tom_182')
+  invisible(utils::capture.output(
+    so2 <- ConstructNetwork(so, tom_outdir = tom_dir, overwrite_tom = TRUE,
+                            minModuleSize = 20, verbose = 0)
+  ))
+  expect_length(list.files(wd, all.files = TRUE, no.. = TRUE, recursive = TRUE), 0)
+  expect_true(file.exists(file.path(tom_dir, 'sim_TOM.rda')))
+
+  ref <- GetModules(sim_wgcna('network'))
+  new <- GetModules(so2)
+  expect_equal(new$gene_name, ref$gene_name)
+  expect_equal(as.character(new$module), as.character(ref$module))
+})
