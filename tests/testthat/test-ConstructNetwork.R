@@ -153,3 +153,16 @@ test_that('ConstructNetwork leaves no files in the working directory and keeps r
   expect_equal(new$gene_name, ref$gene_name)
   expect_equal(as.character(new$module), as.character(ref$module))
 })
+
+# regression test for #76: numericLabels = TRUE gave numeric module colours
+test_that('ConstructNetwork converts numeric module labels to colours', {
+  so <- sim_wgcna('powers')
+  expect_message(invisible(utils::capture.output(
+    so <- ConstructNetwork(so, tom_outdir = file.path(tempdir(), 'tom_76'), overwrite_tom = TRUE,
+                           minModuleSize = 20, verbose = 0, numericLabels = TRUE)
+  )), 'numeric module labels')
+  mods <- GetModules(so)
+  expect_true('grey' %in% mods$color)
+  expect_false(any(grepl('^[0-9]+$', mods$color)))
+  expect_setequal(as.character(mods$module), as.character(GetModules(sim_wgcna('network'))$module))
+})

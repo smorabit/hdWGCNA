@@ -191,6 +191,15 @@ ConstructNetwork <- function(
   net$TOMFiles <- normalizePath(renamed, mustWork = FALSE)
 
   # add network to seurat obj
+  # hdWGCNA identifies modules by colour; numericLabels = TRUE (passed via ...) makes WGCNA
+  # return numbers instead, which breaks plotting. Convert them (0 -> 'grey').
+  if (is.numeric(net$colors)) {
+    message('Converting numeric module labels to colours (numericLabels is not supported).')
+    gene_names <- names(net$colors)
+    net$colors <- WGCNA::labels2colors(net$colors)
+    names(net$colors) <- gene_names
+  }
+
   seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
 
   # set the modules df in the Seurat object
