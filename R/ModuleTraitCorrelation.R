@@ -114,14 +114,8 @@ ModuleTraitCorrelation <- function(
   mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 
-  # get trait table:
-  trait_df <- seurat_obj@meta.data[, traits]
-
-  # cast vector to data frame if there's only one trait
-  if (length(traits == 1)) {
-    trait_df <- data.frame(x = trait_df)
-    colnames(trait_df) <- traits
-  }
+  # get trait table (a data.frame even with a single trait):
+  trait_df <- seurat_obj@meta.data[, traits, drop = FALSE]
 
   # convert factors to numeric
   if (any(data_types == 'factor')) {
