@@ -11,6 +11,15 @@ pixi run style   # restyle R/, tests/, data-raw/, bench/
 pixi run lint    # report style issues
 ```
 
+## File layout
+
+- One file per analysis topic in `R/`, holding the analysis functions **and their plots**
+  (e.g. `dmes.R`: `FindDMEs`, `FindAllDMEs`, `PlotDMEsVolcano`, `PlotDMEsLollipop`).
+- File names are lower case with hyphens: `module-eigengenes.R`, `network-plots.R`.
+- Getters and setters live in `getters-setters.R` (TF/motif/regulon ones in
+  `getters-setters-tf.R`); internal helpers used across files in `utils.R`.
+- Tests mirror the source files: `tests/testthat/test-<file>.R`.
+
 ## Layout
 
 - Indent with **2 spaces**, no tabs.
