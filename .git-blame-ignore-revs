@@ -3,3 +3,6 @@
 
 # Apply code style (styler)
 dcd888ebf12c9f5d13ac785e37cd57d36446f5b4
+
+# Reorganise R/ into one file per analysis topic (pure move)
+aad0082f17af109864fbec2660e0694c9deac961
