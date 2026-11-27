@@ -13,7 +13,7 @@ to_pseudobulk(
   min_cells = 3,
   min_reps = 2,
   min_features = 0,
-  external = T
+  external = TRUE
 )
 }
 \arguments{
