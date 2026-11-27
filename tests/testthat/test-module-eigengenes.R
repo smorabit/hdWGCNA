@@ -20,3 +20,21 @@ test_that('harmonized MEs do not depend on ScaleData having been recorded', {
   expect_equal(nrow(hMEs), ncol(so))
   expect_true(all(levels(GetModules(so)$module) %in% colnames(hMEs)))
 })
+
+test_that('ModuleExprScore and AvgModuleExpr score every module', {
+  so <- sim_wgcna('kmes')
+  mods <- setdiff(levels(GetModules(so)$module), 'grey')
+
+  # ctrl = 20: AddModuleScore's default of 100 control genes per bin is too many for 1,000 genes
+  so <- ModuleExprScore(so, n_genes = 25, method = 'Seurat', ctrl = 20)
+  scores <- GetModuleScores(so)
+  expect_equal(dim(scores), c(ncol(so), length(mods)))
+
+  if (requireNamespace('UCell', quietly = TRUE)) {
+    so <- ModuleExprScore(so, n_genes = 25, method = 'UCell')
+    expect_equal(dim(GetModuleScores(so)), c(ncol(so), length(mods)))
+  }
+
+  so <- AvgModuleExpr(so, n_genes = 25)
+  expect_equal(ncol(GetAvgModuleExpr(so)), length(mods))
+})

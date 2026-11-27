@@ -411,12 +411,16 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name = NULL, ...) {
   # get wgcna params
   params <- GetWGCNAParams(seurat_obj, wgcna_name)
 
-  # datExpr for full expression dataset
-  datExpr <- GetAssayData(
-    seurat_obj,
-    assay = params$metacell_assay,
-    slot = params$metacell_slot
-  )
+  # datExpr for full expression dataset: the assay and layer the metacells were built from
+  # (objects made with Seurat v4 store metacell_slot instead of metacell_layer)
+  layer <- params$metacell_layer
+  if (is.null(layer)) {
+    layer <- params$metacell_slot
+  }
+  if (is.null(layer)) {
+    layer <- 'counts'
+  }
+  datExpr <- SeuratObject::LayerData(seurat_obj, assay = params$metacell_assay, layer = layer)
 
   # use all genes in the module?
   if (n_genes == 'all') {
