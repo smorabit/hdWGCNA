@@ -452,9 +452,20 @@ MetacellsByGroups <- function(
   )
   names(metacell_list) <- groupings
 
-  # remove NULL
-  remove <- which(sapply(metacell_list, is.null))
-  if (length(remove) > 1) {
+  # remove groups where metacell construction failed
+  remove <- which(vapply(metacell_list, is.null, logical(1)))
+  if (length(remove) == length(metacell_list)) {
+    stop(paste0(
+      'Metacell construction failed for all groups. Each group needs enough cells to form ',
+      'metacells: try lowering k, raising max_shared, or making sure min_cells is well above k.'
+    ))
+  }
+  if (length(remove) >= 1) {
+    warning(paste0(
+      'Metacell construction failed for ', length(remove), ' group(s), which were removed: ',
+      paste0(names(metacell_list)[remove], collapse = ', '),
+      '. Try lowering k, raising max_shared, or raising min_cells to exclude small groups.'
+    ))
     metacell_list <- metacell_list[-remove]
   }
 
@@ -471,8 +482,8 @@ MetacellsByGroups <- function(
   if (length(metacell_list) > 1) {
     metacell_obj <- merge(metacell_list[[1]], metacell_list[2:length(metacell_list)])
 
-    # need to join layers if this is Seurat 5
-    if (CheckSeurat5()) {
+    # join the layers of Seurat v5 assays (v3 assays have no layers to join)
+    if (inherits(metacell_obj[[assay]], 'Assay5')) {
       metacell_obj <- SeuratObject::JoinLayers(metacell_obj)
     }
   } else {

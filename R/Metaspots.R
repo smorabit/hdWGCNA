@@ -321,9 +321,15 @@ MetaspotsByGroups <- function(
   names(metaspot_list) <- groupings
 
 
-  # remove NULL
-  remove <- which(sapply(metaspot_list, is.null))
-  if (length(remove) > 1) {
+  # remove groups where metaspot aggregation failed
+  remove <- which(vapply(metaspot_list, is.null, logical(1)))
+  if (length(remove) >= 1 && length(remove) < length(metaspot_list)) {
+    warning(paste0(
+      'Metaspot aggregation failed for ', length(remove), ' group(s), which were removed: ',
+      paste0(names(metaspot_list)[remove], collapse = ', ')
+    ))
+  }
+  if (length(remove) >= 1) {
     metaspot_list <- metaspot_list[-remove]
   }
 
@@ -361,8 +367,8 @@ MetaspotsByGroups <- function(
   if (length(metaspot_list) > 1) {
     metaspot_obj <- merge(metaspot_list[[1]], metaspot_list[2:length(metaspot_list)])
 
-    # need to join layers if this is Seurat 5
-    if (CheckSeurat5()) {
+    # join the layers of Seurat v5 assays (v3 assays have no layers to join)
+    if (inherits(metaspot_obj[[assay]], 'Assay5')) {
       metaspot_obj <- SeuratObject::JoinLayers(metaspot_obj)
     }
   } else {

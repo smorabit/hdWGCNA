@@ -131,3 +131,45 @@ test_that('Normalizing the metacell object works', {
   check <- all.equal(ceiling(expr), expr) == TRUE
   expect_equal(check, FALSE)
 })
+
+# regression test for #416 / #290: a single failed group used to crash MetacellsByGroups
+test_that('MetacellsByGroups removes a single group that is too small for metacells', {
+  so <- sim_preprocessed()
+  small_group <- so$cell_type == 'C' & so$Sample == 'S03'
+  so <- subset(so, cells = c(colnames(so)[!small_group], colnames(so)[small_group][1:30]))
+  so <- SetupForWGCNA(so, gene_select = 'fraction', fraction = 0.05, wgcna_name = 'mc')
+
+  expect_warning(
+    so <- suppressMessages(MetacellsByGroups(
+      so, group.by = c('cell_type', 'Sample'), reduction = 'pca', k = 25, max_shared = 10,
+      min_cells = 20, ident.group = 'cell_type', verbose = FALSE
+    )),
+    'failed for 1 group.*C#S03'
+  )
+  m_obj <- GetMetacellObject(so)
+  expect_false(any(m_obj$cell_type == 'C' & m_obj$Sample == 'S03'))
+  expect_gt(ncol(m_obj), 0)
+})
+
+test_that('MetacellsByGroups stops clearly when every group fails', {
+  so <- sim_preprocessed()
+  so <- SetupForWGCNA(so, gene_select = 'fraction', fraction = 0.05, wgcna_name = 'mc')
+  expect_error(
+    suppressWarnings(MetacellsByGroups(
+      so, group.by = c('cell_type', 'Sample'), reduction = 'pca', k = 400, max_shared = 1,
+      min_cells = 20, ident.group = 'cell_type', verbose = FALSE
+    )),
+    'failed for all groups'
+  )
+})
+
+# regression test for #296: JoinLayers was called on v3 assays
+test_that('MetacellsByGroups works when Seurat creates v3 assays', {
+  withr::local_options(Seurat.object.assay.version = 'v3')
+  so <- SetupForWGCNA(sim_preprocessed(), gene_select = 'fraction', fraction = 0.05, wgcna_name = 'v3')
+  so <- MetacellsByGroups(
+    so, group.by = c('cell_type', 'Sample'), reduction = 'pca', k = 20, max_shared = 10,
+    min_cells = 40, ident.group = 'cell_type', verbose = FALSE
+  )
+  expect_s4_class(GetMetacellObject(so)[['RNA']], 'Assay')
+})
