@@ -24,6 +24,7 @@ BinPseudotime <- function(
   seurat_obj
 }
 
+
 #' PlotModuleTrajectory
 #'
 #' Plots module eigengene dynamics over a pseudotime trajectory.

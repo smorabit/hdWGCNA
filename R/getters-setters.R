@@ -19,6 +19,7 @@ SetActiveWGCNA <- function(seurat_obj, wgcna_name) {
   seurat_obj
 }
 
+
 #' GetActiveWGCNA
 #'
 #' @param seurat_obj A Seurat object
@@ -28,6 +29,7 @@ GetActiveWGCNA <- function(seurat_obj) {
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]
 }
 
+
 #' GetActiveWGCNAName
 #'
 #' @param seurat_obj A Seurat object
@@ -36,6 +38,7 @@ GetActiveWGCNA <- function(seurat_obj) {
 GetActiveWGCNAName <- function(seurat_obj) {
   seurat_obj@misc$active_wgcna
 }
+
 
 #' CheckWGCNAName
 #'
@@ -88,6 +91,7 @@ SetMetacellObject <- function(seurat_obj, metacell_obj, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetMetacellObject
 #'
 #' @param seurat_obj A Seurat object
@@ -112,6 +116,7 @@ GetMetacellObject <- function(seurat_obj, wgcna_name = NULL) {
   }
 }
 
+
 ############################
 # WGCNA genes
 ###########################
@@ -134,6 +139,7 @@ SetWGCNAGenes <- function(seurat_obj, gene_list, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$wgcna_genes <- gene_list
   seurat_obj
 }
+
 
 #' GetWGCNAGenes
 #'
@@ -388,6 +394,7 @@ SetDatExpr <- function(
   out
 }
 
+
 #' GetDatExpr
 #'
 #' This function gets the WGCNA expression matrix.
@@ -636,6 +643,7 @@ GetMultiExpr <- function(seurat_obj, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$multiExpr
 }
 
+
 ############################
 # WGCNA params
 ###########################
@@ -658,6 +666,7 @@ SetMetacellParams <- function(seurat_obj, params, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetMetacellParams
 #'
 #' @param seurat_obj A Seurat object
@@ -673,6 +682,7 @@ GetMetacellParams <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$metacell_params
 }
+
 
 #' SetWGCNAParams
 #'
@@ -691,6 +701,7 @@ SetWGCNAParams <- function(seurat_obj, params, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetWGCNAParams
 #'
 #' @param seurat_obj A Seurat object
@@ -706,6 +717,7 @@ GetWGCNAParams <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$wgcna_params
 }
+
 
 ############################
 # SoftPower Table
@@ -730,6 +742,7 @@ SetPowerTable <- function(seurat_obj, power_table, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetPowerTable
 #'
 #' @param seurat_obj A Seurat object
@@ -744,6 +757,7 @@ GetPowerTable <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$wgcna_powerTable
 }
+
 
 ############################
 # WGCNA Network
@@ -784,6 +798,74 @@ GetNetworkData <- function(seurat_obj, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$wgcna_net
 }
 
+
+############################
+# TOM
+###########################
+
+#' SetTOM
+#'
+#' @param seurat_obj A Seurat object
+#' @param TOM a named matrix containing the topological overlap matrix
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+SetTOM <- function(seurat_obj, TOM, wgcna_name = NULL) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
+  seurat_obj@misc[[wgcna_name]]$wgcna_TOM <- TOM
+  seurat_obj
+}
+
+
+#' GetTOM
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+GetTOM <- function(seurat_obj, wgcna_name = NULL) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # check if TOM is stored in-object first
+  tom_in_obj <- seurat_obj@misc[[wgcna_name]]$wgcna_TOM
+  if (!is.null(tom_in_obj)) {
+    return(tom_in_obj)
+  }
+
+  # fall back to file-based loading
+  modules <- GetModules(seurat_obj, wgcna_name)
+  gene_names <- modules$gene_name
+
+  tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
+
+  # objects made with hdWGCNA <= 0.4.13 and an absolute tom_outdir stored the path as
+  # paste0(getwd(), '/', tom_outdir, ...), e.g. '/home/me//data/TOM/x_TOM.rda'
+  if (!file.exists(tom_files[[1]]) && grepl('//', tom_files[[1]], fixed = TRUE)) {
+    fixed_path <- sub('^.*//', '/', tom_files[[1]])
+    if (file.exists(fixed_path)) {
+      tom_files[[1]] <- fixed_path
+    }
+  }
+
+  if (!file.exists(tom_files[[1]])) {
+    stop(paste0('TOM file ', tom_files[[1]], ' not found. Please update path to TOM file.'))
+  }
+
+  load(tom_files[[1]])
+
+  TOM <- as.matrix(consTomDS)
+  rownames(TOM) <- gene_names
+  colnames(TOM) <- gene_names
+  TOM
+}
+
+
 ############################
 # WGCNA modules dataframe
 ###########################
@@ -807,6 +889,7 @@ SetModules <- function(seurat_obj, modules, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$wgcna_modules <- modules
   seurat_obj
 }
+
 
 #' GetModules
 #'
@@ -841,6 +924,7 @@ SetDegrees <- function(seurat_obj, degree_df, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$wgcna_degrees <- degree_df
   seurat_obj
 }
+
 
 #' GetDegrees
 #'
@@ -933,6 +1017,7 @@ SetMEs <- function(seurat_obj, MEs, harmonized = TRUE, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetMEs
 #'
 #' Function to retrieve module eigengens from Seurat object.
@@ -983,6 +1068,7 @@ SetMELoadings <- function(seurat_obj, loadings, harmonized = TRUE, wgcna_name = 
   seurat_obj
 }
 
+
 #' GetMELoadings
 #'
 #' Function to retrieve module eigengens from Seurat object.
@@ -1010,82 +1096,6 @@ GetMELoadings <- function(seurat_obj, harmonized = TRUE, wgcna_name = NULL) {
 
 
 ############################
-# GO term table
-###########################
-
-#' SetEnrichrTable
-#'
-#' @param seurat_obj A Seurat object
-#' @param enrich_table dataframe storing the results of running enrichr
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name = NULL) {
-  # get data from active assay if wgcna_name is not given
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # set enrichr table
-  seurat_obj@misc[[wgcna_name]]$enrichr_table <- enrich_table
-  seurat_obj
-}
-
-
-#' GetEnrichrTable
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetEnrichrTable <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$enrichr_table
-}
-
-
-#' SetEnrichRegulonTable
-#'
-#' @param seurat_obj A Seurat object
-#' @param enrich_table dataframe storing the results of running enrichr
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetEnrichrRegulonTable <- function(seurat_obj, enrich_table, wgcna_name = NULL) {
-  # get data from active assay if wgcna_name is not given
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # set enrichr table
-  seurat_obj@misc[[wgcna_name]]$enrichr_regulon_table <- enrich_table
-  seurat_obj
-}
-
-
-#' GetEnrichrRegulonTable
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetEnrichrRegulonTable <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$enrichr_regulon_table
-}
-
-
-############################
 # Module Scores
 ###########################
 
@@ -1107,6 +1117,7 @@ SetModuleScores <- function(seurat_obj, mod_scores, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetModuleScores
 #'
 #' @param seurat_obj A Seurat object
@@ -1120,6 +1131,7 @@ GetModuleScores <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$module_scores
 }
+
 
 ############################
 # Average Module Expression
@@ -1142,6 +1154,7 @@ SetAvgModuleExpr <- function(seurat_obj, avg_mods, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetAvgModuleExpr
 #'
 #' @param seurat_obj A Seurat object
@@ -1157,266 +1170,6 @@ GetAvgModuleExpr <- function(seurat_obj, wgcna_name = NULL) {
   seurat_obj@misc[[wgcna_name]]$avg_modules
 }
 
-############################
-# TOM
-###########################
-
-#' SetTOM
-#'
-#' @param seurat_obj A Seurat object
-#' @param TOM a named matrix containing the topological overlap matrix
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetTOM <- function(seurat_obj, TOM, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-  seurat_obj@misc[[wgcna_name]]$wgcna_TOM <- TOM
-  seurat_obj
-}
-
-#' GetTOM
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetTOM <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # check if TOM is stored in-object first
-  tom_in_obj <- seurat_obj@misc[[wgcna_name]]$wgcna_TOM
-  if (!is.null(tom_in_obj)) {
-    return(tom_in_obj)
-  }
-
-  # fall back to file-based loading
-  modules <- GetModules(seurat_obj, wgcna_name)
-  gene_names <- modules$gene_name
-
-  tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
-
-  # objects made with hdWGCNA <= 0.4.13 and an absolute tom_outdir stored the path as
-  # paste0(getwd(), '/', tom_outdir, ...), e.g. '/home/me//data/TOM/x_TOM.rda'
-  if (!file.exists(tom_files[[1]]) && grepl('//', tom_files[[1]], fixed = TRUE)) {
-    fixed_path <- sub('^.*//', '/', tom_files[[1]])
-    if (file.exists(fixed_path)) {
-      tom_files[[1]] <- fixed_path
-    }
-  }
-
-  if (!file.exists(tom_files[[1]])) {
-    stop(paste0('TOM file ', tom_files[[1]], ' not found. Please update path to TOM file.'))
-  }
-
-  load(tom_files[[1]])
-
-  TOM <- as.matrix(consTomDS)
-  rownames(TOM) <- gene_names
-  colnames(TOM) <- gene_names
-  TOM
-}
-
-
-############################
-# TF Match Matrix (not stored within the WGCNA slot)
-###########################
-
-#' SetMotifMatrix
-#'
-#' @param seurat_obj A Seurat object
-#' @param tf_match matrix containing tf-promoter matches
-#' @keywords scRNA-seq
-#' @export
-SetMotifMatrix <- function(seurat_obj, tf_match) {
-  # make a spot for the motif info if it's not already there:
-  if (is.null(seurat_obj@misc$motifs)) {
-    seurat_obj@misc$motifs <- list()
-  }
-  seurat_obj@misc$motifs$tf_match_matrix <- tf_match
-  seurat_obj
-}
-
-#' GetMotifMatrix
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-GetMotifMatrix <- function(seurat_obj) {
-  seurat_obj@misc$motifs$tf_match_matrix
-}
-
-
-############################
-# Motif table
-###########################
-
-#' SetMotifs
-#'
-#' @param seurat_obj A Seurat object
-#' @param motif_df dataframe containing info about the motifs being analyzed
-#' @keywords scRNA-seq
-#' @export
-SetMotifs <- function(seurat_obj, motif_df) {
-  # make a spot for the motif info if it's not already there:
-  if (is.null(seurat_obj@misc$motifs)) {
-    seurat_obj@misc$motifs <- list()
-  }
-  seurat_obj@misc$motifs$motif_df <- motif_df
-  seurat_obj
-}
-
-
-#' GetMotifs
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-GetMotifs <- function(seurat_obj) {
-  seurat_obj@misc$motifs$motif_df
-}
-
-############################
-# PFM List
-###########################
-
-
-#' SetPFMList
-#'
-#' @param seurat_obj A Seurat object
-#' @param pfm_list list of pfm objects
-#' @keywords scRNA-seq
-#' @export
-SetPFMList <- function(seurat_obj, pfm_list) {
-  # make a spot for the motif info if it's not already there:
-  if (is.null(seurat_obj@misc$motifs)) {
-    seurat_obj@misc$motifs <- list()
-  }
-  seurat_obj@misc$motifs$pfm_list <- pfm_list
-  seurat_obj
-}
-
-#' GetPFMList
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-GetPFMList <- function(seurat_obj) {
-  seurat_obj@misc$motifs$pfm_list
-}
-
-
-############################
-# TF Target Genes:
-###########################
-
-#' SetMotifTargets
-#'
-#' @param seurat_obj A Seurat object
-#' @param motif_targets list of motifs and their target genes
-#' @keywords scRNA-seq
-#' @export
-SetMotifTargets <- function(seurat_obj, motif_targets) {
-  # make a spot for the motif info if it's not already there:
-  if (is.null(seurat_obj@misc$motifs)) {
-    seurat_obj@misc$motifs <- list()
-  }
-  seurat_obj@misc$motifs$motif_targets <- motif_targets
-  seurat_obj
-}
-
-
-#' GetMotifTargets
-#'
-#' @param seurat_obj A Seurat object
-#' @keywords scRNA-seq
-#' @export
-GetMotifTargets <- function(seurat_obj) {
-  seurat_obj@misc$motifs$motif_targets
-}
-
-
-############################
-# motif overlap
-###########################
-
-
-#' SetMotifOverlap
-#'
-#' @param seurat_obj A Seurat object
-#' @param overlap_df dataframe containing motif-module overlap info
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$motif_module_overlaps <- overlap_df
-  seurat_obj
-}
-
-
-#' GetMotifOverlap
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetMotifOverlap <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$motif_module_overlaps
-}
-
-
-############################
-# motif scores
-###########################
-
-
-#' SetMotifScores
-#'
-#' @param seurat_obj A Seurat object
-#' @param tf_scores dataframe of tf motif target scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$motif_target_scores <- tf_scores
-  seurat_obj
-}
-
-
-#' GetMotifScores
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetMotifScores <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$motif_target_scores
-}
 
 ############################
 # ModuleUMAP
@@ -1439,6 +1192,7 @@ SetModuleUMAP <- function(seurat_obj, umap_df, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetModuleUMAP
 #'
 #' @param seurat_obj A Seurat object
@@ -1453,6 +1207,7 @@ GetModuleUMAP <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$module_umap
 }
+
 
 ############################
 # ModuleTraitCorrelation
@@ -1476,6 +1231,7 @@ SetModuleTraitCorrelation <- function(seurat_obj, mt_cor, wgcna_name = NULL) {
   seurat_obj
 }
 
+
 #' GetModuleTraitCorrelation
 #'
 #' @param seurat_obj A Seurat object
@@ -1490,6 +1246,7 @@ GetModuleTraitCorrelation <- function(seurat_obj, wgcna_name = NULL) {
 
   seurat_obj@misc[[wgcna_name]]$mt_cor
 }
+
 
 ############################
 # ModulePreservation
@@ -1540,149 +1297,41 @@ GetModulePreservation <- function(seurat_obj, mod_name, wgcna_name = NULL) {
 }
 
 
-#' SetRegulonScores
-#'
-#' @param seurat_obj A Seurat object
-#' @param regulon_scores dataframe storing the TF regulon scores
-#' @param target_type dataframe storing the TF regulon scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetRegulonScores <- function(seurat_obj, regulon_scores, target_type, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-
-  # if regulon scores have not been set, make a list to store them
-  if (is.null(seurat_obj@misc[[wgcna_name]]$regulon_scores)) {
-    tmp <- list(regulon_scores)
-    names(tmp) <- target_type
-    seurat_obj@misc[[wgcna_name]]$regulon_scores <- tmp
-  } else {
-    seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]] <- regulon_scores
-  }
-  seurat_obj
-}
-
-#' GetRegulonScores
-#'
-#' @param seurat_obj A Seurat object
-#' @param target_type dataframe storing the TF regulon scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetRegulonScores <- function(seurat_obj, target_type, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # get the regulon scores
-  seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]]
-}
-
-
 ############################
-# getters and setters
+# GO term table
 ###########################
 
-#' SetTFNetwork
+#' SetEnrichrTable
 #'
 #' @param seurat_obj A Seurat object
-#' @param tf_net dataframe storing the TF network info in ConstructTFNetwork
+#' @param enrich_table dataframe storing the results of running enrichr
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-SetTFNetwork <- function(seurat_obj, tf_net, wgcna_name = NULL) {
+SetEnrichrTable <- function(seurat_obj, enrich_table, wgcna_name = NULL) {
+  # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  seurat_obj@misc[[wgcna_name]]$tf_net <- tf_net
+  # set enrichr table
+  seurat_obj@misc[[wgcna_name]]$enrichr_table <- enrich_table
   seurat_obj
 }
 
-#' GetTFNetwork
+
+#' GetEnrichrTable
 #'
 #' @param seurat_obj A Seurat object
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @keywords scRNA-seq
 #' @export
-GetTFNetwork <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-  seurat_obj@misc[[wgcna_name]]$tf_net
-}
-
-
-#' SetTFEval
-#'
-#' @param seurat_obj A Seurat object
-#' @param tf_eval dataframe storing the TF network evaluation info from ConstructTFNetwork
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetTFEval <- function(seurat_obj, tf_eval, wgcna_name = NULL) {
+GetEnrichrTable <- function(seurat_obj, wgcna_name = NULL) {
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
-  seurat_obj@misc[[wgcna_name]]$tf_eval <- tf_eval
-  seurat_obj
+  seurat_obj@misc[[wgcna_name]]$enrichr_table
 }
-
-#' GetTFEval
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetTFEval <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-  seurat_obj@misc[[wgcna_name]]$tf_eval
-}
-
-#' SetTFRegulons
-#'
-#' @param seurat_obj A Seurat object
-#' @param tf_regulons dataframe storing the TF regulon info from AssignTFRegulons
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-SetTFRegulons <- function(seurat_obj, tf_regulons, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  seurat_obj@misc[[wgcna_name]]$tf_regulons <- tf_regulons
-  seurat_obj
-}
-
-#' GetTFRegulons
-#'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @keywords scRNA-seq
-#' @export
-GetTFRegulons <- function(seurat_obj, wgcna_name = NULL) {
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-  seurat_obj@misc[[wgcna_name]]$tf_regulons
-}
-
-
-############################
-# Reset module names:
-###########################

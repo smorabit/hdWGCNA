@@ -82,95 +82,6 @@ AssignTFRegulons <- function(
 }
 
 
-#' RegulonScores
-#'
-#' Calculate expression scores for TF Regulons
-#'
-#' @return seurat_obj with the TF Regulon Scores added
-#'
-#' @param seurat_obj A Seurat object
-#' @param target_type Which types of TF target genes to compute scores for? "positive", "negative", or "both"
-#' @param cor_thresh threshold for TF-gene correlation for genes to be included in the regulon score
-#' @param exclude_grey_genes option to exclude genes that are in the grey module from the regulon scores
-#' @param wgcna_name name of the WGCNA experiment
-#' @details
-#' RegulonScores calculates expression signatures for each TF regulon using the UCell algorithm
-#' This function can calculate separate scores for TF regulons for target genes that are positively
-#' or negatively correlated with the TF, representing putative acivated or repressed genes. These scores
-#' conveniently summarize the expression levels of the entire TF regulon, similar to module eigengenes
-#' for the co-expression network analyssis.
-#'
-#' @export
-RegulonScores <- function(
-  seurat_obj,
-  target_type = 'positive',
-  cor_thresh = 0.05,
-  exclude_grey_genes = TRUE,
-  wgcna_name = NULL,
-  ... # options to pass to UCell
-) {
-  check_suggests('UCell', feature = 'RegulonScores')
-
-  if (is.null(wgcna_name)) {
-    wgcna_name <- seurat_obj@misc$active_wgcna
-  }
-  CheckWGCNAName(seurat_obj, wgcna_name)
-
-  # get modules:
-  modules <- GetModules(seurat_obj, wgcna_name)
-
-  # get TF target genes:
-  tf_regulons <- GetTFRegulons(seurat_obj, wgcna_name)
-
-  # subset by type of target gene?
-  if (target_type == 'positive') {
-    tf_regulons <- subset(tf_regulons, Cor > cor_thresh)
-  } else if (target_type == 'negative') {
-    tf_regulons <- subset(tf_regulons, Cor < cor_thresh)
-  } else if (target_type == 'both') {
-    tf_regulons <- subset(tf_regulons, abs(Cor) > cor_thresh)
-  } else {
-    stop('Invalid selection for target_type. Valid choices are positive, negative, both.')
-  }
-
-  if (exclude_grey_genes) {
-    # subset modules
-    modules <- subset(modules, module != 'grey')
-
-    # subset regulons
-    tf_regulons <- subset(tf_regulons, gene %in% modules$gene_name & tf %in% modules$gene_name)
-  }
-
-  # set up the lists
-  tfs_use <- unique(tf_regulons$tf)
-  target_genes <- lapply(tfs_use, function(cur_tf) {
-    subset(tf_regulons, tf == cur_tf) %>% .$gene
-  })
-  names(target_genes) <- tfs_use
-
-  # use UCell to comptue the TF regulons cores
-  regulon_scores <- UCell::AddModuleScore_UCell(
-    seurat_obj,
-    features = target_genes,
-    ...
-  )@meta.data
-  regulon_scores <- regulon_scores[, paste0(tfs_use, '_UCell')]
-
-  # rename the columns to remove "_UCell"
-  colnames(regulon_scores) <- gsub('_UCell', '', colnames(regulon_scores))
-
-  # add the regulon scores to the seurat object
-  seurat_obj <- SetRegulonScores(
-    seurat_obj,
-    regulon_scores,
-    target_type,
-    wgcna_name
-  )
-
-  seurat_obj
-}
-
-
 #' GetTFTargetGenes
 #'
 #' Retrieve target genes for a set of transcription factors (TFs) from a Seurat object,
@@ -272,6 +183,179 @@ GetTFTargetGenes <- function(
   }
 
   return(cur_network)
+}
+
+
+#' RegulonScores
+#'
+#' Calculate expression scores for TF Regulons
+#'
+#' @return seurat_obj with the TF Regulon Scores added
+#'
+#' @param seurat_obj A Seurat object
+#' @param target_type Which types of TF target genes to compute scores for? "positive", "negative", or "both"
+#' @param cor_thresh threshold for TF-gene correlation for genes to be included in the regulon score
+#' @param exclude_grey_genes option to exclude genes that are in the grey module from the regulon scores
+#' @param wgcna_name name of the WGCNA experiment
+#' @details
+#' RegulonScores calculates expression signatures for each TF regulon using the UCell algorithm
+#' This function can calculate separate scores for TF regulons for target genes that are positively
+#' or negatively correlated with the TF, representing putative acivated or repressed genes. These scores
+#' conveniently summarize the expression levels of the entire TF regulon, similar to module eigengenes
+#' for the co-expression network analyssis.
+#'
+#' @export
+RegulonScores <- function(
+  seurat_obj,
+  target_type = 'positive',
+  cor_thresh = 0.05,
+  exclude_grey_genes = TRUE,
+  wgcna_name = NULL,
+  ... # options to pass to UCell
+) {
+  check_suggests('UCell', feature = 'RegulonScores')
+
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # get modules:
+  modules <- GetModules(seurat_obj, wgcna_name)
+
+  # get TF target genes:
+  tf_regulons <- GetTFRegulons(seurat_obj, wgcna_name)
+
+  # subset by type of target gene?
+  if (target_type == 'positive') {
+    tf_regulons <- subset(tf_regulons, Cor > cor_thresh)
+  } else if (target_type == 'negative') {
+    tf_regulons <- subset(tf_regulons, Cor < cor_thresh)
+  } else if (target_type == 'both') {
+    tf_regulons <- subset(tf_regulons, abs(Cor) > cor_thresh)
+  } else {
+    stop('Invalid selection for target_type. Valid choices are positive, negative, both.')
+  }
+
+  if (exclude_grey_genes) {
+    # subset modules
+    modules <- subset(modules, module != 'grey')
+
+    # subset regulons
+    tf_regulons <- subset(tf_regulons, gene %in% modules$gene_name & tf %in% modules$gene_name)
+  }
+
+  # set up the lists
+  tfs_use <- unique(tf_regulons$tf)
+  target_genes <- lapply(tfs_use, function(cur_tf) {
+    subset(tf_regulons, tf == cur_tf) %>% .$gene
+  })
+  names(target_genes) <- tfs_use
+
+  # use UCell to comptue the TF regulons cores
+  regulon_scores <- UCell::AddModuleScore_UCell(
+    seurat_obj,
+    features = target_genes,
+    ...
+  )@meta.data
+  regulon_scores <- regulon_scores[, paste0(tfs_use, '_UCell')]
+
+  # rename the columns to remove "_UCell"
+  colnames(regulon_scores) <- gsub('_UCell', '', colnames(regulon_scores))
+
+  # add the regulon scores to the seurat object
+  seurat_obj <- SetRegulonScores(
+    seurat_obj,
+    regulon_scores,
+    target_type,
+    wgcna_name
+  )
+
+  seurat_obj
+}
+
+
+#' RegulonBarPlot
+#'
+#' Plots the top target genes within a specific TF regulon
+#'
+#' @return ggplot object containing the RegulonBarPlot
+#'
+#' @param seurat_obj A Seurat object
+#' @param selected_tfs A TF whose target genes will be shown
+#' @param cutoff Cutoff for the edge weights, links below this value will not be included.
+#' @param top_n Number of top and bottom target genes to include in the plot.
+#' @param TFs_only Logical indicating whether or not to use only TFs in the plot or to use TFs and other genes.
+#' @param high_color Color corresponding to positive edge weights
+#' @param mid_color Color corresponding to edge weights close to 0
+#' @param low_color Color corresponding to negative edge weights
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @details
+#' RegulonBarPlot creates a bar plot showing the top target genes for a particular TF
+#' based on the TF regulatory network analysis. Target genes are ranked by the predicted
+#' interaction strength from XGBoost (Gain) multiplied by the sign of the correlation
+#' between the TF and the target gene.
+#'
+#' @export
+RegulonBarPlot <- function(
+  seurat_obj,
+  selected_tf,
+  cutoff = 0.2,
+  top_n = Inf,
+  TFs_only = FALSE,
+  high_color = 'orange2',
+  mid_color = 'white',
+  low_color = 'dodgerblue',
+  wgcna_name = NULL
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # get the regulon df
+  tf_regulons <- GetTFRegulons(seurat_obj, wgcna_name)
+  if (TFs_only) {
+    tf_regulons <- subset(tf_regulons, gene %in% unique(tf_regulons$tf))
+  }
+
+  if (!selected_tf %in% tf_regulons$tf) {
+    stop(paste0('Invalid selection for selected_tf. Make sure you select a TF that is present in the dataset.'))
+  }
+
+  # set up dataframe for plotting
+  plot_df <- tf_regulons %>%
+    subset(tf == selected_tf) %>%
+    mutate(score = Gain * sign(Cor)) %>%
+    subset(abs(score) > cutoff)
+
+  top <- plot_df %>%
+    subset(Cor > 0) %>%
+    slice_max(n = top_n, order_by = Gain)
+  bottom <- plot_df %>%
+    subset(Cor < 0) %>%
+    slice_min(n = top_n, order_by = Gain)
+  plot_df <- rbind(top, bottom)
+
+  # make the barplot
+  p <- plot_df %>%
+    ggplot(aes(x = score, y = reorder(gene, score), fill = score)) +
+    geom_bar(stat = 'identity', width = 1) +
+    scale_fill_gradient2(low = low_color, mid = mid_color, high = high_color) +
+    geom_vline(xintercept = 0, color = 'black') +
+    geom_text(aes(label = reorder(gene, score)), color = 'black', size = 3.5, fontface = 'italic', hjust = 'inward') +
+    ggtitle(paste0(selected_tf, ' predicted targets')) +
+    xlab('Regulatory score') +
+    theme(
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_blank(),
+      plot.title = element_text(hjust = 0.5),
+      axis.title.y = element_blank(),
+      axis.line.y = element_blank(),
+    ) +
+    Seurat::NoLegend()
+
+  p
 }
 
 
@@ -429,6 +513,7 @@ FindDifferentialRegulons <- function(
   # return
   dregs
 }
+
 
 #' PlotDifferentialRegulons
 #'
@@ -602,4 +687,105 @@ PlotDifferentialRegulons <- function(
     ) + Seurat::NoLegend()
 
   p
+}
+
+
+#' RunEnrichrRegulons
+#'
+#' Run Enrichr gene set enrichment tests on hdWGCNA modules
+#'
+#' @param seurat_obj A Seurat object
+#' @param dbs character vector of EnrichR databases
+#' @param depth Include primary TF target genes (depth=1) or primary + secondary (depth=2)
+#' @param use_regulons Use the regulons (default=TRUE) or the full set of TF target genes?
+#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
+#' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @export
+RunEnrichrRegulons <- function(
+  seurat_obj,
+  dbs = c('GO_Biological_Process_2021', 'GO_Cellular_Component_2021', 'GO_Molecular_Function_2021'),
+  depth = 1,
+  use_regulons = TRUE,
+  min_genes = 5,
+  wait = TRUE,
+  wait_time = 5,
+  wgcna_name = NULL, ...
+) {
+  check_suggests('enrichR', feature = 'RunEnrichrRegulons')
+
+  # get data from active assay if wgcna_name is not given
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  CheckWGCNAName(seurat_obj, wgcna_name)
+
+  # check wait_time
+  if (!is.numeric(wait_time)) {
+    stop(paste0('wait_time must be a numeric.'))
+  }
+  if (wait_time > 60 || wait_time < 1) {
+    stop(paste0('Invalid value selected for wait_time, must be greater than 0 and less than 60.'))
+  }
+
+  # get regulons
+  tf_regulons <- GetTFRegulons(seurat_obj, wgcna_name)
+  tf_list <- unique(tf_regulons$tf)
+
+  # run EnrichR for loop:
+  combined_output <- data.frame()
+  for (i in seq_along(tf_list)) {
+    cur_tf <- tf_list[i]
+    cur_targets <- GetTFTargetGenes(seurat_obj, cur_tf, depth = depth, use_regulons = use_regulons, wgcna_name = wgcna_name)
+    cur_pos <- subset(cur_targets, Cor > 0) %>%
+      .$gene %>%
+      unique()
+    cur_neg <- subset(cur_targets, Cor < 0) %>%
+      .$gene %>%
+      unique()
+
+    # run the enrichment test
+    if (length(cur_pos) >= min_genes) {
+      enriched <- enrichR::enrichr(cur_pos, dbs)
+
+      # collapse into one db
+      for (db in names(enriched)) {
+        cur_df <- enriched[[db]]
+        if (nrow(cur_df) > 1) {
+          cur_df$db <- db
+          cur_df$tf <- cur_tf
+          cur_df$target_type <- 'positive'
+          combined_output <- rbind(combined_output, cur_df)
+        }
+      }
+
+      if (wait) {
+        Sys.sleep(wait_time)
+      }
+    }
+
+    if (length(cur_neg) >= min_genes) {
+      enriched <- enrichR::enrichr(cur_neg, dbs)
+
+      # collapse into one db
+      for (db in names(enriched)) {
+        cur_df <- enriched[[db]]
+        if (nrow(cur_df) > 1) {
+          cur_df$db <- db
+          cur_df$tf <- cur_tf
+          cur_df$target_type <- 'negative'
+          combined_output <- rbind(combined_output, cur_df)
+        }
+      }
+
+      if (wait) {
+        Sys.sleep(wait_time)
+      }
+    }
+  }
+
+  # add GO term table to seurat object
+  seurat_obj <- SetEnrichrRegulonTable(seurat_obj, combined_output, wgcna_name)
+  seurat_obj
 }

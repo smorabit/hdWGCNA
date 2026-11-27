@@ -361,6 +361,7 @@ ModuleRegulatoryNetworkPlot <- function(
   p
 }
 
+
 #' ModuleRegulatoryHeatmap
 #'
 #' This function visualizes the regulatory network between gene modules as a heatmap, where

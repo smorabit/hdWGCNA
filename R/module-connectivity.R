@@ -181,3 +181,235 @@ ModuleConnectivity <- function(
   # return seurat obj
   seurat_obj
 }
+
+
+#' PlotKMEs
+#'
+#' Plotting function to show genes by kME value in each module
+#'
+#' @param seurat_obj A Seurat object
+#' @param n_hubs number of hub genes to display
+#' @param text_size controls the size of the hub gene text
+#' @param ncol number of columns to display individual plots
+#' @param plot_widths the relative width between the kME rank plot and the hub gene text
+#' @param wgcna_name the name of the WGCNA experiment in the seurat object
+#' @keywords scRNA-seq
+#' @export
+PlotKMEs <- function(
+  seurat_obj,
+  n_hubs = 10,
+  text_size = 2,
+  ncol = 5,
+  plot_widths = c(3, 2),
+  wgcna_name = NULL
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+
+  modules <- GetModules(seurat_obj, wgcna_name) %>% subset(module != 'grey')
+  mods <- levels(modules$module)
+  mods <- mods[mods != 'grey']
+  mod_colors <- modules %>%
+    subset(module %in% mods) %>%
+    dplyr::select(c(module, color)) %>%
+    dplyr::distinct()
+
+  # get hub genes:
+  hub_df <- GetHubGenes(seurat_obj, n_hubs = n_hubs, wgcna_name = wgcna_name)
+
+  plot_list <- lapply(mods, function(x) {
+    cur_color <- subset(mod_colors, module == x) %>% .$color
+    cur_df <- subset(hub_df, module == x)
+    top_genes <- cur_df %>%
+      dplyr::top_n(n_hubs, wt = kME) %>%
+      .$gene_name
+    p <- cur_df %>% ggplot(aes(x = reorder(gene_name, kME), y = kME)) +
+      geom_bar(stat = 'identity', width = 1, color = cur_color, fill = cur_color) +
+      ggtitle(x) +
+      # xlab(paste0('kME_', x)) +
+      theme(
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        axis.line.x = element_blank()
+      )
+    p_anno <- ggplot() +
+      annotate(
+        'label',
+        x = 0,
+        y = 0,
+        label = paste0(top_genes, collapse = '\n'),
+        size = text_size,
+        fontface = 'italic',
+        label.size = 0
+      ) +
+      theme_void()
+    patch <- p + p_anno + plot_layout(widths = plot_widths)
+    patch
+  })
+
+  wrap_plots(plot_list, ncol = ncol)
+}
+
+
+#' Plots gene expression of hub genes as a heatmap
+#'
+#' This function makes an expression heatmap of the top n hub genes per module
+#' using Seurat's DoHeatmap, and then assembles them all into one big heatmap.
+#'
+#'
+#'
+#' @param seurat_obj A Seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @keywords scRNA-seq
+#' @export
+DoHubGeneHeatmap <- function(
+  seurat_obj,
+  n_hubs = 10,
+  n_cells = 200,
+  group.by = NULL,
+  module_names = NULL,
+  combine = TRUE, # returns a list of individual heatmaps if FALSE
+  draw.lines = TRUE,
+  disp.min = -2.5, disp.max = 2.5, # cutoff expression values
+  wgcna_name = NULL
+) {
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+
+  # use idents as grouping variable if not specified
+  if (is.null(group.by)) {
+    group.by <- 'temp_ident'
+    seurat_obj$temp_ident <- Idents(seurat_obj)
+  }
+
+  # drop if there are missing levels:
+  seurat_obj@meta.data[[group.by]] <- droplevels(seurat_obj@meta.data[[group.by]])
+
+  # get modules
+  modules <- GetModules(seurat_obj, wgcna_name)
+  modules <- modules %>%
+    subset(module != 'grey') %>%
+    mutate(module = droplevels(module))
+  mods <- levels(modules$module)
+
+  if (!is.null(module_names)) {
+    print('here')
+    mods <- module_names
+    modules <- modules %>% subset(module %in% mods)
+  }
+
+  # get table of module names & colors
+  mod_colors <- modules %>%
+    dplyr::select(c(module, color)) %>%
+    dplyr::distinct()
+
+  # get hub genes:
+  # hub_list <- lapply(mods, function(cur_mod){
+  #   cur <- subset(modules, module == cur_mod)
+  #   cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
+  #     top_n(n_hubs) %>% .$gene_name
+  # })
+  hub_list <- lapply(mods, function(cur_mod) {
+    cur <- subset(modules, module == cur_mod)
+    cur <- cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
+      top_n(n_hubs)
+    colnames(cur)[2] <- 'var'
+    cur %>%
+      arrange(desc(var)) %>%
+      .$gene_name
+  })
+  names(hub_list) <- mods
+  print(hub_list)
+
+  seurat_obj$barcode <- colnames(seurat_obj)
+  temp <- table(seurat_obj@meta.data[[group.by]])
+
+  # sample cells
+  df <- data.frame()
+  for (i in seq_along(temp)) {
+    if (temp[[i]] < n_cells) {
+      cur_df <- seurat_obj@meta.data %>% subset(get(group.by) == names(temp)[i])
+    } else {
+      cur_df <- seurat_obj@meta.data %>%
+        subset(get(group.by) == names(temp)[i]) %>%
+        sample_n(n_cells)
+    }
+    df <- rbind(df, cur_df)
+  }
+
+  # make sampled seurat obj for plotting:
+  seurat_plot <- seurat_obj %>% subset(barcode %in% df$barcode)
+
+  plot_list <- list()
+  for (i in seq_along(hub_list)) {
+    print(i)
+    cur_mod <- names(hub_list)[i]
+    print(i)
+    print(hub_list[[i]])
+    print(i)
+
+    if (i == 1) {
+      plot_list[[i]] <- DoHeatmap(
+        seurat_plot,
+        features = hub_list[[i]],
+        group.by = group.by,
+        raster = TRUE, slot = 'scale.data',
+        disp.min = disp.min, disp.max = disp.max,
+        label = FALSE,
+        group.bar = FALSE,
+        draw.lines = draw.lines
+      )
+    } else {
+      plot_list[[i]] <- DoHeatmap(
+        seurat_plot,
+        features = hub_list[[i]],
+        group.by = group.by,
+        raster = TRUE, slot = 'scale.data',
+        group.bar.height = 0,
+        label = FALSE, group.bar = FALSE,
+        draw.lines = draw.lines,
+        disp.min = disp.min, disp.max = disp.max
+      ) + NoLegend()
+    }
+    print(i)
+    # margin:
+    plot_list[[i]] <- plot_list[[i]] +
+      theme(
+        plot.margin = margin(0, 0, 0, 0),
+        axis.text.y = element_text(face = 'italic')
+      ) + scale_y_discrete(position = 'right')
+    print(i)
+  }
+
+  # useful for ratios on colorbars
+  n_total_cells <- ncol(seurat_plot)
+  width_cbar <- n_total_cells / 50
+
+
+  # module colorbar
+  mod_colors$value <- n_hubs
+  mod_colors$dummy <- 'colorbar'
+  cbar_list <- list()
+  for (i in seq_len(nrow(mod_colors))) {
+    cbar_list[[i]] <- mod_colors[i, ] %>% ggplot(aes(y = value, x = dummy)) +
+      geom_bar(position = 'stack', stat = 'identity', fill = mod_colors[i, ]$color) +
+      umap_theme() +
+      theme(
+        plot.margin = margin(0, 0, 0, 0)
+      )
+  }
+  p_cbar <- wrap_plots(cbar_list, ncol = 1)
+
+  if (combine) {
+    out <- wrap_plots(plot_list, ncol = 1) + plot_layout(guides = 'collect')
+    out <- (p_cbar | out) + plot_layout(widths = c(width_cbar, n_total_cells))
+  } else {
+    out <- plot_list
+  }
+
+  out
+}

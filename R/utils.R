@@ -116,8 +116,10 @@ bioc_suggests <- c(
   'IRanges', 'motifmatchr', 'SingleCellExperiment', 'UCell'
 )
 
+
 # GitHub-only packages used by optional features (not installable from CRAN/Bioconductor)
 github_suggests <- c(ggradar = 'ricardo-bion/ggradar')
+
 
 # Stop with an informative message if packages needed by an optional feature are missing.
 # Use at the top of any function that calls a package listed in Suggests.
@@ -155,10 +157,12 @@ check_suggests <- function(pkgs, feature = NULL) {
   )
 }
 
+
 # TRUE if x is a base matrix with numeric values (replaces tester::is_numeric_matrix)
 is_numeric_matrix <- function(x) {
   is.matrix(x) && is.numeric(x)
 }
+
 
 # TRUE if x is a data.frame whose columns are all numeric
 is_numeric_dataframe <- function(x) {
@@ -176,3 +180,57 @@ check_reduction <- function(seurat_obj, reduction) {
   }
   invisible(TRUE)
 }
+
+
+# Alternating horizontal background stripes for plots with a discrete y axis
+# (e.g. one row per module). Same approach as ggforestplot::geom_stripes (MIT licence,
+# NightingaleHealth), reimplemented here so hdWGCNA doesn't depend on a GitHub-only package.
+geom_stripes <- function(
+  mapping = NULL,
+  data = NULL,
+  stat = 'identity',
+  position = 'identity',
+  ...,
+  show.legend = NA,
+  inherit.aes = TRUE
+) {
+  ggplot2::layer(
+    geom = GeomStripes,
+    mapping = mapping,
+    data = data,
+    stat = stat,
+    position = position,
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(...)
+  )
+}
+
+
+GeomStripes <- ggplot2::ggproto(
+  'GeomStripes',
+  ggplot2::Geom,
+  required_aes = c('y'),
+  default_aes = ggplot2::aes(
+    xmin = -Inf, xmax = Inf,
+    odd = '#22222222', even = '#00000000',
+    alpha = NA, colour = NA, linetype = 'solid', linewidth = 0.5
+  ),
+  draw_key = ggplot2::draw_key_blank,
+  draw_panel = function(data, panel_params, coord) {
+    y <- round(data$y)
+    rects <- unique(data.frame(
+      xmin = data$xmin, xmax = data$xmax,
+      ymin = y - 0.5, ymax = y + 0.5,
+      odd = data$odd, even = data$even,
+      alpha = data$alpha, colour = data$colour,
+      linetype = data$linetype, linewidth = data$linewidth,
+      PANEL = data$PANEL, group = -1
+    ))
+    rects <- rects[order(rects$ymin), ]
+    rects$fill <- ifelse(seq_len(nrow(rects)) %% 2 == 1, rects$odd, rects$even)
+    rects$odd <- NULL
+    rects$even <- NULL
+    ggplot2::GeomRect$draw_panel(rects, panel_params, coord)
+  }
+)

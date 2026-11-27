@@ -176,6 +176,7 @@ AggregatePseudobulk <- function(
   return(se)
 }
 
+
 #' Find Replicate Columns
 #'
 #' Internal helper to identify metadata columns that are invariant within
@@ -196,6 +197,7 @@ find_replicate_columns <- function(meta, group) {
   replicate_cols <- names(meta)[sapply(meta, is_replicate_col)]
   replicate_cols
 }
+
 
 #' Create Pseudobulk Metadata
 #'
@@ -226,6 +228,7 @@ make_pseudobulk_metadata <- function(meta, group) {
   rownames(out) <- unique_levels
   return(out)
 }
+
 
 #' NormalizeCounts
 #'
