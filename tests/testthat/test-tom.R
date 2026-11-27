@@ -21,8 +21,15 @@ test_that('GetTOM repairs TOM paths stored by older versions with an absolute to
 
   # older versions stored paste0(getwd(), '/', <absolute path>)
   net <- GetNetworkData(so)
-  net$TOMFiles <- paste0('/some/old/workdir/', tom_file)
+  net$TOMFiles <- paste0(getwd(), '/', tom_file)
   so <- SetNetworkData(so, net)
 
   expect_equal(dim(GetTOM(so))[1], nrow(GetModules(so)))
+})
+
+test_that('repair_tom_path recovers Unix and Windows paths', {
+  expect_equal(repair_tom_path('/home/me//data/TOM/x_TOM.rda'), '/data/TOM/x_TOM.rda')
+  expect_equal(repair_tom_path('C:/Users/me/D:/data/TOM/x_TOM.rda'), 'D:/data/TOM/x_TOM.rda')
+  expect_equal(repair_tom_path('C:/Users/me/C:/data/x_TOM.rda'), 'C:/data/x_TOM.rda')
+  expect_true(is.na(repair_tom_path('/data/TOM/x_TOM.rda')))
 })

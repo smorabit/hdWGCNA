@@ -234,3 +234,19 @@ GeomStripes <- ggplot2::ggproto(
     ggplot2::GeomRect$draw_panel(rects, panel_params, coord)
   }
 )
+
+
+# Recover the absolute TOM path from paths stored by hdWGCNA <= 0.4.13 as
+# paste0(getwd(), '/', <absolute path>). Returns NA if the path doesn't look like that.
+repair_tom_path <- function(path) {
+  # Windows: the last drive letter starts the real path, e.g. 'C:/x/D:/data/TOM.rda'
+  drives <- gregexpr('[A-Za-z]:[/\\\\]', path)[[1]]
+  if (length(drives) > 1 && drives[1] != -1) {
+    return(substring(path, drives[length(drives)]))
+  }
+  # Unix: '/home/me//data/TOM.rda'
+  if (grepl('//', path, fixed = TRUE)) {
+    return(sub('^.*//', '/', path))
+  }
+  NA_character_
+}
