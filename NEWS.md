@@ -1,3 +1,38 @@
+# hdWGCNA (development version)
+
+Work towards hdWGCNA 1.0.0 (CRAN release).
+
+## Breaking changes
+- Requires Seurat >= 5.0.0 (Seurat 5 and 6 are supported) and R >= 4.1.0.
+- `library(hdWGCNA)` now only attaches Seurat. Packages that were previously attached
+  (WGCNA, dplyr, igraph, ggraph, UCell, GenomicRanges, enrichR, ...) must be loaded
+  explicitly if you use their functions directly.
+- Packages needed only by optional features are no longer installed automatically
+  (UCell, enrichR, GeneOverlap, DESeq2, NetRep, xgboost, motifmatchr, ensembldb,
+  GenomicRanges, corrplot, qgraph, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
+  Functions that need them stop with a message explaining how to install them.
+
+## Deprecated
+- `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and
+  `SetDatExpr(mat = se)` instead. It still works but now pseudobulks with
+  `AggregatePseudobulk()`: pseudobulk samples with fewer than 3 cells are dropped
+  individually (previously the whole group was dropped), and samples are named
+  `group:replicate`.
+- `slot` arguments of `FindMajorIsoforms()` and `ConstructPseudobulk()`: use `layer`.
+
+## Changes
+- `FindMajorIsoforms()` builds pseudobulks with `AggregatePseudobulk()`.
+- Internal `to_pseudobulk()` and `check_inputs()` (adapted from Libra) were removed.
+- New simulated example dataset `hdw_sim` with ground-truth modules `hdw_sim_modules`.
+
+## Bug fixes
+- `FindMajorIsoforms()`, `MetaspotsByGroups()`: no longer use the defunct `slot`
+  argument of `GetAssayData()`.
+- `ConstructMetaspots()`: no longer errors for tissue blocks with fewer than two spots.
+- `MotifScan()`, `ModuleRegulatoryHeatmap()`, `TestSoftPowers()` and others no longer
+  depend on packages being attached.
+- Removed deprecated ggplot2 and igraph calls.
+
 # hdWGCNA 0.4.13 (2026-11-26)
 ## Changes
 - Compatibility with Seurat 6: `CheckSeurat5()` now checks for Seurat >= 5.0.0. Previously it

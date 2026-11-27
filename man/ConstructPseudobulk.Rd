@@ -2,7 +2,7 @@
 % Please edit documentation in R/Pseudobulk.R
 \name{ConstructPseudobulk}
 \alias{ConstructPseudobulk}
-\title{ConstructPseudobulk}
+\title{ConstructPseudobulk (deprecated)}
 \usage{
 ConstructPseudobulk(
   seurat_obj,
@@ -10,7 +10,7 @@ ConstructPseudobulk(
   replicate_col,
   label_col = NULL,
   assay = "RNA",
-  slot = "counts",
+  slot = NULL,
   layer = "counts",
   min_reps = 20,
   wgcna_name = NULL
@@ -23,33 +23,40 @@ ConstructPseudobulk(
 
 \item{replicate_col}{column in seurat_obj@meta.data denoting each replicate / sample}
 
-\item{label_col}{column in seurat_obj@meta.data denoting an additional label of interest, for example disease status or biological sex. This is not a required argument and is typically only used for consensus WGCNA}
+\item{label_col}{Ignored; kept for backwards compatibility.}
 
-\item{assay}{Assay in seurat_obj containing isoform expression information.}
+\item{assay}{Assay in seurat_obj to aggregate.}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'counts'}
+\item{slot}{Deprecated, use \code{layer}.}
 
-\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
+\item{layer}{Layer to extract data for aggregation. Default = 'counts'.}
 
 \item{min_reps}{The minimum number of different biological replicates allowed. Error will be thrown if the number of reps is too low.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \value{
-a matrix containing pseudobulk expression profiles
+A matrix with one row per pseudobulk sample (named \code{group:replicate}) and one
+column per hdWGCNA gene.
 }
 \description{
-Constructs a "pseudobulk" gene expression matrix summarizing the expression levels
-of each gene across a grouping variable (cell types for example) in each biological
-replicate.
+This function is deprecated. Use \code{\link[=AggregatePseudobulk]{AggregatePseudobulk()}} to build pseudobulk samples,
+\code{\link[=NormalizeCounts]{NormalizeCounts()}} to normalize them, and \code{\link[=SetDatExpr]{SetDatExpr()}} (with \code{mat = se}) to use them
+for network analysis. See the pseudobulk vignette for the full workflow.
 }
 \details{
-This function constructs pseudobulk gene expression profiles across the provided cell groups
-and the provided biological replicates. We note that low numbers of replicates are typical
-in single-cell and spatial transcriptomics due to the large monetary cost of running these experiments,
-and pseudobulk-ing your data for hdWGCNA is only recommended in the case where you have a sufficient
-number of replicates. Here we have set the minimum recommended number to 20. Using fewer than 20 replicates
-risks the results not being reproducible or robust, and therefore are not biologically meaningful due to
-spurious noisy correlations.
+Constructs a pseudobulk gene expression matrix summarizing the expression of each gene
+in each biological replicate and group (for example cell type), restricted to the genes
+selected for the hdWGCNA experiment.
+
+Pseudobulk samples with fewer than 3 cells are dropped. Genes with the same pseudobulk
+expression in every sample are dropped by \code{\link[=AggregatePseudobulk]{AggregatePseudobulk()}}, so the output can
+contain fewer genes than the hdWGCNA experiment.
+
+We recommend at least 20 replicates for pseudobulk network analysis; with fewer
+replicates, correlations are noisy and results may not be reproducible.
+}
+\seealso{
+\code{\link[=AggregatePseudobulk]{AggregatePseudobulk()}}, \code{\link[=NormalizeCounts]{NormalizeCounts()}}, \code{\link[=SetDatExpr]{SetDatExpr()}}
 }
 \keyword{internal}

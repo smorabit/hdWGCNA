@@ -506,9 +506,9 @@ can be used for the same downstream analysis as with the metacell/metaspot data.
 We can also run consensus network analysis using pseudobulk data. If you are not already familiar  
 with consensus co-expression network analysis, please visit our [other tutorial page](consensus_wgcna.html) 
 describing it in more detail. Here we will use all cell types again, and we will run the consensus 
-network analysis with biological sex as the variable of interest. When we run `ConstructPseudobulk`,
-we have to provide the function with information about the cell groupings, the biological 
-samples, and the variable we will be using for consensus network analysis (sex in this case).
+network analysis with biological sex as the variable of interest. We build the pseudobulk samples with `AggregatePseudobulk` as before, providing the
+cell groupings and the biological samples, and then give the variable we will be using
+for consensus network analysis (sex in this case) to `SetMultiExpr`.
 
 ```{r eval=FALSE}
 

@@ -109,13 +109,12 @@ FindMajorIsoforms <- function(
 
   # get pseudobulk replicates
   message('Constructing pseudobulks...')
-  pseudobulks <- to_pseudobulk(
+  pseudobulks <- pseudobulk_by_group(
     X,
     meta = seurat_obj@meta.data,
-    cell_type_col = group.by,
     replicate_col = replicate_col,
-    label_col = replicate_col,
-    min_reps = 0
+    group_col = group.by,
+    min_cells = 3
   )
   message('Done!')
 
@@ -139,7 +138,7 @@ FindMajorIsoforms <- function(
       }
 
       # get the pseudobulk expression for all the isoforms in this gene
-      cur_iso_pb <- cur_pb[cur_pb_genes == cur_gene, ]
+      cur_iso_pb <- cur_pb[cur_pb_genes == cur_gene, , drop = FALSE]
       cur_iso_sum <- rowSums(cur_iso_pb)
 
       # compute the proportion of the gene's total expression in each isoform
