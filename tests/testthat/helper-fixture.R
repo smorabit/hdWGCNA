@@ -104,3 +104,17 @@ local_null_device <- function(env = parent.frame()) {
   grDevices::pdf(NULL)
   withr::defer(grDevices::dev.off(), envir = env)
 }
+
+# Module preservation of the cell type A network (reference) in cell type B (query).
+sim_preservation <- function() {
+  if (is.null(.fixture_cache$preservation)) {
+    withr::local_seed(12345)
+    ref <- sim_wgcna('kmes')
+    query <- suppressWarnings(SetDatExpr(ref, group_name = 'B', group.by = 'cell_type', assay = 'RNA'))
+    invisible(utils::capture.output(query <- suppressWarnings(
+      ModulePreservation(query, seurat_ref = ref, name = 'A_in_B', n_permutations = 10, verbose = 0)
+    )))
+    .fixture_cache$preservation <- query
+  }
+  .fixture_cache$preservation
+}
