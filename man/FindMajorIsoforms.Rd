@@ -12,7 +12,8 @@ FindMajorIsoforms(
   proportion_thresh = 0.8,
   low_thresh = 25,
   assay = "iso",
-  slot = "counts",
+  layer = "counts",
+  slot = NULL,
   cluster_markers = NULL,
   wgcna_name = NULL
 )
@@ -30,7 +31,9 @@ FindMajorIsoforms(
 
 \item{assay}{Assay in seurat_obj containing isoform expression information.}
 
-\item{slot}{Slot in seurat_obj, default to counts slot.}
+\item{layer}{Layer of the assay to use, default 'counts'.}
+
+\item{slot}{Deprecated, use \code{layer}.}
 
 \item{cluster_markers}{Cell population marker gene table from Seurat FindAllMarkers for the same cell populations specified in group.by. Optional parameter, will exclude isoforms that are not from marker genes.}
 

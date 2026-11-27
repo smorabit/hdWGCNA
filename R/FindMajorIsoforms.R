@@ -13,7 +13,8 @@
 #' @param proportion_thresh desired proportion of expression to define the set of major isoforms. Default = 0.8.
 #' @param low_thresh lower bound of expression level for considering an isoform as part of the major isoform set.
 #' @param assay Assay in seurat_obj containing isoform expression information.
-#' @param slot Slot in seurat_obj, default to counts slot.
+#' @param layer Layer of the assay to use, default 'counts'.
+#' @param slot Deprecated, use `layer`.
 #' @param cluster_markers Cell population marker gene table from Seurat FindAllMarkers for the same cell populations specified in group.by. Optional parameter, will exclude isoforms that are not from marker genes.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @details
@@ -34,10 +35,17 @@ FindMajorIsoforms <- function(
   proportion_thresh = 0.8,
   low_thresh = 25,
   assay = 'iso',
-  slot = 'counts',
+  layer = 'counts',
+  slot = NULL,
   cluster_markers = NULL,
   wgcna_name = NULL
 ) {
+  # `slot` is deprecated (defunct in SeuratObject 5); use `layer`
+  if (!is.null(slot)) {
+    warning('The slot argument is deprecated, please use layer instead.', call. = FALSE)
+    layer <- slot
+  }
+
   # set as active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
@@ -49,9 +57,9 @@ FindMajorIsoforms <- function(
     stop(paste0('Invalid choice of assay: ', assay, ' not found in Assays(seurat_obj).'))
   }
 
-  # check that slot is valid
-  if (!(slot %in% c('counts', 'data', 'scale.data'))) {
-    stop('Invalid choice of slot. Valid choices are counts, data, or scale.data.')
+  # check that layer is valid
+  if (!(layer %in% c('counts', 'data', 'scale.data'))) {
+    stop('Invalid choice of layer. Valid choices are counts, data, or scale.data.')
   }
 
   # check that group.by is valid
@@ -97,7 +105,7 @@ FindMajorIsoforms <- function(
   }
 
   # get counts matrix:
-  X <- Seurat::GetAssayData(seurat_obj, assay = assay, slot = slot)
+  X <- SeuratObject::LayerData(seurat_obj, assay = assay, layer = layer)
 
   # get pseudobulk replicates
   message('Constructing pseudobulks...')
