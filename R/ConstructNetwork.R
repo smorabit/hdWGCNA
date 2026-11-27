@@ -169,7 +169,9 @@ ConstructNetwork <- function(
   seurat_obj <- SetWGCNAParams(seurat_obj, params, wgcna_name)
 
   # append working directory to the TOM file so it has the full path:
-  net$TOMFiles <- paste0(getwd(), '/', renamed)
+  net$TOMFiles <- ifelse(test = substr(renamed,1,1) == "/", 
+                         yes = renamed, 
+                         no = paste0(getwd(), '/', renamed))
 
   # add network to seurat obj
   seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
