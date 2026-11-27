@@ -64,19 +64,21 @@ FindAllDMEs <- function(
     barcodes2 <- colnames(seurat_obj)[seurat_obj@meta.data[[group.by]] != cur_group]
 
     # run differential test on the ME assay
-    DMEs <- FindMarkers(
-      ME_assay,
-      cells.1 = barcodes1,
-      cells.2 = barcodes2,
-      slot = 'counts',
-      test.use = test.use,
-      only.pos = only.pos,
-      logfc.threshold = logfc.threshold,
-      min.pct = min.pct,
-      verbose = verbose,
-      pseudocount.use = pseudocount.use,
-      ...
-    )
+    DMEs <- do.call(FindMarkers, c(
+      list(
+        ME_assay,
+        cells.1 = barcodes1,
+        cells.2 = barcodes2,
+        slot = 'counts',
+        test.use = test.use,
+        only.pos = only.pos,
+        logfc.threshold = logfc.threshold,
+        min.pct = min.pct,
+        verbose = verbose,
+        pseudocount.use = pseudocount.use
+      ),
+      resolve_latent_vars(list(...), seurat_obj, c(barcodes1, barcodes2))
+    ))
     DMEs$module <- rownames(DMEs)
     DMEs$group <- cur_group
 
@@ -169,19 +171,21 @@ FindDMEs <- function(
   ME_assay <- Seurat::CreateAssayObject(MEs)
 
   # run differential test on the ME assay
-  DMEs <- FindMarkers(
-    ME_assay,
-    cells.1 = barcodes1,
-    cells.2 = barcodes2,
-    slot = 'counts',
-    test.use = test.use,
-    only.pos = only.pos,
-    logfc.threshold = logfc.threshold,
-    min.pct = min.pct,
-    verbose = verbose,
-    pseudocount.use = pseudocount.use,
-    ...
-  )
+  DMEs <- do.call(FindMarkers, c(
+    list(
+      ME_assay,
+      cells.1 = barcodes1,
+      cells.2 = barcodes2,
+      slot = 'counts',
+      test.use = test.use,
+      only.pos = only.pos,
+      logfc.threshold = logfc.threshold,
+      min.pct = min.pct,
+      verbose = verbose,
+      pseudocount.use = pseudocount.use
+    ),
+    resolve_latent_vars(list(...), seurat_obj, c(barcodes1, barcodes2))
+  ))
   DMEs$module <- rownames(DMEs)
 
   # add missing modules if specified
@@ -194,4 +198,21 @@ FindDMEs <- function(
   }
 
   DMEs
+}
+
+
+# FindMarkers() on an Assay needs latent.vars as a data.frame of per-cell values, but users
+# pass metadata column names (as for a Seurat object). Convert names to that data.frame.
+resolve_latent_vars <- function(dots, seurat_obj, cells) {
+  lv <- dots$latent.vars
+  if (!is.null(lv) && is.character(lv)) {
+    missing_vars <- setdiff(lv, colnames(seurat_obj@meta.data))
+    if (length(missing_vars) > 0) {
+      stop(paste0(
+        'latent.vars not found in seurat_obj@meta.data: ', paste0(missing_vars, collapse = ', ')
+      ))
+    }
+    dots$latent.vars <- seurat_obj@meta.data[cells, lv, drop = FALSE]
+  }
+  dots
 }

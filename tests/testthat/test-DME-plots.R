@@ -29,3 +29,26 @@ test_that('ModuleCorrNetwork explains a missing reduction', {
   so <- sim_wgcna('mes')
   expect_error(ModuleCorrNetwork(so, reduction = 'umap'), 'Reduction umap not found')
 })
+
+# regression test for #424: latent.vars given as metadata column names
+test_that('FindDMEs accepts latent.vars as metadata column names', {
+  so <- sim_wgcna('mes')
+  cells_a <- so$cell_type == 'A'
+  b1 <- colnames(so)[cells_a & so$condition == 'disease']
+  b2 <- colnames(so)[cells_a & so$condition == 'control']
+
+  dmes <- FindDMEs(so, barcodes1 = b1, barcodes2 = b2, test.use = 'LR', latent.vars = 'nCount_RNA')
+  expect_true(all(c('p_val', 'avg_log2FC', 'p_val_adj', 'module') %in% colnames(dmes)))
+  expect_gt(nrow(dmes), 0)
+
+  expect_error(
+    FindDMEs(so, barcodes1 = b1, barcodes2 = b2, test.use = 'LR', latent.vars = 'not_a_column'),
+    'latent.vars not found'
+  )
+})
+
+test_that('FindAllDMEs accepts latent.vars as metadata column names', {
+  so <- sim_wgcna('mes')
+  dmes <- suppressMessages(FindAllDMEs(so, group.by = 'cell_type', test.use = 'LR', latent.vars = 'nCount_RNA'))
+  expect_setequal(unique(dmes$group), c('A', 'B', 'C'))
+})
