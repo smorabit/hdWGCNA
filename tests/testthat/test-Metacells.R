@@ -173,3 +173,18 @@ test_that('MetacellsByGroups works when Seurat creates v3 assays', {
   )
   expect_s4_class(GetMetacellObject(so)[['RNA']], 'Assay')
 })
+
+# regression test for #217: subsetting graphs without dimnames failed in MetacellsByGroups
+test_that('MetacellsByGroups works with graphs that have no dimnames', {
+  so <- Seurat::FindNeighbors(sim_preprocessed(), dims = 1:10, verbose = FALSE)
+  g <- so@graphs$RNA_snn
+  g@Dimnames <- list(NULL, NULL)
+  so@graphs$RNA_snn <- g
+  so <- SetupForWGCNA(so, gene_select = 'fraction', fraction = 0.05, wgcna_name = 'g')
+  so <- MetacellsByGroups(
+    so, group.by = c('cell_type', 'Sample'), reduction = 'pca', k = 20, max_shared = 10,
+    min_cells = 40, ident.group = 'cell_type', verbose = FALSE
+  )
+  expect_gt(ncol(GetMetacellObject(so)), 0)
+  expect_true('RNA_snn' %in% names(so@graphs))  # the returned object keeps its graphs
+})

@@ -405,7 +405,8 @@ MetacellsByGroups <- function(
   if (any(group_counts)) {
     warning(paste0('Removing the following groups that did not meet min_cells: ', paste(names(group_counts)[group_counts], collapse = ', ')))
   }
-  groupings <- groupings[table(seurat_obj$metacell_grouping) >= min_cells]
+  group_sizes <- table(seurat_obj$metacell_grouping)
+  groupings <- groupings[groupings %in% names(group_sizes)[group_sizes >= min_cells]]
 
   if (length(groupings) == 0) {
     stop('No groups met the min_cells requirement.')
@@ -423,8 +424,13 @@ MetacellsByGroups <- function(
   })
 
   # split seurat obj by groupings
+  # split a lightweight copy: graphs and neighbors are not needed here, and subsetting them
+  # fails for graphs without dimnames (e.g. objects from sketch / ProjectData workflows)
+  split_obj <- seurat_obj
+  split_obj@graphs <- list()
+  split_obj@neighbors <- list()
   seurat_list <- lapply(groupings, function(x) {
-    seurat_obj[, seurat_obj$metacell_grouping == x]
+    split_obj[, split_obj$metacell_grouping == x]
   })
   names(seurat_list) <- groupings
 
