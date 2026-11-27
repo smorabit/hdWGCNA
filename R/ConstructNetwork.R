@@ -102,13 +102,13 @@ ConstructNetwork <- function(
   }
 
   if (is.null(soft_power) && !consensus) {
-    soft_power <- GetPowerTable(seurat_obj) %>%
+    soft_power <- GetPowerTable(seurat_obj, wgcna_name) %>%
       subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
       .$Power %>%
       min()
     cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ', soft_power, '\n'))
   } else if (is.null(soft_power)) {
-    power_tables <- GetPowerTable(seurat_obj) %>% dplyr::group_split(group)
+    power_tables <- GetPowerTable(seurat_obj, wgcna_name) %>% dplyr::group_split(group)
     soft_power <- sapply(power_tables, function(power_table) {
       power_table %>%
         subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
@@ -179,7 +179,7 @@ ConstructNetwork <- function(
   seurat_obj <- SetNetworkData(seurat_obj, net, wgcna_name)
 
   # set the modules df in the Seurat object
-  mods <- GetNetworkData(seurat_obj)$colors
+  mods <- GetNetworkData(seurat_obj, wgcna_name)$colors
   seurat_obj <- SetModules(
     seurat_obj,
     modules = data.frame(

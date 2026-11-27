@@ -207,7 +207,7 @@ OverlapModulesDEGs <- function(
   cell_groups <- deg_df$group %>% unique()
 
   # get modules,
-  modules <- GetModules(seurat_obj)
+  modules <- GetModules(seurat_obj, wgcna_name)
   mods <- levels(modules$module)
   mods <- mods[mods != 'grey']
 

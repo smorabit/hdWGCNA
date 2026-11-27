@@ -116,3 +116,21 @@ test_that('store_tom_in_seurat=TRUE with saveConsensusTOMs=FALSE throws an error
     )
   )
 })
+
+# regression test for #397 / #341: ConstructNetwork took the modules of the active experiment
+test_that('ConstructNetwork uses wgcna_name, not the active experiment', {
+  so <- sim_wgcna('powers')
+  # make a second experiment the active one
+  so <- SetupForWGCNA(so, gene_select = 'fraction', fraction = 0.05, wgcna_name = 'other')
+  expect_equal(so@misc$active_wgcna, 'other')
+
+  invisible(utils::capture.output(
+    so <- ConstructNetwork(
+      so, wgcna_name = 'sim', tom_outdir = file.path(tempdir(), 'tom_397'),
+      overwrite_tom = TRUE, minModuleSize = 20, verbose = 0
+    )
+  ))
+  mods <- GetModules(so, wgcna_name = 'sim')
+  expect_equal(nrow(mods), length(GetWGCNAGenes(so, 'sim')))
+  expect_true(length(setdiff(unique(mods$module), 'grey')) >= 3)
+})
