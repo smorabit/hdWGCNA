@@ -406,7 +406,7 @@ GetDatExpr <- function(seurat_obj, wgcna_name = NULL) {
 }
 
 
-' Set Multi-Set Expression Data (Consensus WGCNA)
+#' Set Multi-Set Expression Data (Consensus WGCNA)
 #'
 #' This function prepares the expression data for Consensus WGCNA analysis. It populates
 #' the `multiExpr` slot in the Seurat object, which contains a list of expression matrices

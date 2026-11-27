@@ -2,9 +2,7 @@
 % Please edit documentation in R/getters_and_setters.R
 \name{SetMultiExpr}
 \alias{SetMultiExpr}
-\title{This function prepares the expression data for Consensus WGCNA analysis. It populates
-the \code{multiExpr} slot in the Seurat object, which contains a list of expression matrices
-(one for each consensus group, e.g., dataset, sample, condition).}
+\title{Set Multi-Set Expression Data (Consensus WGCNA)}
 \usage{
 SetMultiExpr(
   seurat_obj,
@@ -87,6 +85,10 @@ pseudobulk consensus analysis.
 }
 }
 \details{
+This function prepares the expression data for Consensus WGCNA analysis. It populates
+the \code{multiExpr} slot in the Seurat object, which contains a list of expression matrices
+(one for each consensus group, e.g., dataset, sample, condition).
+
 This function automatically aligns the genes in the provided data (\code{mat} or \code{seurat_obj})
 with the genes selected for WGCNA (via \code{SetupForWGCNA} or \code{GetWGCNAGenes}). It also
 runs \code{WGCNA::goodGenesMS} to exclude genes with zero variance or excessive missingness
