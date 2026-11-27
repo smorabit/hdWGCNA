@@ -1150,7 +1150,7 @@ HubGeneNetworkPlot <- function(
   }
 
   # get modules, MEs:
-  MEs <- GetMEs(seurat_obj, wgcna_name)
+  MEs <- GetMEs(seurat_obj, wgcna_name = wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
 
   # using all modules?
@@ -1204,24 +1204,7 @@ HubGeneNetworkPlot <- function(
   }))
   edge_df <- reshape2::melt(subset_TOM) %>% subset(value >= edge_cutoff)
 
-  edge_df$color <- future.apply::future_sapply(seq_len(nrow(edge_df)), function(i) {
-    gene1 <- as.character(edge_df[i, 'Var1'])
-    gene2 <- as.character(edge_df[i, 'Var2'])
-
-    col1 <- modules %>%
-      subset(gene_name == gene1) %>%
-      .$color
-    col2 <- modules %>%
-      subset(gene_name == gene2) %>%
-      .$color
-
-    if (col1 == col2) {
-      col <- col1
-    } else {
-      col <- 'grey90'
-    }
-    col
-  })
+  edge_df$color <- edge_colors(edge_df, modules)
 
   # subset edges:
   groups <- unique(edge_df$color)
@@ -1373,20 +1356,7 @@ ModuleUMAPPlot <- function(
   print(dim(edge_df))
 
   # set color of each edge based on value:
-  edge_df$color <- future.apply::future_sapply(seq_len(nrow(edge_df)), function(i) {
-    gene1 <- as.character(edge_df[i, 'Var1'])
-    gene2 <- as.character(edge_df[i, 'Var2'])
-
-    col1 <- selected_modules[selected_modules$gene_name == gene1, 'color']
-    col2 <- selected_modules[selected_modules$gene_name == gene2, 'color']
-
-    if (col1 == col2) {
-      col <- col1
-    } else {
-      col <- 'grey90'
-    }
-    col
-  })
+  edge_df$color <- edge_colors(edge_df, selected_modules)
 
   # keep grey edges?
   if (!keep_grey_edges) {
@@ -1476,7 +1446,7 @@ ModuleUMAPPlot <- function(
     vertex.label.family = 'Helvetica', # vertex.label.font=vertex_df$font,
     vertex.label.font = 3,
     vertex.label.color = igraph::V(g)$fontcolor,
-    vertex.label.cex = 0,
+    vertex.label.cex = vertex.label.cex,
     vertex.frame.color = igraph::V(g)$framecolor,
     margin = 0
   )
@@ -3282,3 +3252,13 @@ GeomStripes <- ggplot2::ggproto(
     ggplot2::GeomRect$draw_panel(rects, panel_params, coord)
   }
 )
+
+
+# Edge colours for network plots: the module colour when both genes of an edge are in the
+# same module, otherwise 'grey90'. Vectorised; replaces a per-edge future_sapply() loop that
+# exported the whole TOM and Seurat object to every worker.
+edge_colors <- function(edge_df, modules) {
+  col1 <- as.character(modules$color[match(as.character(edge_df$Var1), modules$gene_name)])
+  col2 <- as.character(modules$color[match(as.character(edge_df$Var2), modules$gene_name)])
+  ifelse(col1 == col2, col1, 'grey90')
+}

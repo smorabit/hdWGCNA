@@ -31,7 +31,6 @@ Imports:
     dplyr,
     fastcluster,
     FNN,
-    future.apply,
     ggplot2,
     ggraph,
     ggrepel,
