@@ -1197,6 +1197,15 @@ GetTOM <- function(seurat_obj, wgcna_name = NULL) {
 
   tom_files <- GetNetworkData(seurat_obj, wgcna_name)$TOMFiles
 
+  # objects made with hdWGCNA <= 0.4.13 and an absolute tom_outdir stored the path as
+  # paste0(getwd(), '/', tom_outdir, ...), e.g. '/home/me//data/TOM/x_TOM.rda'
+  if (!file.exists(tom_files[[1]]) && grepl('//', tom_files[[1]], fixed = TRUE)) {
+    fixed_path <- sub('^.*//', '/', tom_files[[1]])
+    if (file.exists(fixed_path)) {
+      tom_files[[1]] <- fixed_path
+    }
+  }
+
   if (!file.exists(tom_files[[1]])) {
     stop(paste0('TOM file ', tom_files[[1]], ' not found. Please update path to TOM file.'))
   }

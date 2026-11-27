@@ -7,10 +7,10 @@
 PlotDMEsLollipop(
   seurat_obj,
   DMEs,
-  wgcna_name,
+  wgcna_name = NULL,
   group.by = NULL,
   comparison = NULL,
-  pvalue,
+  pvalue = "p_val_adj",
   avg_log2FC = "avg_log2FC"
 )
 }

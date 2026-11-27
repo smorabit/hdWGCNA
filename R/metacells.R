@@ -61,6 +61,7 @@ ConstructMetacells <- function(
   }
 
   # get the dim reduction
+  check_reduction(seurat_obj, reduction)
   reduced_coordinates <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   reduc_orig <- reduced_coordinates
 

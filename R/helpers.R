@@ -164,3 +164,15 @@ is_numeric_matrix <- function(x) {
 is_numeric_dataframe <- function(x) {
   is.data.frame(x) && all(vapply(x, is.numeric, logical(1)))
 }
+
+
+# Stop with an informative message if a dimensionality reduction is missing.
+check_reduction <- function(seurat_obj, reduction) {
+  if (!(reduction %in% names(seurat_obj@reductions))) {
+    stop(paste0(
+      'Reduction ', reduction, ' not found in seurat_obj. Available reductions: ',
+      paste0(names(seurat_obj@reductions), collapse = ', '), '.'
+    ), call. = FALSE)
+  }
+  invisible(TRUE)
+}

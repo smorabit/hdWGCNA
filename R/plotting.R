@@ -373,6 +373,7 @@ ModuleCorrNetwork <- function(
   })
 
   # get UMAP / tSNE centroids for these clusters to use as starting coordinates
+  check_reduction(seurat_obj, reduction)
   red_df <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
   red_df$cluster <- clusters
 
@@ -532,6 +533,7 @@ ModuleFeaturePlot <- function(
   }
 
   # get  reduction from seurat obj
+  check_reduction(seurat_obj, reduction)
   umap <- seurat_obj@reductions[[reduction]]@cell.embeddings[, 1:2]
   x_name <- colnames(umap)[1]
   y_name <- colnames(umap)[2]
@@ -2430,19 +2432,20 @@ PlotDMEsVolcano <- function(
 PlotDMEsLollipop <- function(
   seurat_obj,
   DMEs,
-  wgcna_name,
+  wgcna_name = NULL,
   group.by = NULL,
   comparison = NULL,
-  pvalue,
+  pvalue = 'p_val_adj',
   avg_log2FC = 'avg_log2FC'
 ) {
   if (!(pvalue %in% colnames(DMEs))) {
     stop('Selected pvalue is not found in DMEs dataframe column names.')
   }
 
-  if (missing(wgcna_name) || !(wgcna_name %in% names(seurat_obj@misc))) {
-    stop('Please provide wgcna_name or the selected wgcna_name is not found in seurat_obj@misc.')
+  if (is.null(wgcna_name)) {
+    wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   modules <- GetModules(seurat_obj, wgcna_name) %>%
     subset(module != 'grey') %>%
