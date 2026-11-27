@@ -1,80 +1,31 @@
-# test that the output format is expected
-test_that('SetDatExpr output is a data.frame', {
-  data(test_seurat)
+test_that('SetDatExpr stores a metacells x genes data.frame for the selected group', {
+  so <- sim_wgcna('datexpr')
+  datExpr <- GetDatExpr(so)
+  m_obj <- GetMetacellObject(so)
 
-  test_seurat <- SetDatExpr(test_seurat, assay = 'RNA')
-  datExpr <- GetDatExpr(test_seurat)
-  expect_equal(class(datExpr), 'data.frame')
+  expect_s3_class(datExpr, 'data.frame')
+  expect_true(all(colnames(datExpr) %in% GetWGCNAGenes(so)))
+  expect_true(all(rownames(datExpr) %in% colnames(m_obj)))
+  expect_true(all(m_obj$cell_type[match(rownames(datExpr), colnames(m_obj))] == 'A'))
 })
 
-# check that the datExpr has features for columns
-test_that('features are columns', {
-  data(test_seurat)
-
-  test_seurat <- SetDatExpr(test_seurat, assay = 'RNA')
-  datExpr <- GetDatExpr(test_seurat)
-
-  check <- all(colnames(datExpr) %in% rownames(test_seurat))
-
-  expect_equal(check, TRUE)
+test_that('SetDatExpr can return the matrix instead of the object', {
+  so <- sim_wgcna('metacells')
+  datExpr <- SetDatExpr(so, group_name = 'B', group.by = 'cell_type', return_seurat = FALSE)
+  expect_s3_class(datExpr, 'data.frame')
+  m_obj <- GetMetacellObject(so)
+  expect_true(all(m_obj$cell_type[match(rownames(datExpr), colnames(m_obj))] == 'B'))
 })
 
-# check that the return_seurat flag works
-test_that('return_seurat flag works', {
-  data(test_seurat)
+test_that('SetDatExpr selects several groups and can use single cells', {
+  so <- sim_wgcna('metacells')
+  so <- SetDatExpr(so, group_name = c('A', 'B'), group.by = 'cell_type')
+  m_obj <- GetMetacellObject(so)
+  groups <- m_obj$cell_type[match(rownames(GetDatExpr(so)), colnames(m_obj))]
+  expect_setequal(unique(as.character(groups)), c('A', 'B'))
 
-  datExpr <- SetDatExpr(test_seurat, assay = 'RNA', return_seurat = FALSE)
-
-  expect_equal(class(datExpr), 'data.frame')
-})
-
-# check that the use_metacells flag works
-test_that('use_metacells flag works', {
-  data(test_seurat)
-
-  test_seurat <- SetDatExpr(test_seurat, assay = 'RNA', use_metacells = FALSE)
-  datExpr <- GetDatExpr(test_seurat)
-
-  check <- all(rownames(datExpr) %in% colnames(test_seurat))
-
-  expect_equal(check, TRUE)
-})
-
-
-# test that group.by subsetting works as intended
-test_that('group.by subsetting works', {
-  data(test_seurat)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('Sample'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'Sample',
-    target_metacells = 10,
-    min_cells = 10
-  )
-  test_seurat <- NormalizeMetacells(test_seurat, verbose = FALSE)
-
-  # selected groups to subset
-  selected_groups <- c('C1', 'C2', 'C3')
-  test_seurat <- SetDatExpr(
-    test_seurat,
-    group.by = 'Sample',
-    group_name = selected_groups,
-    assay = 'RNA'
-  )
-  datExpr <- GetDatExpr(test_seurat)
-
-  # check that the groups are in the rownames of the datExpr
-  samples <- do.call(rbind, strsplit(rownames(datExpr), '_'))[, 1]
-  check <- all(selected_groups %in% samples)
-
-  expect_equal(check, TRUE)
+  so <- SetDatExpr(so, group_name = 'C', group.by = 'cell_type', use_metacells = FALSE)
+  datExpr <- GetDatExpr(so)
+  expect_true(all(rownames(datExpr) %in% colnames(so)))
+  expect_equal(nrow(datExpr), sum(so$cell_type == 'C'))
 })

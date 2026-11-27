@@ -1,126 +1,62 @@
-# check that the network information gets added to the seurat object
-test_that('Network info gets put into the Seurat object', {
-  data(test_seurat)
-
-  test_seurat <- ConstructNetwork(
-    test_seurat,
-    soft_power = 5,
-    verbose = FALSE
-  )
-
-
-  # # remove this in a sec:
-  # test_seurat <- ModuleEigengenes(test_seurat)
-  # test_seurat <- ModuleConnectivity(test_seurat)
-  # head(GetModules(test_seurat))
-
-  net <- GetNetworkData(test_seurat)
-
-  # remove the TOM directory
-  unlink('TOM', recursive = TRUE)
-  # file.remove('ConsensusTOM-block.1.rda')
-
-  expect_equal(is.null(net), FALSE)
+test_that('ConstructNetwork stores the network and writes the TOM', {
+  so <- sim_wgcna('network')
+  net <- GetNetworkData(so)
+  expect_false(is.null(net))
+  expect_true(file.exists(net$TOMFiles))
+  expect_equal(nrow(GetModules(so)), length(GetWGCNAGenes(so)))
 })
 
-# check that the TOM gets made
-test_that('The TOM gets made', {
-  data(test_seurat)
-
-  wgcna_name <- 'test'
-
-  test_seurat <- ConstructNetwork(
-    test_seurat,
-    soft_power = 5,
-    verbose = FALSE
-  )
-
-  check <- file.exists(paste0('TOM/', wgcna_name, '_TOM.rda'))
-
-  # remove the TOM directory
-  unlink('TOM', recursive = TRUE)
-  # file.remove('ConsensusTOM-block.1.rda')
-
-  expect_equal(check, TRUE)
-})
-
-# check that SetTOM / GetTOM round-trip works with a manually supplied matrix
-test_that('SetTOM stores TOM in Seurat object and GetTOM retrieves it', {
-  data(test_seurat)
-
-  # build a small named dummy matrix
-  genes <- GetWGCNAGenes(test_seurat)
+test_that('SetTOM stores a TOM in the object and GetTOM returns it without a file', {
+  so <- sim_wgcna('network')
+  genes <- GetWGCNAGenes(so)
   n <- length(genes)
-  dummy_tom <- matrix(runif(n * n), nrow = n, ncol = n)
-  rownames(dummy_tom) <- genes
-  colnames(dummy_tom) <- genes
+  dummy_tom <- matrix(stats::runif(n * n), nrow = n, ncol = n, dimnames = list(genes, genes))
 
-  test_seurat <- SetTOM(test_seurat, dummy_tom)
-  retrieved <- GetTOM(test_seurat)
-
-  expect_equal(retrieved, dummy_tom)
+  so <- SetTOM(so, dummy_tom)
+  net <- GetNetworkData(so)
+  net$TOMFiles <- file.path(tempdir(), 'does_not_exist.rda')
+  so <- SetNetworkData(so, net)
+  expect_equal(GetTOM(so), dummy_tom)
 })
 
-# check that GetTOM returns the in-object TOM without needing a file on disk
-test_that('GetTOM returns in-object TOM without a file on disk', {
-  data(test_seurat)
-
-  genes <- GetWGCNAGenes(test_seurat)
-  n <- length(genes)
-  dummy_tom <- matrix(runif(n * n), nrow = n, ncol = n)
-  rownames(dummy_tom) <- genes
-  colnames(dummy_tom) <- genes
-
-  test_seurat <- SetTOM(test_seurat, dummy_tom)
-
-  # GetTOM should return from the object without touching any file
-  expect_equal(is.null(GetTOM(test_seurat)), FALSE)
-})
-
-# check that store_tom_in_seurat=TRUE stores a correctly-shaped TOM in the object
-test_that('ConstructNetwork with store_tom_in_seurat=TRUE stores TOM in Seurat object', {
-  data(test_seurat)
-
-  test_seurat <- ConstructNetwork(
-    test_seurat,
-    soft_power = 5,
-    store_tom_in_seurat = TRUE,
-    verbose = FALSE
-  )
-
-  tom <- GetTOM(test_seurat)
-  modules <- GetModules(test_seurat)
-
-  # remove the TOM directory
-  unlink('TOM', recursive = TRUE)
-
-  # TOM should be a square matrix with genes matching the modules table
-  expect_equal(is.matrix(tom), TRUE)
-  expect_equal(nrow(tom), nrow(modules))
-  expect_equal(ncol(tom), nrow(modules))
-  expect_equal(rownames(tom), modules$gene_name)
-  expect_equal(colnames(tom), modules$gene_name)
-})
-
-# check that store_tom_in_seurat=TRUE with saveConsensusTOMs=FALSE throws an error
-test_that('store_tom_in_seurat=TRUE with saveConsensusTOMs=FALSE throws an error', {
-  data(test_seurat)
-
+test_that('store_tom_in_seurat = TRUE requires saveConsensusTOMs = TRUE', {
   expect_error(
-    ConstructNetwork(
-      test_seurat,
-      soft_power = 5,
-      store_tom_in_seurat = TRUE,
-      saveConsensusTOMs = FALSE,
-      verbose = FALSE
-    )
+    ConstructNetwork(sim_wgcna('powers'), store_tom_in_seurat = TRUE, saveConsensusTOMs = FALSE),
+    'requires saveConsensusTOMs'
   )
+})
+
+# also a regression test for #182: WGCNA temp files are kept in tom_outdir
+test_that('ConstructNetwork can store the TOM in the object and leaves no files in the working directory', {
+  skip_on_cran()
+  so <- sim_wgcna('powers')
+  wd <- withr::local_tempdir()
+  withr::local_dir(wd)
+  tom_dir <- file.path(tempdir(), 'tom_store')
+  invisible(utils::capture.output(
+    so2 <- ConstructNetwork(so, tom_outdir = tom_dir, overwrite_tom = TRUE, minModuleSize = 20,
+                            store_tom_in_seurat = TRUE, verbose = 0)
+  ))
+  expect_length(list.files(wd, all.files = TRUE, no.. = TRUE, recursive = TRUE), 0)
+  expect_true(file.exists(file.path(tom_dir, 'sim_TOM.rda')))
+
+  # same modules as the cached network built with the same inputs
+  ref <- GetModules(sim_wgcna('network'))
+  new <- GetModules(so2)
+  expect_equal(new$gene_name, ref$gene_name)
+  expect_equal(as.character(new$module), as.character(ref$module))
+
+  # TOM stored in the object: square, named by the module genes
+  tom <- GetTOM(so2)
+  expect_true(is.matrix(tom))
+  expect_equal(dim(tom), c(nrow(new), nrow(new)))
+  expect_equal(rownames(tom), new$gene_name)
 })
 
 # regression test for #397 / #341: ConstructNetwork took the modules of the active experiment
 test_that('ConstructNetwork uses wgcna_name, not the active experiment', {
+  skip_on_cran()
   so <- sim_wgcna('powers')
-  # make a second experiment the active one
   so <- SetupForWGCNA(so, gene_select = 'fraction', fraction = 0.05, wgcna_name = 'other')
   expect_equal(so@misc$active_wgcna, 'other')
 
@@ -135,27 +71,9 @@ test_that('ConstructNetwork uses wgcna_name, not the active experiment', {
   expect_true(length(setdiff(unique(mods$module), 'grey')) >= 3)
 })
 
-# regression test for #182: WGCNA temp files are kept in tom_outdir, and results don't change
-test_that('ConstructNetwork leaves no files in the working directory and keeps results', {
-  so <- sim_wgcna('powers')
-  wd <- withr::local_tempdir()
-  withr::local_dir(wd)
-  tom_dir <- file.path(tempdir(), 'tom_182')
-  invisible(utils::capture.output(
-    so2 <- ConstructNetwork(so, tom_outdir = tom_dir, overwrite_tom = TRUE,
-                            minModuleSize = 20, verbose = 0)
-  ))
-  expect_length(list.files(wd, all.files = TRUE, no.. = TRUE, recursive = TRUE), 0)
-  expect_true(file.exists(file.path(tom_dir, 'sim_TOM.rda')))
-
-  ref <- GetModules(sim_wgcna('network'))
-  new <- GetModules(so2)
-  expect_equal(new$gene_name, ref$gene_name)
-  expect_equal(as.character(new$module), as.character(ref$module))
-})
-
 # regression test for #76: numericLabels = TRUE gave numeric module colours
 test_that('ConstructNetwork converts numeric module labels to colours', {
+  skip_on_cran()
   so <- sim_wgcna('powers')
   expect_message(invisible(utils::capture.output(
     so <- ConstructNetwork(so, tom_outdir = file.path(tempdir(), 'tom_76'), overwrite_tom = TRUE,

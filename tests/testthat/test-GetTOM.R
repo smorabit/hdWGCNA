@@ -1,4 +1,5 @@
 test_that('GetTOM finds the TOM when tom_outdir is an absolute path', {
+  skip_on_cran()
   so <- sim_wgcna('powers')
   tom_dir <- file.path(tempdir(), 'abs_tom_test')
   invisible(utils::capture.output(

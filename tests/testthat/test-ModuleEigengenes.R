@@ -1,35 +1,18 @@
-# check that we have MEs calculated for all the modules
-test_that('MEs calculated for all modules', {
-  data(test_seurat)
+test_that('ModuleEigengenes computes MEs and harmonized MEs for every module', {
+  so <- sim_wgcna('mes')
+  mods <- levels(GetModules(so)$module)
+  MEs <- GetMEs(so, harmonized = FALSE)
+  hMEs <- GetMEs(so, harmonized = TRUE)
 
-  # get module info
-  modules <- GetModules(test_seurat)
-  mods <- levels(modules$module)
-
-  # compute MEs
-  test_seurat <- ModuleEigengenes(test_seurat, verbose = FALSE)
-  MEs <- GetMEs(test_seurat, harmonized = FALSE)
-
-  # check
-  check <- all(mods %in% colnames(MEs))
-  expect_equal(check, TRUE)
-})
-
-
-# check that harmonization works
-test_that('ME Harmonization works', {
-  data(test_seurat)
-
-  test_seurat <- ModuleEigengenes(test_seurat, group.by = 'specimenID', verbose = FALSE)
-  hMEs <- GetMEs(test_seurat, harmonized = TRUE)
-  MEs <- GetMEs(test_seurat, harmonized = FALSE)
-
-  check <- !is.logical(all.equal(hMEs, MEs)) & all.equal(dim(hMEs), dim(MEs))
-  expect_equal(check, TRUE)
+  expect_true(all(mods %in% colnames(MEs)))
+  expect_equal(dim(hMEs), dim(MEs))
+  expect_equal(rownames(MEs), colnames(so))
+  expect_false(isTRUE(all.equal(hMEs, MEs)))
 })
 
 # regression test for #433: the ScaleData check failed when @commands had no ScaleData entry
 test_that('harmonized MEs do not depend on ScaleData having been recorded', {
+  skip_on_cran()
   so <- sim_wgcna('network')
   so@commands <- list()
   so <- ModuleEigengenes(so, group.by.vars = 'Sample', verbose = FALSE)

@@ -1,56 +1,29 @@
-# test that the length of the gene list is expected:
-test_that('List of selected genes is the correct length', {
-  data(test_seurat)
-  genes <- rownames(test_seurat)[1:200]
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = genes
-  )
-  wgcna_genes <- GetWGCNAGenes(test_seurat, 'test')
-
-  expect_equal(length(wgcna_genes), length(genes))
+test_that('SetupForWGCNA keeps a user-supplied gene list', {
+  genes <- rownames(hdw_sim)[1:200]
+  so <- suppressWarnings(SetupForWGCNA(hdw_sim, wgcna_name = 'test', features = genes))
+  expect_equal(GetWGCNAGenes(so, 'test'), genes)
+  expect_equal(so@misc$active_wgcna, 'test')
 })
 
-# test that the length of the gene list is expected:
-test_that('Duplicated genes are collapsed together', {
-  data(test_seurat)
-  genes <- rownames(test_seurat)[1:200]
-  genes <- c(genes, genes)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = genes
-  )
-  wgcna_genes <- GetWGCNAGenes(test_seurat, 'test')
-
-  expect_equal(length(wgcna_genes), length(unique(genes)))
+test_that('SetupForWGCNA collapses duplicated genes', {
+  genes <- rownames(hdw_sim)[1:200]
+  so <- suppressWarnings(SetupForWGCNA(hdw_sim, wgcna_name = 'test', features = c(genes, genes)))
+  expect_length(GetWGCNAGenes(so, 'test'), length(genes))
 })
 
-# test that selecting genes that aren't in the seurat object throws an error
-test_that('Selecting features that are not present throws an error', {
-  data(test_seurat)
-  genes <- paste0('Fake', seq(1:100))
-
-  expect_error(SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = genes
-  ))
+test_that('SetupForWGCNA errors for genes that are not in the object', {
+  expect_error(SetupForWGCNA(hdw_sim, wgcna_name = 'test', features = paste0('Fake', 1:100)))
 })
 
-# test that the variable features are properly selected:
-test_that('Variable features are selected when requested', {
-  data(test_seurat)
+test_that('SetupForWGCNA selects genes by expression fraction or variable features', {
+  so <- sim_preprocessed()
+  so <- SetupForWGCNA(so, wgcna_name = 'var', gene_select = 'variable')
+  expect_true(all(GetWGCNAGenes(so, 'var') %in% Seurat::VariableFeatures(so)))
 
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    gene_select = 'variable'
-  )
-  wgcna_genes <- GetWGCNAGenes(test_seurat, 'test')
-
-  expect_equal(all(wgcna_genes %in% VariableFeatures(test_seurat)), TRUE)
+  so <- SetupForWGCNA(so, wgcna_name = 'frac', gene_select = 'fraction', fraction = 0.2)
+  genes <- GetWGCNAGenes(so, 'frac')
+  counts <- SeuratObject::LayerData(so, layer = 'counts')
+  expect_true(all(Matrix::rowMeans(counts[genes, ] > 0) >= 0.2))
+  # both experiments are kept
+  expect_true(all(c('var', 'frac') %in% names(so@misc)))
 })

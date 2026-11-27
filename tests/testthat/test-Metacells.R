@@ -1,139 +1,26 @@
-# test that the output format is Seurat
-test_that('Metacell output is Seurat format', {
-  data(test_seurat)
+test_that('MetacellsByGroups returns a metacell Seurat object with the expected contents', {
+  so <- sim_wgcna('metacells')
+  m_obj <- GetMetacellObject(so)
 
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('cell_type'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'cell_type',
-    target_metacells = 50,
-    min_cells = 10
-  )
-
-  m_obj <- GetMetacellObject(test_seurat)
-
-  expect_equal('Seurat' %in% class(m_obj), TRUE)
+  expect_s4_class(m_obj, 'Seurat')
+  expect_equal(rownames(m_obj), rownames(so))
+  expect_true(all(c('cell_type', 'Sample') %in% colnames(m_obj@meta.data)))
+  expect_true(all(as.character(Idents(m_obj)) %in% c('A', 'B', 'C')))
+  # one set of metacells per cell type x sample
+  expect_equal(nrow(unique(m_obj@meta.data[, c('cell_type', 'Sample')])), 24)
 })
 
-# test that the genes are the same in the metacell and the main seurat object
-test_that('Metacell features are same as Seurat object', {
-  data(test_seurat)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('cell_type'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'cell_type',
-    target_metacells = 50,
-    min_cells = 10
-  )
-
-  m_obj <- GetMetacellObject(test_seurat)
-
-  expect_equal(rownames(m_obj), rownames(test_seurat))
-})
-
-
-# test that the meta-data is getting passed
-test_that('Meta-data gets passed to the metacell object', {
-  data(test_seurat)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('cell_type', 'annotation'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'cell_type',
-    target_metacells = 50,
-    min_cells = 10
-  )
-
-  m_obj <- GetMetacellObject(test_seurat)
-
-  expect_equal(all(c('cell_type', 'annotation') %in% colnames(m_obj@meta.data)), TRUE)
-})
-
-# test that the idents are expected
-test_that('Metacell object Idents are expected', {
-  data(test_seurat)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('Sample', 'cell_type', 'annotation'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'Sample',
-    target_metacells = 10,
-    min_cells = 10
-  )
-
-  m_obj <- GetMetacellObject(test_seurat)
-
-  check <- all(as.character(Idents(m_obj)) %in% as.character(test_seurat$Sample))
-  expect_equal(check, TRUE)
-})
-
-# test that normalizing the metacells works as intended
-test_that('Normalizing the metacell object works', {
-  data(test_seurat)
-
-  test_seurat <- SetupForWGCNA(
-    test_seurat,
-    wgcna_name = 'test',
-    features = rownames(test_seurat)
-  )
-
-  test_seurat <- MetacellsByGroups(
-    test_seurat,
-    group.by = c('cell_type'),
-    k = 5,
-    max_shared = 5,
-    ident.group = 'cell_type',
-    target_metacells = 50,
-    min_cells = 10
-  )
-
-  test_seurat <- NormalizeMetacells(test_seurat, verbose = FALSE)
-  m_obj <- GetMetacellObject(test_seurat)
-  if (CheckSeurat5()) {
-    expr <- SeuratObject::LayerData(test_seurat, layer = 'data')
-  } else {
-    expr <- Seurat::GetAssayData(test_seurat, slot = 'data')
-  }
-
-  check <- all.equal(ceiling(expr), expr) == TRUE
-  expect_equal(check, FALSE)
+test_that('NormalizeMetacells log-normalizes the metacell counts', {
+  m_obj <- GetMetacellObject(sim_wgcna('metacells'))
+  expr <- SeuratObject::LayerData(m_obj, layer = 'data')
+  counts <- SeuratObject::LayerData(m_obj, layer = 'counts')
+  expect_false(isTRUE(all.equal(ceiling(expr), expr)))
+  expect_equal(dim(expr), dim(counts))
 })
 
 # regression test for #416 / #290: a single failed group used to crash MetacellsByGroups
 test_that('MetacellsByGroups removes a single group that is too small for metacells', {
+  skip_on_cran()
   so <- sim_preprocessed()
   small_group <- so$cell_type == 'C' & so$Sample == 'S03'
   so <- subset(so, cells = c(colnames(so)[!small_group], colnames(so)[small_group][1:30]))
@@ -165,6 +52,7 @@ test_that('MetacellsByGroups stops clearly when every group fails', {
 
 # regression test for #296: JoinLayers was called on v3 assays
 test_that('MetacellsByGroups works when Seurat creates v3 assays', {
+  skip_on_cran()
   withr::local_options(Seurat.object.assay.version = 'v3')
   so <- SetupForWGCNA(sim_preprocessed(), gene_select = 'fraction', fraction = 0.05, wgcna_name = 'v3')
   so <- MetacellsByGroups(
@@ -176,6 +64,7 @@ test_that('MetacellsByGroups works when Seurat creates v3 assays', {
 
 # regression test for #217: subsetting graphs without dimnames failed in MetacellsByGroups
 test_that('MetacellsByGroups works with graphs that have no dimnames', {
+  skip_on_cran()
   so <- Seurat::FindNeighbors(sim_preprocessed(), dims = 1:10, verbose = FALSE)
   g <- so@graphs$RNA_snn
   g@Dimnames <- list(NULL, NULL)

@@ -87,3 +87,20 @@ sim_module_recovery <- function(so) {
     )
   }))
 }
+
+# The 'kmes' stage plus a UMAP (needed by some plotting functions).
+sim_with_umap <- function() {
+  if (is.null(.fixture_cache$umap)) {
+    withr::local_seed(12345)
+    so <- sim_wgcna('kmes')
+    so <- suppressWarnings(Seurat::RunUMAP(so, dims = 1:10, verbose = FALSE))
+    .fixture_cache$umap <- so
+  }
+  .fixture_cache$umap
+}
+
+# Open a null graphics device for the rest of the calling test.
+local_null_device <- function(env = parent.frame()) {
+  grDevices::pdf(NULL)
+  withr::defer(grDevices::dev.off(), envir = env)
+}
