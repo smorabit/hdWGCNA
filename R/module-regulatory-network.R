@@ -347,7 +347,10 @@ ModuleRegulatoryNetworkPlot <- function(
   }
 
   # 5: color scheme, edit theme
-  p <- p + scale_edge_colour_gradient2(high = high_color, mid = mid_color, low = low_color) +
+  p <- p + scale_edge_colour_gradient2(
+      high = high_color, mid = mid_color, low = low_color,
+      guide = ggraph::guide_edge_colourbar()
+    ) +
     scale_colour_manual(values = cp) +
     scale_fill_manual(values = cp) +
     scale_size(limits = c(0, max(size_limits))) +

@@ -118,3 +118,26 @@ sim_preservation <- function() {
   }
   .fixture_cache$preservation
 }
+
+# A TF network on a synthetic motif matrix: three hub genes of the planted module M2 and three
+# unrelated genes act as "TFs" with motifs in 60 target genes (30 M2 genes, 30 others).
+sim_tf_network <- function() {
+  if (is.null(.fixture_cache$tf)) {
+    withr::local_seed(12345)
+    so <- sim_wgcna('kmes')
+    m2 <- hdw_sim_modules$gene_name[hdw_sim_modules$module == 'M2']  # sorted by loading
+    noise <- setdiff(GetWGCNAGenes(so), hdw_sim_modules$gene_name)
+    tfs <- c(m2[1:3], noise[1:3])
+    genes <- unique(c(tfs, m2[4:33], noise[4:33]))
+    motif_matrix <- matrix(
+      TRUE, nrow = length(genes), ncol = length(tfs),
+      dimnames = list(genes, paste0('MOTIF_', tfs))
+    )
+    so <- SetMotifMatrix(so, motif_matrix)
+    so <- SetMotifs(so, data.frame(motif_ID = colnames(motif_matrix), motif_name = tfs, gene_name = tfs))
+    model_params <- list(objective = 'reg:squarederror', max_depth = 1, eta = 0.1, nthread = 1, alpha = 0.5)
+    invisible(utils::capture.output(so <- ConstructTFNetwork(so, model_params = model_params, nfold = 3)))
+    .fixture_cache$tf <- list(so = so, m2_tfs = m2[1:3], noise_tfs = noise[1:3], m2 = m2)
+  }
+  .fixture_cache$tf
+}

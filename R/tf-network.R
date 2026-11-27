@@ -368,7 +368,10 @@ TFNetworkPlot <- function(
     geom_node_point(data = subset(lay, name %in% tf_regulons$tf & !(name %in% selected_tfs)), aes(fill = depth, size = degree), color = 'black', shape = 25) +
     geom_node_point(data = subset(lay, name %in% selected_tfs), aes(color = depth, shape = gene_type, size = degree)) +
     geom_node_point(data = subset(lay, name %in% selected_tfs), aes(fill = depth, size = degree), color = 'black', shape = 23) +
-    scale_edge_colour_gradient2(high = high_color, mid = mid_color, low = low_color) +
+    scale_edge_colour_gradient2(
+      high = high_color, mid = mid_color, low = low_color,
+      guide = ggraph::guide_edge_colourbar()
+    ) +
     scale_colour_manual(values = cp) +
     scale_fill_manual(values = cp) +
     scale_shape_manual(values = cur_shapes)

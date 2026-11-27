@@ -478,8 +478,8 @@ FindDifferentialRegulons <- function(
 
   degs <- FindMarkers(
     exp_assay,
-    cells.1 = group1,
-    cells.2 = group2,
+    cells.1 = barcodes1,
+    cells.2 = barcodes2,
     slot = 'data',
     test.use = test.use,
     only.pos = only.pos,
