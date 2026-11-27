@@ -1,6 +1,6 @@
 Package: hdWGCNA
 Title: High Dimensional Weighted Gene Co-Expression Network Analysis
-Version: 0.4.12.9000
+Version: 0.4.13.9000
 Authors@R: c(
     person("Sam", "Morabito", , "sam.morabito@cnag.eu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7768-4856")),

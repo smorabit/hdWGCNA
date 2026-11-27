@@ -1,3 +1,12 @@
+# hdWGCNA 0.4.13 (2026-11-26)
+## Changes
+- Compatibility with Seurat 6: `CheckSeurat5()` now checks for Seurat >= 5.0.0. Previously it
+  only recognised Seurat 5.x, so with Seurat 6 hdWGCNA used its Seurat v4 code paths, which
+  fail with "The `slot` argument of `GetAssayData()` was deprecated in SeuratObject 5.0.0 and
+  is now defunct".
+- `MetaspotsByGroups`: use the `layer` argument instead of the defunct `slot` argument of
+  `GetAssayData()`.
+
 # hdWGCNA 0.4.12 (2026-06-15)
 ## Added
 - `SetTOM`: new setter function to store the topological overlap matrix (TOM) directly within the Seurat object.
