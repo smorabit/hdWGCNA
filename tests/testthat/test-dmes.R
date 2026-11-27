@@ -32,6 +32,7 @@ test_that('ModuleCorrNetwork explains a missing reduction', {
 
 # regression test for #424: latent.vars given as metadata column names
 test_that('FindDMEs accepts latent.vars as metadata column names', {
+  skip_if_not_installed('lmtest')  # needed by Seurat for test.use = 'LR'
   so <- sim_wgcna('mes')
   cells_a <- so$cell_type == 'A'
   b1 <- colnames(so)[cells_a & so$condition == 'disease']
@@ -48,6 +49,7 @@ test_that('FindDMEs accepts latent.vars as metadata column names', {
 })
 
 test_that('FindAllDMEs accepts latent.vars as metadata column names', {
+  skip_if_not_installed('lmtest')  # needed by Seurat for test.use = 'LR'
   so <- sim_wgcna('mes')
   dmes <- suppressMessages(FindAllDMEs(so, group.by = 'cell_type', test.use = 'LR', latent.vars = 'nCount_RNA'))
   expect_setequal(unique(dmes$group), c('A', 'B', 'C'))
