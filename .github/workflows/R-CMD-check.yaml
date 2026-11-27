@@ -43,8 +43,18 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck ${{ matrix.config.seurat }}
+          extra-packages: any::rcmdcheck
           needs: check
+
+      # Replace the latest Seurat with the pinned version for the Seurat 5 job. Installed
+      # separately with hard dependencies only: Seurat 5.5.1 suggests BPCells, which is
+      # not on CRAN and makes the full dependency solve fail.
+      - name: Install pinned Seurat
+        if: ${{ matrix.config.seurat }}
+        run: |
+          pak::pkg_install('${{ matrix.config.seurat }}', dependencies = NA, upgrade = FALSE)
+          cat('Seurat', as.character(packageVersion('Seurat')), '\n')
+        shell: Rscript {0}
 
       # Vignettes use large external datasets and are not built in CI.
       # They will move to pre-computed pkgdown articles (see notes/10_vignettes.md).
