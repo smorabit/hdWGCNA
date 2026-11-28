@@ -65,7 +65,6 @@ ModuleTraitCorrelation <- function(
 
   # subset?
   if (!is.null(subset_by)) {
-    print('subsetting')
     seurat_full <- seurat_obj
     seurat_obj <- seurat_obj[, seurat_obj@meta.data[[subset_by]] %in% subset_groups]
   }
@@ -326,7 +325,6 @@ PlotModuleTraitCorrelation <- function(
     cor_mat <- as.matrix(cor_list[[i]])
     pval_mat <- as.matrix(pval_list[[i]])
     fdr_mat <- as.matrix(fdr_list[[i]])
-    print(i)
 
     plot_df <- reshape2::melt(cor_mat)
     colnames(plot_df) <- c('Trait', 'Module', 'cor')
@@ -342,7 +340,6 @@ PlotModuleTraitCorrelation <- function(
 
       # add pval to plot_df
       plot_df$pval <- p_df$pval
-      print(levels(plot_df$Trait))
 
       if (label_symbol == 'stars') {
         plot_df$significance <- gtools::stars.pval(plot_df$pval)

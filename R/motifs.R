@@ -99,7 +99,7 @@ MotifScan <- function(
 
 
   # scan these promoters for motifs:
-  print('Matching motifs...')
+  message('Matching motifs...')
   motif_ix <- motifmatchr::matchMotifs(pfm, my_promoters, genome = species_genome)
 
   # get the matches
@@ -118,7 +118,7 @@ MotifScan <- function(
   tf_match <- tf_match[gene_list, ]
 
   # get list of target genes for each TF:
-  print('Getting putative TF target genes...')
+  message('Getting putative TF target genes...')
   tf_targets <- list()
   n_targets <- list()
   for (cur_tf in colnames(tf_match)) {

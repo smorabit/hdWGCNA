@@ -90,7 +90,7 @@ ConstructTFNetwork <- function(
     y_var <- as.numeric(datExpr[, cur_gene])
 
     if (length(cur_tfs) < 2) {
-      print(paste0('Not enough putative TFs, skipping ', cur_gene))
+      message('Not enough putative TFs, skipping ', cur_gene)
       next
     }
 
@@ -103,7 +103,7 @@ ConstructTFNetwork <- function(
 
     # run xgboost model
     if (all(y_var == 0)) {
-      print(paste0('skipping ', cur_gene))
+      message('No expression, skipping ', cur_gene)
       next
     }
 

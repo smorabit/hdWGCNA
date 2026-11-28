@@ -77,7 +77,9 @@ ModuleEigengenes <- function(
 
   # loop over modules:
   for (cur_mod in mods_loop) {
-    print(cur_mod)
+    if (verbose) {
+      message('Computing eigengene for module ', cur_mod)
+    }
 
     # compute module eigengenes for this module
     seurat_obj <- ComputeModuleEigengene(
@@ -525,7 +527,6 @@ ModuleFeaturePlot <- function(
 
   plot_list <- list()
   for (cur_mod in module_names) {
-    print(cur_mod)
 
     # get the color for this module:
     cur_color <- modules %>%

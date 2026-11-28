@@ -141,8 +141,6 @@ ModuleTopologyHeatmap <- function(
   tmp[lower.tri(tmp)] <- 0
   plot_df <- reshape2::melt(tmp) %>% subset(Var1 != Var2)
 
-  print('plot_df:')
-  print(head(plot_df))
 
   # set the order for the genes
   plot_df$Var1 <- factor(plot_df$Var1, levels = cur_genes)

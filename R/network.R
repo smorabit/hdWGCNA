@@ -106,7 +106,6 @@ TestSoftPowersConsensus <- function(
   powerTables <- list()
   for (i in seq_along(multiExpr)) {
     cur_group <- names(multiExpr)[i]
-    print(cur_group)
 
     # Call the network topology analysis function for each set in turn
     powerTable <- list(
@@ -428,7 +427,7 @@ ConstructNetwork <- function(
       subset(SFT.R.sq >= 0.8 & Power > min_power) %>%
       .$Power %>%
       min()
-    cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = ', soft_power, '\n'))
+    message('Soft power not provided. Using the lowest power that reaches a 0.8 scale-free topology fit: soft_power = ', soft_power)
   } else if (is.null(soft_power)) {
     power_tables <- GetPowerTable(seurat_obj, wgcna_name) %>% dplyr::group_split(group)
     soft_power <- sapply(power_tables, function(power_table) {
@@ -437,7 +436,7 @@ ConstructNetwork <- function(
         .$Power %>%
         min()
     })
-    cat(paste0('Soft power not provided. Automatically using the lowest power that meets 0.8 scale-free topology fit. Using soft_power = c(', paste0(soft_power, collapse = ','), ')\n'))
+    message('Soft power not provided. Using the lowest power that reaches a 0.8 scale-free topology fit: soft_power = c(', paste0(soft_power, collapse = ', '), ')')
   }
 
   # WGCNA writes temporary files (individual TOMs, disk cache) to the working directory by

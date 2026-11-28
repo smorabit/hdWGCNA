@@ -131,7 +131,6 @@ ReassignModules <- function(
   modules[features, 'module'] <- reassigned
   modules[features, 'color'] <- reassigned_colors
 
-  print(head(reassigned))
 
   # set the modules table
   seurat_obj <- SetModules(seurat_obj, modules, wgcna_name)

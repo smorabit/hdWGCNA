@@ -74,13 +74,7 @@ ModulePreservation <- function(
   ref_modules <- ref_modules[genes_keep, ]
   ref_modules <- list(ref = ref_modules$module)
 
-  print('ref:')
-  print(dim(multiExpr$ref$data))
-  print('query:')
-  print(dim(multiExpr$query$data))
 
-  # print('Run Module Preservation')
-  print(length(ref_modules))
 
   # run the module preservation test:
   mp <- WGCNA::modulePreservation(
@@ -306,7 +300,6 @@ PlotModulePreservation <- function(
 
   plot_list <- list()
   for (statistic in stat_list) {
-    print(statistic)
 
     if (statistic %in% colnames(obs_df)) {
       values <- obs_df[, statistic]

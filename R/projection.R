@@ -96,7 +96,6 @@ ProjectModules <- function(
   }
 
   # project modules:
-  print('project modules')
   seurat_obj <- ModuleEigengenes(
     seurat_obj,
     group.by.vars = group.by.vars,
@@ -157,7 +156,6 @@ TransferModuleGenome <- function(
   # update modules table with the new gene names
   # modules <- na.omit(modules[gene_match,])
 
-  print(head(gene_mapping))
 
   modules$gene_name <- gene_mapping[, genome2_col]
   rownames(modules) <- modules$gene_name

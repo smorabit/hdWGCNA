@@ -171,7 +171,6 @@ FindAllDMEs <- function(
 
   DMEs_list <- list()
   for (cur_group in groups) {
-    print(cur_group)
 
     barcodes1 <- colnames(seurat_obj)[seurat_obj@meta.data[[group.by]] == cur_group]
     barcodes2 <- colnames(seurat_obj)[seurat_obj@meta.data[[group.by]] != cur_group]
@@ -412,7 +411,6 @@ PlotDMEsLollipop <- function(
     plot_list <- list()
 
     for (cur_comp in comparisons) {
-      print(cur_comp)
 
       # cur_DMEs <- DMEs %>% filter(DMEs[[group.by]] == cur_comp)
       cur_DMEs <- subset(DMEs, DMEs[[group.by]] == cur_comp)
@@ -439,7 +437,6 @@ PlotDMEsLollipop <- function(
     plot_list <- list()
 
     for (cur_comp in comparisons) {
-      print(cur_comp)
 
       # cur_DMEs <- DMEs %>% filter(DMEs[[group.by]] == cur_comp)
       cur_DMEs <- subset(DMEs, DMEs[[group.by]] == cur_comp)
@@ -455,7 +452,7 @@ PlotDMEsLollipop <- function(
     }
   } else {
     # this is for the condition: missing(group.by) && missing(comparison)
-    print('Please be aware comparison group/groups are not provided, which may casue an ERROR. PlotDMEsLollipop function will automatically assume all values are within the same group.')
+    message('No group.by / comparison given: PlotDMEsLollipop treats all DMEs as one comparison.')
 
     plot_list <- list()
 

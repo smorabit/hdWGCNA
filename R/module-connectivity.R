@@ -367,7 +367,6 @@ DoHubGeneHeatmap <- function(
         disp.min = disp.min, disp.max = disp.max
       ) + NoLegend()
     }
-    print(i)
     # margin:
     plot_list[[i]] <- plot_list[[i]] +
       theme(
