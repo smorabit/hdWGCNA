@@ -769,19 +769,20 @@ ModuleCorrelogram <- function(
 #' @return A patchwork object of radar plots if combine = TRUE, otherwise a named list of ggplot objects (one per module).
 #'
 #' @param seurat_obj A Seurat object
-#' @param group.by the column name of the selected comparison in the DMEs dataframe
+#' @param group.by Column in \code{seurat_obj@meta.data} defining the groups (spokes of the radar). Default = NULL to use \code{Idents(seurat_obj)}.
 #' @param barcodes A list of barcodes from colnames(seurat_obj) which will be used to subset the data before plotting.
 #' @param combine logical indicating whether or not to combine plots using patchwork
 #' @param ncol The number of columns for the combined plot if patchwork is being used
 #' @param features What to plot? Can select hMEs, MEs, scores, or average
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
-#' @param fill Logical; if TRUE, fill the radar polygons. Passed to ggradar::ggradar. Default = TRUE
-#' @param draw.points Logical; if TRUE, draw points at each vertex. Passed to ggradar::ggradar. Default = FALSE
-#' @param ... Additional arguments passed to ggradar::ggradar
+#' @param fill Logical; if TRUE, fill the radar polygons. Default = TRUE
+#' @param draw.points Logical; if TRUE, draw points at each vertex. Default = FALSE
+#' @param ... Ignored; previously passed to ggradar::ggradar.
 #' @details
 #' ModuleRadarPlot visualizes the expression level (module eigengene, ME) of each co-expression module for different
-#' groups in a radial coordinate system. The ME for each module is averaged for each group, scaled, and then
-#' is plotted radially. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are
+#' groups in a radial coordinate system. The ME for each module is averaged for each group; negative averages are set
+#' to zero and the averages are scaled by the module's maximum, so the group with the highest expression reaches the
+#' outer ring. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are
 #' expressing each module.
 #'
 #' @export
@@ -795,122 +796,111 @@ ModuleRadarPlot <- function(
   wgcna_name = NULL,
   fill = TRUE,
   draw.points = FALSE,
-  ... # additional params for ggradar
+  ...
 ) {
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
   CheckWGCNAName(seurat_obj, wgcna_name)
+  if (...length() > 0) {
+    warning('ModuleRadarPlot no longer uses ggradar; additional arguments in ... are ignored.')
+  }
 
-  check_suggests('ggradar', feature = 'ModuleRadarPlot')
-
-  # get seurat metadata
-  meta <- seurat_obj@meta.data
-
-  # use idents as the group
+  # groups
   if (is.null(group.by)) {
     cell_grouping <- Idents(seurat_obj)
   } else {
-    cell_grouping <- seurat_obj@meta.data[, group.by]
-    names(cell_grouping) <- colnames(seurat_obj)
+    cell_grouping <- seurat_obj@meta.data[[group.by]]
   }
+  names(cell_grouping) <- colnames(seurat_obj)
 
-  # get the module info
   modules <- GetModules(seurat_obj, wgcna_name)
-  mod_colors <- modules %>%
-    dplyr::select(c(module, color)) %>%
-    dplyr::distinct()
-  mods <- levels(modules$module)
-  mods <- mods[mods != 'grey']
+  mods <- setdiff(levels(modules$module), 'grey')
+  mod_colors <- as.character(modules$color[match(mods, modules$module)])
 
-  # get the MEs
-  if (features == 'hMEs') {
-    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
-  } else if (features == 'MEs') {
-    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
-  } else if (features == 'scores') {
-    MEs <- GetModuleScores(seurat_obj, wgcna_name)
-  } else if (features == 'average') {
-    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
-    restrict_range <- FALSE
-  } else {
-    (
-      stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
-    )
-  }
+  MEs <- switch(features,
+    hMEs = GetMEs(seurat_obj, TRUE, wgcna_name),
+    MEs = GetMEs(seurat_obj, FALSE, wgcna_name),
+    scores = GetModuleScores(seurat_obj, wgcna_name),
+    average = GetAvgModuleExpr(seurat_obj, wgcna_name),
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
+  MEs <- as.matrix(MEs)[, mods, drop = FALSE]
 
-  MEs <- MEs[, colnames(MEs) != 'grey']
-
-  # are we subsetting?
   if (!is.null(barcodes)) {
-    if (!(all(barcodes %in% colnames(seurat_obj)))) {
+    if (!all(barcodes %in% colnames(seurat_obj))) {
       stop('Invalid selection for barcodes, some are not found in the colnames(seurat_obj)')
     }
-
-    # subset:
-    MEs <- MEs[barcodes, ]
-    meta <- meta[barcodes, ]
+    MEs <- MEs[barcodes, , drop = FALSE]
     cell_grouping <- cell_grouping[barcodes]
   }
+  cell_grouping <- droplevels(factor(cell_grouping))
+  groups <- levels(cell_grouping)
 
-  MEs$cluster <- cell_grouping
-  clusters <- as.character(unique(cell_grouping))
+  # mean per group (rows) and module (columns), negatives to 0, scaled to the module max
+  avg <- rowsum(MEs, cell_grouping) / as.vector(table(cell_grouping))
+  avg[avg < 0] <- 0
+  col_max <- apply(avg, 2, max)
+  avg <- sweep(avg, 2, ifelse(col_max > 0, col_max, 1), '/')
 
-  # calculate the mean ME for each group
-  plot_df <- MEs %>%
-    dplyr::group_by(cluster) %>%
-    dplyr::summarise_all(mean) %>%
-    as.data.frame()
+  # radar geometry: one spoke per group, clockwise from the top
+  n_groups <- length(groups)
+  angle <- pi / 2 - 2 * pi * (seq_len(n_groups) - 1) / n_groups
+  rings <- c(0.25, 0.5, 0.75, 1)
+  ring_df <- data.frame(
+    ring = rep(rings, each = n_groups + 1),
+    x = rep(rings, each = n_groups + 1) * cos(c(angle, angle[1])),
+    y = rep(rings, each = n_groups + 1) * sin(c(angle, angle[1]))
+  )
+  spoke_df <- data.frame(x = 0, y = 0, xend = cos(angle), yend = sin(angle))
+  label_df <- data.frame(
+    label = groups,
+    x = 1.18 * cos(angle),
+    y = 1.18 * sin(angle),
+    hjust = ifelse(abs(cos(angle)) < 0.2, 0.5, ifelse(cos(angle) > 0, 0, 1))
+  )
 
-  # print(head(plot_df))
-
-  # re-format the dataframe
-  rownames(plot_df) <- plot_df$cluster
-  plot_df <- dplyr::select(plot_df, -cluster)
-  plot_df <- t(plot_df) %>% as.data.frame()
-  plot_df[plot_df < 0] <- 0
-  plot_df$group <- rownames(plot_df)
-  plot_df <- plot_df[, c('group', clusters)]
-
-  # set module factor levels
-  plot_df$group <- factor(as.character(plot_df$group), levels = mods)
-  plot_df <- plot_df %>%
-    dplyr::arrange(group) %>%
-    as.data.frame()
-  colnames(plot_df) <- c('group', clusters)
-
-  if (is.factor(cell_grouping)) {
-    group_order <- levels(droplevels(cell_grouping))
-  } else {
-    group_order <- unique(cell_grouping)
-  }
-
-  # set the group factor levels
-  plot_df <- plot_df[, c('group', group_order)]
-
-  # make the radar plots for each module
-  plot_list <- list()
-  for (i in seq_len(nrow(plot_df))) {
-    cur_mod <- as.character(plot_df[i, 'group'])
-    cur_color <- subset(mod_colors, module == cur_mod) %>% .$color
-    plot_list[[cur_mod]] <- ggradar::ggradar(
-      plot_df[i, ],
-      group.colours = cur_color,
-      draw.points = draw.points,
-      fill = fill, ...
-    ) +
-      Seurat::NoLegend() +
-      ggtitle(cur_mod) +
-      theme(
-        plot.title = element_text(face = 'bold', hjust = 0.5)
+  plot_list <- lapply(seq_along(mods), function(i) {
+    r <- avg[groups, mods[i]]
+    poly_df <- data.frame(x = r * cos(angle), y = r * sin(angle))
+    p <- ggplot2::ggplot() +
+      ggplot2::geom_path(
+        data = ring_df,
+        ggplot2::aes(x = .data$x, y = .data$y, group = .data$ring),
+        color = 'grey80', linewidth = 0.3
+      ) +
+      ggplot2::geom_segment(
+        data = spoke_df,
+        ggplot2::aes(x = .data$x, y = .data$y, xend = .data$xend, yend = .data$yend),
+        color = 'grey80', linewidth = 0.3
+      ) +
+      ggplot2::geom_polygon(
+        data = poly_df,
+        ggplot2::aes(x = .data$x, y = .data$y),
+        fill = if (fill) mod_colors[i] else NA,
+        alpha = 0.3, color = mod_colors[i], linewidth = 0.8
+      ) +
+      ggplot2::geom_text(
+        data = label_df,
+        ggplot2::aes(x = .data$x, y = .data$y, label = .data$label, hjust = .data$hjust),
+        size = 3
       )
-  }
+    if (draw.points) {
+      p <- p + ggplot2::geom_point(data = poly_df, ggplot2::aes(x = .data$x, y = .data$y), color = mod_colors[i])
+    }
+    p +
+      ggplot2::coord_fixed(clip = 'off', xlim = c(-1.2, 1.2), ylim = c(-1.2, 1.2)) +
+      ggplot2::ggtitle(mods[i]) +
+      ggplot2::theme_void() +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(face = 'bold', hjust = 0.5),
+        plot.margin = ggplot2::margin(10, 30, 10, 30)
+      )
+  })
+  names(plot_list) <- mods
 
-  # combine plots with patchwork ?
   if (combine) {
-    patch <- wrap_plots(plot_list, ncol)
-    return(patch)
-  } else {
-    return(plot_list)
+    return(patchwork::wrap_plots(plot_list, ncol = ncol))
   }
+  plot_list
 }

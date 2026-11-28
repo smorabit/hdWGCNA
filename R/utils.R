@@ -121,10 +121,6 @@ bioc_suggests <- c(
 )
 
 
-# GitHub-only packages used by optional features (not installable from CRAN/Bioconductor)
-github_suggests <- c(ggradar = 'ricardo-bion/ggradar')
-
-
 # Stop with an informative message if packages needed by an optional feature are missing.
 # Use at the top of any function that calls a package listed in Suggests.
 check_suggests <- function(pkgs, feature = NULL) {
@@ -134,17 +130,13 @@ check_suggests <- function(pkgs, feature = NULL) {
   }
 
   hints <- character(0)
-  cran <- setdiff(missing, c(bioc_suggests, names(github_suggests)))
+  cran <- setdiff(missing, bioc_suggests)
   bioc <- intersect(missing, bioc_suggests)
-  gh <- intersect(missing, names(github_suggests))
   if (length(cran) > 0) {
     hints <- c(hints, paste0("install.packages(c('", paste(cran, collapse = "', '"), "'))"))
   }
   if (length(bioc) > 0) {
     hints <- c(hints, paste0("BiocManager::install(c('", paste(bioc, collapse = "', '"), "'))"))
-  }
-  if (length(gh) > 0) {
-    hints <- c(hints, paste0("remotes::install_github('", github_suggests[gh], "')"))
   }
 
   stop(

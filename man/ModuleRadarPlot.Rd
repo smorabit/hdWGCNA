@@ -20,7 +20,7 @@ ModuleRadarPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{group.by}{the column name of the selected comparison in the DMEs dataframe}
+\item{group.by}{Column in \code{seurat_obj@meta.data} defining the groups (spokes of the radar). Default = NULL to use \code{Idents(seurat_obj)}.}
 
 \item{barcodes}{A list of barcodes from colnames(seurat_obj) which will be used to subset the data before plotting.}
 
@@ -32,11 +32,11 @@ ModuleRadarPlot(
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 
-\item{fill}{Logical; if TRUE, fill the radar polygons. Passed to ggradar::ggradar. Default = TRUE}
+\item{fill}{Logical; if TRUE, fill the radar polygons. Default = TRUE}
 
-\item{draw.points}{Logical; if TRUE, draw points at each vertex. Passed to ggradar::ggradar. Default = FALSE}
+\item{draw.points}{Logical; if TRUE, draw points at each vertex. Default = FALSE}
 
-\item{...}{Additional arguments passed to ggradar::ggradar}
+\item{...}{Ignored; previously passed to ggradar::ggradar.}
 }
 \value{
 A patchwork object of radar plots if combine = TRUE, otherwise a named list of ggplot objects (one per module).
@@ -47,7 +47,8 @@ for different groups as a radar plot.
 }
 \details{
 ModuleRadarPlot visualizes the expression level (module eigengene, ME) of each co-expression module for different
-groups in a radial coordinate system. The ME for each module is averaged for each group, scaled, and then
-is plotted radially. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are
+groups in a radial coordinate system. The ME for each module is averaged for each group; negative averages are set
+to zero and the averages are scaled by the module's maximum, so the group with the highest expression reaches the
+outer ring. The resulting plots help us to interpret which cell groups (clusters, cell types, etc) are
 expressing each module.
 }

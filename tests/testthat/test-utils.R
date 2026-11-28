@@ -8,14 +8,16 @@ test_that('check_suggests passes for installed packages', {
 
 test_that('check_suggests explains how to install missing packages', {
   err <- tryCatch(
-    check_suggests(c('notarealpackage1', 'GenomicRanges_not_real', 'ggradar'), feature = 'X'),
+    check_suggests(c('notarealpackage1', 'notarealpackage2'), feature = 'X'),
     error = conditionMessage
   )
-  expect_match(err, 'required for X')
-  expect_match(err, "install.packages(c('notarealpackage1'", fixed = TRUE)
-  if (!requireNamespace('ggradar', quietly = TRUE)) {
-    expect_match(err, "remotes::install_github('ricardo-bion/ggradar')", fixed = TRUE)
-  }
+  expect_match(err, 'Packages .* are required for X')
+  expect_match(err, "install.packages(c('notarealpackage1', 'notarealpackage2'))", fixed = TRUE)
+
+  # Bioconductor packages get a BiocManager hint
+  testthat::local_mocked_bindings(bioc_suggests = 'notarealpackage2')
+  err <- tryCatch(check_suggests(c('notarealpackage1', 'notarealpackage2')), error = conditionMessage)
+  expect_match(err, "BiocManager::install(c('notarealpackage2'))", fixed = TRUE)
 })
 
 test_that('check_reduction gives a clear error for a missing reduction', {

@@ -39,6 +39,9 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
 - `ModuleNetworkPlot()` returns a named list of plots, one per module. Its `outdir`
   argument is deprecated; save plots with the new `SavePlotList()`.
 - `HubGeneNetworkPlot()`: `...` is passed only to `igraph::layout_with_fr()`.
+- `ModuleRadarPlot()` is drawn with plain ggplot2 and no longer needs the GitHub-only
+  ggradar package. Group means are now scaled to each module's maximum, so the
+  highest-expressing group reaches the outer ring (values were previously unscaled).
 
 ## Deprecated
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and

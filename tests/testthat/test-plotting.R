@@ -84,3 +84,18 @@ test_that('OverlapModulesDEGs, OverlapDotPlot and OverlapBarPlot work together',
   bars <- OverlapBarPlot(overlap_df)
   expect_true(all(vapply(bars, is_gg, logical(1))))
 })
+
+test_that('ModuleRadarPlot draws one radar per module, scaled to the module maximum', {
+  so <- sim_wgcna('mes')
+  mods <- setdiff(levels(GetModules(so)$module), 'grey')
+  plots <- ModuleRadarPlot(so, group.by = 'cell_type', combine = FALSE)
+  expect_named(plots, mods)
+  # the polygon has one vertex per group; the largest reaches the outer ring
+  poly <- plots[[1]]$layers[[3]]$data
+  expect_equal(nrow(poly), 3)
+  expect_equal(max(sqrt(poly$x^2 + poly$y^2)), 1)
+  expect_s3_class(ModuleRadarPlot(so, group.by = 'Sample', ncol = 2), 'patchwork')
+  expect_warning(ModuleRadarPlot(so, group.by = 'cell_type', grid.max = 2), 'no longer uses ggradar')
+  local_null_device()
+  expect_no_error(print(plots[[1]]))
+})
