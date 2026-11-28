@@ -7,11 +7,14 @@
 SetModuleScores(seurat_obj, mod_scores, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{mod_scores}{dataframe storing the module expression scores}
+\item{mod_scores}{A data.frame of module expression scores (cells by modules).}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the module scores stored in \code{seurat_obj@misc[[wgcna_name]]$module_scores}.
 }
 \description{
 SetModuleScores

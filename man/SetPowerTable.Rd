@@ -7,11 +7,14 @@
 SetPowerTable(seurat_obj, power_table, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{power_table}{a dataframe containing the results of the soft power test}
+\item{power_table}{A data.frame containing the results of the soft power threshold test.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the power table stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_powerTable}.
 }
 \description{
 SetPowerTable

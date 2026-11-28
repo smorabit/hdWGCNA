@@ -7,13 +7,16 @@
 GetHubGenes(seurat_obj, n_hubs = 10, mods = NULL, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{n_hubs}{the number of hub genes to select for each module}
+\item{n_hubs}{The number of hub genes to select for each module.}
 
-\item{mods}{list of modules, selects all modules by default}
+\item{mods}{A character vector of modules to include. Defaults to all modules except grey.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame with columns gene_name, module, and kME containing the top \code{n_hubs} genes by kME for each module.
 }
 \description{
 Extract the top N hub genes for a given set of modules. This function outputs

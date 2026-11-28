@@ -7,11 +7,14 @@
 GetRegulonScores(seurat_obj, target_type, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{target_type}{dataframe storing the TF regulon scores}
+\item{target_type}{The regulon target type to retrieve scores for ("positive", "negative", or "both").}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame of TF regulon scores (cells by TFs) for \code{target_type}, as computed by \code{RegulonScores}, or NULL if not computed.
 }
 \description{
 GetRegulonScores

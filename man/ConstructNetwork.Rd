@@ -50,12 +50,56 @@ ConstructNetwork(
 
 \item{consensus}{flag indicating whether or not to perform Consensus network analysis}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{overwrite_tom}{logical; if TRUE, overwrite an existing TOM file with the same name. Default = FALSE}
 
-\item{...}{additional parameters passed to blockwiseConsensusModules}
+\item{store_tom_in_seurat}{logical; if TRUE, also store the TOM in the Seurat object (requires saveConsensusTOMs = TRUE). Default = FALSE}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{blocks}{Optional vector of pre-defined gene blocks, passed to WGCNA::blockwiseConsensusModules.}
+
+\item{maxBlockSize}{Maximum number of genes per block; lower this if memory is limited. Default = 30000}
+
+\item{randomSeed}{Random seed for reproducibility. Default = 12345}
+
+\item{corType}{Correlation type, "pearson" or "bicor". Default = 'pearson'}
+
+\item{consensusQuantile}{Quantile used to compute the consensus TOM across datasets. Default = 0.3}
+
+\item{networkType}{Network type: "signed", "unsigned", or "signed hybrid". Default = 'signed'}
+
+\item{TOMType}{Topological overlap type: "signed", "unsigned", or "none". Default = 'signed'}
+
+\item{TOMDenom}{Denominator for the TOM calculation, "min" or "mean". Default = 'min'}
+
+\item{scaleTOMs}{logical; whether to scale TOMs of different datasets before taking the consensus. Default = TRUE}
+
+\item{calibrationQuantile}{Quantile used to scale TOMs. Default = 0.95}
+
+\item{sampleForCalibration}{logical; whether to sample TOM entries for calibration. Default = TRUE}
+
+\item{sampleForCalibrationFactor}{Controls the number of samples used for calibration. Default = 1000}
+
+\item{useDiskCache}{logical; whether to cache intermediate results on disk to save memory. Default = TRUE}
+
+\item{chunkSize}{Size of chunks used for disk caching. Default = NULL}
+
+\item{deepSplit}{Sensitivity of the Dynamic Tree Cut module detection (0-4). Default = 4}
+
+\item{pamStage}{logical; whether to run the PAM stage of Dynamic Tree Cut. Default = FALSE}
+
+\item{detectCutHeight}{Dendrogram cut height for module detection. Default = 0.995}
+
+\item{minModuleSize}{Minimum number of genes in a module. Default = 50}
+
+\item{mergeCutHeight}{Dendrogram cut height for merging similar modules. Default = 0.2}
+
+\item{saveConsensusTOMs}{logical; whether to save the consensus TOM to disk. Default = TRUE}
+
+\item{...}{additional parameters passed to WGCNA::blockwiseConsensusModules}
 }
 \value{
-seurat_obj with the co-expression network and gene modules computed for the selected wgcna experiment
+The input Seurat object with the network, parameters and module assignments stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve modules with GetModules() and the network with GetNetworkData(). The TOM is written to tom_outdir.
 }
 \description{
 Constructs a co-expression network and groups genes into modules

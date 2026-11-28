@@ -7,11 +7,14 @@
 SetWGCNAGenes(seurat_obj, gene_list, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{gene_list}{vector of genes to be used for WGCNA}
+\item{gene_list}{A character vector of genes to be used for WGCNA.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the gene list stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_genes}.
 }
 \description{
 SetWGCNAGenes

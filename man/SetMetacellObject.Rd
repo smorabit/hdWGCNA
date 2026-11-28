@@ -7,11 +7,14 @@
 SetMetacellObject(seurat_obj, metacell_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{metacell_obj}{metacell Seurat object}
+\item{metacell_obj}{A metacell Seurat object, or the name of another hdWGCNA experiment whose metacell object should be used.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the metacell object stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_metacell_obj}.
 }
 \description{
 SetMetacellObject

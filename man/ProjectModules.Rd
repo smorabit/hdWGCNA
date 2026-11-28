@@ -41,9 +41,14 @@ ProjectModules(
 
 \item{scale.model.use}{model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_ref@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.}
 
 \item{wgcna_name_proj}{The name of the hdWGCNA experiment to be created for the projected modules in seurat_obj}
+
+\item{...}{Additional arguments passed to ModuleEigengenes}
+}
+\value{
+The input seurat_obj with a new hdWGCNA experiment (wgcna_name_proj) containing the projected modules and their module eigengenes; retrieve with GetModules() and GetMEs().
 }
 \description{
 Project a set of co-expression modules from a reference to a query dataset

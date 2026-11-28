@@ -7,9 +7,12 @@
 GetTOM(seurat_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A gene-by-gene topological overlap matrix with gene names as row and column names. Uses the in-object TOM if present, otherwise loads it from the TOM file on disk.
 }
 \description{
 GetTOM

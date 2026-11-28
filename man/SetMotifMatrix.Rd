@@ -7,9 +7,12 @@
 SetMotifMatrix(seurat_obj, tf_match)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{tf_match}{matrix containing tf-promoter matches}
+\item{tf_match}{A logical gene-by-motif matrix of TF motif matches in gene promoters.}
+}
+\value{
+The input Seurat object with the motif matrix stored in \code{seurat_obj@misc$motifs$tf_match_matrix}.
 }
 \description{
 SetMotifMatrix

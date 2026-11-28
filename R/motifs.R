@@ -186,6 +186,7 @@ MotifScan <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @return The Seurat object with the module/motif overlap table stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve it with \code{GetMotifOverlap}.
 #' @keywords scRNA-seq
 #' @export
 OverlapModulesMotifs <- function(
@@ -267,7 +268,13 @@ OverlapModulesMotifs <- function(
 #' Displays the top n TFs in a set of modules as a bar plot
 #'
 #' @param seurat_obj A Seurat object
+#' @param n_tfs Number of top TFs (ranked by odds ratio) to plot for each module. Default = 10.
+#' @param plot_size A vector containing the width and height of the output PDFs. Default = c(5, 6).
+#' @param outdir The directory where the plots will be stored.
+#' @param motif_font Font passed to \code{ggseqlogo::geom_logo} for the motif logos.
+#' @param module_names Character vector of modules to plot. Defaults to all non-grey modules.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @return Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
 #' @keywords scRNA-seq
 #' @export
 MotifOverlapBarPlot <- function(

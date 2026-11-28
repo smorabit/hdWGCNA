@@ -7,9 +7,12 @@
 GetModules(seurat_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame of gene module assignments, with columns for gene name, module, color, and kME values if computed.
 }
 \description{
 GetModules

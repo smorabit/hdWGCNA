@@ -9,9 +9,12 @@ BinPseudotime(seurat_obj, n_bins = 50, pseudotime_col = "pseudotime")
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{n_bins}{number of hub genes to use in the UMAP computation}
+\item{n_bins}{number of pseudotime bins; a vector of values creates one binning per value}
 
 \item{pseudotime_col}{name of the column in seurat_obj@meta.data containing pseudotime information}
+}
+\value{
+The Seurat object with a new \code{seurat_obj@meta.data} column \code{<pseudotime_col>_bins_<n_bins>} containing the bin of each cell.
 }
 \description{
 Makes evenly-spaced bins of cells along a pseudotime trajectory.

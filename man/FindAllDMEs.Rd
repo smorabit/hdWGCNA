@@ -33,10 +33,22 @@ FindAllDMEs(
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
-\item{...}{Additional parameters for the FindMarkers function}
+\item{test.use}{Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.}
+
+\item{only.pos}{logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.}
+
+\item{logfc.threshold}{Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{min.pct}{Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{verbose}{logical passed to \code{Seurat::FindMarkers} controlling progress output.}
+
+\item{pseudocount.use}{Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{...}{Additional parameters for the FindMarkers function. \code{latent.vars} may be given as column names of \code{seurat_obj@meta.data}.}
 }
 \value{
-A dataframe contaning differential ME results
+A data.frame of \code{Seurat::FindMarkers} results for each group in \code{group.by} versus all other cells, with \code{module} and \code{group} columns.
 }
 \description{
 Function to compare expression levels of co-expression modules between two sets of cell barcodes.

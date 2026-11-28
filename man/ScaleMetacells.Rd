@@ -7,7 +7,14 @@
 ScaleMetacells(seurat_obj, wgcna_name = NULL, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to Seurat::ScaleData}
+}
+\value{
+The input Seurat object with the scaled metacell object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 }
 \description{
 Wrapper function to run Seurat's ScaleData function on the metacell object.

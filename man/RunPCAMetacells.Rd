@@ -7,7 +7,14 @@
 RunPCAMetacells(seurat_obj, wgcna_name = NULL, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to Seurat::RunPCA}
+}
+\value{
+The input Seurat object with the PCA-reduced metacell object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 }
 \description{
 Wrapper function to run Seurat's RunPCA function on the metacell object.

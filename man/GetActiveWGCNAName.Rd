@@ -7,7 +7,10 @@
 GetActiveWGCNAName(seurat_obj)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+}
+\value{
+A character string with the name of the active hdWGCNA experiment, or NULL if none is set.
 }
 \description{
 GetActiveWGCNAName

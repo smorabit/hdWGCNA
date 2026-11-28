@@ -17,7 +17,26 @@ PlotDendrogram(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{groupLabels}{Label for the module color bar. Default = 'Module colors'}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{dendroLabels}{Dendrogram leaf labels; FALSE to hide them. Default = FALSE}
+
+\item{hang}{Fraction of the plot height by which leaves hang below the branches. Default = 0.03}
+
+\item{addGuide}{logical; whether to draw vertical guide lines. Default = TRUE}
+
+\item{guideHang}{Fraction of the dendrogram height to leave between the guide lines and the leaves. Default = 0.05}
+
+\item{main}{Plot title. Default = ''}
+
+\item{...}{Additional arguments passed to WGCNA::plotDendroAndColors}
+}
+\value{
+Called for its side effect of drawing the dendrogram and module colors on the current graphics device.
 }
 \description{
 Plot WGCNA dendrogram

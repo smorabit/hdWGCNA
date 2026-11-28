@@ -19,14 +19,18 @@ PlotDMEsLollipop(
 
 \item{DMEs}{dataframe output from FindDMEs or FindAllDMEs}
 
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
 \item{group.by}{the column name of the selected comparison in the DMEs dataframe}
 
 \item{comparison}{character vector or a list of character vectors containing the comparison in the DMEs dataframe}
 
 \item{pvalue}{p_value or fdr used for the comparison in the DMEs dataframe}
+
+\item{avg_log2FC}{Name of the fold-change column in the DMEs dataframe. Currently ignored; the 'avg_log2FC' column is always used.}
 }
 \value{
-A ggplot object
+A ggplot object if \code{group.by} is not supplied, otherwise a named list of ggplot objects, one per comparison.
 PlotDMEsLollipop
 }
 \description{

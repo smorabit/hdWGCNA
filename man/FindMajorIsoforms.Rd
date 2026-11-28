@@ -25,6 +25,8 @@ FindMajorIsoforms(
 
 \item{replicate_col}{column in seurat_obj@meta.data denoting each replicate / sample}
 
+\item{isoform_delim}{Regular expression separating the gene name from the isoform identifier in the feature names. Default = \code{'[.]'}, a literal dot.}
+
 \item{proportion_thresh}{desired proportion of expression to define the set of major isoforms. Default = 0.8.}
 
 \item{low_thresh}{lower bound of expression level for considering an isoform as part of the major isoform set.}
@@ -40,7 +42,7 @@ FindMajorIsoforms(
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \value{
-a list of major isoforms for each cell population
+A named list with a character vector of major isoforms for each cell population. If \code{cluster_markers} is supplied, a list with elements \code{major} (all major isoforms) and \code{marker} (major isoforms of marker genes only).
 }
 \description{
 Finds the set of "major isoforms" for each gene in each cell population. The set of

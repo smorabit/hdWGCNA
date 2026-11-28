@@ -3,24 +3,25 @@
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells in provided groupings, such as cluster or cell type.
 #'
-#' @return seurat_obj with a metacell seurat_obj stored in the specified WGCNA experiment
+#' @return The input Seurat object with the metacell Seurat object and metacell run statistics stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve the metacells with GetMetacellObject().
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
 #' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
-#' @param k Number of nearest neighbors to aggregate. Default = 50
-#' @param name A string appended to resulting metalcells. Default = 'agg'
+#' @param ident.group A column name in group.by used to set the Idents of the metacell object. Default = 'seurat_clusters'
+#' @param k Number of nearest neighbors to aggregate. Default = 25
 #' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
-#' @param assay Assay to extract data for aggregation. Default = 'RNA'
+#' @param assay Assay to extract data for aggregation. Default = NULL to use the default assay.
 #' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
+#' @param cells.use A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.
 #' @param min_cells the minimum number of cells in a particular grouping to construct metacells
 #' @param max_shared the maximum number of cells to be shared across two metacells
 #' @param target_metacells the maximum target number of metacells to construct
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
 #' @param verbose logical indicating whether to print additional information
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #'
 #' @details
 #' MetacellsByGroups merges transcriptomically similar cells into "metacells".
@@ -272,24 +273,26 @@ MetacellsByGroups <- function(
 #'
 #' This function takes a Seurat object and constructs averaged 'metacells' based
 #' on neighboring cells.
-#' @param seurat_obj A Seurat object
-#' @param k Number of nearest neighbors to aggregate. Default = 50
-#' @param name A string appended to resulting metalcells. Default = 'agg'
-#' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'umap'
+#' @param seurat_obj A Seurat object.
+#' @param name A string prefix for the resulting metacell names. Default = 'agg'
+#' @param ident.group Not currently used by this function; kept for compatibility with MetacellsByGroups.
+#' @param k Number of nearest neighbors to aggregate. Default = 25
+#' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
+#' @param cells.use A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.
 #' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
+#' @param meta A named list of metadata values to add to every metacell (e.g. the grouping values). Default = NULL
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param max_shared the maximum number of cells to be shared across two metacells
 #' @param target_metacells the maximum target number of metacells to construct
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
-#' @param max_shared the maximum number of cells to be shared across two metacells
 #' @param verbose logical indicating whether to print additional information
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return If \code{return_metacell = TRUE}, the metacell Seurat object; otherwise the input Seurat object with the metacell object stored in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetMetacellObject()). Returns NULL if metacell construction fails.
 #' @export
-#' ConstructMetacells
 ConstructMetacells <- function(
   seurat_obj, name = 'agg', ident.group = 'seurat_clusters', k = 25,
   reduction = 'pca',
@@ -536,7 +539,10 @@ ConstructMetacells <- function(
 #'
 #' Wrapper function to run Seurat's NormalizeData function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::NormalizeData
+#' @return The input Seurat object with the normalized metacell object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 #' @export
 NormalizeMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
   metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
@@ -549,7 +555,10 @@ NormalizeMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
 #'
 #' Wrapper function to run Seurat's ScaleData function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::ScaleData
+#' @return The input Seurat object with the scaled metacell object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 #' @export
 ScaleMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
   if (!exists('features')) {
@@ -565,7 +574,10 @@ ScaleMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
 #'
 #' Wrapper function to run Seurat's RunPCA function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::RunPCA
+#' @return The input Seurat object with the PCA-reduced metacell object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 #' @export
 RunPCAMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
   metacell_obj <- GetMetacellObject(seurat_obj, wgcna_name)
@@ -578,7 +590,9 @@ RunPCAMetacells <- function(seurat_obj, wgcna_name = NULL, ...) {
 #'
 #' Wrapper function to run harmony's RunHarmony function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param ... Additional arguments passed to harmony::RunHarmony
+#' @return The input Seurat object with the Harmony-corrected metacell object stored in the active hdWGCNA experiment; retrieve with GetMetacellObject().
 #' @export
 RunHarmonyMetacells <- function(seurat_obj, ...) {
   seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj <- harmony::RunHarmony(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
@@ -590,7 +604,9 @@ RunHarmonyMetacells <- function(seurat_obj, ...) {
 #'
 #' Wrapper function to run Seurat's RunUMAP function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param ... Additional arguments passed to Seurat::RunUMAP
+#' @return The input Seurat object with the UMAP-reduced metacell object stored in the active hdWGCNA experiment; retrieve with GetMetacellObject().
 #' @keywords scRNA-seq
 #' @export
 RunUMAPMetacells <- function(seurat_obj, ...) {
@@ -603,7 +619,9 @@ RunUMAPMetacells <- function(seurat_obj, ...) {
 #'
 #' Wrapper function to run Seurat's DimPlot function on the metacell object.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param ... Additional arguments passed to Seurat::DimPlot
+#' @return A ggplot object from Seurat::DimPlot of the metacell object in the active hdWGCNA experiment.
 #' @keywords scRNA-seq
 #' @export
 DimPlotMetacells <- function(seurat_obj, ...) {

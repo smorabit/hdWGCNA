@@ -36,7 +36,9 @@ ModuleConnectivity(
 
 \item{assay}{Assay in seurat_obj containing expression information.}
 
-\item{slot}{Slot in seurat_obj, default to normalized 'data' slot.}
+\item{slot}{Slot in seurat_obj, default to normalized 'data' slot. Slot is used with Seurat v4 instead of layer.}
+
+\item{layer}{Layer in seurat_obj, default to normalized 'data' layer. Layer is used with Seurat v5 instead of slot.}
 
 \item{sparse}{logical indicating whether or not to run the correlation using a sparse matrix.}
 
@@ -44,10 +46,12 @@ ModuleConnectivity(
 
 \item{TOM_use}{name of the hdWGCNA experiment that contains the TOM which will be used to compute the intramodular degree of each gene. If the TOM is not found, this calculation will be skipped.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to WGCNA::signedKME (only used when sparse = FALSE)}
 }
 \value{
-seurat_obj with the kMEs computed for the selected wgcna experiment
+The input Seurat object with kME columns added to the modules table in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetModules() or GetHubGenes()), and intramodular degrees if the TOM is available (retrieve with GetDegrees()).
 }
 \description{
 Computes eigengene-based connectivity (kME) based on module eigengenes and the

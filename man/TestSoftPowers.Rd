@@ -22,9 +22,12 @@ TestSoftPowers(
 
 \item{corFnc}{Correlation function for the gene-gene correlation adjacency matrix.}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 
 \item{...}{additional parameters passed to WGCNA::pickSoftThreshold}
+}
+\value{
+The input Seurat object with the soft power threshold table stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetPowerTable().
 }
 \description{
 Compute the scale-free topology model fit for different soft power thresholds

@@ -21,6 +21,31 @@ ModuleCorrNetwork(
 }
 \arguments{
 \item{seurat_obj}{A Seurat object}
+
+\item{cluster_col}{Column in \code{seurat_obj@meta.data} with cluster labels used to position modules. Defaults to \code{Idents(seurat_obj)}.}
+
+\item{exclude_grey}{logical determining whether to exclude the grey module.}
+
+\item{features}{Which module features to correlate: 'hMEs', 'MEs', 'scores', or 'average'.}
+
+\item{reduction}{Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'.}
+
+\item{cor_cutoff}{Minimum absolute correlation for an edge to be drawn. Default = 0.2.}
+
+\item{label_vertices}{logical determining whether to label the module nodes.}
+
+\item{edge_scale}{Scaling factor applied to the absolute correlation to set edge width.}
+
+\item{vertex_size}{Size of the module nodes.}
+
+\item{niter}{Number of iterations for the Fruchterman-Reingold layout.}
+
+\item{vertex_frame}{logical determining whether to draw a black outline around the nodes (TRUE) or use the module color (FALSE).}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+Draws the module correlation network on the current graphics device and returns \code{NULL} invisibly.
 }
 \description{
 Plot Module Eigengene correlogram

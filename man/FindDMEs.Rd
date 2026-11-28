@@ -36,10 +36,22 @@ FindDMEs(
 
 \item{add_missing}{logical determining whether or not to add missing modules back into the resulting dataframe with NA values.}
 
-\item{...}{Additional parameters for the FindMarkers function}
+\item{test.use}{Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.}
+
+\item{only.pos}{logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.}
+
+\item{logfc.threshold}{Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{min.pct}{Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{verbose}{logical passed to \code{Seurat::FindMarkers} controlling progress output.}
+
+\item{pseudocount.use}{Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{...}{Additional parameters for the FindMarkers function. \code{latent.vars} may be given as column names of \code{seurat_obj@meta.data}.}
 }
 \value{
-A dataframe contaning differential ME results
+A data.frame of \code{Seurat::FindMarkers} results with one row per module and a \code{module} column.
 }
 \description{
 Function to compare expression levels of co-expression modules between two sets of cell barcodes.

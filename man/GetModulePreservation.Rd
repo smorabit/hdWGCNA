@@ -7,11 +7,14 @@
 GetModulePreservation(seurat_obj, mod_name, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{mod_name}{name of the module preservation test to store}
+\item{mod_name}{The name of the stored module preservation results to retrieve.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The module preservation results stored under \code{mod_name}; throws an error if none are found.
 }
 \description{
 GetModulePreservation

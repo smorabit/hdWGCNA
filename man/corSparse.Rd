@@ -13,6 +13,9 @@ corSparse(X, Y = NULL, cov = FALSE)
 
 \item{cov}{return covariance matrix}
 }
+\value{
+A dense matrix of Pearson correlations (or covariances if cov = TRUE) between the columns of X (and Y if provided), without dimnames.
+}
 \description{
 Compute the Pearson correlation matrix between
 columns of two sparse matrices.

@@ -247,19 +247,21 @@ ModuleTraitCorrelation <- function(
 
 #' PlotModuleTraitCorrelation
 #'
-#' Plotting function for Module Preservation statistics
+#' Plots the results of ModuleTraitCorrelation as a heatmap.
 #'
 #' @param seurat_obj A Seurat object
 #' @param high_color color for positive correlation
 #' @param mid_color color for zero correlation
 #' @param low_color color for negative correlation
-#' @param label logical determining whether to add p-val label in each cell of the heatmap
+#' @param label which statistic to label in each cell of the heatmap: 'pval', 'fdr', or NULL (default) for no labels
 #' @param label_symbol show the labels as 'stars' or as 'numeric'
 #' @param plot_max maximum value of correlation to show on the colorbar
 #' @param text_size size of the labels
 #' @param text_color color of the text labels
 #' @param text_digits how many digits to show in the text labels
 #' @param combine logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return If \code{combine = TRUE}, a patchwork object stacking one heatmap per correlation group above a module color bar; otherwise a named list of ggplot objects.
 #' @keywords scRNA-seq
 #' @export
 PlotModuleTraitCorrelation <- function(

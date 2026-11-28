@@ -4,8 +4,9 @@
 
 #' SetMotifMatrix
 #'
-#' @param seurat_obj A Seurat object
-#' @param tf_match matrix containing tf-promoter matches
+#' @param seurat_obj A Seurat object.
+#' @param tf_match A logical gene-by-motif matrix of TF motif matches in gene promoters.
+#' @return The input Seurat object with the motif matrix stored in \code{seurat_obj@misc$motifs$tf_match_matrix}.
 #' @keywords scRNA-seq
 #' @export
 SetMotifMatrix <- function(seurat_obj, tf_match) {
@@ -20,7 +21,8 @@ SetMotifMatrix <- function(seurat_obj, tf_match) {
 
 #' GetMotifMatrix
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @return A logical gene-by-motif matrix of TF motif matches in gene promoters, as computed by \code{MotifScan}.
 #' @keywords scRNA-seq
 #' @export
 GetMotifMatrix <- function(seurat_obj) {
@@ -34,8 +36,9 @@ GetMotifMatrix <- function(seurat_obj) {
 
 #' SetMotifs
 #'
-#' @param seurat_obj A Seurat object
-#' @param motif_df dataframe containing info about the motifs being analyzed
+#' @param seurat_obj A Seurat object.
+#' @param motif_df A data.frame containing information about the motifs being analyzed.
+#' @return The input Seurat object with the motif table stored in \code{seurat_obj@misc$motifs$motif_df}.
 #' @keywords scRNA-seq
 #' @export
 SetMotifs <- function(seurat_obj, motif_df) {
@@ -50,7 +53,8 @@ SetMotifs <- function(seurat_obj, motif_df) {
 
 #' GetMotifs
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @return A data.frame of motif information (motif ID, motif name, number of targets, and gene name).
 #' @keywords scRNA-seq
 #' @export
 GetMotifs <- function(seurat_obj) {
@@ -65,8 +69,9 @@ GetMotifs <- function(seurat_obj) {
 
 #' SetPFMList
 #'
-#' @param seurat_obj A Seurat object
-#' @param pfm_list list of pfm objects
+#' @param seurat_obj A Seurat object.
+#' @param pfm_list A list of position frequency matrices (e.g. a PFMatrixList).
+#' @return The input Seurat object with the PFM list stored in \code{seurat_obj@misc$motifs$pfm_list}.
 #' @keywords scRNA-seq
 #' @export
 SetPFMList <- function(seurat_obj, pfm_list) {
@@ -81,7 +86,8 @@ SetPFMList <- function(seurat_obj, pfm_list) {
 
 #' GetPFMList
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @return The list of position frequency matrices used for the motif scan.
 #' @keywords scRNA-seq
 #' @export
 GetPFMList <- function(seurat_obj) {
@@ -95,8 +101,9 @@ GetPFMList <- function(seurat_obj) {
 
 #' SetMotifTargets
 #'
-#' @param seurat_obj A Seurat object
-#' @param motif_targets list of motifs and their target genes
+#' @param seurat_obj A Seurat object.
+#' @param motif_targets A named list of motifs and their target genes.
+#' @return The input Seurat object with the motif targets stored in \code{seurat_obj@misc$motifs$motif_targets}.
 #' @keywords scRNA-seq
 #' @export
 SetMotifTargets <- function(seurat_obj, motif_targets) {
@@ -111,7 +118,8 @@ SetMotifTargets <- function(seurat_obj, motif_targets) {
 
 #' GetMotifTargets
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @return A named list with one character vector of target genes per motif.
 #' @keywords scRNA-seq
 #' @export
 GetMotifTargets <- function(seurat_obj) {
@@ -126,9 +134,10 @@ GetMotifTargets <- function(seurat_obj) {
 
 #' SetMotifOverlap
 #'
-#' @param seurat_obj A Seurat object
-#' @param overlap_df dataframe containing motif-module overlap info
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param overlap_df A data.frame of motif-module overlap statistics.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the overlap table stored in \code{seurat_obj@misc[[wgcna_name]]$motif_module_overlaps}.
 #' @keywords scRNA-seq
 #' @export
 SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name = NULL) {
@@ -144,8 +153,9 @@ SetMotifOverlap <- function(seurat_obj, overlap_df, wgcna_name = NULL) {
 
 #' GetMotifOverlap
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of motif-module overlap statistics, as computed by \code{OverlapModulesMotifs}, or NULL if not computed.
 #' @keywords scRNA-seq
 #' @export
 GetMotifOverlap <- function(seurat_obj, wgcna_name = NULL) {
@@ -165,9 +175,10 @@ GetMotifOverlap <- function(seurat_obj, wgcna_name = NULL) {
 
 #' SetMotifScores
 #'
-#' @param seurat_obj A Seurat object
-#' @param tf_scores dataframe of tf motif target scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param tf_scores A data.frame of TF motif target scores.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the motif target scores stored in \code{seurat_obj@misc[[wgcna_name]]$motif_target_scores}.
 #' @keywords scRNA-seq
 #' @export
 SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name = NULL) {
@@ -183,8 +194,9 @@ SetMotifScores <- function(seurat_obj, tf_scores, wgcna_name = NULL) {
 
 #' GetMotifScores
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of TF motif target scores, or NULL if not set.
 #' @keywords scRNA-seq
 #' @export
 GetMotifScores <- function(seurat_obj, wgcna_name = NULL) {
@@ -203,9 +215,10 @@ GetMotifScores <- function(seurat_obj, wgcna_name = NULL) {
 
 #' SetTFNetwork
 #'
-#' @param seurat_obj A Seurat object
-#' @param tf_net dataframe storing the TF network info in ConstructTFNetwork
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param tf_net A data.frame of TF-gene importance scores from \code{ConstructTFNetwork}.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the TF network stored in \code{seurat_obj@misc[[wgcna_name]]$tf_net}.
 #' @keywords scRNA-seq
 #' @export
 SetTFNetwork <- function(seurat_obj, tf_net, wgcna_name = NULL) {
@@ -221,8 +234,9 @@ SetTFNetwork <- function(seurat_obj, tf_net, wgcna_name = NULL) {
 
 #' GetTFNetwork
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of TF-gene importance scores, as computed by \code{ConstructTFNetwork}.
 #' @keywords scRNA-seq
 #' @export
 GetTFNetwork <- function(seurat_obj, wgcna_name = NULL) {
@@ -236,9 +250,10 @@ GetTFNetwork <- function(seurat_obj, wgcna_name = NULL) {
 
 #' SetTFEval
 #'
-#' @param seurat_obj A Seurat object
-#' @param tf_eval dataframe storing the TF network evaluation info from ConstructTFNetwork
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param tf_eval A data.frame of TF network model evaluation results from \code{ConstructTFNetwork}.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the TF network evaluation stored in \code{seurat_obj@misc[[wgcna_name]]$tf_eval}.
 #' @keywords scRNA-seq
 #' @export
 SetTFEval <- function(seurat_obj, tf_eval, wgcna_name = NULL) {
@@ -254,8 +269,9 @@ SetTFEval <- function(seurat_obj, tf_eval, wgcna_name = NULL) {
 
 #' GetTFEval
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of TF network model evaluation results, as computed by \code{ConstructTFNetwork}.
 #' @keywords scRNA-seq
 #' @export
 GetTFEval <- function(seurat_obj, wgcna_name = NULL) {
@@ -269,9 +285,10 @@ GetTFEval <- function(seurat_obj, wgcna_name = NULL) {
 
 #' SetTFRegulons
 #'
-#' @param seurat_obj A Seurat object
-#' @param tf_regulons dataframe storing the TF regulon info from AssignTFRegulons
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param tf_regulons A data.frame of TF regulons from \code{AssignTFRegulons}.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the TF regulons stored in \code{seurat_obj@misc[[wgcna_name]]$tf_regulons}.
 #' @keywords scRNA-seq
 #' @export
 SetTFRegulons <- function(seurat_obj, tf_regulons, wgcna_name = NULL) {
@@ -287,8 +304,9 @@ SetTFRegulons <- function(seurat_obj, tf_regulons, wgcna_name = NULL) {
 
 #' GetTFRegulons
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of TF regulons, as computed by \code{AssignTFRegulons}.
 #' @keywords scRNA-seq
 #' @export
 GetTFRegulons <- function(seurat_obj, wgcna_name = NULL) {
@@ -304,10 +322,11 @@ GetTFRegulons <- function(seurat_obj, wgcna_name = NULL) {
 
 #' SetRegulonScores
 #'
-#' @param seurat_obj A Seurat object
-#' @param regulon_scores dataframe storing the TF regulon scores
-#' @param target_type dataframe storing the TF regulon scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param regulon_scores A data.frame of TF regulon scores (cells by TFs).
+#' @param target_type The regulon target type the scores were computed for ("positive", "negative", or "both"); used as the storage key.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the scores stored in \code{seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]]}.
 #' @keywords scRNA-seq
 #' @export
 SetRegulonScores <- function(seurat_obj, regulon_scores, target_type, wgcna_name = NULL) {
@@ -331,9 +350,10 @@ SetRegulonScores <- function(seurat_obj, regulon_scores, target_type, wgcna_name
 
 #' GetRegulonScores
 #'
-#' @param seurat_obj A Seurat object
-#' @param target_type dataframe storing the TF regulon scores
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param target_type The regulon target type to retrieve scores for ("positive", "negative", or "both").
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of TF regulon scores (cells by TFs) for \code{target_type}, as computed by \code{RegulonScores}, or NULL if not computed.
 #' @keywords scRNA-seq
 #' @export
 GetRegulonScores <- function(seurat_obj, target_type, wgcna_name = NULL) {
@@ -347,11 +367,12 @@ GetRegulonScores <- function(seurat_obj, target_type, wgcna_name = NULL) {
 }
 
 
-#' SetEnrichRegulonTable
+#' SetEnrichrRegulonTable
 #'
-#' @param seurat_obj A Seurat object
-#' @param enrich_table dataframe storing the results of running enrichr
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param enrich_table A data.frame of Enrichr results for TF regulons.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the regulon Enrichr table stored in \code{seurat_obj@misc[[wgcna_name]]$enrichr_regulon_table}.
 #' @keywords scRNA-seq
 #' @export
 SetEnrichrRegulonTable <- function(seurat_obj, enrich_table, wgcna_name = NULL) {
@@ -369,8 +390,9 @@ SetEnrichrRegulonTable <- function(seurat_obj, enrich_table, wgcna_name = NULL) 
 
 #' GetEnrichrRegulonTable
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A data.frame of Enrichr results for TF regulons, as computed by \code{RunEnrichrRegulons}, or NULL if not computed.
 #' @keywords scRNA-seq
 #' @export
 GetEnrichrRegulonTable <- function(seurat_obj, wgcna_name = NULL) {

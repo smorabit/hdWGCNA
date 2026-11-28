@@ -15,17 +15,22 @@ SelectNetworkGenes(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{gene_select}{How to select genes? Select "variable", "fraction", "all", or "custom".}
 
 \item{fraction}{A numeric that determines the minimum cells that a gene must be expressed in order to be included. For example, fraction = 0.05 means that 5\% of cells must express a gene (count > 0) for it to be included.}
 
-\item{gene_list}{A character string of gene names, only used if type = "custom"}
+\item{group.by}{A column in seurat_obj@meta.data; with gene_select = "fraction", keep genes passing the fraction threshold in at least one group. Default = NULL}
 
-\item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
+\item{gene_list}{A character vector of gene names, only used if gene_select = "custom"}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{assay}{Assay in seurat_obj used to compute expression fractions. Default is DefaultAssay(seurat_obj)}
 
-\item{type}{How to select genes? Select "variable", "fraction", "all", or "custom".}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the selected genes stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetWGCNAGenes().
 }
 \description{
 Select genes that will be used for co-expression network analysis

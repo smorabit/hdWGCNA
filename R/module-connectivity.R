@@ -3,7 +3,7 @@
 #' Computes eigengene-based connectivity (kME) based on module eigengenes and the
 #' feature expression in selected cell populations / spatial regions.
 #'
-#' @return seurat_obj with the kMEs computed for the selected wgcna experiment
+#' @return The input Seurat object with kME columns added to the modules table in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetModules() or GetHubGenes()), and intramodular degrees if the TOM is available (retrieve with GetDegrees()).
 #'
 #' @param seurat_obj A Seurat object
 #' @param group.by column in seurat_obj@meta.data containing grouping info, ie clusters or celltypes
@@ -12,11 +12,13 @@
 #' @param corOptions 	character string specifying additional arguments to be passed to the function given by corFnc. Use "use = 'p', method = 'spearman'" to obtain Spearman correlation. Use "use = 'p'" to obtain Pearson correlation.
 #' @param harmonized logical determining whether to use harmonized MEs for kME calculation
 #' @param assay Assay in seurat_obj containing expression information.
-#' @param slot Slot in seurat_obj, default to normalized 'data' slot.
+#' @param slot Slot in seurat_obj, default to normalized 'data' slot. Slot is used with Seurat v4 instead of layer.
+#' @param layer Layer in seurat_obj, default to normalized 'data' layer. Layer is used with Seurat v5 instead of slot.
 #' @param sparse logical indicating whether or not to run the correlation using a sparse matrix.
 #' @param reassign_modules logical indicating whether or not to reassign genes to different co-expression modules if their kME value in the assigned module is negative.
 #' @param TOM_use name of the hdWGCNA experiment that contains the TOM which will be used to compute the intramodular degree of each gene. If the TOM is not found, this calculation will be skipped.
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to WGCNA::signedKME (only used when sparse = FALSE)
 #' @details
 #' ModuleConnectivity computes the eigengene-based connectivity (kME) of each feature
 #' and each module. This is done by correlating the gene expression signal with
@@ -192,7 +194,8 @@ ModuleConnectivity <- function(
 #' @param text_size controls the size of the hub gene text
 #' @param ncol number of columns to display individual plots
 #' @param plot_widths the relative width between the kME rank plot and the hub gene text
-#' @param wgcna_name the name of the WGCNA experiment in the seurat object
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A patchwork object with one kME rank plot and hub gene label panel per module (excluding grey).
 #' @keywords scRNA-seq
 #' @export
 PlotKMEs <- function(
@@ -261,8 +264,17 @@ PlotKMEs <- function(
 #'
 #'
 #'
-#' @param seurat_obj A Seurat object
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param seurat_obj A Seurat object.
+#' @param n_hubs Number of hub genes per module to plot, ranked by kME. Default = 10
+#' @param n_cells Maximum number of cells to sample from each group. Default = 200
+#' @param group.by Column in seurat_obj@meta.data used to group cells. Default = NULL to use Idents(seurat_obj).
+#' @param module_names Character vector of modules to plot. Default = NULL to plot all modules except grey.
+#' @param combine Logical; if TRUE, combine the heatmaps with a module colorbar into one patchwork; if FALSE return a list of heatmaps. Default = TRUE
+#' @param draw.lines Logical; whether to draw lines separating groups, passed to Seurat::DoHeatmap. Default = TRUE
+#' @param disp.min Minimum display value for scaled expression. Default = -2.5
+#' @param disp.max Maximum display value for scaled expression. Default = 2.5
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A patchwork object if combine = TRUE, otherwise a list of ggplot heatmaps (one per module).
 #' @keywords scRNA-seq
 #' @export
 DoHubGeneHeatmap <- function(

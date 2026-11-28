@@ -7,9 +7,12 @@
 SetPFMList(seurat_obj, pfm_list)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{pfm_list}{list of pfm objects}
+\item{pfm_list}{A list of position frequency matrices (e.g. a PFMatrixList).}
+}
+\value{
+The input Seurat object with the PFM list stored in \code{seurat_obj@misc$motifs$pfm_list}.
 }
 \description{
 SetPFMList

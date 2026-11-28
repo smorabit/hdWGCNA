@@ -18,9 +18,28 @@ DoHubGeneHeatmap(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{n_hubs}{Number of hub genes per module to plot, ranked by kME. Default = 10}
+
+\item{n_cells}{Maximum number of cells to sample from each group. Default = 200}
+
+\item{group.by}{Column in seurat_obj@meta.data used to group cells. Default = NULL to use Idents(seurat_obj).}
+
+\item{module_names}{Character vector of modules to plot. Default = NULL to plot all modules except grey.}
+
+\item{combine}{Logical; if TRUE, combine the heatmaps with a module colorbar into one patchwork; if FALSE return a list of heatmaps. Default = TRUE}
+
+\item{draw.lines}{Logical; whether to draw lines separating groups, passed to Seurat::DoHeatmap. Default = TRUE}
+
+\item{disp.min}{Minimum display value for scaled expression. Default = -2.5}
+
+\item{disp.max}{Maximum display value for scaled expression. Default = 2.5}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A patchwork object if combine = TRUE, otherwise a list of ggplot heatmaps (one per module).
 }
 \description{
 This function makes an expression heatmap of the top n hub genes per module

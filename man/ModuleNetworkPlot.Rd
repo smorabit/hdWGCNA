@@ -44,6 +44,11 @@ ModuleNetworkPlot(
 \item{vertex.label.cex}{vertex label font size}
 
 \item{vertex.size}{vertex size}
+
+\item{...}{Currently unused.}
+}
+\value{
+Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
 }
 \description{
 Visualizes the top hub genes for selected modules as a circular network plot with one

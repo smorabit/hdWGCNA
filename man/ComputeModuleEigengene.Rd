@@ -37,7 +37,12 @@ ComputeModuleEigengene(
 
 \item{assay}{Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to Seurat::RunPCA and, if group.by.vars is set, harmony::RunHarmony}
+}
+\value{
+The input Seurat object with this module's eigengene stored as temporary "ME" (and "ME_harmony") reductions and its gene loadings stored in the hdWGCNA experiment.
 }
 \description{
 Internal helper function that computes module eigengene for a single module.

@@ -7,11 +7,14 @@
 SetEnrichrTable(seurat_obj, enrich_table, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{enrich_table}{dataframe storing the results of running enrichr}
+\item{enrich_table}{A data.frame of Enrichr results.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the Enrichr table stored in \code{seurat_obj@misc[[wgcna_name]]$enrichr_table}.
 }
 \description{
 SetEnrichrTable

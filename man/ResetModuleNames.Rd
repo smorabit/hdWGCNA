@@ -14,9 +14,14 @@ ResetModuleNames(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{new_name}{string containing the base name to re-name the modules}
+\item{new_name}{A base name for the modules (numbered sequentially), a character vector of new names (one per non-grey module), or a named list mapping old to new names.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{reset_levels}{Not currently used.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with modules renamed throughout the hdWGCNA experiment (modules table, MEs, module scores, and any downstream tables); retrieve with GetModules().
 }
 \description{
 Reset the uname of each hdWGCNA module

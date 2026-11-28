@@ -41,9 +41,14 @@ ModulePreservation(
 
 \item{return_raw}{if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 
-\item{wgcna_name_ref}{The name of the hdWGCNA experiment in the seurat_ref@misc slot}
+\item{wgcna_name_ref}{The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.}
+
+\item{...}{Additional arguments passed to WGCNA::modulePreservation}
+}
+\value{
+If return_raw = TRUE, the raw output list of WGCNA::modulePreservation; otherwise seurat_obj with the observed and Z-score preservation statistics stored under name in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetModulePreservation()).
 }
 \description{
 Computes module preservation statistics in a query dataset for a given reference dataset

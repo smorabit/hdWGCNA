@@ -2,14 +2,16 @@
 #'
 #' Computes metaspots in a given Seurat object containing spatial transcriptomics data.
 #'
-#' @param cur_seurat A Seurat object
+#' @param seurat_obj A Seurat object containing spatial transcriptomics data, with row, col, imagerow and imagecol columns in the metadata.
 #' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
+#' @param ident.group A column name in group.by used to set the Idents of the metaspot object. Default = 'seurat_clusters'
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
 #' @param min_spots the minimum number of spots in a particular grouping to construct metaspots
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the metaspot Seurat object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 #' @export
 MetaspotsByGroups <- function(
   seurat_obj,
@@ -186,6 +188,7 @@ MetaspotsByGroups <- function(
 #' @param assay Assay to extract data for aggregation. Default = 'Spatial'
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
+#' @return A Seurat object of aggregated metaspots, with spot neighbor and density information in its misc slot, or NULL if aggregation fails for this group.
 #' @export
 ConstructMetaspots <- function(
   cur_seurat,

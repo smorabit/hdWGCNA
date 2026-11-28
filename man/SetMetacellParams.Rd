@@ -7,11 +7,14 @@
 SetMetacellParams(seurat_obj, params, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{params}{list of WGCNA parameters}
+\item{params}{A list of metacell construction parameters.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the metacell parameters stored in \code{seurat_obj@misc[[wgcna_name]]$metacell_params}.
 }
 \description{
 SetMetacellParams

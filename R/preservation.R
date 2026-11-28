@@ -12,8 +12,10 @@
 #' @param genome_ref_col the column name containing the gene names for the reference dataset
 #' @param genome_query_col the column name containing the gene names for the query dataset
 #' @param return_raw if TRUE, returns the module preservation statistics, else returns seurat_obj with the stats added to the hdWGCNA experiment.
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @param wgcna_name_ref The name of the hdWGCNA experiment in the seurat_ref@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param wgcna_name_ref The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.
+#' @param ... Additional arguments passed to WGCNA::modulePreservation
+#' @return If return_raw = TRUE, the raw output list of WGCNA::modulePreservation; otherwise seurat_obj with the observed and Z-score preservation statistics stored under name in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetModulePreservation()).
 #' @details
 #' ModulePreservation performs a statistical test to assess the preservation of co-expression modules identified
 #' in one dataset in an independent dataset. This method is originally described by Langfelder et al.
@@ -129,8 +131,11 @@ ModulePreservation <- function(
 #' @param gene_mapping a dataframe containing gene name mappings between the query and the reference dataset. One column should have the gene name in the query dataset, and anotehr column should have the corresponding gene name in the reference dataset.
 #' @param genome_ref_col the column name containing the gene names for the reference dataset
 #' @param genome_query_col the column name containing the gene names for the query dataset
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @param wgcna_name_ref The name of the hdWGCNA experiment in the seurat_ref@misc slot
+#' @param ref_power Soft power used to compute the reference adjacency matrix with WGCNA::adjacency. Default = 1
+#' @param query_power Soft power used to compute the query adjacency matrix with WGCNA::adjacency. Default = 1
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_query@misc slot. Defaults to the active experiment.
+#' @param wgcna_name_ref The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.
+#' @param ... Not currently used.
 #' @details
 #' ModulePreservationNetRep performs a statistical test to assess the preservation of co-expression modules identified
 #' in one dataset in an independent dataset using the NetRep implementation rather than the WGCNA implementation.
@@ -141,7 +146,7 @@ ModulePreservation <- function(
 #' batches. Note that the outputs of ModulePreservation and ModulePreservationNetRep are not identical. This function requires separate
 #' installation of the NetRep package, which is not directly included as a dependency in hdWGCNA.
 #'
-#' @return A Seurat Object containing the module preservation statistics from NetRep.
+#' @return The input seurat_query with the NetRep module preservation results stored under name in \code{seurat_query@misc[[wgcna_name]]}; retrieve with GetModulePreservation().
 #' @export
 ModulePreservationNetRep <- function(
   seurat_query,
@@ -247,11 +252,12 @@ ModulePreservationNetRep <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param name The name of the module preservation analysis to plot given in ModulePreservation
-#' @param statistics Which module preservation statistics to plot? Choices are summary, all, or a custom list
+#' @param statistics Which module preservation statistics to plot? Choices are summary, rank, all, or a custom character vector of statistic names
 #' @param plot_labels logical determining whether to plot the module labels
 #' @param label_size the size of the module labels
 #' @param mod_point_size the size of the points in each plot
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return A ggplot object if a single statistic is plotted, otherwise a named list of ggplot objects (one per statistic).
 #'
 #' @details
 #' This function creates a scatter plot showing the module preservation statistics for each module

@@ -7,11 +7,14 @@
 SetMotifScores(seurat_obj, tf_scores, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{tf_scores}{dataframe of tf motif target scores}
+\item{tf_scores}{A data.frame of TF motif target scores.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the motif target scores stored in \code{seurat_obj@misc[[wgcna_name]]$motif_target_scores}.
 }
 \description{
 SetMotifScores

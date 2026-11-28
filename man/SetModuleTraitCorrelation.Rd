@@ -7,11 +7,14 @@
 SetModuleTraitCorrelation(seurat_obj, mt_cor, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{mt_cor}{matrix of module-trait correlation results}
+\item{mt_cor}{A list of module-trait correlation results with elements cor, pval, and fdr.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the module-trait correlations stored in \code{seurat_obj@misc[[wgcna_name]]$mt_cor}.
 }
 \description{
 SetModuleTraitCorrelation

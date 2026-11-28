@@ -26,21 +26,27 @@ ConstructMetacells(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{name}{A string appended to resulting metalcells. Default = 'agg'}
+\item{name}{A string prefix for the resulting metacell names. Default = 'agg'}
 
-\item{k}{Number of nearest neighbors to aggregate. Default = 50}
+\item{ident.group}{Not currently used by this function; kept for compatibility with MetacellsByGroups.}
 
-\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'umap'}
+\item{k}{Number of nearest neighbors to aggregate. Default = 25}
+
+\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'pca'}
 
 \item{dims}{A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.}
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
+\item{cells.use}{A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.}
+
 \item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
 
 \item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
+
+\item{meta}{A named list of metadata values to add to every metacell (e.g. the grouping values). Default = NULL}
 
 \item{return_metacell}{Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.}
 
@@ -54,7 +60,10 @@ ConstructMetacells(
 
 \item{verbose}{logical indicating whether to print additional information}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+If \code{return_metacell = TRUE}, the metacell Seurat object; otherwise the input Seurat object with the metacell object stored in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetMetacellObject()). Returns NULL if metacell construction fails.
 }
 \description{
 This function takes a Seurat object and constructs averaged 'metacells' based

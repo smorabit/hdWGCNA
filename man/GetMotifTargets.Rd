@@ -7,7 +7,10 @@
 GetMotifTargets(seurat_obj)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+}
+\value{
+A named list with one character vector of target genes per motif.
 }
 \description{
 GetMotifTargets

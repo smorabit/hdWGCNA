@@ -144,8 +144,10 @@ ReassignModules <- function(
 #' Reset the uname of each hdWGCNA module
 #'
 #' @param seurat_obj A Seurat object
-#' @param new_name string containing the base name to re-name the modules
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param new_name A base name for the modules (numbered sequentially), a character vector of new names (one per non-grey module), or a named list mapping old to new names.
+#' @param reset_levels Not currently used.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with modules renamed throughout the hdWGCNA experiment (modules table, MEs, module scores, and any downstream tables); retrieve with GetModules().
 #' @keywords scRNA-seq
 #' @export
 ResetModuleNames <- function(
@@ -311,8 +313,9 @@ ResetModuleNames <- function(
 #' Reset the unique color for each hdWGCNA module
 #'
 #' @param seurat_obj A Seurat object
-#' @param new_colors a character vector containing the new colors
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param new_colors a character vector of new colors (one per non-grey module), or a named list mapping module names to colors
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with module colors updated in the modules table, network data and any downstream tables; retrieve with GetModules().
 #' @keywords scRNA-seq
 #' @export
 ResetModuleColors <- function(

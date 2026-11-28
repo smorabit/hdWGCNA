@@ -6,6 +6,9 @@
 \usage{
 umap_theme()
 }
+\value{
+A ggplot2 theme object that removes axes, gridlines and backgrounds.
+}
 \description{
 ggplot theme to remove axes etc.
 }

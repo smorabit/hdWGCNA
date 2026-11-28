@@ -7,11 +7,14 @@
 SetTFRegulons(seurat_obj, tf_regulons, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{tf_regulons}{dataframe storing the TF regulon info from AssignTFRegulons}
+\item{tf_regulons}{A data.frame of TF regulons from \code{AssignTFRegulons}.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the TF regulons stored in \code{seurat_obj@misc[[wgcna_name]]$tf_regulons}.
 }
 \description{
 SetTFRegulons

@@ -3,6 +3,7 @@
 #' Function to scale a numeric vector between 0 and 1.
 #'
 #' @param x numeric vector
+#' @return A numeric vector the same length as x, rescaled to the range 0 to 1.
 #' @keywords helper
 #' @export
 scale01 <- function(x) {
@@ -16,6 +17,7 @@ scale01 <- function(x) {
 #'
 #' ggplot theme to remove axes etc.
 #'
+#' @return A ggplot2 theme object that removes axes, gridlines and backgrounds.
 #' @keywords helper
 #' @export
 umap_theme <- function() {
@@ -41,6 +43,7 @@ umap_theme <- function() {
 #' Function to shuffle the rows of a dataframe.
 #'
 #' @param df dataframe
+#' @return The input data frame with its rows in random order.
 #' @keywords helper
 #' @export
 shuffle_points <- function(df) {
@@ -60,6 +63,7 @@ shuffle_points <- function(df) {
 #' @param X A matrix
 #' @param Y A matrix
 #' @param cov return covariance matrix
+#' @return A dense matrix of Pearson correlations (or covariances if cov = TRUE) between the columns of X (and Y if provided), without dimnames.
 #' @export
 #' @author Michael Cysouw, Karsten Looschen
 # covmat uses E[(X-muX)'(Y-muY)] = E[X'Y] - muX'muY

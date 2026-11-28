@@ -15,6 +15,8 @@
 #' @param edge.width value determining the width of the network edges
 #' @param vertex.label.cex vertex label font size
 #' @param vertex.size vertex size
+#' @param ... Currently unused.
+#' @return Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
 #' @export
 ModuleNetworkPlot <- function(
   seurat_obj,
@@ -155,6 +157,7 @@ ModuleNetworkPlot <- function(
 #' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
 #' @param n_hubs The number of hub genes to plot for each module.
 #' @param n_other The number of non-hub genes to sample from each module
+#' @param sample_edges logical determining whether we randomly downsample edges (TRUE), or take the strongest edges (FALSE).
 #' @param edge_prop The proportion of edges in the graph to sample.
 #' @param return_graph logical determining whether we return the graph (TRUE) or plot the graph (FALSE)
 #' @param edge.alpha Scaling factor for the edge opacity
@@ -162,6 +165,8 @@ ModuleNetworkPlot <- function(
 #' @param hub.vertex.size The size of the hub gene nodes
 #' @param other.vertex.size The size of the other gene nodes
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Additional arguments passed to both \code{igraph::layout_with_fr} and \code{plot.igraph}.
+#' @return If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
 #' @keywords scRNA-seq
 #' @export
 HubGeneNetworkPlot <- function(
@@ -313,7 +318,13 @@ HubGeneNetworkPlot <- function(
 #' @param exclude_grey logical indicating whether to include grey module
 #' @param genes_use character vector of genes to use for the UMAP, must already be present in GetModules(seurat_obj)
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param n_neighbors Number of nearest neighbors passed to \code{uwot::umap}. Default = 25.
+#' @param metric Distance metric passed to \code{uwot::umap}. Default = 'cosine'.
+#' @param spread Effective scale of embedded points passed to \code{uwot::umap}. Default = 1.
+#' @param min_dist Minimum distance between embedded points passed to \code{uwot::umap}. Default = 0.4.
+#' @param supervised logical determining whether to run a supervised UMAP using the module assignments as labels.
 #' @param ... Additional parameters supplied to uwot::umap
+#' @return The Seurat object with the module UMAP coordinates stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetModuleUMAP}.
 #' @export
 RunModuleUMAP <- function(
   seurat_obj,
@@ -430,9 +441,12 @@ RunModuleUMAP <- function(
 #' @param label_hubs the number of hub genes to label in each module
 #' @param edge.alpha scaling factor for edge opacity
 #' @param vertex.label.cex font size for labeled genes
+#' @param label_genes Optional character vector of additional genes to label, alongside the top hub genes.
 #' @param return_graph logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)
 #' @param keep_grey_edges logical determining whether to show edges between genes in different modules (grey edges)
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Currently unused.
+#' @return If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
 #' @keywords scRNA-seq
 #' @export
 ModuleUMAPPlot <- function(
@@ -607,6 +621,18 @@ ModuleUMAPPlot <- function(
 #' Plot Module Eigengene correlogram
 #'
 #' @param seurat_obj A Seurat object
+#' @param cluster_col Column in \code{seurat_obj@meta.data} with cluster labels used to position modules. Defaults to \code{Idents(seurat_obj)}.
+#' @param exclude_grey logical determining whether to exclude the grey module.
+#' @param features Which module features to correlate: 'hMEs', 'MEs', 'scores', or 'average'.
+#' @param reduction Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'.
+#' @param cor_cutoff Minimum absolute correlation for an edge to be drawn. Default = 0.2.
+#' @param label_vertices logical determining whether to label the module nodes.
+#' @param edge_scale Scaling factor applied to the absolute correlation to set edge width.
+#' @param vertex_size Size of the module nodes.
+#' @param niter Number of iterations for the Fruchterman-Reingold layout.
+#' @param vertex_frame logical determining whether to draw a black outline around the nodes (TRUE) or use the module color (FALSE).
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return Draws the module correlation network on the current graphics device and returns \code{NULL} invisibly.
 #' @keywords scRNA-seq
 #' @export
 ModuleCorrNetwork <- function(

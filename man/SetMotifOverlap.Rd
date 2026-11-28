@@ -7,11 +7,14 @@
 SetMotifOverlap(seurat_obj, overlap_df, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{overlap_df}{dataframe containing motif-module overlap info}
+\item{overlap_df}{A data.frame of motif-module overlap statistics.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the overlap table stored in \code{seurat_obj@misc[[wgcna_name]]$motif_module_overlaps}.
 }
 \description{
 SetMotifOverlap

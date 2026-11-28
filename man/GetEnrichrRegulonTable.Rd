@@ -7,9 +7,12 @@
 GetEnrichrRegulonTable(seurat_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame of Enrichr results for TF regulons, as computed by \code{RunEnrichrRegulons}, or NULL if not computed.
 }
 \description{
 GetEnrichrRegulonTable

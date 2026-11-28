@@ -7,15 +7,13 @@
 PlotLollipop(modules, cur_DMEs, pvalue, avg_log2FC = "avg_log2FC")
 }
 \arguments{
+\item{modules}{The module assignment table from \code{GetModules}, with the grey module removed.}
+
+\item{cur_DMEs}{dataframe output from FindDMEs or FindAllDMEs for a single comparison}
+
 \item{pvalue}{p_value or fdr used for the comparison in the DMEs dataframe}
 
-\item{seurat_obj}{A Seurat object}
-
-\item{DMEs}{dataframe output from FindDMEs or FindAllDMEs}
-
-\item{group.by}{the column name of the selected comparison in the DMEs dataframe}
-
-\item{comparison}{character vector or a list of character vectors containing the comparison in the DMEs dataframe}
+\item{avg_log2FC}{Name of the fold-change column in the DMEs dataframe. Currently ignored; the 'avg_log2FC' column is always used.}
 }
 \value{
 A ggplot object
@@ -25,10 +23,7 @@ An Internal function for PlotDMEsLollipop to Plotting function for the results o
 }
 \examples{
 \dontrun{
-plot_list <- PlotLollipop(
-  modules, DMEs,
-  cur_title = c('Group1_vs_Group2'), pvalue, avg_log2FC = 'avg_log2FC'
-)
+p <- PlotLollipop(modules, DMEs, pvalue = 'p_val_adj', avg_log2FC = 'avg_log2FC')
 }
 }
 \keyword{scRNA-seq}

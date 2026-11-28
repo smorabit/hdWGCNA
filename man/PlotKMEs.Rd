@@ -24,7 +24,10 @@ PlotKMEs(
 
 \item{plot_widths}{the relative width between the kME rank plot and the hub gene text}
 
-\item{wgcna_name}{the name of the WGCNA experiment in the seurat object}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A patchwork object with one kME rank plot and hub gene label panel per module (excluding grey).
 }
 \description{
 Plotting function to show genes by kME value in each module

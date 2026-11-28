@@ -7,11 +7,14 @@
 SetNetworkData(seurat_obj, net, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{net}{list of network data from WGCNA}
+\item{net}{A list of network data returned by WGCNA network construction.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the network data stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_net}.
 }
 \description{
 SetNetworkData

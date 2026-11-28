@@ -7,13 +7,16 @@
 SetRegulonScores(seurat_obj, regulon_scores, target_type, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{regulon_scores}{dataframe storing the TF regulon scores}
+\item{regulon_scores}{A data.frame of TF regulon scores (cells by TFs).}
 
-\item{target_type}{dataframe storing the TF regulon scores}
+\item{target_type}{The regulon target type the scores were computed for ("positive", "negative", or "both"); used as the storage key.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the scores stored in \code{seurat_obj@misc[[wgcna_name]]$regulon_scores[[target_type]]}.
 }
 \description{
 SetRegulonScores

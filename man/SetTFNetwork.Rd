@@ -7,11 +7,14 @@
 SetTFNetwork(seurat_obj, tf_net, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{tf_net}{dataframe storing the TF network info in ConstructTFNetwork}
+\item{tf_net}{A data.frame of TF-gene importance scores from \code{ConstructTFNetwork}.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the TF network stored in \code{seurat_obj@misc[[wgcna_name]]$tf_net}.
 }
 \description{
 SetTFNetwork

@@ -28,12 +28,18 @@ ModuleRadarPlot(
 
 \item{ncol}{The number of columns for the combined plot if patchwork is being used}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{features}{What to plot? Can select hMEs, MEs, scores, or average}
 
-\item{...}{additional parameters for ggradar}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{fill}{Logical; if TRUE, fill the radar polygons. Passed to ggradar::ggradar. Default = TRUE}
+
+\item{draw.points}{Logical; if TRUE, draw points at each vertex. Passed to ggradar::ggradar. Default = FALSE}
+
+\item{...}{Additional arguments passed to ggradar::ggradar}
 }
 \value{
-ggplot object containing the ModuleRadarPlot
+A patchwork object of radar plots if combine = TRUE, otherwise a named list of ggplot objects (one per module).
 }
 \description{
 Plots the expression level (module eigengene) of each co-expression module

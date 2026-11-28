@@ -7,9 +7,12 @@
 SetActiveWGCNA(seurat_obj, wgcna_name)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment to set as active. An empty experiment is created in seurat_obj@misc if it does not exist yet.}
+}
+\value{
+The input Seurat object with \code{seurat_obj@misc$active_wgcna} set to \code{wgcna_name}.
 }
 \description{
 SetActiveWGCNA

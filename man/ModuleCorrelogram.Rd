@@ -24,9 +24,40 @@ ModuleCorrelogram(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{MEs2}{An optional matrix or data frame of module features (cells by modules) from a second dataset to correlate against. Default = NULL}
 
 \item{features}{What to plot? Can select hMEs, MEs, scores, or average}
+
+\item{order}{Ordering method for the correlation matrix, passed to corrplot::corrplot. Default = 'original'}
+
+\item{method}{Visualization method passed to corrplot::corrplot. Default = 'ellipse'}
+
+\item{exclude_grey}{Logical; if TRUE, exclude the grey module. Default = TRUE}
+
+\item{type}{Which part of the matrix to display ('full', 'upper', 'lower'), passed to corrplot::corrplot. Default = 'upper'}
+
+\item{tl.col}{Color of the text labels. Default = 'black'}
+
+\item{tl.srt}{Rotation angle of the text labels. Default = 45}
+
+\item{sig.level}{Significance levels used to mark correlations, passed to corrplot::corrplot.}
+
+\item{pch.cex}{Size of the significance symbols. Default = 0.7}
+
+\item{col}{Vector of colors for the color scale. Default = NULL to use a seagreen-white-purple gradient.}
+
+\item{ncolors}{Number of colors in the default color gradient. Default = 200}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{wgcna_name2}{Not currently used.}
+
+\item{...}{Additional arguments passed to corrplot::corrplot}
+}
+\value{
+Called for its side effect of drawing a correlogram; invisibly returns the list returned by corrplot::corrplot.
 }
 \description{
 Plot Module Eigengene correlogram

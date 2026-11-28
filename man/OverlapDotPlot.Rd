@@ -23,6 +23,11 @@ OverlapDotPlot(
 \item{neglog}{logical controlling wehether to plot the result as a negative log, useful for p-value / FDR}
 
 \item{plot_significance}{logical controlling whether to plot the significance levels on top of the dots}
+
+\item{...}{Currently unused.}
+}
+\value{
+A ggplot object.
 }
 \description{
 Makes barplots from Enrichr data

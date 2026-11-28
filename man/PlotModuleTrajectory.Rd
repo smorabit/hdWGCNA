@@ -26,6 +26,8 @@ PlotModuleTrajectory(
 
 \item{harmonized}{logical determining whether or not to use the harmonized MEs}
 
+\item{ncol}{number of columns for different modules in the plot}
+
 \item{point_size}{size of the points in the plot}
 
 \item{line_size}{width of the lines in the plot}
@@ -35,8 +37,9 @@ PlotModuleTrajectory(
 \item{group_colors}{optional list of colors to differentiate multiple pseudotime trajectories. Must be the same length as pseudotime_col}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
-
-\item{n_col}{number of columns for different modules in the plot}
+}
+\value{
+A ggplot object faceted by module, showing the average ME in each pseudotime bin.
 }
 \description{
 Plots module eigengene dynamics over a pseudotime trajectory.

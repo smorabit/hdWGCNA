@@ -23,6 +23,11 @@ OverlapBarPlot(
 \item{neglog}{logical controlling wehether to plot the result as a negative log, useful for p-value / FDR}
 
 \item{label_size}{the size of the module labels in the bar plot}
+
+\item{...}{Currently unused.}
+}
+\value{
+A named list of ggplot objects, one bar plot per cell group.
 }
 \description{
 Plots the results from OverlapModulesDEGs as a bar plot

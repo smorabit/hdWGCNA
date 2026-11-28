@@ -9,6 +9,9 @@ scale01(x)
 \arguments{
 \item{x}{numeric vector}
 }
+\value{
+A numeric vector the same length as x, rescaled to the range 0 to 1.
+}
 \description{
 Function to scale a numeric vector between 0 and 1.
 }

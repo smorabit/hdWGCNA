@@ -15,13 +15,16 @@ SetupForWGCNA(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{wgcna_name}{The name of the new hdWGCNA experiment, which is also set as the active experiment.}
 
 \item{features}{list of features to use for WGCNA}
 
 \item{metacell_location}{name of the WGCNA experiment to copy the metacell object from}
 
 \item{...}{additional parameters to pass to SelectNetworkGenes}
+}
+\value{
+The input Seurat object with a new hdWGCNA experiment in \code{seurat_obj@misc[[wgcna_name]]} set as active and its selected genes stored; retrieve them with GetWGCNAGenes().
 }
 \description{
 Create a slot in a Seurat object to store hdWGCNA data

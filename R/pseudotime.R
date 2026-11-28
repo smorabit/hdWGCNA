@@ -3,8 +3,9 @@
 #' Makes evenly-spaced bins of cells along a pseudotime trajectory.
 #'
 #' @param seurat_obj A Seurat object
-#' @param n_bins number of hub genes to use in the UMAP computation
+#' @param n_bins number of pseudotime bins; a vector of values creates one binning per value
 #' @param pseudotime_col name of the column in seurat_obj@meta.data containing pseudotime information
+#' @return The Seurat object with a new \code{seurat_obj@meta.data} column \code{<pseudotime_col>_bins_<n_bins>} containing the bin of each cell.
 #' @export
 BinPseudotime <- function(
   seurat_obj,
@@ -35,10 +36,11 @@ BinPseudotime <- function(
 #' @param harmonized logical determining whether or not to use the harmonized MEs
 #' @param point_size size of the points in the plot
 #' @param line_size width of the lines in the plot
-#' @param n_col number of columns for different modules in the plot
+#' @param ncol number of columns for different modules in the plot
 #' @param se logical determining whether or not to show the standard error on the plot
 #' @param group_colors optional list of colors to differentiate multiple pseudotime trajectories. Must be the same length as pseudotime_col
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @return A ggplot object faceted by module, showing the average ME in each pseudotime bin.
 #' @export
 PlotModuleTrajectory <- function(
   seurat_obj,

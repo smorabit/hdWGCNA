@@ -9,6 +9,9 @@ shuffle_points(df)
 \arguments{
 \item{df}{dataframe}
 }
+\value{
+The input data frame with its rows in random order.
+}
 \description{
 Function to shuffle the rows of a dataframe.
 }

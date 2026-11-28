@@ -24,7 +24,7 @@ TestSoftPowersConsensus(
 
 \item{powers}{numeric vector specifying soft powers to test}
 
-\item{use_metacells}{logical flag for whether to use the metacell expression matrix}
+\item{use_metacells}{Not currently used.}
 
 \item{networkType}{The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork}
 
@@ -40,7 +40,12 @@ TestSoftPowersConsensus(
 
 \item{multi_groups}{A character vecrtor containing the names of groups to select}
 
-\item{...}{additional parameters passed to SetDatExpr}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{additional parameters passed to WGCNA::pickSoftThreshold}
+}
+\value{
+The input Seurat object with a combined soft power threshold table (with a group column for each dataset) stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetPowerTable().
 }
 \description{
 Compute the scale-free topology model fit for different soft power thresholds separately for each input dataset

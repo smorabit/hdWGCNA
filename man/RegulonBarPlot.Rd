@@ -19,6 +19,8 @@ RegulonBarPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
+\item{selected_tf}{A TF whose target genes will be shown}
+
 \item{cutoff}{Cutoff for the edge weights, links below this value will not be included.}
 
 \item{top_n}{Number of top and bottom target genes to include in the plot.}
@@ -32,8 +34,6 @@ RegulonBarPlot(
 \item{low_color}{Color corresponding to negative edge weights}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
-
-\item{selected_tfs}{A TF whose target genes will be shown}
 }
 \value{
 ggplot object containing the RegulonBarPlot

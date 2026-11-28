@@ -20,6 +20,9 @@ TransferModuleGenome(
 
 \item{genome2_col}{the column in gene_mapping that has gene names for the genome to transfer to}
 }
+\value{
+The modules table restricted to mappable genes, with gene_name (and rownames) replaced by the genome2_col gene names.
+}
 \description{
 Takes a module table and a gene mapping table (like from biomart) with gene
 names from two genomes in order to switch

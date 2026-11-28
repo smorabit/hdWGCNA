@@ -4,12 +4,12 @@
 #' major isoforms consists of the isoforms accounting for a desired proportion of a gene's
 #' expression. Pseudobulk replicates in each sample and cell population are used for this calculation.
 #'
-#' @return a list of major isoforms for each cell population
+#' @return A named list with a character vector of major isoforms for each cell population. If \code{cluster_markers} is supplied, a list with elements \code{major} (all major isoforms) and \code{marker} (major isoforms of marker genes only).
 #'
 #' @param seurat_obj A Seurat object
 #' @param group.by column in seurat_obj@meta.data containing grouping info, ie clusters or celltypes
 #' @param replicate_col column in seurat_obj@meta.data denoting each replicate / sample
-#' @param isoform_delim
+#' @param isoform_delim Regular expression separating the gene name from the isoform identifier in the feature names. Default = \code{'[.]'}, a literal dot.
 #' @param proportion_thresh desired proportion of expression to define the set of major isoforms. Default = 0.8.
 #' @param low_thresh lower bound of expression level for considering an isoform as part of the major isoform set.
 #' @param assay Assay in seurat_obj containing isoform expression information.

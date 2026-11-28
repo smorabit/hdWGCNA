@@ -7,7 +7,10 @@
 GetPFMList(seurat_obj)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+}
+\value{
+The list of position frequency matrices used for the motif scan.
 }
 \description{
 GetPFMList

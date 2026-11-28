@@ -17,7 +17,20 @@ MotifOverlapBarPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
+\item{n_tfs}{Number of top TFs (ranked by odds ratio) to plot for each module. Default = 10.}
+
+\item{plot_size}{A vector containing the width and height of the output PDFs. Default = c(5, 6).}
+
+\item{outdir}{The directory where the plots will be stored.}
+
+\item{motif_font}{Font passed to \code{ggseqlogo::geom_logo} for the motif logos.}
+
+\item{module_names}{Character vector of modules to plot. Defaults to all non-grey modules.}
+
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+}
+\value{
+Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
 }
 \description{
 Displays the top n TFs in a set of modules as a bar plot

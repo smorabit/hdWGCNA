@@ -28,7 +28,7 @@ PlotModuleTraitCorrelation(
 
 \item{low_color}{color for negative correlation}
 
-\item{label}{logical determining whether to add p-val label in each cell of the heatmap}
+\item{label}{which statistic to label in each cell of the heatmap: 'pval', 'fdr', or NULL (default) for no labels}
 
 \item{label_symbol}{show the labels as 'stars' or as 'numeric'}
 
@@ -41,8 +41,13 @@ PlotModuleTraitCorrelation(
 \item{text_digits}{how many digits to show in the text labels}
 
 \item{combine}{logical determining whether to plot as one combined plot (TRUE) or to return individual plots as a list (FALSE)}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+If \code{combine = TRUE}, a patchwork object stacking one heatmap per correlation group above a module color bar; otherwise a named list of ggplot objects.
 }
 \description{
-Plotting function for Module Preservation statistics
+Plots the results of ModuleTraitCorrelation as a heatmap.
 }
 \keyword{scRNA-seq}

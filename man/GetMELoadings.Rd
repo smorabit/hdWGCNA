@@ -7,11 +7,14 @@
 GetMELoadings(seurat_obj, harmonized = TRUE, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{harmonized}{logical indicating whether MEs have been harmonized}
+\item{harmonized}{Logical; if TRUE (default), return harmonized loadings when available, otherwise unharmonized loadings.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A named vector of module eigengene feature loadings. Falls back to unharmonized loadings if harmonized loadings are not present.
 }
 \description{
 Function to retrieve module eigengens from Seurat object.

@@ -17,7 +17,11 @@ MetaspotsByGroups(
 )
 }
 \arguments{
+\item{seurat_obj}{A Seurat object containing spatial transcriptomics data, with row, col, imagerow and imagecol columns in the metadata.}
+
 \item{group.by}{A character vector of Seurat metadata column names representing groups for which metacells will be computed.}
+
+\item{ident.group}{A column name in group.by used to set the Idents of the metaspot object. Default = 'seurat_clusters'}
 
 \item{assay}{Assay to extract data for aggregation. Default = 'Spatial'}
 
@@ -29,9 +33,10 @@ MetaspotsByGroups(
 
 \item{min_spots}{the minimum number of spots in a particular grouping to construct metaspots}
 
-\item{wgcna_name}{name of the WGCNA experiment}
-
-\item{cur_seurat}{A Seurat object}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the metaspot Seurat object stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMetacellObject().
 }
 \description{
 Computes metaspots in a given Seurat object containing spatial transcriptomics data.

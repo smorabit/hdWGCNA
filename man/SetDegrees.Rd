@@ -7,11 +7,14 @@
 SetDegrees(seurat_obj, degree_df, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{degree_df}{dataframe containing gene module assignments}
+\item{degree_df}{A data.frame containing intramodular connectivity (degree) for each gene.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the degree table stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_degrees}.
 }
 \description{
 SetDegrees

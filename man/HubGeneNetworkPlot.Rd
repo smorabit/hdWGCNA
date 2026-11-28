@@ -29,6 +29,8 @@ HubGeneNetworkPlot(
 
 \item{n_other}{The number of non-hub genes to sample from each module}
 
+\item{sample_edges}{logical determining whether we randomly downsample edges (TRUE), or take the strongest edges (FALSE).}
+
 \item{edge_prop}{The proportion of edges in the graph to sample.}
 
 \item{return_graph}{logical determining whether we return the graph (TRUE) or plot the graph (FALSE)}
@@ -42,6 +44,11 @@ HubGeneNetworkPlot(
 \item{other.vertex.size}{The size of the other gene nodes}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Additional arguments passed to both \code{igraph::layout_with_fr} and \code{plot.igraph}.}
+}
+\value{
+If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
 }
 \description{
 Construct a unified network plot comprising hub genes for multiple modules.

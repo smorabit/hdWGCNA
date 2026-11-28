@@ -7,13 +7,16 @@
 SetMELoadings(seurat_obj, loadings, harmonized = TRUE, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{loadings}{named numeric vector with eigengene loadings}
+\item{loadings}{A named numeric vector of module eigengene feature loadings, appended to any existing loadings.}
 
-\item{harmonized}{logical indicating whether MEs have been harmonized}
+\item{harmonized}{Logical; if TRUE (default), store as harmonized loadings, otherwise as unharmonized loadings.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the loadings appended to \code{seurat_obj@misc[[wgcna_name]]$hME_loadings} (harmonized) or \code{$ME_loadings}.
 }
 \description{
 SetMELoadings

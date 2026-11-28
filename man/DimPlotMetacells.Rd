@@ -7,7 +7,12 @@
 DimPlotMetacells(seurat_obj, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{...}{Additional arguments passed to Seurat::DimPlot}
+}
+\value{
+A ggplot object from Seurat::DimPlot of the metacell object in the active hdWGCNA experiment.
 }
 \description{
 Wrapper function to run Seurat's DimPlot function on the metacell object.

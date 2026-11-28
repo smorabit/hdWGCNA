@@ -24,11 +24,40 @@ ModuleFeaturePlot(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{module_names}{Character vector of modules to plot. Default = NULL to plot all modules except grey.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{reduction}{Name of the dimensionality reduction to plot. Default = 'umap'}
 
 \item{features}{What to plot? Can select hMEs, MEs, scores, or average}
 
-\item{order}{TRUE, FALSE, or "shuffle" are valid options}
+\item{order_points}{How to order points: TRUE (highest values on top), FALSE, or "shuffle". Default = TRUE}
+
+\item{restrict_range}{Logical; if TRUE, clip the color scale to be symmetric around zero. Default = TRUE}
+
+\item{point_size}{Size of the points. Default = 0.5}
+
+\item{alpha}{Transparency of the points. Default = 1}
+
+\item{label_legend}{Not currently used.}
+
+\item{ucell}{Logical; set to TRUE when plotting UCell scores to use a one-sided color scale. Default = FALSE}
+
+\item{raster}{Logical; if TRUE, rasterise the points with ggrastr. Default = FALSE}
+
+\item{raster_dpi}{Resolution of the rasterised points. Default = 500}
+
+\item{raster_scale}{Scaling factor for rasterised points. Default = 1}
+
+\item{plot_ratio}{Aspect ratio passed to ggplot2::coord_fixed; use a non-numeric value to skip. Default = 1}
+
+\item{title}{Logical; if TRUE, add the module name as the plot title. Default = TRUE}
+}
+\value{
+A ggplot object if one module is plotted, otherwise a named list of ggplot objects (one per module).
 }
 \description{
 Plot module eigengenes as a FeaturePlot

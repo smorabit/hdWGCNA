@@ -7,11 +7,14 @@
 SetAvgModuleExpr(seurat_obj, avg_mods, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{avg_mods}{dataframe storing the average expression of all genes in the same module}
+\item{avg_mods}{A data.frame of the average expression of all genes in each module (cells by modules).}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the average module expression stored in \code{seurat_obj@misc[[wgcna_name]]$avg_modules}.
 }
 \description{
 SetAvgModuleExpr

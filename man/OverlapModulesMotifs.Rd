@@ -11,6 +11,9 @@ OverlapModulesMotifs(seurat_obj, wgcna_name = NULL)
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
+\value{
+The Seurat object with the module/motif overlap table stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve it with \code{GetMotifOverlap}.
+}
 \description{
 Overlap modules with TF target genes
 }

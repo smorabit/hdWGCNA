@@ -3,10 +3,11 @@
 #' Create a slot in a Seurat object to store hdWGCNA data
 #'
 #' @param seurat_obj A Seurat object
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the new hdWGCNA experiment, which is also set as the active experiment.
 #' @param features list of features to use for WGCNA
 #' @param metacell_location name of the WGCNA experiment to copy the metacell object from
 #' @param ... additional parameters to pass to SelectNetworkGenes
+#' @return The input Seurat object with a new hdWGCNA experiment in \code{seurat_obj@misc[[wgcna_name]]} set as active and its selected genes stored; retrieve them with GetWGCNAGenes().
 #'
 #' @details
 #' SetupForWGCNA creates a new slot in the Seurat object (seurat_obj) to store an hdWGCNA experiment
@@ -61,12 +62,14 @@ SetupForWGCNA <- function(
 #'
 #' Select genes that will be used for co-expression network analysis
 #'
-#' @param seurat_obj A Seurat object
-#' @param type How to select genes? Select "variable", "fraction", "all", or "custom".
+#' @param seurat_obj A Seurat object.
+#' @param gene_select How to select genes? Select "variable", "fraction", "all", or "custom".
 #' @param fraction A numeric that determines the minimum cells that a gene must be expressed in order to be included. For example, fraction = 0.05 means that 5% of cells must express a gene (count > 0) for it to be included.
-#' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
-#' @param gene_list A character string of gene names, only used if type = "custom"
-#' @param wgcna_name name of the WGCNA experiment
+#' @param group.by A column in seurat_obj@meta.data; with gene_select = "fraction", keep genes passing the fraction threshold in at least one group. Default = NULL
+#' @param gene_list A character vector of gene names, only used if gene_select = "custom"
+#' @param assay Assay in seurat_obj used to compute expression fractions. Default is DefaultAssay(seurat_obj)
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return The input Seurat object with the selected genes stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetWGCNAGenes().
 #'
 #' @details
 #' SelectNetworkGenes allows us to specify the genes that will be used for co-expression network analysis.

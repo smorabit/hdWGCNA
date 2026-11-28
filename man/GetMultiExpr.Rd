@@ -7,7 +7,12 @@
 GetMultiExpr(seurat_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The multi-set expression data used for consensus WGCNA, as stored by \code{SetMultiExpr} (a WGCNA multiData list with one expression matrix per group).
 }
 \description{
 This function gets the expression matrix from the metacell object.

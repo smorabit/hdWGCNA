@@ -19,7 +19,7 @@ PlotModulePreservation(
 
 \item{name}{The name of the module preservation analysis to plot given in ModulePreservation}
 
-\item{statistics}{Which module preservation statistics to plot? Choices are summary, all, or a custom list}
+\item{statistics}{Which module preservation statistics to plot? Choices are summary, rank, all, or a custom character vector of statistic names}
 
 \item{plot_labels}{logical determining whether to plot the module labels}
 
@@ -27,7 +27,10 @@ PlotModulePreservation(
 
 \item{mod_point_size}{the size of the points in each plot}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A ggplot object if a single statistic is plotted, otherwise a named list of ggplot objects (one per statistic).
 }
 \description{
 Plotting function for Module Preservation statistics

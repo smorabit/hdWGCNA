@@ -7,7 +7,10 @@
 GetMotifMatrix(seurat_obj)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+}
+\value{
+A logical gene-by-motif matrix of TF motif matches in gene promoters, as computed by \code{MotifScan}.
 }
 \description{
 GetMotifMatrix

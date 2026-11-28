@@ -12,8 +12,10 @@
 #' @param overlap_proportion the proportion of genes that must be present in seurat_obj for a given module to be projected. Default = 0.5 (50% of genes)
 #' @param vars.to.regress character vector of variables in seurat_obj@meta.data to regress when running ScaleData
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_ref@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.
 #' @param wgcna_name_proj The name of the hdWGCNA experiment to be created for the projected modules in seurat_obj
+#' @param ... Additional arguments passed to ModuleEigengenes
+#' @return The input seurat_obj with a new hdWGCNA experiment (wgcna_name_proj) containing the projected modules and their module eigengenes; retrieve with GetModules() and GetMEs().
 #' @keywords scRNA-seq
 #' @export
 ProjectModules <- function(
@@ -118,6 +120,7 @@ ProjectModules <- function(
 #' @param gene_mapping table that has the gene names for both genomes
 #' @param genome1_col the column in gene_mapping that has gene names for the genome currently present in modules
 #' @param genome2_col the column in gene_mapping that has gene names for the genome to transfer to
+#' @return The modules table restricted to mappable genes, with gene_name (and rownames) replaced by the genome2_col gene names.
 #' @keywords scRNA-seq
 #' @export
 TransferModuleGenome <- function(

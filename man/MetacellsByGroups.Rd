@@ -25,23 +25,27 @@ MetacellsByGroups(
 )
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
 \item{group.by}{A character vector of Seurat metadata column names representing groups for which metacells will be computed.}
 
-\item{k}{Number of nearest neighbors to aggregate. Default = 50}
+\item{ident.group}{A column name in group.by used to set the Idents of the metacell object. Default = 'seurat_clusters'}
+
+\item{k}{Number of nearest neighbors to aggregate. Default = 25}
 
 \item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'pca'}
 
 \item{dims}{A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.}
 
-\item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
+\item{assay}{Assay to extract data for aggregation. Default = NULL to use the default assay.}
 
 \item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
 
 \item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
 \item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+
+\item{cells.use}{A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.}
 
 \item{min_cells}{the minimum number of cells in a particular grouping to construct metacells}
 
@@ -53,12 +57,10 @@ MetacellsByGroups(
 
 \item{verbose}{logical indicating whether to print additional information}
 
-\item{wgcna_name}{name of the WGCNA experiment}
-
-\item{name}{A string appended to resulting metalcells. Default = 'agg'}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 }
 \value{
-seurat_obj with a metacell seurat_obj stored in the specified WGCNA experiment
+The input Seurat object with the metacell Seurat object and metacell run statistics stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve the metacells with GetMetacellObject().
 }
 \description{
 This function takes a Seurat object and constructs averaged 'metacells' based

@@ -27,6 +27,11 @@ RunEnrichr(
 \item{wait_time}{the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Currently unused.}
+}
+\value{
+The Seurat object with the Enrichr results stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetEnrichrTable}.
 }
 \description{
 Run Enrichr gene set enrichment tests on hdWGCNA modules

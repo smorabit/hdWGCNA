@@ -9,10 +9,16 @@
 #' @param harmonized logical determining whether or not to use harmonized MEs
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param add_missing logical determining whether or not to add missing modules back into the resulting dataframe with NA values.
-#' @param ... Additional parameters for the FindMarkers function
+#' @param test.use Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.
+#' @param only.pos logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.
+#' @param logfc.threshold Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param min.pct Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param verbose logical passed to \code{Seurat::FindMarkers} controlling progress output.
+#' @param pseudocount.use Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param ... Additional parameters for the FindMarkers function. \code{latent.vars} may be given as column names of \code{seurat_obj@meta.data}.
 #' @keywords scRNA-seq
 #' @export
-#' @return A dataframe contaning differential ME results
+#' @return A data.frame of \code{Seurat::FindMarkers} results with one row per module and a \code{module} column.
 FindDMEs <- function(
   seurat_obj,
   barcodes1,
@@ -109,10 +115,16 @@ FindDMEs <- function(
 #' @param harmonized logical determining whether or not to use harmonized MEs
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param add_missing logical determining whether or not to add missing modules back into the resulting dataframe with NA values.
-#' @param ... Additional parameters for the FindMarkers function
+#' @param test.use Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.
+#' @param only.pos logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.
+#' @param logfc.threshold Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param min.pct Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param verbose logical passed to \code{Seurat::FindMarkers} controlling progress output.
+#' @param pseudocount.use Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param ... Additional parameters for the FindMarkers function. \code{latent.vars} may be given as column names of \code{seurat_obj@meta.data}.
 #' @keywords scRNA-seq
 #' @export
-#' @return A dataframe contaning differential ME results
+#' @return A data.frame of \code{Seurat::FindMarkers} results for each group in \code{group.by} versus all other cells, with \code{module} and \code{group} columns.
 FindAllDMEs <- function(
   seurat_obj,
   group.by,
@@ -362,9 +374,11 @@ PlotDMEsVolcano <- function(
 #' @param group.by the column name of the selected comparison in the DMEs dataframe
 #' @param comparison character vector or a list of character vectors containing the comparison in the DMEs dataframe
 #' @param pvalue p_value or fdr used for the comparison in the DMEs dataframe
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param avg_log2FC Name of the fold-change column in the DMEs dataframe. Currently ignored; the 'avg_log2FC' column is always used.
 #' @keywords scRNA-seq
 #' @export
-#' @return A ggplot object
+#' @return A ggplot object if \code{group.by} is not supplied, otherwise a named list of ggplot objects, one per comparison.
 #' PlotDMEsLollipop
 PlotDMEsLollipop <- function(
   seurat_obj,
@@ -463,19 +477,15 @@ PlotDMEsLollipop <- function(
 #'
 #' An Internal function for PlotDMEsLollipop to Plotting function for the results of FindDMEs and FindAllDMEs
 #'
-#' @param seurat_obj A Seurat object
-#' @param DMEs dataframe output from FindDMEs or FindAllDMEs
-#' @param group.by the column name of the selected comparison in the DMEs dataframe
-#' @param comparison character vector or a list of character vectors containing the comparison in the DMEs dataframe
+#' @param modules The module assignment table from \code{GetModules}, with the grey module removed.
+#' @param cur_DMEs dataframe output from FindDMEs or FindAllDMEs for a single comparison
 #' @param pvalue p_value or fdr used for the comparison in the DMEs dataframe
+#' @param avg_log2FC Name of the fold-change column in the DMEs dataframe. Currently ignored; the 'avg_log2FC' column is always used.
 #' @keywords scRNA-seq
 #' @return A ggplot object
 #' @examples
 #' \dontrun{
-#' plot_list <- PlotLollipop(
-#'   modules, DMEs,
-#'   cur_title = c('Group1_vs_Group2'), pvalue, avg_log2FC = 'avg_log2FC'
-#' )
+#' p <- PlotLollipop(modules, DMEs, pvalue = 'p_val_adj', avg_log2FC = 'avg_log2FC')
 #' }
 PlotLollipop <- function(
   modules,

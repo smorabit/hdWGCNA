@@ -26,13 +26,18 @@ RunEnrichrRegulons(
 
 \item{use_regulons}{Use the regulons (default=TRUE) or the full set of TF target genes?}
 
+\item{min_genes}{Minimum number of positive or negative target genes required to run the enrichment test for a TF. Default = 5.}
+
 \item{wait}{logical indicating whether or not to wait some time between sending requests to the EnrichR server.}
 
 \item{wait_time}{the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
-\item{max_genes}{Max number of genes to include per module, ranked by kME.}
+\item{...}{Currently unused.}
+}
+\value{
+The Seurat object with the Enrichr results stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetEnrichrRegulonTable}.
 }
 \description{
 Run Enrichr gene set enrichment tests on hdWGCNA modules

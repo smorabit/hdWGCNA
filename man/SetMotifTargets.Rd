@@ -7,9 +7,12 @@
 SetMotifTargets(seurat_obj, motif_targets)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{motif_targets}{list of motifs and their target genes}
+\item{motif_targets}{A named list of motifs and their target genes.}
+}
+\value{
+The input Seurat object with the motif targets stored in \code{seurat_obj@misc$motifs$motif_targets}.
 }
 \description{
 SetMotifTargets

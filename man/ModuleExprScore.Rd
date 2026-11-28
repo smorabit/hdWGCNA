@@ -19,10 +19,12 @@ ModuleExprScore(
 
 \item{method}{selected method for module scoring, valid choices are "Seurat" or "UCell"}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to Seurat::AddModuleScore or UCell::AddModuleScore_UCell, depending on method}
 }
 \value{
-seurat_obj with module scores computed for the selected wgcna experiment
+The input Seurat object with module scores stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetModuleScores().
 }
 \description{
 Computes a module score for each co-expression module using Seurat AddModuleScore or UCell.

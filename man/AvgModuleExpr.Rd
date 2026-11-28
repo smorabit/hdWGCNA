@@ -7,8 +7,18 @@
 AvgModuleExpr(seurat_obj, n_genes = 25, wgcna_name = NULL, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{n_genes}{the number of genes to use for each module, ranked by kME. Setting n_genes = 'all' uses all of the genes in a module. Default = 25}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Not currently used.}
+}
+\value{
+The input Seurat object with average module expression stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetAvgModuleExpr().
 }
 \description{
-Computes module eigengenes for all WGCNA co-expression modules
+Computes the average expression of the top genes in each co-expression module,
+using the assay and layer that the metacells were constructed from.
 }

@@ -9,9 +9,12 @@ ResetModuleColors(seurat_obj, new_colors, wgcna_name = NULL)
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{new_colors}{a character vector containing the new colors}
+\item{new_colors}{a character vector of new colors (one per non-grey module), or a named list mapping module names to colors}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with module colors updated in the modules table, network data and any downstream tables; retrieve with GetModules().
 }
 \description{
 Reset the unique color for each hdWGCNA module

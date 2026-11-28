@@ -31,11 +31,18 @@ ModuleUMAPPlot(
 
 \item{vertex.label.cex}{font size for labeled genes}
 
+\item{label_genes}{Optional character vector of additional genes to label, alongside the top hub genes.}
+
 \item{return_graph}{logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)}
 
 \item{keep_grey_edges}{logical determining whether to show edges between genes in different modules (grey edges)}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Currently unused.}
+}
+\value{
+If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
 }
 \description{
 Makes a igraph network plot using the module UMAP

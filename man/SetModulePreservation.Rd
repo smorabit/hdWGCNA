@@ -7,13 +7,16 @@
 SetModulePreservation(seurat_obj, mod_pres, mod_name, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{mod_name}{name of the module preservation test to store}
+\item{mod_pres}{The module preservation results to store (e.g. a list with elements obs and Z).}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{mod_name}{The name under which to store the module preservation results.}
 
-\item{mt_cor}{matrix of module-trait correlation results}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the results stored in \code{seurat_obj@misc[[wgcna_name]]$module_preservation[[mod_name]]}.
 }
 \description{
 SetModulePreservation

@@ -29,7 +29,20 @@ RunModuleUMAP(
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
+\item{n_neighbors}{Number of nearest neighbors passed to \code{uwot::umap}. Default = 25.}
+
+\item{metric}{Distance metric passed to \code{uwot::umap}. Default = 'cosine'.}
+
+\item{spread}{Effective scale of embedded points passed to \code{uwot::umap}. Default = 1.}
+
+\item{min_dist}{Minimum distance between embedded points passed to \code{uwot::umap}. Default = 0.4.}
+
+\item{supervised}{logical determining whether to run a supervised UMAP using the module assignments as labels.}
+
 \item{...}{Additional parameters supplied to uwot::umap}
+}
+\value{
+The Seurat object with the module UMAP coordinates stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetModuleUMAP}.
 }
 \description{
 Run UMAP on co-expression matrix using hub genes as features.

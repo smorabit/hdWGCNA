@@ -7,11 +7,14 @@
 GetMEs(seurat_obj, harmonized = TRUE, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{harmonized}{logical indicating whether MEs have been harmonized}
+\item{harmonized}{Logical; if TRUE (default), return harmonized MEs when available, otherwise unharmonized MEs.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame or matrix of module eigengenes (cells by modules). Falls back to unharmonized MEs if harmonized MEs are not present.
 }
 \description{
 Function to retrieve module eigengens from Seurat object.

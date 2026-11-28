@@ -7,13 +7,16 @@
 SetMEs(seurat_obj, MEs, harmonized = TRUE, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{MEs}{dataframe or matrix containing module eigengenes}
+\item{MEs}{A data.frame or matrix of module eigengenes (cells by modules).}
 
-\item{harmonized}{logical indicating whether MEs have been harmonized}
+\item{harmonized}{Logical; if TRUE (default), store as harmonized MEs (hMEs), otherwise as unharmonized MEs.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the MEs stored in \code{seurat_obj@misc[[wgcna_name]]$hMEs} (harmonized) or \code{$MEs}.
 }
 \description{
 SetMEs

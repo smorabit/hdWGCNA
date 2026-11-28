@@ -7,7 +7,10 @@
 GetMotifs(seurat_obj)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+}
+\value{
+A data.frame of motif information (motif ID, motif name, number of targets, and gene name).
 }
 \description{
 GetMotifs

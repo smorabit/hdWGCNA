@@ -7,7 +7,12 @@
 RunUMAPMetacells(seurat_obj, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{...}{Additional arguments passed to Seurat::RunUMAP}
+}
+\value{
+The input Seurat object with the UMAP-reduced metacell object stored in the active hdWGCNA experiment; retrieve with GetMetacellObject().
 }
 \description{
 Wrapper function to run Seurat's RunUMAP function on the metacell object.

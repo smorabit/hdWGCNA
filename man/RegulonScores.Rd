@@ -23,9 +23,11 @@ RegulonScores(
 \item{exclude_grey_genes}{option to exclude genes that are in the grey module from the regulon scores}
 
 \item{wgcna_name}{name of the WGCNA experiment}
+
+\item{...}{Additional arguments passed to \code{UCell::AddModuleScore_UCell}.}
 }
 \value{
-seurat_obj with the TF Regulon Scores added
+The Seurat object with the TF regulon scores stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetRegulonScores}.
 }
 \description{
 Calculate expression scores for TF Regulons

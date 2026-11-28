@@ -7,7 +7,12 @@
 CheckWGCNAName(seurat_obj, wgcna_name)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment to check for in the seurat_obj@misc slot.}
+}
+\value{
+Invisibly returns TRUE if \code{wgcna_name} is a valid hdWGCNA experiment; otherwise throws an error.
 }
 \description{
 CheckWGCNAName

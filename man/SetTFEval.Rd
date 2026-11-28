@@ -7,11 +7,14 @@
 SetTFEval(seurat_obj, tf_eval, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{tf_eval}{dataframe storing the TF network evaluation info from ConstructTFNetwork}
+\item{tf_eval}{A data.frame of TF network model evaluation results from \code{ConstructTFNetwork}.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the TF network evaluation stored in \code{seurat_obj@misc[[wgcna_name]]$tf_eval}.
 }
 \description{
 SetTFEval

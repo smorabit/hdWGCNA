@@ -7,11 +7,14 @@
 SetTOM(seurat_obj, TOM, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{TOM}{a named matrix containing the topological overlap matrix}
+\item{TOM}{A gene-by-gene topological overlap matrix with gene names as row and column names.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the TOM stored in \code{seurat_obj@misc[[wgcna_name]]$wgcna_TOM}.
 }
 \description{
 SetTOM

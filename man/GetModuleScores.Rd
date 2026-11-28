@@ -7,9 +7,12 @@
 GetModuleScores(seurat_obj, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+A data.frame of module expression scores (cells by modules), as computed by \code{ModuleExprScore}, or NULL if not computed.
 }
 \description{
 GetModuleScores

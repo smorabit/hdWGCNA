@@ -2,7 +2,7 @@
 #'
 #' Plots a heatmap of the co-expression network topology of a given module.
 #'
-#' @return ggplot object containing the ModuleTopologyHeatmap
+#' @return A ggplot object containing the ModuleTopologyHeatmap. If \code{return_genes = TRUE}, a list with elements \code{plot}, \code{genes} (the plotted genes in order), \code{plot_max} and \code{plot_min}.
 #'
 #' @param seurat_obj A Seurat object
 #' @param mod the name of the co-expression module to plot
@@ -20,6 +20,7 @@
 #' @param TOM_use  The name of the hdWGCNA experiment containing the TOM that will be used for plotting
 #' @param datExpr_use  The name of the hdWGCNA experiment containing the datExpr that will be used for calculating the correlation matrix
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Additional arguments passed to \code{WGCNA::adjacency} when \code{matrix = 'Cor'}.
 #' @details
 #' ModuleTopologyHeatmap generates a triangular heatmap plot showing the network "topology" of a
 #' specific co-expression module. Each cell in the heatmap represents a gene-gene pair, and the

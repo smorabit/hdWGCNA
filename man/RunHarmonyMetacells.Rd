@@ -7,7 +7,12 @@
 RunHarmonyMetacells(seurat_obj, ...)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
+
+\item{...}{Additional arguments passed to harmony::RunHarmony}
+}
+\value{
+The input Seurat object with the Harmony-corrected metacell object stored in the active hdWGCNA experiment; retrieve with GetMetacellObject().
 }
 \description{
 Wrapper function to run harmony's RunHarmony function on the metacell object.

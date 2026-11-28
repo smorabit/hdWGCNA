@@ -6,8 +6,9 @@
 #' @param powers numeric vector specifying soft powers to test
 #' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
 #' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #' @param ... additional parameters passed to WGCNA::pickSoftThreshold
+#' @return The input Seurat object with the soft power threshold table stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetPowerTable().
 #'
 #' @details
 #' TestSoftPowers aims to find the optimal value of the "soft-power threshold" for co-expression network analysis.
@@ -54,7 +55,7 @@ TestSoftPowers <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param powers numeric vector specifying soft powers to test
-#' @param use_metacells logical flag for whether to use the metacell expression matrix
+#' @param use_metacells Not currently used.
 #' @param networkType The type of network to use for network analysis. Options are "signed" (default), "unsigned", or "signed hybrid". This should be consistent with the network chosen for ConstructNetwork
 #' @param corFnc Correlation function for the gene-gene correlation adjacency matrix.
 #' @param setDatExpr logical flag indicating whether to run setDatExpr.
@@ -62,7 +63,9 @@ TestSoftPowers <- function(
 #' @param group_name A string containing a group present in the provided group.by column or in the Seurat Idents. A character vector can be provided to select multiple groups at a time.
 #' @param multi.group.by A string containing the name of a column in the Seurat object with groups for consensus WGCNA (dataset, sample, condition, etc)
 #' @param multi_groups A character vecrtor containing the names of groups to select
-#' @param ... additional parameters passed to SetDatExpr
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... additional parameters passed to WGCNA::pickSoftThreshold
+#' @return The input Seurat object with a combined soft power threshold table (with a group column for each dataset) stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetPowerTable().
 #' @keywords scRNA-seq
 #' @export
 #' @examples
@@ -138,7 +141,8 @@ TestSoftPowersConsensus <- function(
 #' @param point_size the size of the points in the plot
 #' @param text_size the size of the text in the plot
 #' @param plot_connectivity logical indicating whether to plot the connectivity in addition to the scale free topplogy fit.
-#' @param wgcna_name The name of the WGCNA experiment in seurat_obj
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @return If plot_connectivity = TRUE, a list of four ggplot objects (scale-free fit, mean, median and max connectivity); otherwise a single ggplot. For consensus power tables, a list with one such element per group.
 #' @keywords scRNA-seq
 #' @export
 PlotSoftPowers <- function(
@@ -312,7 +316,7 @@ PlotSoftPowers <- function(
 #' @description Constructs a co-expression network and groups genes into modules
 #' given a Seurat object that has been prepared for network analysis.
 #'
-#' @return seurat_obj with the co-expression network and gene modules computed for the selected wgcna experiment
+#' @return The input Seurat object with the network, parameters and module assignments stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve modules with GetModules() and the network with GetNetworkData(). The TOM is written to tom_outdir.
 #'
 #' @param seurat_obj A Seurat object
 #' @param soft_power the soft power used for network construction. Automatically selected by default.
@@ -320,8 +324,30 @@ PlotSoftPowers <- function(
 #' @param tom_outdir path to the directory where the TOM will be written
 #' @param tom_name prefix name given to the TOM output file
 #' @param consensus flag indicating whether or not to perform Consensus network analysis
-#' @param wgcna_name name of the WGCNA experiment
-#' @param ... additional parameters passed to blockwiseConsensusModules
+#' @param overwrite_tom logical; if TRUE, overwrite an existing TOM file with the same name. Default = FALSE
+#' @param store_tom_in_seurat logical; if TRUE, also store the TOM in the Seurat object (requires saveConsensusTOMs = TRUE). Default = FALSE
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param blocks Optional vector of pre-defined gene blocks, passed to WGCNA::blockwiseConsensusModules.
+#' @param maxBlockSize Maximum number of genes per block; lower this if memory is limited. Default = 30000
+#' @param randomSeed Random seed for reproducibility. Default = 12345
+#' @param corType Correlation type, "pearson" or "bicor". Default = 'pearson'
+#' @param consensusQuantile Quantile used to compute the consensus TOM across datasets. Default = 0.3
+#' @param networkType Network type: "signed", "unsigned", or "signed hybrid". Default = 'signed'
+#' @param TOMType Topological overlap type: "signed", "unsigned", or "none". Default = 'signed'
+#' @param TOMDenom Denominator for the TOM calculation, "min" or "mean". Default = 'min'
+#' @param scaleTOMs logical; whether to scale TOMs of different datasets before taking the consensus. Default = TRUE
+#' @param calibrationQuantile Quantile used to scale TOMs. Default = 0.95
+#' @param sampleForCalibration logical; whether to sample TOM entries for calibration. Default = TRUE
+#' @param sampleForCalibrationFactor Controls the number of samples used for calibration. Default = 1000
+#' @param useDiskCache logical; whether to cache intermediate results on disk to save memory. Default = TRUE
+#' @param chunkSize Size of chunks used for disk caching. Default = NULL
+#' @param deepSplit Sensitivity of the Dynamic Tree Cut module detection (0-4). Default = 4
+#' @param pamStage logical; whether to run the PAM stage of Dynamic Tree Cut. Default = FALSE
+#' @param detectCutHeight Dendrogram cut height for module detection. Default = 0.995
+#' @param minModuleSize Minimum number of genes in a module. Default = 50
+#' @param mergeCutHeight Dendrogram cut height for merging similar modules. Default = 0.2
+#' @param saveConsensusTOMs logical; whether to save the consensus TOM to disk. Default = TRUE
+#' @param ... additional parameters passed to WGCNA::blockwiseConsensusModules
 #'
 #' @details
 #' ConstructNetwork builds a co-expression network and identifies clusters of
@@ -539,7 +565,16 @@ ConstructNetwork <- function(
 #'
 #' Plot WGCNA dendrogram
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param groupLabels Label for the module color bar. Default = 'Module colors'
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param dendroLabels Dendrogram leaf labels; FALSE to hide them. Default = FALSE
+#' @param hang Fraction of the plot height by which leaves hang below the branches. Default = 0.03
+#' @param addGuide logical; whether to draw vertical guide lines. Default = TRUE
+#' @param guideHang Fraction of the dendrogram height to leave between the guide lines and the leaves. Default = 0.05
+#' @param main Plot title. Default = ''
+#' @param ... Additional arguments passed to WGCNA::plotDendroAndColors
+#' @return Called for its side effect of drawing the dendrogram and module colors on the current graphics device.
 #' @keywords scRNA-seq
 #' @export
 PlotDendrogram <- function(

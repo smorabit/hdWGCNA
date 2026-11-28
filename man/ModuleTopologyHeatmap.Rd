@@ -56,9 +56,11 @@ ModuleTopologyHeatmap(
 \item{datExpr_use}{The name of the hdWGCNA experiment containing the datExpr that will be used for calculating the correlation matrix}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Additional arguments passed to \code{WGCNA::adjacency} when \code{matrix = 'Cor'}.}
 }
 \value{
-ggplot object containing the ModuleTopologyHeatmap
+A ggplot object containing the ModuleTopologyHeatmap. If \code{return_genes = TRUE}, a list with elements \code{plot}, \code{genes} (the plotted genes in order), \code{plot_max} and \code{plot_min}.
 }
 \description{
 Plots a heatmap of the co-expression network topology of a given module.

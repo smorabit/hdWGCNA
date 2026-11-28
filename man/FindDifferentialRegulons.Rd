@@ -30,16 +30,28 @@ FindDifferentialRegulons(
 
 \item{assay}{Assay to extract data for aggregation. Default = 'RNA'}
 
-\item{slot}{Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.}
+\item{slot}{Slot to extract gene expression data from. Default = 'data'. Slot is used with Seurat v4 instead of layer.}
 
-\item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
+\item{layer}{Layer to extract gene expression data from. Default = 'data'. Layer is used with Seurat v5 instead of slot.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{test.use}{Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.}
+
+\item{only.pos}{logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.}
+
+\item{logfc.threshold}{Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{min.pct}{Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.}
+
+\item{verbose}{logical passed to \code{Seurat::FindMarkers} controlling progress output.}
+
+\item{pseudocount.use}{Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.}
 
 \item{...}{Additional parameters for the Seurat FindMarkers function}
 }
 \value{
-A dataframe contaning differential regulon results
+A data.frame with one row per TF containing the differential test results for the positive regulon scores, negative regulon scores, and TF gene expression, plus the TF's module and kME.
 }
 \description{
 Function to compare TF regulon scores between two sets of cell barcodes.

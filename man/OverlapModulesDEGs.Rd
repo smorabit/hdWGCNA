@@ -23,6 +23,11 @@ OverlapModulesDEGs(
 \item{group_col}{the name of the column in deg_df containing the cell grouping information}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+
+\item{...}{Currently unused.}
+}
+\value{
+A data.frame with one row per module and cell group, containing the module color, odds ratio, p-value, FDR, significance stars, Jaccard index, and overlap size.
 }
 \description{
 Performs Fisher's Exact Test for overlap between DEGs and hdWGCNA modules.

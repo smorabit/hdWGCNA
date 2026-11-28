@@ -40,12 +40,18 @@ ModulePreservationNetRep(
 
 \item{TOM_use}{The name of the hdWGCNA experiment containing the TOM that will be used for plotting}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{ref_power}{Soft power used to compute the reference adjacency matrix with WGCNA::adjacency. Default = 1}
 
-\item{wgcna_name_ref}{The name of the hdWGCNA experiment in the seurat_ref@misc slot}
+\item{query_power}{Soft power used to compute the query adjacency matrix with WGCNA::adjacency. Default = 1}
+
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_query@misc slot. Defaults to the active experiment.}
+
+\item{wgcna_name_ref}{The name of the hdWGCNA experiment in the seurat_ref@misc slot. Defaults to the active experiment in seurat_ref.}
+
+\item{...}{Not currently used.}
 }
 \value{
-A Seurat Object containing the module preservation statistics from NetRep.
+The input seurat_query with the NetRep module preservation results stored under name in \code{seurat_query@misc[[wgcna_name]]}; retrieve with GetModulePreservation().
 }
 \description{
 Computes module preservation statistics in a query dataset for a given reference dataset

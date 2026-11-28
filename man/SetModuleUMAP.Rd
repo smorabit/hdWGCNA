@@ -7,11 +7,14 @@
 SetModuleUMAP(seurat_obj, umap_df, wgcna_name = NULL)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{umap_df}{dataframe of UMAP coordinates}
+\item{umap_df}{A data.frame of module UMAP coordinates for each gene.}
 
-\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+The input Seurat object with the module UMAP stored in \code{seurat_obj@misc[[wgcna_name]]$module_umap}.
 }
 \description{
 SetModuleUMAP

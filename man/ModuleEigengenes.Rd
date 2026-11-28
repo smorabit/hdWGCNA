@@ -34,10 +34,12 @@ ModuleEigengenes(
 
 \item{pc_dim}{Which PC to use as the module eigengene? Default to 1.}
 
-\item{wgcna_name}{name of the WGCNA experiment}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+
+\item{...}{Additional arguments passed to Seurat::RunPCA and, if group.by.vars is set, harmony::RunHarmony}
 }
 \value{
-seurat_obj with the module eigengenes computed for the selected wgcna experiment
+The input Seurat object with module eigengenes (and harmonized module eigengenes if group.by.vars is set) stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMEs().
 }
 \description{
 Computes module eigengenes for co-expression modules

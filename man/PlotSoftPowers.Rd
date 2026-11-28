@@ -24,7 +24,10 @@ PlotSoftPowers(
 
 \item{plot_connectivity}{logical indicating whether to plot the connectivity in addition to the scale free topplogy fit.}
 
-\item{wgcna_name}{The name of the WGCNA experiment in seurat_obj}
+\item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
+}
+\value{
+If plot_connectivity = TRUE, a list of four ggplot objects (scale-free fit, mean, median and max connectivity); otherwise a single ggplot. For consensus power tables, a list with one such element per group.
 }
 \description{
 Plot Soft Power Threshold results

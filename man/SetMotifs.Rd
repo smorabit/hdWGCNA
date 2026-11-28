@@ -7,9 +7,12 @@
 SetMotifs(seurat_obj, motif_df)
 }
 \arguments{
-\item{seurat_obj}{A Seurat object}
+\item{seurat_obj}{A Seurat object.}
 
-\item{motif_df}{dataframe containing info about the motifs being analyzed}
+\item{motif_df}{A data.frame containing information about the motifs being analyzed.}
+}
+\value{
+The input Seurat object with the motif table stored in \code{seurat_obj@misc$motifs$motif_df}.
 }
 \description{
 SetMotifs
