@@ -322,7 +322,8 @@ MetacellsByGroups <- function(
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #' @return If \code{return_metacell = TRUE}, the metacell Seurat object; otherwise the input Seurat object with the metacell object stored in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetMetacellObject()). Returns NULL if metacell construction fails.
-#' @export
+#' @keywords internal
+#' @noRd
 ConstructMetacells <- function(
   seurat_obj, name = 'agg', ident.group = 'seurat_clusters', k = 50,
   reduction,

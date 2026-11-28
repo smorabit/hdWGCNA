@@ -275,6 +275,9 @@ PlotKMEs <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #' @return A patchwork object if combine = TRUE, otherwise a list of ggplot heatmaps (one per module).
 #' @keywords scRNA-seq
+#' @section Deprecated:
+#' This function is deprecated and will be removed in the next release.
+#' @keywords internal
 #' @export
 DoHubGeneHeatmap <- function(
   seurat_obj,
@@ -287,6 +290,9 @@ DoHubGeneHeatmap <- function(
   disp.min = -2.5, disp.max = 2.5, # cutoff expression values
   wgcna_name = NULL
 ) {
+  .Deprecated(msg = paste0(
+    'DoHubGeneHeatmap() is deprecated and will be removed in the next release of hdWGCNA.'
+  ))
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }

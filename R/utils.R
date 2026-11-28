@@ -38,19 +38,6 @@ umap_theme <- function() {
 }
 
 
-#' shuffle_points
-#'
-#' Function to shuffle the rows of a dataframe.
-#'
-#' @param df dataframe
-#' @return The input data frame with its rows in random order.
-#' @keywords helper
-#' @export
-shuffle_points <- function(df) {
-  df[sample(seq_len(nrow(df))), ]
-}
-
-
 #' Sparse matrix correlation
 #'
 #' Compute the Pearson correlation matrix between
@@ -64,8 +51,9 @@ shuffle_points <- function(df) {
 #' @param Y A matrix
 #' @param cov return covariance matrix
 #' @return A dense matrix of Pearson correlations (or covariances if cov = TRUE) between the columns of X (and Y if provided), without dimnames.
-#' @export
 #' @author Michael Cysouw, Karsten Looschen
+#' @keywords internal
+#' @noRd
 # covmat uses E[(X-muX)'(Y-muY)] = E[X'Y] - muX'muY
 # with sample correction n/(n-1) this leads to cov = ( X'Y - n*muX'muY ) / (n-1)
 #
@@ -108,7 +96,8 @@ corSparse <- function(X, Y = NULL, cov = FALSE) {
 #' Function to check if the installed Seurat is version 5 or newer
 #'
 #' @return TRUE if Seurat >= 5.0.0 is installed
-#' @export
+#' @keywords internal
+#' @noRd
 CheckSeurat5 <- function() {
   utils::packageVersion('Seurat') >= '5.0.0'
 }

@@ -14,12 +14,6 @@ test_that('dendrogram snapshot', {
   expect_plot_snapshot('PlotDendrogram', PlotDendrogram(sim_wgcna('network'), main = 'Dendrogram'))
 })
 
-test_that('correlogram snapshots', {
-  so <- sim_wgcna('mes')
-  expect_plot_snapshot('ModuleCorrelogram circles', ModuleCorrelogram(so))
-  expect_plot_snapshot('ModuleCorrelogram tiles', ModuleCorrelogram(so, method = 'tile', type = 'full', order = 'hclust'))
-})
-
 test_that('radar snapshot', {
   expect_plot_snapshot('ModuleRadarPlot', ModuleRadarPlot(sim_wgcna('mes'), group.by = 'Sample', ncol = 2))
 })

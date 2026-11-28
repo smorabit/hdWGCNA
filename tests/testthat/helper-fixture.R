@@ -143,3 +143,11 @@ sim_tf_network <- function() {
   }
   .fixture_cache$tf
 }
+
+
+# Run code that calls a deprecated hdWGCNA function, muting only the deprecation warning.
+suppress_deprecated <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl('is deprecated', conditionMessage(w))) invokeRestart('muffleWarning')
+  })
+}

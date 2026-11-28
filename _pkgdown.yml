@@ -88,7 +88,6 @@ reference:
   desc: Functions to set up the Seurat object for network analysis
   contents:
   - '`SetupForWGCNA`'
-  - '`SelectNetworkGenes`'
   - '`FindMajorIsoforms`'
 - title: Metacells and metaspots
   desc: Functions for constructing metacells from single-cell data and metaspots from ST data
@@ -254,22 +253,14 @@ reference:
 - title: internal
   contents:
   - umap_theme
-  - to_pseudobulk
-  - CheckSeurat5
-  - CheckWGCNAName
   - scale01 
-  - shuffle_points
   - DoHubGeneHeatmap 
-  - ConstructMetacells
-  - ConstructMetaspots 
   - AvgModuleExpr 
   - ComputeModuleEigengene 
   - ModuleCorrNetwork 
   - ModuleCorrelogram 
   - ModuleExprScore 
   - OverlapModulesMotifs 
-  - corSparse
-  - check_inputs 
   - GetAvgModuleExpr
   - SetAvgModuleExpr
   - TransferModuleGenome 

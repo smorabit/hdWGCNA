@@ -80,7 +80,8 @@ SetupForWGCNA <- function(
 #' For example, by setting fraction=0.1 and group.by='seurat_clusters', this function will identify the set of genes
 #' that are expressed in 10% of cells in at least one of the clusters.
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 SelectNetworkGenes <- function(
   seurat_obj,
   gene_select = 'variable',

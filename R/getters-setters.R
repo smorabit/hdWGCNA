@@ -49,7 +49,8 @@ GetActiveWGCNAName <- function(seurat_obj) {
 #' @param wgcna_name The name of the hdWGCNA experiment to check for in the seurat_obj@misc slot.
 #' @return Invisibly returns TRUE if \code{wgcna_name} is a valid hdWGCNA experiment; otherwise throws an error.
 #' @keywords scRNA-seq
-#' @export
+#' @keywords internal
+#' @noRd
 CheckWGCNAName <- function(seurat_obj, wgcna_name) {
   if (is.null(wgcna_name) || length(wgcna_name) != 1) {
     stop('No hdWGCNA experiment found. Run SetupForWGCNA() first, or provide wgcna_name.')

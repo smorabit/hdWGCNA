@@ -45,4 +45,10 @@ A patchwork object if combine = TRUE, otherwise a list of ggplot heatmaps (one p
 This function makes an expression heatmap of the top n hub genes per module
 using Seurat's DoHeatmap, and then assembles them all into one big heatmap.
 }
+\section{Deprecated}{
+
+This function is deprecated and will be removed in the next release.
+}
+
+\keyword{internal}
 \keyword{scRNA-seq}

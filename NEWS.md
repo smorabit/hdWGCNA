@@ -43,8 +43,14 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
 - `ModuleRadarPlot()` is drawn with plain ggplot2 and no longer needs the GitHub-only
   ggradar package. Group means are now scaled to each module's maximum, so the
   highest-expressing group reaches the outer ring (values were previously unscaled).
+- Internal helpers are no longer exported: `CheckSeurat5()`, `CheckWGCNAName()`,
+  `corSparse()`, `ConstructMetacells()`, `ConstructMetaspots()` and
+  `SelectNetworkGenes()` (use `MetacellsByGroups()`, `MetaspotsByGroups()` and
+  `SetupForWGCNA()`). `shuffle_points()` was removed.
 
 ## Deprecated
+- `ModuleCorrelogram()` and `DoHubGeneHeatmap()` are deprecated and will be removed in the
+  next release.
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and
   `SetDatExpr(mat = se)` instead. It still works but now pseudobulks with
   `AggregatePseudobulk()`: pseudobulk samples with fewer than 3 cells are dropped

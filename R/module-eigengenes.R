@@ -636,6 +636,9 @@ ModuleFeaturePlot <- function(
 #' @param ... Ignored; previously passed to corrplot::corrplot.
 #' @return A ggplot object.
 #' @keywords scRNA-seq
+#' @section Deprecated:
+#' This function is deprecated and will be removed in the next release.
+#' @keywords internal
 #' @export
 ModuleCorrelogram <- function(
   seurat_obj, MEs2 = NULL,
@@ -648,6 +651,9 @@ ModuleCorrelogram <- function(
   pch.cex = 3, col = NULL, ncolors = 200,
   wgcna_name = NULL, wgcna_name2 = NULL, ...
 ) {
+  .Deprecated(msg = paste0(
+    'ModuleCorrelogram() is deprecated and will be removed in the next release of hdWGCNA.'
+  ))
   order <- match.arg(order)
   method <- match.arg(method)
   type <- match.arg(type)

@@ -34,20 +34,21 @@ test_that('ModuleCorrelogram returns a ggplot of module correlations', {
   mods <- setdiff(colnames(GetMEs(so)), 'grey')
   n <- length(mods)
 
-  p <- ModuleCorrelogram(so)
+  p <- suppress_deprecated(ModuleCorrelogram(so))
   expect_s3_class(p, 'ggplot')
   expect_equal(nrow(p$data), n * (n + 1) / 2)
   expect_true(all(p$data$r[p$data$row == p$data$col] == 1))
   expect_true(all(p$data$stars %in% c('', '*', '**', '***')))
 
-  full <- ModuleCorrelogram(so, type = 'full', method = 'tile', order = 'hclust')
+  full <- suppress_deprecated(ModuleCorrelogram(so, type = 'full', method = 'tile', order = 'hclust'))
   expect_equal(nrow(full$data), n^2)
   expect_setequal(levels(full$data$col), mods)
 
   # a second set of features measured in the same cells gives a rectangular matrix
-  p2 <- ModuleCorrelogram(so, MEs2 = GetMEs(so, harmonized = FALSE)[, mods[1:2]])
+  p2 <- suppress_deprecated(ModuleCorrelogram(so, MEs2 = GetMEs(so, harmonized = FALSE)[, mods[1:2]]))
   expect_equal(nrow(p2$data), 2 * n)
-  expect_warning(ModuleCorrelogram(so, tl.cex = 1), 'no longer uses corrplot')
+  expect_warning(suppress_deprecated(ModuleCorrelogram(so, tl.cex = 1)), 'no longer uses corrplot')
+  expect_warning(ModuleCorrelogram(so), 'deprecated')
   local_null_device()
   expect_no_error(print(p))
 })
@@ -63,7 +64,8 @@ test_that('ModuleFeaturePlot returns one plot per module', {
 test_that('PlotKMEs and DoHubGeneHeatmap return ggplot objects', {
   so <- sim_wgcna('kmes')
   expect_true(is_gg(PlotKMEs(so, n_hubs = 5)))
-  expect_true(is_gg(suppressMessages(DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 50))))
+  expect_true(is_gg(suppressMessages(suppress_deprecated(DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 50)))))
+  expect_warning(DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 50), 'deprecated')
 })
 
 test_that('ModuleTopologyHeatmap and ModuleTopologyBarplot return ggplot objects', {
@@ -108,9 +110,11 @@ test_that('DoHubGeneHeatmap works with a character group column and selected mod
   so <- sim_wgcna('kmes')
   so$ct_chr <- as.character(so$cell_type)
   mods <- rev(setdiff(levels(GetModules(so)$module), 'grey'))[1:2]
-  p <- DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 30, group.by = 'ct_chr', module_names = mods, combine = FALSE)
+  p <- suppress_deprecated(DoHubGeneHeatmap(
+    so, n_hubs = 5, n_cells = 30, group.by = 'ct_chr', module_names = mods, combine = FALSE
+  ))
   expect_length(p, 2)
-  expect_error(DoHubGeneHeatmap(so, module_names = 'not_a_module'), 'not_a_module')
+  expect_error(suppress_deprecated(DoHubGeneHeatmap(so, module_names = 'not_a_module')), 'not_a_module')
 })
 
 test_that('ModuleRadarPlot draws one radar per module, scaled to the module maximum', {

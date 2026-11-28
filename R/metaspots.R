@@ -189,7 +189,8 @@ MetaspotsByGroups <- function(
 #' @param slot Slot to extract data for aggregation. Default = 'counts'
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @return A Seurat object of aggregated metaspots, with spot neighbor and density information in its misc slot, or NULL if aggregation fails for this group.
-#' @export
+#' @keywords internal
+#' @noRd
 ConstructMetaspots <- function(
   cur_seurat,
   mode = 'sum',

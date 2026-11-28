@@ -67,4 +67,10 @@ Correlations and their p-values are computed with \code{Hmisc::rcorr}. Each
 cell shows the correlation as a color (and, for \code{method = 'circle'}, as
 the circle size), with stars marking significant correlations.
 }
+\section{Deprecated}{
+
+This function is deprecated and will be removed in the next release.
+}
+
+\keyword{internal}
 \keyword{scRNA-seq}
