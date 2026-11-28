@@ -70,7 +70,6 @@ Suggests:
     lmtest,
     motifmatchr,
     NetRep,
-    qgraph,
     rmarkdown,
     SingleCellExperiment,
     testthat (>= 3.0.0),

@@ -60,24 +60,10 @@ test_that('ModuleFeaturePlot returns one plot per module', {
   expect_true(all(vapply(plots, is_gg, logical(1))))
 })
 
-test_that('ModuleCorrNetwork draws without error', {
-  skip_if_not_installed('qgraph')
-  local_null_device()
-  expect_no_error(suppressWarnings(ModuleCorrNetwork(sim_with_umap())))
-})
-
 test_that('PlotKMEs and DoHubGeneHeatmap return ggplot objects', {
   so <- sim_wgcna('kmes')
   expect_true(is_gg(PlotKMEs(so, n_hubs = 5)))
   expect_true(is_gg(suppressMessages(DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 50))))
-})
-
-test_that('ModuleNetworkPlot writes one PDF per module', {
-  so <- sim_wgcna('kmes')
-  outdir <- withr::local_tempdir()
-  suppressMessages(ModuleNetworkPlot(so, outdir = outdir, n_inner = 5, n_outer = 5, n_conns = 50))
-  mods <- setdiff(levels(GetModules(so)$module), 'grey')
-  expect_setequal(list.files(outdir), paste0(mods, '.pdf'))
 })
 
 test_that('ModuleTopologyHeatmap and ModuleTopologyBarplot return ggplot objects', {

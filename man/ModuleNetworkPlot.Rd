@@ -10,7 +10,7 @@ ModuleNetworkPlot(
   n_outer = 15,
   n_conns = 500,
   mods = "all",
-  outdir = "ModuleNetworks",
+  outdir = NULL,
   wgcna_name = NULL,
   plot_size = c(6, 6),
   edge.alpha = 0.25,
@@ -31,26 +31,27 @@ ModuleNetworkPlot(
 
 \item{mods}{Names of the modules to plot. If mods = "all", all modules are plotted.}
 
-\item{outdir}{The directory where the plots will be stored.}
+\item{outdir}{Deprecated. If given, the plots are also written to this directory as one PDF per module (use \code{SavePlotList} instead). Default = NULL}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
-\item{plot_size}{A vector containing the width and height of the network plots. example: c(5,5)}
+\item{plot_size}{Width and height of the PDFs written to \code{outdir}. Default = c(6, 6)}
 
-\item{edge.alpha}{value between 0 and 1 determining the alpha (transparency) scaling factor for the network edges}
+\item{edge.alpha}{Value between 0 and 1 scaling the opacity of the edges.}
 
-\item{edge.width}{value determining the width of the network edges}
+\item{edge.width}{Width of the edges.}
 
-\item{vertex.label.cex}{vertex label font size}
+\item{vertex.label.cex}{Size of the gene labels, relative to the default.}
 
-\item{vertex.size}{vertex size}
+\item{vertex.size}{Size of the gene nodes.}
 
 \item{...}{Currently unused.}
 }
 \value{
-Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
+A named list of ggplot objects, one per module (modules with too few genes are skipped).
 }
 \description{
-Visualizes the top hub genes for selected modules as a circular network plot with one
-inner circle and one outer circle.
+Visualizes the top hub genes of each module as a circular network: the
+strongest hubs on an inner circle, the next ones on an outer circle, and the
+strongest TOM connections between them as edges.
 }

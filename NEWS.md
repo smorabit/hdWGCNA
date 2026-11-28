@@ -9,7 +9,7 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   explicitly if you use their functions directly.
 - Packages needed only by optional features are no longer installed automatically
   (UCell, enrichR, GeneOverlap, DESeq2, NetRep, xgboost, motifmatchr, ensembldb,
-  GenomicRanges, qgraph, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
+  GenomicRanges, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
   Functions that need them stop with a message explaining how to install them.
 - `MetacellsByGroups()` has new defaults, matching typical use (metacells built per
   cell population x sample on the integrated embedding):
@@ -31,6 +31,14 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   longer used by hdWGCNA. `method` is now `'circle'` or `'tile'`, `order` is
   `'original'` or `'hclust'`, and significance stars use `sig.level`
   (default `c(0.001, 0.01, 0.05)`).
+- Network plots return ggplot objects built with ggraph instead of drawing with igraph:
+  `ModuleNetworkPlot()`, `HubGeneNetworkPlot()`, `ModuleUMAPPlot()` and
+  `ModuleCorrNetwork()`. `return_graph = TRUE` still returns the igraph object.
+  `ModuleCorrNetwork()` no longer needs qgraph and now uses the cluster centroids
+  in `reduction` as the starting layout, as documented.
+- `ModuleNetworkPlot()` returns a named list of plots, one per module. Its `outdir`
+  argument is deprecated; save plots with the new `SavePlotList()`.
+- `HubGeneNetworkPlot()`: `...` is passed only to `igraph::layout_with_fr()`.
 
 ## Deprecated
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and

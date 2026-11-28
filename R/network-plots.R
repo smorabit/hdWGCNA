@@ -1,22 +1,23 @@
 #' ModuleNetworkPlot
 #'
-#' Visualizes the top hub genes for selected modules as a circular network plot with one
-#' inner circle and one outer circle.
+#' Visualizes the top hub genes of each module as a circular network: the
+#' strongest hubs on an inner circle, the next ones on an outer circle, and the
+#' strongest TOM connections between them as edges.
 #'
 #' @param seurat_obj A Seurat object
 #' @param n_inner Number of genes to plot on the inner circle
 #' @param n_outer Number of genes to plot on the outer circle.
 #' @param n_conns Number of gene-gene co-expression connections to plot, sorted by the strongest connections.
 #' @param mods Names of the modules to plot. If mods = "all", all modules are plotted.
-#' @param outdir The directory where the plots will be stored.
+#' @param outdir Deprecated. If given, the plots are also written to this directory as one PDF per module (use \code{SavePlotList} instead). Default = NULL
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @param plot_size A vector containing the width and height of the network plots. example: c(5,5)
-#' @param edge.alpha value between 0 and 1 determining the alpha (transparency) scaling factor for the network edges
-#' @param edge.width value determining the width of the network edges
-#' @param vertex.label.cex vertex label font size
-#' @param vertex.size vertex size
+#' @param plot_size Width and height of the PDFs written to \code{outdir}. Default = c(6, 6)
+#' @param edge.alpha Value between 0 and 1 scaling the opacity of the edges.
+#' @param edge.width Width of the edges.
+#' @param vertex.label.cex Size of the gene labels, relative to the default.
+#' @param vertex.size Size of the gene nodes.
 #' @param ... Currently unused.
-#' @return Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
+#' @return A named list of ggplot objects, one per module (modules with too few genes are skipped).
 #' @export
 ModuleNetworkPlot <- function(
   seurat_obj,
@@ -24,7 +25,7 @@ ModuleNetworkPlot <- function(
   n_outer = 15,
   n_conns = 500,
   mods = 'all',
-  outdir = 'ModuleNetworks',
+  outdir = NULL,
   wgcna_name = NULL,
   plot_size = c(6, 6),
   edge.alpha = 0.25,
@@ -32,120 +33,78 @@ ModuleNetworkPlot <- function(
   vertex.label.cex = 1,
   vertex.size = 6, ...
 ) {
-  # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get modules, MEs:
   modules <- GetModules(seurat_obj, wgcna_name)
-
-  # using all modules?
-  if (all('all' %in% mods)) {
-    mods <- levels(modules$module)
-    mods <- mods[mods != 'grey']
-  } else {
-    # check that the modules are present
-    if (!all(mods %in% unique(as.character(modules$module)))) {
-      stop(paste0('Some selected modules are not found in wgcna_name: ', wgcna_name))
-    }
-    modules <- modules %>% subset(module %in% mods)
-  }
+  mods <- select_modules(modules, mods, wgcna_name)
 
   # check if we have eigengene-based connectivities:
   if (!all(paste0('kME_', as.character(mods)) %in% colnames(modules))) {
     stop('Eigengene-based connectivity (kME) not found. Did you run ModuleEigengenes and ModuleConnectivity?')
   }
 
-  # create output folder
-  if (!dir.exists(outdir)) {
-    dir.create(outdir)
-  }
-
-  # tell the user that the output is going to the output dir
-  cat(paste0('Writing output files to ', outdir))
-
-  # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
+  hub_df <- GetHubGenes(seurat_obj, n_hubs = n_inner + n_outer, wgcna_name = wgcna_name)
 
-  # get hub genes:
-  n_hubs <- n_inner + n_outer
-  hub_df <- GetHubGenes(seurat_obj, n_hubs = n_hubs, wgcna_name = wgcna_name)
-
-  # loop over modules
+  plot_list <- list()
   for (cur_mod in mods) {
-    cur_color <- modules %>%
-      subset(module == cur_mod) %>%
-      .$color %>%
-      unique()
-    cur_genes <- subset(hub_df, module == cur_mod) %>% .$gene_name
+    cur_color <- unique(as.character(modules$color[modules$module == cur_mod]))
+    cur_genes <- as.character(hub_df$gene_name[hub_df$module == cur_mod])
     n_genes <- length(cur_genes)
 
-    # skip if there's too few genes:
     if (n_genes < (n_inner + 1)) {
-      print(paste0('Skipping ', cur_mod, ', too few genes to plot.'))
+      message('Skipping ', cur_mod, ', too few genes to plot.')
       next
     }
-    print(cur_mod)
 
-    # name of column with current kME info
-    cur_kME <- paste0('kME_', cur_mod)
-
-    # Identify the columns in the TOM that correspond to these hub genes
-    matchind <- match(cur_genes, colnames(TOM))
-    reducedTOM <- TOM[matchind, matchind]
+    # keep the strongest connections among the hub genes
+    reducedTOM <- as.matrix(TOM[cur_genes, cur_genes])
+    diag(reducedTOM) <- 0
+    reducedTOM[lower.tri(reducedTOM)] <- 0
     orderind <- order(reducedTOM, decreasing = TRUE)
-
-    if (n_conns > ncol(reducedTOM)**2) {
-      cur_n_conns <- ncol(reducedTOM)**2
-    } else {
-      cur_n_conns <- n_conns
-    }
-
-    # only  keep top connections
-    connections2keep <- orderind[1:cur_n_conns]
-    connections2drop <- orderind[n_conns + seq_along(orderind)]
-    reducedTOM[connections2drop] <- 0
-
-    # scale between 0 and 1
+    cur_n_conns <- min(n_conns, sum(reducedTOM > 0))
+    reducedTOM[orderind[-seq_len(cur_n_conns)]] <- 0
     reducedTOM <- scale01(reducedTOM)
 
-    # melt TOM into long format
-    edge_df <- reducedTOM %>% reshape2::melt()
-    edge_df$color_alpha <- alpha(cur_color, alpha = edge_df$value)
+    edge_df <- reshape2::melt(reducedTOM, varnames = c('from', 'to'))
+    edge_df <- edge_df[edge_df$value > 0, ]
+    edge_df <- edge_df[order(edge_df$value), ]
 
-    # top 10 as center
-    gA <- igraph::graph_from_adjacency_matrix(as.matrix(reducedTOM[1:n_inner, 1:n_inner]), mode = 'undirected', weighted = TRUE, diag = FALSE)
-    gB <- igraph::graph_from_adjacency_matrix(as.matrix(reducedTOM[(n_inner + 1):n_genes, (n_inner + 1):n_genes]), mode = 'undirected', weighted = TRUE, diag = FALSE)
-    layoutCircle <- rbind(igraph::layout_in_circle(gA) / 2, igraph::layout_in_circle(gB))
-
-    g1 <- igraph::graph_from_data_frame(
-      edge_df,
-      directed = FALSE
+    # hubs on an inner circle of half the radius, the rest on an outer circle
+    n_out <- n_genes - n_inner
+    node_df <- data.frame(
+      name = cur_genes,
+      x = c(cos(2 * pi * (seq_len(n_inner) - 1) / n_inner) / 2, cos(2 * pi * (seq_len(n_out) - 1) / n_out)),
+      y = c(sin(2 * pi * (seq_len(n_inner) - 1) / n_inner) / 2, sin(2 * pi * (seq_len(n_out) - 1) / n_out))
     )
 
-    pdf(paste0(outdir, '/', cur_mod, '.pdf'), width = plot_size[1], height = plot_size[2], useDingbats = FALSE)
-    plot(g1,
-      edge.color = adjustcolor(igraph::E(g1)$color_alpha, alpha.f = edge.alpha),
-      edge.curved = 0,
-      edge.width = edge.width,
-      # edge.color=adjustcolor(cur_color, alpha.f=0.25),
-      # edge.alpha=edge.alpha,
-      vertex.color = cur_color,
-      vertex.label = as.character(cur_genes),
-      vertex.label.dist = 1.1,
-      vertex.label.degree = -pi / 4,
-      vertex.label.color = 'black',
-      vertex.label.family = 'Helvetica',
-      vertex.label.font = 3,
-      vertex.label.cex = vertex.label.cex,
-      vertex.frame.color = 'black',
-      layout = jitter(layoutCircle),
-      vertex.size = vertex.size,
-      main = paste(cur_mod)
-    )
-    dev.off()
+    g <- igraph::graph_from_data_frame(edge_df, directed = FALSE, vertices = node_df)
+    p <- ggraph::ggraph(g, layout = 'manual', x = node_df$x, y = node_df$y) +
+      ggraph::geom_edge_link(
+        ggplot2::aes(alpha = .data$value * edge.alpha),
+        colour = cur_color, edge_width = edge.width * 0.5
+      ) +
+      ggraph::geom_node_point(fill = cur_color, shape = 21, color = 'black', size = vertex.size * 0.6) +
+      ggraph::geom_node_text(
+        ggplot2::aes(label = .data$name),
+        repel = TRUE, fontface = 'italic', size = 3.5 * vertex.label.cex
+      ) +
+      ggraph::scale_edge_alpha_identity() +
+      ggplot2::coord_fixed(clip = 'off') +
+      ggplot2::labs(title = cur_mod) +
+      ggraph::theme_graph(base_family = '') +
+      ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    plot_list[[cur_mod]] <- p
   }
+
+  if (!is.null(outdir)) {
+    deprecated_outdir('ModuleNetworkPlot')
+    SavePlotList(plot_list, outdir = outdir, width = plot_size[1], height = plot_size[2])
+  }
+  plot_list
 }
 
 
@@ -159,14 +118,14 @@ ModuleNetworkPlot <- function(
 #' @param n_other The number of non-hub genes to sample from each module
 #' @param sample_edges logical determining whether we randomly downsample edges (TRUE), or take the strongest edges (FALSE).
 #' @param edge_prop The proportion of edges in the graph to sample.
-#' @param return_graph logical determining whether we return the graph (TRUE) or plot the graph (FALSE)
+#' @param return_graph logical determining whether we return the graph (TRUE) or the plot (FALSE)
 #' @param edge.alpha Scaling factor for the edge opacity
-#' @param vertex.label.cex The font size of the gene labels
+#' @param vertex.label.cex Size of the hub gene labels, relative to the default.
 #' @param hub.vertex.size The size of the hub gene nodes
 #' @param other.vertex.size The size of the other gene nodes
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @param ... Additional arguments passed to both \code{igraph::layout_with_fr} and \code{plot.igraph}.
-#' @return If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
+#' @param ... Additional arguments passed to \code{igraph::layout_with_fr}.
+#' @return A ggplot object, or an igraph object if \code{return_graph = TRUE}.
 #' @keywords scRNA-seq
 #' @export
 HubGeneNetworkPlot <- function(
@@ -182,130 +141,68 @@ HubGeneNetworkPlot <- function(
   wgcna_name = NULL,
   ...
 ) {
-  # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get modules, MEs:
-  MEs <- GetMEs(seurat_obj, wgcna_name = wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
+  mods <- select_modules(modules, mods, wgcna_name)
+  modules <- modules[modules$module %in% mods, ]
 
-  # using all modules?
-  if (all('all' %in% mods)) {
-    mods <- levels(modules$module)
-    mods <- mods[mods != 'grey']
-  } else {
-    # check that the modules are present
-    if (!all(mods %in% unique(as.character(modules$module)))) {
-      stop(paste0('Some selected modules are not found in wgcna_name: ', wgcna_name))
-    }
-    modules <- modules %>% subset(module %in% mods)
-  }
-
-  # get TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
 
-  # get hub genes:
-  hub_list <- lapply(mods, function(cur_mod) {
-    cur <- subset(modules, module == cur_mod)
-    cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(n_hubs) %>%
-      .$gene_name
-  })
-  names(hub_list) <- mods
+  # hub genes, plus a sample of other genes from each module
+  hub_genes <- as.character(GetHubGenes(seurat_obj, n_hubs = n_hubs, mods = mods, wgcna_name = wgcna_name)$gene_name)
+  other_genes <- unique(unlist(lapply(mods, function(cur_mod) {
+    cur <- setdiff(modules$gene_name[modules$module == cur_mod], hub_genes)
+    cur[sample.int(length(cur), min(n_other, length(cur)))]
+  })))
 
-  # sample the same number of genes in each module
-  other_genes <- modules %>%
-    subset(!(gene_name %in% unlist(hub_list))) %>%
-    group_by(module) %>%
-    sample_n(n_other, replace = TRUE) %>%
-    .$gene_name %>%
-    unique()
+  selected_genes <- c(hub_genes, other_genes)
+  node_df <- modules[match(selected_genes, modules$gene_name), c('gene_name', 'module', 'color')]
+  colnames(node_df)[1] <- 'name'
+  node_df$color <- as.character(node_df$color)
+  node_df$hub <- node_df$name %in% hub_genes
+  node_df$size <- ifelse(node_df$hub, hub.vertex.size, other.vertex.size)
+  node_df$label <- ifelse(node_df$hub, node_df$name, '')
 
-  # subset TOM by the selected genes:
-  selected_genes <- c(unlist(hub_list), other_genes)
-  selected_modules <- modules %>% subset(gene_name %in% selected_genes)
-  subset_TOM <- TOM[selected_genes, selected_genes]
-
-  # setup for network plot
-  selected_modules$geneset <- ifelse(
-    selected_modules$gene_name %in% other_genes, 'other', 'hub'
-  )
-  selected_modules$size <- ifelse(selected_modules$geneset == 'hub', hub.vertex.size, other.vertex.size)
-  selected_modules$label <- ifelse(selected_modules$geneset == 'hub', as.character(selected_modules$gene_name), '')
-  selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
-
-  # make sure all nodes have at least one edge!!
-  edge_cutoff <- min(sapply(seq_len(nrow(subset_TOM)), function(i) {
-    max(subset_TOM[i, ])
-  }))
-  edge_df <- reshape2::melt(subset_TOM) %>% subset(value >= edge_cutoff)
-
+  # keep edges at least as strong as the weakest "strongest edge" of any gene, so that
+  # every gene keeps at least one edge
+  subset_TOM <- as.matrix(TOM[selected_genes, selected_genes])
+  diag(subset_TOM) <- 0
+  edge_cutoff <- min(apply(subset_TOM, 1, max))
+  subset_TOM[lower.tri(subset_TOM, diag = TRUE)] <- NA
+  edge_df <- reshape2::melt(subset_TOM)
+  edge_df <- edge_df[!is.na(edge_df$value) & edge_df$value >= edge_cutoff, ]
   edge_df$color <- edge_colors(edge_df, modules)
 
-  # subset edges:
-  groups <- unique(edge_df$color)
-  print(groups)
-  if (sample_edges) {
-    # randomly sample
-    temp <- do.call(rbind, lapply(groups, function(cur_group) {
-      cur_df <- edge_df %>% subset(color == cur_group)
-      n_edges <- nrow(cur_df)
-      cur_sample <- sample(1:n_edges, round(n_edges * edge_prop))
-      cur_df[cur_sample, ]
-    }))
-  } else {
-    # get top strongest edges
-    temp <- do.call(rbind, lapply(groups, function(cur_group) {
-      cur_df <- edge_df %>% subset(color == cur_group)
-      n_edges <- nrow(cur_df)
-      cur_df %>% dplyr::top_n(round(n_edges * edge_prop), wt = value)
-    }))
-  }
+  edge_df <- subsample_edges(edge_df, edge_prop, sample_edges)
+  colnames(edge_df)[1:2] <- c('from', 'to')
 
-  edge_df <- temp
-
-  # scale edge values between 0 and 1 for each module
-  edge_df <- edge_df %>%
-    group_by(color) %>%
-    mutate(value = scale01(value))
-
-  edge_df$color <- sapply(seq_len(nrow(edge_df)), function(i) {
-    a <- edge_df$value[i]
-    # if(edge_df$value[i] < 0.05){a=0.05}
-    alpha(edge_df$color[i], alpha = a)
-  })
-
-
-  g <- igraph::graph_from_data_frame(
-    edge_df,
-    directed = FALSE,
-    vertices = selected_modules
-  )
-
-  l <- igraph::layout_with_fr(g, ...)
-
+  g <- igraph::graph_from_data_frame(edge_df, directed = FALSE, vertices = node_df)
   if (return_graph) {
     return(g)
   }
+  layout <- igraph::layout_with_fr(g, ...)
 
-  plot(
-    g,
-    layout = l,
-    edge.color = adjustcolor(igraph::E(g)$color, alpha.f = edge.alpha),
-    vertex.size = igraph::V(g)$size,
-    edge.curved = 0,
-    edge.width = 0.5,
-    vertex.color = igraph::V(g)$color,
-    vertex.frame.color = igraph::V(g)$color,
-    vertex.label = igraph::V(g)$label,
-    vertex.label.family = 'Helvetica', # vertex.label.font=vertex_df$font,
-    vertex.label.font = 3,
-    vertex.label.color = igraph::V(g)$fontcolor,
-    vertex.label.cex = vertex.label.cex,
-    ...
-  )
+  ggraph::ggraph(g, layout = 'manual', x = layout[, 1], y = layout[, 2]) +
+    ggraph::geom_edge_link(
+      ggplot2::aes(colour = .data$color, alpha = .data$value * edge.alpha),
+      edge_width = 0.3
+    ) +
+    ggraph::geom_node_point(
+      ggplot2::aes(color = .data$color, size = .data$size)
+    ) +
+    ggraph::geom_node_text(
+      ggplot2::aes(label = .data$label),
+      repel = TRUE, fontface = 'italic', size = 7 * vertex.label.cex, max.overlaps = Inf
+    ) +
+    ggraph::scale_edge_colour_identity() +
+    ggraph::scale_edge_alpha_identity() +
+    ggplot2::scale_color_identity() +
+    ggplot2::scale_size_identity() +
+    ggraph::theme_graph(base_family = '')
 }
 
 
@@ -433,31 +330,32 @@ RunModuleUMAP <- function(
 
 #' ModuleUMAPPlot
 #'
-#' Makes a igraph network plot using the module UMAP
+#' Plots the module UMAP from \code{RunModuleUMAP} as a network: genes are
+#' placed at their UMAP coordinates and connected to hub genes by their TOM.
 #'
 #' @param seurat_obj A Seurat object
-#' @param sample_edges logical determining whether we downsample edges for plotting (TRUE), or take the strongst edges.
+#' @param sample_edges logical determining whether we downsample edges for plotting (TRUE), or take the strongest edges.
 #' @param edge_prop proportion of edges to plot. If sample_edges=FALSE, the strongest edges are selected.
 #' @param label_hubs the number of hub genes to label in each module
 #' @param edge.alpha scaling factor for edge opacity
-#' @param vertex.label.cex font size for labeled genes
+#' @param vertex.label.cex Size of the gene labels, relative to the default.
 #' @param label_genes Optional character vector of additional genes to label, alongside the top hub genes.
-#' @param return_graph logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)
+#' @param return_graph logical determining whether to return the plot (FALSE) or the igraph object (TRUE)
 #' @param keep_grey_edges logical determining whether to show edges between genes in different modules (grey edges)
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param ... Currently unused.
-#' @return If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
+#' @return A ggplot object, or an igraph object if \code{return_graph = TRUE}.
 #' @keywords scRNA-seq
 #' @export
 ModuleUMAPPlot <- function(
   seurat_obj,
-  sample_edges = TRUE, # TRUE if we sample edges randomly, FALSE if we take the top edges
+  sample_edges = TRUE,
   edge_prop = 0.2,
-  label_hubs = 5, # how many hub genes to label?
+  label_hubs = 5,
   edge.alpha = 0.25,
   vertex.label.cex = 0.5,
   label_genes = NULL,
-  return_graph = FALSE, # this returns the igraph object instead of plotting
+  return_graph = FALSE,
   keep_grey_edges = TRUE,
   wgcna_name = NULL,
   ...
@@ -465,166 +363,93 @@ ModuleUMAPPlot <- function(
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get the TOM
   TOM <- GetTOM(seurat_obj, wgcna_name)
-
-  # get modules,
   modules <- GetModules(seurat_obj, wgcna_name)
-
-  # get the UMAP df:
   umap_df <- GetModuleUMAP(seurat_obj, wgcna_name)
-  mods <- levels(umap_df$module)
-  mods <- mods[mods != 'grey']
+  if (is.null(umap_df)) {
+    stop('Module UMAP not found. Run RunModuleUMAP first.')
+  }
+  mods <- setdiff(levels(umap_df$module), 'grey')
 
-  # subset the TOM:
-  subset_TOM <- TOM[umap_df$gene, umap_df$gene[umap_df$hub == 'hub']]
-
-  # genes to label:
-  # hub_labels <- selected_modules %>% group_by(module) %>% top_n(label_hubs, wt=kME) %>% .$gene_name
-  hub_list <- lapply(mods, function(cur_mod) {
-    cur <- subset(modules, module == cur_mod)
-    cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(label_hubs) %>%
-      .$gene_name
-  })
-  names(hub_list) <- mods
-  hub_labels <- as.character(unlist(hub_list))
-  print('hub labels')
-  print(hub_labels)
-  print(label_genes)
-  if (is.null(label_genes)) {
-    label_genes <- hub_labels
-  } else {
-    if (!any(label_genes %in% umap_df$gene)) {
-      stop('Some genes in label_genes not found in the UMAP.')
+  # genes to label: top hub genes of each module, plus any requested genes
+  hub_labels <- as.character(GetHubGenes(seurat_obj, n_hubs = label_hubs, mods = mods, wgcna_name = wgcna_name)$gene_name)
+  if (!is.null(label_genes)) {
+    if (!all(label_genes %in% umap_df$gene)) {
+      stop(paste0(
+        'Genes in label_genes not found in the module UMAP: ',
+        paste(setdiff(label_genes, umap_df$gene), collapse = ', ')
+      ))
     }
-    label_genes <- unique(c(label_genes, hub_labels))
   }
-  print(label_genes)
+  label_genes <- unique(c(label_genes, hub_labels))
 
-  # subset module df by genes in the UMAP df:
-  selected_modules <- modules[umap_df$gene, ]
-  selected_modules <- cbind(selected_modules, umap_df[, c('UMAP1', 'UMAP2', 'hub', 'kME')])
+  node_df <- data.frame(
+    name = umap_df$gene,
+    x = umap_df$UMAP1,
+    y = umap_df$UMAP2,
+    color = as.character(umap_df$color),
+    kME = umap_df$kME,
+    hub = umap_df$hub
+  )
+  node_df$label <- ifelse(node_df$name %in% label_genes, node_df$name, '')
+  node_df$frame <- ifelse(node_df$label != '', 'black', node_df$color)
+  # draw hubs and labeled genes on top
+  node_df <- node_df[order(node_df$hub == 'hub', node_df$label != ''), ]
 
-  selected_modules$label <- ifelse(selected_modules$gene_name %in% label_genes, selected_modules$gene_name, '')
-  selected_modules$fontcolor <- ifelse(selected_modules$color == 'black', 'gray50', 'black')
-
-  # set frome color
-  # same color as module for all genes, black outline for the selected hub genes
-  selected_modules$framecolor <- ifelse(selected_modules$gene_name %in% label_genes, 'black', selected_modules$color)
-
-  # melt TOM into long format
-  edge_df <- subset_TOM %>% reshape2::melt()
-  print(dim(edge_df))
-
-  # set color of each edge based on value:
-  edge_df$color <- edge_colors(edge_df, selected_modules)
-
-  # keep grey edges?
+  # edges between every gene and the hub genes
+  hubs <- umap_df$gene[umap_df$hub == 'hub']
+  edge_df <- reshape2::melt(as.matrix(TOM[umap_df$gene, hubs]))
+  edge_df <- edge_df[as.character(edge_df$Var1) != as.character(edge_df$Var2), ]
+  edge_df$color <- edge_colors(edge_df, modules)
   if (!keep_grey_edges) {
-    edge_df <- edge_df %>% subset(color != 'grey90')
+    edge_df <- edge_df[edge_df$color != 'grey90', ]
   }
+  edge_df <- subsample_edges(edge_df, edge_prop, sample_edges)
+  # grey edges are fainter and drawn underneath
+  edge_df$alpha <- edge_df$value * edge.alpha * ifelse(edge_df$color == 'grey90', 0.5, 1)
+  edge_df <- edge_df[order(edge_df$color != 'grey90', edge_df$value), ]
+  colnames(edge_df)[1:2] <- c('from', 'to')
 
-  # subset edges:
-  groups <- unique(edge_df$color)
-  if (sample_edges) {
-    # randomly sample
-    temp <- do.call(rbind, lapply(groups, function(cur_group) {
-      cur_df <- edge_df %>% subset(color == cur_group)
-      n_edges <- nrow(cur_df)
-      cur_sample <- sample(1:n_edges, round(n_edges * edge_prop))
-      cur_df[cur_sample, ]
-    }))
-  } else {
-    # get top strongest edges
-    temp <- do.call(rbind, lapply(groups, function(cur_group) {
-      cur_df <- edge_df %>% subset(color == cur_group)
-      n_edges <- nrow(cur_df)
-      cur_df %>% dplyr::top_n(round(n_edges * edge_prop), wt = value)
-    }))
-  }
-
-  edge_df <- temp
-  print(dim(edge_df))
-
-  # scale edge values between 0 and 1 for each module
-  edge_df <- edge_df %>%
-    group_by(color) %>%
-    mutate(value = scale01(value))
-
-  # edges & vertices are plotted in igraph starting with the first row, so re-order s.t. strong edges are on bottom, all gray on the top of the table:
-  edge_df <- edge_df %>% arrange(value)
-  edge_df <- rbind(
-    subset(edge_df, color == 'grey90'),
-    subset(edge_df, color != 'grey90')
-  )
-
-  # set alpha of edges based on kME
-  edge_df$color_alpha <- ifelse(
-    edge_df$color == 'grey90',
-    alpha(edge_df$color, alpha = edge_df$value / 2),
-    alpha(edge_df$color, alpha = edge_df$value)
-  )
-
-  # re-order vertices so hubs are plotted on top
-  selected_modules <- rbind(
-    subset(selected_modules, hub == 'other'),
-    subset(selected_modules, hub != 'other')
-  )
-
-  # re-order vertices so labeled genes are on top
-  selected_modules <- rbind(
-    subset(selected_modules, label == ''),
-    subset(selected_modules, label != '')
-  )
-
-  # setup igraph:
-  g <- igraph::graph_from_data_frame(
-    edge_df,
-    directed = FALSE,
-    vertices = selected_modules
-  )
-
-  # print('making net')
-  # print(head(edge_df))
-  # print(head(selected_modules))
-
+  g <- igraph::graph_from_data_frame(edge_df, directed = FALSE, vertices = node_df)
   if (return_graph) {
     return(g)
   }
 
-  plot(
-    g,
-    layout = as.matrix(selected_modules[, c('UMAP1', 'UMAP2')]),
-    # edge.color=adjustcolor(igraph::E(g)$color, alpha.f=edge.alpha),
-    edge.color = adjustcolor(igraph::E(g)$color_alpha, alpha.f = edge.alpha),
-    vertex.size = igraph::V(g)$kME * 3,
-    edge.curved = 0,
-    edge.width = 0.5,
-    vertex.color = igraph::V(g)$color,
-    vertex.label = igraph::V(g)$label,
-    vertex.label.dist = 1.1,
-    vertex.label.degree = -pi / 4,
-    vertex.label.family = 'Helvetica', # vertex.label.font=vertex_df$font,
-    vertex.label.font = 3,
-    vertex.label.color = igraph::V(g)$fontcolor,
-    vertex.label.cex = vertex.label.cex,
-    vertex.frame.color = igraph::V(g)$framecolor,
-    margin = 0
-  )
+  ggraph::ggraph(g, layout = 'manual', x = node_df$x, y = node_df$y) +
+    ggraph::geom_edge_link(
+      ggplot2::aes(colour = .data$color, alpha = .data$alpha),
+      edge_width = 0.3
+    ) +
+    ggraph::geom_node_point(
+      ggplot2::aes(fill = .data$color, color = .data$frame, size = .data$kME),
+      shape = 21, stroke = 0.3
+    ) +
+    ggraph::geom_node_text(
+      ggplot2::aes(label = .data$label),
+      repel = TRUE, fontface = 'italic', size = 7 * vertex.label.cex, max.overlaps = Inf
+    ) +
+    ggraph::scale_edge_colour_identity() +
+    ggraph::scale_edge_alpha_identity() +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_color_identity() +
+    ggplot2::scale_size_continuous(range = c(0.3, 3), guide = 'none') +
+    ggraph::theme_graph(base_family = '')
 }
 
 
-#' ModuleCorrNetworks
+#' ModuleCorrNetwork
 #'
-#' Plot Module Eigengene correlogram
+#' Plot the correlations between modules as a network: modules are nodes and
+#' edges connect modules whose features are correlated, colored by the
+#' correlation.
 #'
 #' @param seurat_obj A Seurat object
-#' @param cluster_col Column in \code{seurat_obj@meta.data} with cluster labels used to position modules. Defaults to \code{Idents(seurat_obj)}.
+#' @param cluster_col Column in \code{seurat_obj@meta.data} with cluster labels. Each module starts the layout at the centroid (in \code{reduction}) of the cluster where it is most highly expressed. Defaults to \code{Idents(seurat_obj)}.
 #' @param exclude_grey logical determining whether to exclude the grey module.
 #' @param features Which module features to correlate: 'hMEs', 'MEs', 'scores', or 'average'.
-#' @param reduction Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'.
+#' @param reduction Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'. Set to NULL to start the layout from random positions.
 #' @param cor_cutoff Minimum absolute correlation for an edge to be drawn. Default = 0.2.
 #' @param label_vertices logical determining whether to label the module nodes.
 #' @param edge_scale Scaling factor applied to the absolute correlation to set edge width.
@@ -632,7 +457,7 @@ ModuleUMAPPlot <- function(
 #' @param niter Number of iterations for the Fruchterman-Reingold layout.
 #' @param vertex_frame logical determining whether to draw a black outline around the nodes (TRUE) or use the module color (FALSE).
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
-#' @return Draws the module correlation network on the current graphics device and returns \code{NULL} invisibly.
+#' @return A ggplot object.
 #' @keywords scRNA-seq
 #' @export
 ModuleCorrNetwork <- function(
@@ -641,172 +466,155 @@ ModuleCorrNetwork <- function(
   reduction = 'umap', cor_cutoff = 0.2, label_vertices = FALSE, edge_scale = 5,
   vertex_size = 15, niter = 100, vertex_frame = FALSE, wgcna_name = NULL
 ) {
-  check_suggests('qgraph', feature = 'ModuleCorrNetwork')
-
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # Get module eigengenes
-  if (features == 'hMEs') {
-    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
-  } else if (features == 'MEs') {
-    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
-  } else if (features == 'scores') {
-    MEs <- GetModuleScores(seurat_obj, wgcna_name)
-  } else if (features == 'average') {
-    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
-    restrict_range <- FALSE
-  } else {
-    (
-      stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
-    )
-  }
-
-  # get modules
-  modules <- GetModules(seurat_obj, wgcna_name)
-
-  # exclude grey
+  MEs <- switch(features,
+    hMEs = GetMEs(seurat_obj, TRUE, wgcna_name),
+    MEs = GetMEs(seurat_obj, FALSE, wgcna_name),
+    scores = GetModuleScores(seurat_obj, wgcna_name),
+    average = GetAvgModuleExpr(seurat_obj, wgcna_name),
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
+  MEs <- as.matrix(MEs)
   if (exclude_grey) {
-    MEs <- MEs[, colnames(MEs) != 'grey']
-    modules <- modules %>% subset(color != 'grey')
+    MEs <- MEs[, colnames(MEs) != 'grey', drop = FALSE]
   }
-
-  # get list of modules
   mods <- colnames(MEs)
 
-  # what clusters are we using?
-  if (is.null(cluster_col)) {
-    clusters <- Idents(seurat_obj)
-  } else {
-    clusters <- droplevels(seurat_obj@meta.data[[cluster_col]])
+  modules <- GetModules(seurat_obj, wgcna_name)
+  mod_colors <- as.character(modules$color[match(mods, modules$module)])
+
+  # correlation edges
+  cor_mat <- stats::cor(MEs)
+  cor_mat[lower.tri(cor_mat, diag = TRUE)] <- NA
+  edge_df <- reshape2::melt(cor_mat, varnames = c('from', 'to'))
+  edge_df <- edge_df[!is.na(edge_df$value) & abs(edge_df$value) >= cor_cutoff, ]
+
+  node_df <- data.frame(name = mods, color = mod_colors)
+  g <- igraph::graph_from_data_frame(edge_df, directed = FALSE, vertices = node_df)
+
+  # start each module at the centroid of the cluster where it is highest
+  coords <- NULL
+  if (!is.null(reduction)) {
+    clusters <- if (is.null(cluster_col)) Idents(seurat_obj) else seurat_obj@meta.data[[cluster_col]]
+    clusters <- factor(clusters)
+    check_reduction(seurat_obj, reduction)
+    emb <- seurat_obj@reductions[[reduction]]@cell.embeddings[, 1:2]
+    clusters <- droplevels(clusters)
+    n_cells <- as.vector(table(clusters))
+    cluster_ME <- rowsum(MEs, clusters) / n_cells
+    top_cluster <- rownames(cluster_ME)[apply(cluster_ME, 2, which.max)]
+    centroids <- rowsum(emb, clusters) / n_cells
+    coords <- centroids[top_cluster, , drop = FALSE]
+    # modules peaking in the same cluster would start on top of each other
+    coords <- coords + matrix(stats::rnorm(length(coords), sd = 1e-3 * max(abs(coords))), ncol = 2)
   }
-
-  MEs$cluster <- clusters
-
-  # compute average MEs for each cluster
-  cluster_ME_av <- do.call(
-    rbind, lapply(
-      split(MEs, MEs$cluster),
-      function(x) {
-        colMeans(x[, mods])
-      }
-    )
-  ) %>% as.data.frame()
-
-  # which cluster mas highest expression of each module?
-  top_clusters <- sapply(mods, function(x) {
-    rownames(cluster_ME_av[cluster_ME_av[, x] == max(cluster_ME_av[, x]), ])
-  })
-
-  # get UMAP / tSNE centroids for these clusters to use as starting coordinates
-  check_reduction(seurat_obj, reduction)
-  red_df <- as.data.frame(seurat_obj@reductions[[reduction]]@cell.embeddings)
-  red_df$cluster <- clusters
-
-  # compute average coords for each cluster
-  red_av <- do.call(
-    rbind, lapply(
-      split(red_df, red_df$cluster),
-      function(x) {
-        colMeans(x[, 1:2])
-      }
-    )
-  ) %>% as.data.frame()
-
-
-  # get correlation matrix
-  cor_mat <- Hmisc::rcorr(as.matrix(MEs[, seq_len(ncol(MEs)) - 1]))$r
-  cor_mat[lower.tri(cor_mat)] <- NA
-
-  # melt matrix and remove NAs
-  cor_df <- reshape2::melt(cor_mat) %>% na.omit()
-
-  # remove self-edges
-  cor_df <- cor_df %>% subset(!(Var1 == Var2))
-
-  # remove weak edges:
-  cor_df <- cor_df %>% subset(abs(value) >= cor_cutoff)
-
-  # vertex df:
-  v_df <- data.frame(
-    name = mods,
-    cluster = as.character(top_clusters)
-  )
-
-  # add module colors:
-  unique_mods <- dplyr::distinct(modules[, c('module', 'color')])
-  rownames(unique_mods) <- unique_mods$module
-  v_df$color <- unique_mods[v_df$name, 'color']
-
-  # add reduction coords:
-  v_df$x <- red_av[v_df$cluster, 1]
-  v_df$y <- red_av[v_df$cluster, 2]
-
-  # make graph:
-  g <- igraph::graph_from_data_frame(
-    cor_df,
-    directed = FALSE,
-    vertices = v_df
-  )
-
-  # igraph layout
-  e <- igraph::as_edgelist(g, names = FALSE)
-  # l <- igraph::layout_with_fr(
-  #   g,
-  #   weights=igraph::E(g)$value,
-  #   coords = as.matrix(data.frame(x=igraph::V(g)$x, y=igraph::V(g)$y)),
-  #   niter=niter
-  # )
-  #
-  l <- qgraph::qgraph.layout.fruchtermanreingold(
-    e,
-    vcount = vcount(g),
-    weights = igraph::E(g)$value,
-    repulse.rad = (vcount(g)),
-    # cool.exp = 0.5,
-    # init = as.matrix(data.frame(x=igraph::V(g)$x, y=igraph::V(g)$y)),
-    niter = niter,
-    # max.delta = vcount(g)/2
-  )
-
-
-  # ggplot just to get the colors
-  plot_df <- rbind(cor_df, data.frame(Var1 = c('x', 'y'), Var2 = c('y', 'x'), value = c(-1, 1)))
-  temp <- ggplot(plot_df, aes(x = value, y = value, color = value)) +
-    geom_point() +
-    scale_color_gradient2(high = 'darkorchid1', mid = 'white', low = 'seagreen', midpoint = 0)
-  temp <- ggplot_build(temp)
-  igraph::E(g)$color <- temp$data[[1]]$colour[seq_len(nrow(cor_df))]
-
-  # label the vertices?
-  if (label_vertices) {
-    labels <- igraph::V(g)$name
-  } else {
-    labels <- NA
-  }
-
-  # vertex_frame
-  if (vertex_frame) {
-    frame_color <- 'black'
-  } else {
-    frame_color <- igraph::V(g)$color
-  }
-
-  # plot the graph
-  plot(
+  layout <- igraph::layout_with_fr(
     g,
-    layout = l,
-    edge.color = igraph::E(g)$color,
-    edge.curved = 0,
-    edge.width = abs(igraph::E(g)$value) * edge_scale,
-    vertex.color = igraph::V(g)$color,
-    vertex.frame.color = frame_color,
-    vertex.label = labels,
-    vertex.label.family = 'Helvetica',
-    vertex.label.color = 'black',
-    vertex.label.cex = 0.5,
-    vertex.size = vertex_size
+    coords = coords,
+    weights = abs(igraph::E(g)$value),
+    niter = niter
+  )
+
+  frame <- if (vertex_frame) 'black' else mod_colors
+  p <- ggraph::ggraph(g, layout = 'manual', x = layout[, 1], y = layout[, 2]) +
+    ggraph::geom_edge_link(ggplot2::aes(colour = .data$value, edge_width = abs(.data$value) * edge_scale)) +
+    ggraph::geom_node_point(fill = mod_colors, color = frame, shape = 21, size = vertex_size / 3) +
+    ggraph::scale_edge_colour_gradient2(
+      low = 'seagreen', mid = 'white', high = 'darkorchid1', midpoint = 0, limits = c(-1, 1),
+      name = 'Correlation', guide = ggraph::guide_edge_colourbar()
+    ) +
+    ggraph::scale_edge_width_identity() +
+    ggraph::theme_graph(base_family = '')
+  if (label_vertices) {
+    p <- p + ggraph::geom_node_text(ggplot2::aes(label = .data$name), repel = TRUE, size = 3)
+  }
+  p
+}
+
+
+#' SavePlotList
+#'
+#' Save a list of plots, either as one file per plot in a directory or as a
+#' single multi-page PDF.
+#'
+#' @param plot_list A list of ggplot objects, such as the output of
+#'   \code{ModuleNetworkPlot} or \code{EnrichrBarPlot}. Names are used as file names.
+#' @param outdir Directory to write one file per plot, named after the list
+#'   names. Created if it does not exist.
+#' @param file Path of a single multi-page PDF to write instead of \code{outdir}.
+#' @param width,height Plot size in inches. Default = 6
+#' @param device File type for \code{outdir}, passed to \code{ggplot2::ggsave}. Default = 'pdf'
+#' @param ... Additional arguments passed to \code{ggplot2::ggsave}.
+#' @return The paths of the written files, invisibly.
+#' @export
+SavePlotList <- function(plot_list, outdir = NULL, file = NULL, width = 6, height = 6, device = 'pdf', ...) {
+  if (is.null(outdir) == is.null(file)) {
+    stop('Specify exactly one of outdir or file.')
+  }
+  if (length(plot_list) == 0) {
+    return(invisible(character(0)))
+  }
+  if (!is.null(file)) {
+    grDevices::pdf(file, width = width, height = height, useDingbats = FALSE)
+    on.exit(grDevices::dev.off())
+    for (p in plot_list) print(p)
+    return(invisible(file))
+  }
+  if (is.null(names(plot_list)) || any(!nzchar(names(plot_list)))) {
+    names(plot_list) <- paste0('plot_', seq_along(plot_list))
+  }
+  if (!dir.exists(outdir)) {
+    dir.create(outdir, recursive = TRUE)
+  }
+  paths <- file.path(outdir, paste0(names(plot_list), '.', device))
+  for (i in seq_along(plot_list)) {
+    ggplot2::ggsave(paths[i], plot_list[[i]], width = width, height = height, device = device, ...)
+  }
+  invisible(paths)
+}
+
+
+# Resolve the mods argument of the network plots: 'all' means every module except
+# grey, otherwise check that the requested modules exist.
+select_modules <- function(modules, mods, wgcna_name) {
+  if (all('all' %in% mods)) {
+    return(setdiff(levels(modules$module), 'grey'))
+  }
+  missing_mods <- setdiff(mods, as.character(modules$module))
+  if (length(missing_mods) > 0) {
+    stop(paste0('Modules not found in ', wgcna_name, ': ', paste(missing_mods, collapse = ', ')))
+  }
+  mods
+}
+
+# Keep a proportion of the edges of each edge color, either at random or the
+# strongest ones, and rescale edge weights to 0-1 within each color.
+subsample_edges <- function(edge_df, edge_prop, sample_edges) {
+  edge_df <- do.call(rbind, lapply(split(edge_df, edge_df$color), function(cur_df) {
+    n_keep <- round(nrow(cur_df) * edge_prop)
+    keep <- if (sample_edges) {
+      sample.int(nrow(cur_df), n_keep)
+    } else {
+      order(cur_df$value, decreasing = TRUE)[seq_len(n_keep)]
+    }
+    cur_df <- cur_df[keep, , drop = FALSE]
+    # a single edge (or all-equal weights) would give NaN from scale01()
+    cur_df$value <- if (length(unique(cur_df$value)) > 1) scale01(cur_df$value) else rep(1, nrow(cur_df))
+    cur_df
+  }))
+  rownames(edge_df) <- NULL
+  edge_df
+}
+
+deprecated_outdir <- function(fn) {
+  warning(
+    'The outdir argument of ', fn, '() is deprecated: it now returns a list of plots. ',
+    'Save them with SavePlotList(plots, outdir = ...).',
+    call. = FALSE
   )
 }
 

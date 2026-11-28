@@ -2,7 +2,7 @@
 % Please edit documentation in R/network-plots.R
 \name{ModuleCorrNetwork}
 \alias{ModuleCorrNetwork}
-\title{ModuleCorrNetworks}
+\title{ModuleCorrNetwork}
 \usage{
 ModuleCorrNetwork(
   seurat_obj,
@@ -22,13 +22,13 @@ ModuleCorrNetwork(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{cluster_col}{Column in \code{seurat_obj@meta.data} with cluster labels used to position modules. Defaults to \code{Idents(seurat_obj)}.}
+\item{cluster_col}{Column in \code{seurat_obj@meta.data} with cluster labels. Each module starts the layout at the centroid (in \code{reduction}) of the cluster where it is most highly expressed. Defaults to \code{Idents(seurat_obj)}.}
 
 \item{exclude_grey}{logical determining whether to exclude the grey module.}
 
 \item{features}{Which module features to correlate: 'hMEs', 'MEs', 'scores', or 'average'.}
 
-\item{reduction}{Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'.}
+\item{reduction}{Name of the dimensionality reduction used to compute cluster centroids. Default = 'umap'. Set to NULL to start the layout from random positions.}
 
 \item{cor_cutoff}{Minimum absolute correlation for an edge to be drawn. Default = 0.2.}
 
@@ -45,9 +45,11 @@ ModuleCorrNetwork(
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 }
 \value{
-Draws the module correlation network on the current graphics device and returns \code{NULL} invisibly.
+A ggplot object.
 }
 \description{
-Plot Module Eigengene correlogram
+Plot the correlations between modules as a network: modules are nodes and
+edges connect modules whose features are correlated, colored by the
+correlation.
 }
 \keyword{scRNA-seq}

@@ -21,7 +21,7 @@ ModuleUMAPPlot(
 \arguments{
 \item{seurat_obj}{A Seurat object}
 
-\item{sample_edges}{logical determining whether we downsample edges for plotting (TRUE), or take the strongst edges.}
+\item{sample_edges}{logical determining whether we downsample edges for plotting (TRUE), or take the strongest edges.}
 
 \item{edge_prop}{proportion of edges to plot. If sample_edges=FALSE, the strongest edges are selected.}
 
@@ -29,11 +29,11 @@ ModuleUMAPPlot(
 
 \item{edge.alpha}{scaling factor for edge opacity}
 
-\item{vertex.label.cex}{font size for labeled genes}
+\item{vertex.label.cex}{Size of the gene labels, relative to the default.}
 
 \item{label_genes}{Optional character vector of additional genes to label, alongside the top hub genes.}
 
-\item{return_graph}{logical determining whether to plot thr graph (FALSE) or return the igraph object (TRUE)}
+\item{return_graph}{logical determining whether to return the plot (FALSE) or the igraph object (TRUE)}
 
 \item{keep_grey_edges}{logical determining whether to show edges between genes in different modules (grey edges)}
 
@@ -42,9 +42,10 @@ ModuleUMAPPlot(
 \item{...}{Currently unused.}
 }
 \value{
-If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
+A ggplot object, or an igraph object if \code{return_graph = TRUE}.
 }
 \description{
-Makes a igraph network plot using the module UMAP
+Plots the module UMAP from \code{RunModuleUMAP} as a network: genes are
+placed at their UMAP coordinates and connected to hub genes by their TOM.
 }
 \keyword{scRNA-seq}

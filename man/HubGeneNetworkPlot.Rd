@@ -33,11 +33,11 @@ HubGeneNetworkPlot(
 
 \item{edge_prop}{The proportion of edges in the graph to sample.}
 
-\item{return_graph}{logical determining whether we return the graph (TRUE) or plot the graph (FALSE)}
+\item{return_graph}{logical determining whether we return the graph (TRUE) or the plot (FALSE)}
 
 \item{edge.alpha}{Scaling factor for the edge opacity}
 
-\item{vertex.label.cex}{The font size of the gene labels}
+\item{vertex.label.cex}{Size of the hub gene labels, relative to the default.}
 
 \item{hub.vertex.size}{The size of the hub gene nodes}
 
@@ -45,10 +45,10 @@ HubGeneNetworkPlot(
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 
-\item{...}{Additional arguments passed to both \code{igraph::layout_with_fr} and \code{plot.igraph}.}
+\item{...}{Additional arguments passed to \code{igraph::layout_with_fr}.}
 }
 \value{
-If \code{return_graph = TRUE}, an igraph object. Otherwise the network is drawn on the current graphics device and \code{NULL} is returned invisibly.
+A ggplot object, or an igraph object if \code{return_graph = TRUE}.
 }
 \description{
 Construct a unified network plot comprising hub genes for multiple modules.
