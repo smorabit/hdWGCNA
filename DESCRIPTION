@@ -57,7 +57,6 @@ Imports:
     WGCNA
 Suggests:
     BiocGenerics,
-    corrplot,
     DESeq2,
     enrichR,
     ensembldb,

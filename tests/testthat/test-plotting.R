@@ -29,10 +29,27 @@ test_that('dendrogram_segments places merges like plot.hclust', {
   expect_true(root$x < root$xend)
 })
 
-test_that('ModuleCorrelogram draws without error', {
-  skip_if_not_installed('corrplot')
+test_that('ModuleCorrelogram returns a ggplot of module correlations', {
+  so <- sim_wgcna('mes')
+  mods <- setdiff(colnames(GetMEs(so)), 'grey')
+  n <- length(mods)
+
+  p <- ModuleCorrelogram(so)
+  expect_s3_class(p, 'ggplot')
+  expect_equal(nrow(p$data), n * (n + 1) / 2)
+  expect_true(all(p$data$r[p$data$row == p$data$col] == 1))
+  expect_true(all(p$data$stars %in% c('', '*', '**', '***')))
+
+  full <- ModuleCorrelogram(so, type = 'full', method = 'tile', order = 'hclust')
+  expect_equal(nrow(full$data), n^2)
+  expect_setequal(levels(full$data$col), mods)
+
+  # a second set of features measured in the same cells gives a rectangular matrix
+  p2 <- ModuleCorrelogram(so, MEs2 = GetMEs(so, harmonized = FALSE)[, mods[1:2]])
+  expect_equal(nrow(p2$data), 2 * n)
+  expect_warning(ModuleCorrelogram(so, tl.cex = 1), 'no longer uses corrplot')
   local_null_device()
-  expect_no_error(ModuleCorrelogram(sim_wgcna('mes')))
+  expect_no_error(print(p))
 })
 
 test_that('ModuleFeaturePlot returns one plot per module', {

@@ -8,14 +8,14 @@ ModuleCorrelogram(
   seurat_obj,
   MEs2 = NULL,
   features = "hMEs",
-  order = "original",
-  method = "ellipse",
+  order = c("original", "hclust"),
+  method = c("circle", "tile"),
   exclude_grey = TRUE,
-  type = "upper",
+  type = c("upper", "lower", "full"),
   tl.col = "black",
   tl.srt = 45,
-  sig.level = c(1e-04, 0.001, 0.01, 0.05),
-  pch.cex = 0.7,
+  sig.level = c(0.001, 0.01, 0.05),
+  pch.cex = 3,
   col = NULL,
   ncolors = 200,
   wgcna_name = NULL,
@@ -26,40 +26,45 @@ ModuleCorrelogram(
 \arguments{
 \item{seurat_obj}{A Seurat object.}
 
-\item{MEs2}{An optional matrix or data frame of module features (cells by modules) from a second dataset to correlate against. Default = NULL}
+\item{MEs2}{An optional matrix or data frame of module features (cells by modules) from a second dataset, measured in the same cells, to correlate against. Default = NULL}
 
 \item{features}{What to plot? Can select hMEs, MEs, scores, or average}
 
-\item{order}{Ordering method for the correlation matrix, passed to corrplot::corrplot. Default = 'original'}
+\item{order}{Order of the modules: 'original' (module order) or 'hclust' (hierarchical clustering of the correlation matrix). Default = 'original'}
 
-\item{method}{Visualization method passed to corrplot::corrplot. Default = 'ellipse'}
+\item{method}{'circle' (default; circle size and color show the correlation) or 'tile' (colored squares).}
 
 \item{exclude_grey}{Logical; if TRUE, exclude the grey module. Default = TRUE}
 
-\item{type}{Which part of the matrix to display ('full', 'upper', 'lower'), passed to corrplot::corrplot. Default = 'upper'}
+\item{type}{Which part of the matrix to display: 'upper' (default), 'lower' or 'full'. Ignored when \code{MEs2} is given.}
 
-\item{tl.col}{Color of the text labels. Default = 'black'}
+\item{tl.col}{Color of the module labels. Default = 'black'}
 
-\item{tl.srt}{Rotation angle of the text labels. Default = 45}
+\item{tl.srt}{Rotation angle of the x-axis module labels. Default = 45}
 
-\item{sig.level}{Significance levels used to mark correlations, passed to corrplot::corrplot.}
+\item{sig.level}{Increasing p-value thresholds marked with three, two and one star. Default = c(0.001, 0.01, 0.05); NULL to hide stars.}
 
-\item{pch.cex}{Size of the significance symbols. Default = 0.7}
+\item{pch.cex}{Size of the significance stars. Default = 3}
 
-\item{col}{Vector of colors for the color scale. Default = NULL to use a seagreen-white-purple gradient.}
+\item{col}{Vector of colors for the color scale, from -1 to 1. Default = NULL to use a seagreen-white-purple gradient.}
 
-\item{ncolors}{Number of colors in the default color gradient. Default = 200}
+\item{ncolors}{Not currently used; kept for compatibility.}
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 
 \item{wgcna_name2}{Not currently used.}
 
-\item{...}{Additional arguments passed to corrplot::corrplot}
+\item{...}{Ignored; previously passed to corrplot::corrplot.}
 }
 \value{
-Called for its side effect of drawing a correlogram; invisibly returns the list returned by corrplot::corrplot.
+A ggplot object.
 }
 \description{
-Plot Module Eigengene correlogram
+Plot the correlation between modules as a ggplot heatmap.
+}
+\details{
+Correlations and their p-values are computed with \code{Hmisc::rcorr}. Each
+cell shows the correlation as a color (and, for \code{method = 'circle'}, as
+the circle size), with stars marking significant correlations.
 }
 \keyword{scRNA-seq}

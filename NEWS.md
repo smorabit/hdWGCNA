@@ -9,7 +9,7 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   explicitly if you use their functions directly.
 - Packages needed only by optional features are no longer installed automatically
   (UCell, enrichR, GeneOverlap, DESeq2, NetRep, xgboost, motifmatchr, ensembldb,
-  GenomicRanges, corrplot, qgraph, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
+  GenomicRanges, qgraph, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
   Functions that need them stop with a message explaining how to install them.
 - `MetacellsByGroups()` has new defaults, matching typical use (metacells built per
   cell population x sample on the integrated embedding):
@@ -27,6 +27,10 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
 - `PlotDendrogram()` returns a ggplot (patchwork) object instead of drawing with base
   graphics. Use `engine = 'base'` for the classic `WGCNA::plotDendroAndColors()` figure.
   The ggplot version renders a 30,000-gene dendrogram in under a second.
+- `ModuleCorrelogram()` returns a ggplot instead of drawing with corrplot, which is no
+  longer used by hdWGCNA. `method` is now `'circle'` or `'tile'`, `order` is
+  `'original'` or `'hclust'`, and significance stars use `sig.level`
+  (default `c(0.001, 0.01, 0.05)`).
 
 ## Deprecated
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and

@@ -611,107 +611,153 @@ ModuleFeaturePlot <- function(
 
 #' ModuleCorrelogram
 #'
-#' Plot Module Eigengene correlogram
+#' Plot the correlation between modules as a ggplot heatmap.
+#'
+#' Correlations and their p-values are computed with \code{Hmisc::rcorr}. Each
+#' cell shows the correlation as a color (and, for \code{method = 'circle'}, as
+#' the circle size), with stars marking significant correlations.
 #'
 #' @param seurat_obj A Seurat object.
-#' @param MEs2 An optional matrix or data frame of module features (cells by modules) from a second dataset to correlate against. Default = NULL
+#' @param MEs2 An optional matrix or data frame of module features (cells by modules) from a second dataset, measured in the same cells, to correlate against. Default = NULL
 #' @param features What to plot? Can select hMEs, MEs, scores, or average
-#' @param order Ordering method for the correlation matrix, passed to corrplot::corrplot. Default = 'original'
-#' @param method Visualization method passed to corrplot::corrplot. Default = 'ellipse'
+#' @param order Order of the modules: 'original' (module order) or 'hclust' (hierarchical clustering of the correlation matrix). Default = 'original'
+#' @param method 'circle' (default; circle size and color show the correlation) or 'tile' (colored squares).
 #' @param exclude_grey Logical; if TRUE, exclude the grey module. Default = TRUE
-#' @param type Which part of the matrix to display ('full', 'upper', 'lower'), passed to corrplot::corrplot. Default = 'upper'
-#' @param tl.col Color of the text labels. Default = 'black'
-#' @param tl.srt Rotation angle of the text labels. Default = 45
-#' @param sig.level Significance levels used to mark correlations, passed to corrplot::corrplot.
-#' @param pch.cex Size of the significance symbols. Default = 0.7
-#' @param col Vector of colors for the color scale. Default = NULL to use a seagreen-white-purple gradient.
-#' @param ncolors Number of colors in the default color gradient. Default = 200
+#' @param type Which part of the matrix to display: 'upper' (default), 'lower' or 'full'. Ignored when \code{MEs2} is given.
+#' @param tl.col Color of the module labels. Default = 'black'
+#' @param tl.srt Rotation angle of the x-axis module labels. Default = 45
+#' @param sig.level Increasing p-value thresholds marked with three, two and one star. Default = c(0.001, 0.01, 0.05); NULL to hide stars.
+#' @param pch.cex Size of the significance stars. Default = 3
+#' @param col Vector of colors for the color scale, from -1 to 1. Default = NULL to use a seagreen-white-purple gradient.
+#' @param ncolors Not currently used; kept for compatibility.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #' @param wgcna_name2 Not currently used.
-#' @param ... Additional arguments passed to corrplot::corrplot
-#' @return Called for its side effect of drawing a correlogram; invisibly returns the list returned by corrplot::corrplot.
+#' @param ... Ignored; previously passed to corrplot::corrplot.
+#' @return A ggplot object.
 #' @keywords scRNA-seq
 #' @export
 ModuleCorrelogram <- function(
   seurat_obj, MEs2 = NULL,
   features = 'hMEs',
-  order = 'original', method = 'ellipse',
-  exclude_grey = TRUE, type = 'upper',
+  order = c('original', 'hclust'),
+  method = c('circle', 'tile'),
+  exclude_grey = TRUE, type = c('upper', 'lower', 'full'),
   tl.col = 'black', tl.srt = 45,
-  sig.level = c(0.0001, 0.001, 0.01, 0.05),
-  #  insig='label_sig',
-  pch.cex = 0.7, col = NULL, ncolors = 200,
+  sig.level = c(0.001, 0.01, 0.05),
+  pch.cex = 3, col = NULL, ncolors = 200,
   wgcna_name = NULL, wgcna_name2 = NULL, ...
 ) {
-  check_suggests('corrplot', feature = 'ModuleCorrelogram')
-
+  order <- match.arg(order)
+  method <- match.arg(method)
+  type <- match.arg(type)
+  if (...length() > 0) {
+    warning('ModuleCorrelogram no longer uses corrplot; additional arguments in ... are ignored.')
+  }
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get MEs, module data from seurat object
-  if (features == 'hMEs') {
-    MEs <- GetMEs(seurat_obj, TRUE, wgcna_name)
-  } else if (features == 'MEs') {
-    MEs <- GetMEs(seurat_obj, FALSE, wgcna_name)
-  } else if (features == 'scores') {
-    MEs <- GetModuleScores(seurat_obj, wgcna_name)
-  } else if (features == 'average') {
-    MEs <- GetAvgModuleExpr(seurat_obj, wgcna_name)
-    restrict_range <- FALSE
-  } else {
-    (
-      stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
-    )
-  }
-
-  # convert to matrix
+  MEs <- switch(features,
+    hMEs = GetMEs(seurat_obj, TRUE, wgcna_name),
+    MEs = GetMEs(seurat_obj, FALSE, wgcna_name),
+    scores = GetModuleScores(seurat_obj, wgcna_name),
+    average = GetAvgModuleExpr(seurat_obj, wgcna_name),
+    stop('Invalid feature selection. Valid choices: hMEs, MEs, scores, average')
+  )
   MEs <- as.matrix(MEs)
-
-  # exclude grey
   if (exclude_grey) {
-    MEs <- MEs[, colnames(MEs) != 'grey']
+    MEs <- MEs[, colnames(MEs) != 'grey', drop = FALSE]
   }
 
-  # setup color scheme:
-  if (is.null(col)) {
-    colfunc <- grDevices::colorRampPalette(c('seagreen', 'white', 'darkorchid1'))
-    col <- colfunc(ncolors)
-  }
-
-  # perform correlation
+  # correlation and p-values
   if (is.null(MEs2)) {
     res <- Hmisc::rcorr(x = MEs)
+    r <- res$r
+    p <- res$P
   } else {
-    # add dataset indicator to cols/rows
-    d1_names <- colnames(MEs)
-    d2_names <- colnames(MEs2)
-    colnames(MEs) <- paste0(d1_names, '_D1')
-    colnames(MEs2) <- paste0(d2_names, '_D2')
-
-    res <- Hmisc::rcorr(x = MEs, y = as.matrix(MEs2))
-
-    res$r <- res$r[!grepl('_D1', colnames(res$r)), grepl('_D1', colnames(res$r))]
-    colnames(res$r) <- d1_names
-    rownames(res$r) <- d2_names
-
-    res$P <- res$P[!grepl('_D1', colnames(res$P)), grepl('_D1', colnames(res$P))]
-    colnames(res$P) <- d1_names
-    rownames(res$P) <- d2_names
+    MEs2 <- as.matrix(MEs2)
+    if (nrow(MEs2) != nrow(MEs)) {
+      stop('MEs2 must have one row per cell, like the module features of seurat_obj.')
+    }
+    res <- Hmisc::rcorr(x = MEs, y = MEs2)
+    d1 <- seq_len(ncol(MEs))
+    d2 <- ncol(MEs) + seq_len(ncol(MEs2))
+    r <- res$r[d2, d1, drop = FALSE]
+    p <- res$P[d2, d1, drop = FALSE]
+    rownames(r) <- rownames(p) <- colnames(MEs2)
+    colnames(r) <- colnames(p) <- colnames(MEs)
+    type <- 'full'
   }
-  res$P[is.na(res$P)] <- 0
 
-  # plot correlogram
-  corrplot::corrplot(
-    res$r,
-    p.mat = res$P,
-    type = type, order = order,
-    method = method, tl.col = tl.col,
-    tl.srt = tl.srt, sig.level = sig.level,
-    # insig=insig,
-    pch.cex = pch.cex,
-    col = col, ...
+  # order
+  row_order <- rownames(r)
+  col_order <- colnames(r)
+  if (order == 'hclust' && is.null(MEs2)) {
+    hc <- stats::hclust(stats::as.dist(1 - r))
+    row_order <- col_order <- rownames(r)[hc$order]
+  }
+
+  plot_df <- data.frame(
+    row = rep(rownames(r), times = ncol(r)),
+    col = rep(colnames(r), each = nrow(r)),
+    r = as.vector(r),
+    p = as.vector(p)
   )
+  plot_df$row <- factor(plot_df$row, levels = rev(row_order))
+  plot_df$col <- factor(plot_df$col, levels = col_order)
+
+  # keep one triangle (including the diagonal)
+  if (type != 'full') {
+    i <- match(plot_df$row, row_order)
+    j <- match(plot_df$col, col_order)
+    plot_df <- plot_df[if (type == 'upper') i <= j else i >= j, ]
+  }
+
+  # significance stars
+  plot_df$stars <- ''
+  if (!is.null(sig.level)) {
+    sig.level <- sort(sig.level)
+    for (k in rev(seq_along(sig.level))) {
+      hit <- !is.na(plot_df$p) & plot_df$p < sig.level[k]
+      plot_df$stars[hit] <- strrep('*', length(sig.level) - k + 1)
+    }
+  }
+
+  if (is.null(col)) {
+    col <- c('seagreen', 'white', 'darkorchid1')
+  }
+
+  p_out <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$col, y = .data$row))
+  if (method == 'circle') {
+    p_out <- p_out +
+      ggplot2::geom_tile(fill = NA, color = 'grey90') +
+      ggplot2::geom_point(
+        ggplot2::aes(size = abs(.data$r), fill = .data$r),
+        shape = 21, color = 'grey40', stroke = 0.2
+      ) +
+      ggplot2::scale_size_area(max_size = 10, limits = c(0, 1), guide = 'none')
+  } else {
+    p_out <- p_out + ggplot2::geom_tile(ggplot2::aes(fill = .data$r), color = 'white')
+  }
+  # stars sit at the top of the cell so they do not hide small circles
+  star_nudge <- if (method == 'circle') 0.32 else 0
+  p_out +
+    ggplot2::geom_text(
+      ggplot2::aes(label = .data$stars),
+      size = pch.cex, vjust = 0.75, position = ggplot2::position_nudge(y = star_nudge)
+    ) +
+    ggplot2::scale_fill_gradientn(colors = col, limits = c(-1, 1), name = 'Correlation') +
+    ggplot2::scale_x_discrete(position = 'top') +
+    ggplot2::coord_fixed() +
+    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_text(color = tl.col),
+      axis.text.x.top = ggplot2::element_text(angle = tl.srt, hjust = 0, vjust = 0)
+    )
 }
 
 
