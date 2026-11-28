@@ -109,6 +109,8 @@ local_null_device <- function(env = parent.frame()) {
 sim_preservation <- function() {
   if (is.null(.fixture_cache$preservation)) {
     withr::local_seed(12345)
+    # WGCNA::modulePreservation saves permutedStats-*.RData to the working directory
+    withr::local_dir(withr::local_tempdir())
     ref <- sim_wgcna('kmes')
     query <- suppressWarnings(SetDatExpr(ref, group_name = 'B', group.by = 'cell_type', assay = 'RNA'))
     invisible(utils::capture.output(query <- suppressWarnings(

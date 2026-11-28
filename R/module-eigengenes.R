@@ -2,7 +2,7 @@
 #'
 #' Computes module eigengenes for co-expression modules
 #'
-#' @return seurat_obj with the module eigengenes computed for the selected wgcna experiment
+#' @return The input Seurat object with module eigengenes (and harmonized module eigengenes if group.by.vars is set) stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetMEs().
 #'
 #' @param seurat_obj A Seurat object
 #' @param modules table containing module / gene assignments, as in GetModules(seurat_obj).
@@ -12,7 +12,8 @@
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::RunPCA and, if group.by.vars is set, harmony::RunHarmony
 #'
 #' @details
 #' ModuleEigengenes summarizes the gene expression signatures of entire co-expression
@@ -56,20 +57,10 @@ ModuleEigengenes <- function(
   me_list <- list()
   harmonized_me_list <- list()
 
-  # re-set feature loadings:
-  seurat_obj <- SetMELoadings(
-    seurat_obj,
-    loadings = c(''),
-    harmonized = FALSE,
-    wgcna_name = wgcna_name
-  )
+  # clear loadings from any previous run; SetMELoadings() appends per module
+  seurat_obj@misc[[wgcna_name]]$ME_loadings <- NULL
   if (harmonized) {
-    seurat_obj <- SetMELoadings(
-      seurat_obj,
-      loadings = c(''),
-      harmonized = TRUE,
-      wgcna_name = wgcna_name
-    )
+    seurat_obj@misc[[wgcna_name]]$hME_loadings <- NULL
   }
 
   # get modules from Seurat object, else use provided modules
@@ -161,7 +152,9 @@ ModuleEigengenes <- function(
 #' @param scale.model.use model to scale data when running ScaleData choices are "linear", "poisson", or "negbinom"
 #' @param pc_dim Which PC to use as the module eigengene? Default to 1.
 #' @param assay Assay in seurat_obj to compute module eigengenes. Default is DefaultAssay(seurat_obj)
-#' @param wgcna_name name of the WGCNA experiment
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::RunPCA and, if group.by.vars is set, harmony::RunHarmony
+#' @return The input Seurat object with this module's eigengene stored as temporary "ME" (and "ME_harmony") reductions and its gene loadings stored in the hdWGCNA experiment.
 ComputeModuleEigengene <- function(
   seurat_obj,
   cur_mod,
@@ -312,12 +305,13 @@ ComputeModuleEigengene <- function(
 #'
 #' Computes a module score for each co-expression module using Seurat AddModuleScore or UCell.
 #'
-#' @return seurat_obj with module scores computed for the selected wgcna experiment
+#' @return The input Seurat object with module scores stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetModuleScores().
 #'
 #' @param seurat_obj A Seurat object
 #' @param n_genes the number of genes to use for each module, ranked by kME. Setting n_genes = 'all' uses all of the genes in a module
 #' @param method selected method for module scoring, valid choices are "Seurat" or "UCell"
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Additional arguments passed to Seurat::AddModuleScore or UCell::AddModuleScore_UCell, depending on method
 #' @details
 #' ModuleExprScore provides an alternative function to ModuleEigengenes for summarizing
 #' the expression level of each module. The user can choose between Seurat AddModuleScore
@@ -392,9 +386,14 @@ ModuleExprScore <- function(
 
 #' AverageModuleExpr
 #'
-#' Computes module eigengenes for all WGCNA co-expression modules
+#' Computes the average expression of the top genes in each co-expression module,
+#' using the assay and layer that the metacells were constructed from.
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param n_genes the number of genes to use for each module, ranked by kME. Setting n_genes = 'all' uses all of the genes in a module. Default = 25
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param ... Not currently used.
+#' @return The input Seurat object with average module expression stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve with GetAvgModuleExpr().
 #' @export
 AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name = NULL, ...) {
   # set as active assay if wgcna_name is not given
@@ -457,9 +456,23 @@ AvgModuleExpr <- function(seurat_obj, n_genes = 25, wgcna_name = NULL, ...) {
 #'
 #' Plot module eigengenes as a FeaturePlot
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param module_names Character vector of modules to plot. Default = NULL to plot all modules except grey.
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param reduction Name of the dimensionality reduction to plot. Default = 'umap'
 #' @param features What to plot? Can select hMEs, MEs, scores, or average
-#' @param order TRUE, FALSE, or "shuffle" are valid options
+#' @param order_points How to order points: TRUE (highest values on top), FALSE, or "shuffle". Default = TRUE
+#' @param restrict_range Logical; if TRUE, clip the color scale to be symmetric around zero. Default = TRUE
+#' @param point_size Size of the points. Default = 0.5
+#' @param alpha Transparency of the points. Default = 1
+#' @param label_legend Not currently used.
+#' @param ucell Logical; set to TRUE when plotting UCell scores to use a one-sided color scale. Default = FALSE
+#' @param raster Logical; if TRUE, rasterise the points with ggrastr. Default = FALSE
+#' @param raster_dpi Resolution of the rasterised points. Default = 500
+#' @param raster_scale Scaling factor for rasterised points. Default = 1
+#' @param plot_ratio Aspect ratio passed to ggplot2::coord_fixed; use a non-numeric value to skip. Default = 1
+#' @param title Logical; if TRUE, add the module name as the plot title. Default = TRUE
+#' @return A ggplot object if one module is plotted, otherwise a named list of ggplot objects (one per module).
 #' @keywords scRNA-seq
 #' @export
 ModuleFeaturePlot <- function(
@@ -600,8 +613,23 @@ ModuleFeaturePlot <- function(
 #'
 #' Plot Module Eigengene correlogram
 #'
-#' @param seurat_obj A Seurat object
+#' @param seurat_obj A Seurat object.
+#' @param MEs2 An optional matrix or data frame of module features (cells by modules) from a second dataset to correlate against. Default = NULL
 #' @param features What to plot? Can select hMEs, MEs, scores, or average
+#' @param order Ordering method for the correlation matrix, passed to corrplot::corrplot. Default = 'original'
+#' @param method Visualization method passed to corrplot::corrplot. Default = 'ellipse'
+#' @param exclude_grey Logical; if TRUE, exclude the grey module. Default = TRUE
+#' @param type Which part of the matrix to display ('full', 'upper', 'lower'), passed to corrplot::corrplot. Default = 'upper'
+#' @param tl.col Color of the text labels. Default = 'black'
+#' @param tl.srt Rotation angle of the text labels. Default = 45
+#' @param sig.level Significance levels used to mark correlations, passed to corrplot::corrplot.
+#' @param pch.cex Size of the significance symbols. Default = 0.7
+#' @param col Vector of colors for the color scale. Default = NULL to use a seagreen-white-purple gradient.
+#' @param ncolors Number of colors in the default color gradient. Default = 200
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param wgcna_name2 Not currently used.
+#' @param ... Additional arguments passed to corrplot::corrplot
+#' @return Called for its side effect of drawing a correlogram; invisibly returns the list returned by corrplot::corrplot.
 #' @keywords scRNA-seq
 #' @export
 ModuleCorrelogram <- function(
@@ -692,15 +720,18 @@ ModuleCorrelogram <- function(
 #' Plots the expression level (module eigengene) of each co-expression module
 #' for different groups as a radar plot.
 #'
-#' @return ggplot object containing the ModuleRadarPlot
+#' @return A patchwork object of radar plots if combine = TRUE, otherwise a named list of ggplot objects (one per module).
 #'
 #' @param seurat_obj A Seurat object
 #' @param group.by the column name of the selected comparison in the DMEs dataframe
 #' @param barcodes A list of barcodes from colnames(seurat_obj) which will be used to subset the data before plotting.
 #' @param combine logical indicating whether or not to combine plots using patchwork
 #' @param ncol The number of columns for the combined plot if patchwork is being used
-#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @param ... additional parameters for ggradar
+#' @param features What to plot? Can select hMEs, MEs, scores, or average
+#' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
+#' @param fill Logical; if TRUE, fill the radar polygons. Passed to ggradar::ggradar. Default = TRUE
+#' @param draw.points Logical; if TRUE, draw points at each vertex. Passed to ggradar::ggradar. Default = FALSE
+#' @param ... Additional arguments passed to ggradar::ggradar
 #' @details
 #' ModuleRadarPlot visualizes the expression level (module eigengene, ME) of each co-expression module for different
 #' groups in a radial coordinate system. The ME for each module is averaged for each group, scaled, and then

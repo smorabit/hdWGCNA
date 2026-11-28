@@ -8,6 +8,8 @@
 #' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
 #' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Currently unused.
+#' @return The Seurat object with the Enrichr results stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetEnrichrTable}.
 #' @keywords scRNA-seq
 #' @export
 #' RunEnrichr
@@ -20,6 +22,8 @@ RunEnrichr <- function(
   wgcna_name = NULL, ...
 ) {
   check_suggests('enrichR', feature = 'RunEnrichr')
+  old_options <- enrichr_options()
+  on.exit(options(old_options), add = TRUE)
 
   # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
@@ -423,6 +427,8 @@ EnrichrDotPlot <- function(
 #' @param fc_cutoff log fold change cutoff for DEGs to be included in the overlap test
 #' @param group_col the name of the column in deg_df containing the cell grouping information
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Currently unused.
+#' @return A data.frame with one row per module and cell group, containing the module color, odds ratio, p-value, FDR, significance stars, Jaccard index, and overlap size.
 #' @keywords scRNA-seq
 #' @export
 #' OverlapModulesDEGs
@@ -521,6 +527,8 @@ OverlapModulesDEGs <- function(
 #' @param logscale logical controlling whether to plot the result on a log scale, useful for odds ratio
 #' @param neglog logical controlling wehether to plot the result as a negative log, useful for p-value / FDR
 #' @param plot_significance logical controlling whether to plot the significance levels on top of the dots
+#' @param ... Currently unused.
+#' @return A ggplot object.
 #' @keywords scRNA-seq
 #' @export
 OverlapDotPlot <- function(
@@ -577,6 +585,8 @@ OverlapDotPlot <- function(
 #' @param logscale logical controlling whether to plot the result on a log scale, useful for odds ratio
 #' @param neglog logical controlling wehether to plot the result as a negative log, useful for p-value / FDR
 #' @param label_size the size of the module labels in the bar plot
+#' @param ... Currently unused.
+#' @return A named list of ggplot objects, one bar plot per cell group.
 #' @keywords scRNA-seq
 #' @export
 OverlapBarPlot <- function(
@@ -643,4 +653,24 @@ OverlapBarPlot <- function(
   }
 
   plot_list
+}
+
+# enrichR sets its server address in .onAttach(), so calling it through the
+# namespace without library(enrichR) fails with 'Must specify at least one of
+# url or handle'. Fill in the defaults when they are missing; the caller
+# restores the previous options on exit.
+enrichr_options <- function() {
+  if (!is.null(getOption('enrichR.base.address'))) {
+    return(list())
+  }
+  base <- 'https://maayanlab.cloud/'
+  options(
+    enrichR.sites.base.address = base,
+    enrichR.base.address = paste0(base, 'Enrichr/'),
+    speedrichr.base.address = paste0(base, 'speedrichr/api/'),
+    enrichR.live = TRUE,
+    enrichR.quiet = TRUE,
+    modEnrichR.use = TRUE,
+    enrichR.sites = c('Enrichr', 'FlyEnrichr', 'WormEnrichr', 'YeastEnrichr', 'FishEnrichr', 'OxEnrichr')
+  )
 }

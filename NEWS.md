@@ -32,6 +32,10 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
 - `MotifScan()`, `ModuleRegulatoryHeatmap()`, `TestSoftPowers()` and others no longer
   depend on packages being attached.
 - Removed deprecated ggplot2 and igraph calls.
+- `RunEnrichr()` and `RunEnrichrRegulons()` work without `library(enrichR)`.
+- `ModuleEigengenes()`: module eigengene loadings (`GetMELoadings()`) are now a
+  numeric vector and are replaced, not appended to, when MEs are recomputed.
+- Every exported function now documents all of its arguments and its return value.
 
 # hdWGCNA 0.4.13 (2026-11-26)
 ## Changes

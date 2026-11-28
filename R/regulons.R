@@ -190,13 +190,14 @@ GetTFTargetGenes <- function(
 #'
 #' Calculate expression scores for TF Regulons
 #'
-#' @return seurat_obj with the TF Regulon Scores added
+#' @return The Seurat object with the TF regulon scores stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetRegulonScores}.
 #'
 #' @param seurat_obj A Seurat object
 #' @param target_type Which types of TF target genes to compute scores for? "positive", "negative", or "both"
 #' @param cor_thresh threshold for TF-gene correlation for genes to be included in the regulon score
 #' @param exclude_grey_genes option to exclude genes that are in the grey module from the regulon scores
 #' @param wgcna_name name of the WGCNA experiment
+#' @param ... Additional arguments passed to \code{UCell::AddModuleScore_UCell}.
 #' @details
 #' RegulonScores calculates expression signatures for each TF regulon using the UCell algorithm
 #' This function can calculate separate scores for TF regulons for target genes that are positively
@@ -282,7 +283,7 @@ RegulonScores <- function(
 #' @return ggplot object containing the RegulonBarPlot
 #'
 #' @param seurat_obj A Seurat object
-#' @param selected_tfs A TF whose target genes will be shown
+#' @param selected_tf A TF whose target genes will be shown
 #' @param cutoff Cutoff for the edge weights, links below this value will not be included.
 #' @param top_n Number of top and bottom target genes to include in the plot.
 #' @param TFs_only Logical indicating whether or not to use only TFs in the plot or to use TFs and other genes.
@@ -363,15 +364,21 @@ RegulonBarPlot <- function(
 #'
 #' Function to compare TF regulon scores between two sets of cell barcodes.
 #'
-#' @return A dataframe contaning differential regulon results
+#' @return A data.frame with one row per TF containing the differential test results for the positive regulon scores, negative regulon scores, and TF gene expression, plus the TF's module and kME.
 #'
 #' @param seurat_obj A Seurat object
 #' @param barcodes1 character vector containing cell barcodes for the first group to test. Positive fold-change means up-regulated in this group.
 #' @param barcodes2 character vector containing cell barcodes for the second group to test. Negative fold-change means up-regulated in this group.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
-#' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
-#' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
+#' @param slot Slot to extract gene expression data from. Default = 'data'. Slot is used with Seurat v4 instead of layer.
+#' @param layer Layer to extract gene expression data from. Default = 'data'. Layer is used with Seurat v5 instead of slot.
+#' @param test.use Statistical test passed to \code{Seurat::FindMarkers}. Default = 'wilcox'.
+#' @param only.pos logical passed to \code{Seurat::FindMarkers}; if TRUE, only return positive results.
+#' @param logfc.threshold Minimum log fold-change passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param min.pct Minimum fraction of cells expressing the feature passed to \code{Seurat::FindMarkers}. Default = 0.
+#' @param verbose logical passed to \code{Seurat::FindMarkers} controlling progress output.
+#' @param pseudocount.use Pseudocount added before computing fold-changes, passed to \code{Seurat::FindMarkers}. Default = 0.
 #' @param ... Additional parameters for the Seurat FindMarkers function
 #'
 #' @details
@@ -698,10 +705,12 @@ PlotDifferentialRegulons <- function(
 #' @param dbs character vector of EnrichR databases
 #' @param depth Include primary TF target genes (depth=1) or primary + secondary (depth=2)
 #' @param use_regulons Use the regulons (default=TRUE) or the full set of TF target genes?
-#' @param max_genes Max number of genes to include per module, ranked by kME.
+#' @param min_genes Minimum number of positive or negative target genes required to run the enrichment test for a TF. Default = 5.
 #' @param wait logical indicating whether or not to wait some time between sending requests to the EnrichR server.
 #' @param wait_time the number of seconds to wait between sending requests to the EnrichR server. Value must be less than 60.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
+#' @param ... Currently unused.
+#' @return The Seurat object with the Enrichr results stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve them with \code{GetEnrichrRegulonTable}.
 #' @export
 RunEnrichrRegulons <- function(
   seurat_obj,
@@ -714,6 +723,8 @@ RunEnrichrRegulons <- function(
   wgcna_name = NULL, ...
 ) {
   check_suggests('enrichR', feature = 'RunEnrichrRegulons')
+  old_options <- enrichr_options()
+  on.exit(options(old_options), add = TRUE)
 
   # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {

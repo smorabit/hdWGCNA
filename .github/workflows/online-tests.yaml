@@ -1,0 +1,54 @@
+# Opt-in tests for functions that call web services (Enrichr) or need large
+# annotation packages (MotifScan). They are kept out of R-CMD-check and
+# test-coverage so that an outage of an outside service never turns a push red.
+# Runs weekly to catch API changes, or by hand from the Actions tab.
+on:
+  workflow_dispatch:
+    inputs:
+      with_motifs:
+        description: 'Also install JASPAR2020, EnsDb.Hsapiens.v86 and BSgenome.Hsapiens.UCSC.hg38 (~1 GB) and test MotifScan'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 6 * * 1'
+
+name: online-tests
+
+permissions: read-all
+
+jobs:
+  online-tests:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      HDWGCNA_ONLINE_TESTS: 'true'
+      NOT_CRAN: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools, any::enrichR
+          needs: check
+
+      - name: Install motif annotation packages
+        if: ${{ inputs.with_motifs }}
+        run: |
+          pak::pkg_install(c(
+            'bioc::JASPAR2020', 'bioc::TFBSTools', 'bioc::motifmatchr',
+            'bioc::EnsDb.Hsapiens.v86', 'bioc::BSgenome.Hsapiens.UCSC.hg38'
+          ))
+        shell: Rscript {0}
+
+      - name: Run online tests
+        run: |
+          devtools::load_all()
+          res <- testthat::test_file('tests/testthat/test-online.R', reporter = 'progress')
+          df <- as.data.frame(res)
+          if (any(df$failed > 0 | df$error)) stop('Online tests failed')
+        shell: Rscript {0}

@@ -10,6 +10,18 @@ test_that('ModuleEigengenes computes MEs and harmonized MEs for every module', {
   expect_false(isTRUE(all.equal(hMEs, MEs)))
 })
 
+test_that('ME loadings are numeric and do not accumulate across runs', {
+  skip_on_cran()
+  so <- sim_wgcna('mes')
+  loadings <- GetMELoadings(so, harmonized = FALSE)
+  expect_true(is.numeric(loadings))
+  expect_true(all(names(loadings) %in% rownames(so)))
+  expect_true(is.numeric(GetMELoadings(so, harmonized = TRUE)))
+
+  so <- ModuleEigengenes(so, group.by.vars = 'Sample', verbose = FALSE)
+  expect_length(GetMELoadings(so, harmonized = FALSE), length(loadings))
+})
+
 # regression test for #433: the ScaleData check failed when @commands had no ScaleData entry
 test_that('harmonized MEs do not depend on ScaleData having been recorded', {
   skip_on_cran()
