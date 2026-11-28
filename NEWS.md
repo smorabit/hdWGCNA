@@ -65,6 +65,16 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   depend on packages being attached.
 - Removed deprecated ggplot2 and igraph calls.
 - `RunEnrichr()` and `RunEnrichrRegulons()` work without `library(enrichR)`.
+- `OverlapDotPlot()` and `OverlapBarPlot()`: `neglog = TRUE` now gives `-log(x)` in both
+  (the dot plot only flipped the sign, the bar plot applied log twice with
+  `logscale = TRUE`), and `OverlapBarPlot()` no longer errors for `plot_var` other
+  than `'odds_ratio'` or `'fdr'`.
+- `PlotSoftPowers()` falls back to the best-fitting power when none reaches a
+  scale-free fit of 0.8 (previously `Inf`).
+- `PlotLollipop()` uses its `avg_log2FC` column argument.
+- `DoHubGeneHeatmap()` accepts character `group.by` columns, and the module color bar
+  follows the order of `module_names`.
+- `PlotKMEs()` no longer warns about the removed `label.size` ggplot2 parameter.
 - `MotifOverlapBarPlot()` looked up motif logos by motif name although the overlap table
   holds motif IDs, so it could not plot `MotifScan()` results.
 - `ModuleEigengenes()`: module eigengene loadings (`GetMELoadings()`) are now a

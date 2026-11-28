@@ -498,7 +498,7 @@ PlotLollipop <- function(
 
   # set plotting attributes for shape
   cur_DMEs$shape <- ifelse(cur_DMEs[[pvalue]] < 0.05, 21, 4) # 21 cicle; 4 X
-  cur_DMEs <- cur_DMEs %>% dplyr::arrange(avg_log2FC, descending = TRUE)
+  cur_DMEs <- cur_DMEs[order(cur_DMEs[[avg_log2FC]]), ]
   cur_DMEs$module <- factor(as.character(cur_DMEs$module), levels = as.character(cur_DMEs$module))
 
   # add number of genes per module
@@ -510,11 +510,11 @@ PlotLollipop <- function(
   names(cp) <- mod_colors$module
 
   p <- cur_DMEs %>%
-    ggplot(aes(y = module, x = avg_log2FC, color = module)) +
+    ggplot(aes(y = .data$module, x = .data[[avg_log2FC]], color = .data$module)) +
     geom_vline(xintercept = 0, color = 'black') +
-    geom_segment(aes(y = module, yend = module, x = 0, xend = avg_log2FC), linewidth = 0.5, alpha = 0.3) +
-    geom_point(aes(size = log(n_genes))) +
-    geom_point(aes(size = log(n_genes)), shape = cur_DMEs$shape, color = 'black', fill = NA) +
+    geom_segment(aes(yend = .data$module, x = 0, xend = .data[[avg_log2FC]]), linewidth = 0.5, alpha = 0.3) +
+    geom_point(aes(size = log(.data$n_genes))) +
+    geom_point(aes(size = log(.data$n_genes)), shape = cur_DMEs$shape, color = 'black', fill = NA) +
     scale_color_manual(values = cp, guide = 'none') +
     ylab('') +
     xlab(bquote('Avg. log'[2] ~ '(Fold Change)')) +

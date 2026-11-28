@@ -54,3 +54,11 @@ test_that('FindAllDMEs accepts latent.vars as metadata column names', {
   dmes <- suppressMessages(FindAllDMEs(so, group.by = 'cell_type', test.use = 'LR', latent.vars = 'nCount_RNA'))
   expect_setequal(unique(dmes$group), c('A', 'B', 'C'))
 })
+
+test_that('PlotLollipop orders modules by fold change and uses the given column', {
+  modules <- data.frame(module = c('a', 'b', 'c'), color = c('red', 'blue', 'green'))
+  dmes <- data.frame(module = c('a', 'b', 'c'), lfc = c(0.5, -1, 2), p_val_adj = c(0.01, 0.2, 0.001))
+  p <- PlotLollipop(modules, dmes, pvalue = 'p_val_adj', avg_log2FC = 'lfc')
+  expect_equal(levels(p$data$module), c('b', 'a', 'c'))
+  expect_equal(rlang::as_label(p$mapping$x), 'lfc')
+})

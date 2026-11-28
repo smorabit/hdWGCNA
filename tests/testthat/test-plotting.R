@@ -83,6 +83,34 @@ test_that('OverlapModulesDEGs, OverlapDotPlot and OverlapBarPlot work together',
   expect_true(is_gg(OverlapDotPlot(overlap_df)))
   bars <- OverlapBarPlot(overlap_df)
   expect_true(all(vapply(bars, is_gg, logical(1))))
+
+  # -log(fdr) with its reference line at -log(0.05), for any plot_var
+  fdr_bars <- OverlapBarPlot(overlap_df, plot_var = 'fdr', neglog = TRUE)
+  layer_hline <- Filter(function(l) inherits(l$geom, 'GeomHline'), fdr_bars[[1]]$layers)[[1]]
+  expect_equal(layer_hline$data$yintercept, -log(0.05))
+  expect_true(is_gg(OverlapBarPlot(overlap_df, plot_var = 'pval', neglog = TRUE)[[1]]))
+  dots <- OverlapDotPlot(overlap_df, plot_var = 'pval', neglog = TRUE)
+  expect_equal(sort(dots$data$pval), sort(-log(overlap_df$pval)))
+})
+
+test_that('overlap_transform applies one transform', {
+  expect_equal(overlap_transform(c(1, exp(2)), 'x', TRUE, FALSE)$values, c(0, 2))
+  expect_equal(overlap_transform(exp(-2), 'p', TRUE, TRUE)$values, 2)
+  expect_equal(overlap_transform(5, 'x', FALSE, FALSE)$label, 'x')
+})
+
+test_that('PlotKMEs draws without ggplot2 warnings', {
+  local_null_device()
+  expect_no_warning(print(PlotKMEs(sim_wgcna('kmes'), n_hubs = 5)))
+})
+
+test_that('DoHubGeneHeatmap works with a character group column and selected modules', {
+  so <- sim_wgcna('kmes')
+  so$ct_chr <- as.character(so$cell_type)
+  mods <- rev(setdiff(levels(GetModules(so)$module), 'grey'))[1:2]
+  p <- DoHubGeneHeatmap(so, n_hubs = 5, n_cells = 30, group.by = 'ct_chr', module_names = mods, combine = FALSE)
+  expect_length(p, 2)
+  expect_error(DoHubGeneHeatmap(so, module_names = 'not_a_module'), 'not_a_module')
 })
 
 test_that('ModuleRadarPlot draws one radar per module, scaled to the module maximum', {

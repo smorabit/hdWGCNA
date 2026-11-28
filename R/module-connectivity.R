@@ -225,9 +225,9 @@ PlotKMEs <- function(
     cur_color <- subset(mod_colors, module == x) %>% .$color
     cur_df <- subset(hub_df, module == x)
     top_genes <- cur_df %>%
-      dplyr::top_n(n_hubs, wt = kME) %>%
+      dplyr::slice_max(order_by = .data$kME, n = n_hubs) %>%
       .$gene_name
-    p <- cur_df %>% ggplot(aes(x = reorder(gene_name, kME), y = kME)) +
+    p <- cur_df %>% ggplot(aes(x = stats::reorder(.data$gene_name, .data$kME), y = .data$kME)) +
       geom_bar(stat = 'identity', width = 1, color = cur_color, fill = cur_color) +
       ggtitle(x) +
       # xlab(paste0('kME_', x)) +
@@ -240,13 +240,12 @@ PlotKMEs <- function(
       )
     p_anno <- ggplot() +
       annotate(
-        'label',
+        'text',
         x = 0,
         y = 0,
         label = paste0(top_genes, collapse = '\n'),
         size = text_size,
-        fontface = 'italic',
-        label.size = 0
+        fontface = 'italic'
       ) +
       theme_void()
     patch <- p + p_anno + plot_layout(widths = plot_widths)
@@ -298,8 +297,8 @@ DoHubGeneHeatmap <- function(
     seurat_obj$temp_ident <- Idents(seurat_obj)
   }
 
-  # drop if there are missing levels:
-  seurat_obj@meta.data[[group.by]] <- droplevels(seurat_obj@meta.data[[group.by]])
+  # drop missing levels (factor() also accepts character columns)
+  seurat_obj@meta.data[[group.by]] <- factor(seurat_obj@meta.data[[group.by]])
 
   # get modules
   modules <- GetModules(seurat_obj, wgcna_name)
@@ -309,33 +308,20 @@ DoHubGeneHeatmap <- function(
   mods <- levels(modules$module)
 
   if (!is.null(module_names)) {
-    print('here')
-    mods <- module_names
+    mods <- select_modules(modules, module_names, wgcna_name)
     modules <- modules %>% subset(module %in% mods)
   }
 
-  # get table of module names & colors
-  mod_colors <- modules %>%
-    dplyr::select(c(module, color)) %>%
-    dplyr::distinct()
+  # module colors, in the same order as the heatmaps
+  mod_colors <- data.frame(
+    module = mods,
+    color = as.character(modules$color[match(mods, modules$module)])
+  )
 
-  # get hub genes:
-  # hub_list <- lapply(mods, function(cur_mod){
-  #   cur <- subset(modules, module == cur_mod)
-  #   cur[,c('gene_name', paste0('kME_', cur_mod))] %>%
-  #     top_n(n_hubs) %>% .$gene_name
-  # })
-  hub_list <- lapply(mods, function(cur_mod) {
-    cur <- subset(modules, module == cur_mod)
-    cur <- cur[, c('gene_name', paste0('kME_', cur_mod))] %>%
-      top_n(n_hubs)
-    colnames(cur)[2] <- 'var'
-    cur %>%
-      arrange(desc(var)) %>%
-      .$gene_name
-  })
+  # hub genes of each module, strongest first
+  hub_df <- GetHubGenes(seurat_obj, n_hubs = n_hubs, mods = mods, wgcna_name = wgcna_name)
+  hub_list <- lapply(mods, function(cur_mod) as.character(hub_df$gene_name[hub_df$module == cur_mod]))
   names(hub_list) <- mods
-  print(hub_list)
 
   seurat_obj$barcode <- colnames(seurat_obj)
   temp <- table(seurat_obj@meta.data[[group.by]])
@@ -358,12 +344,6 @@ DoHubGeneHeatmap <- function(
 
   plot_list <- list()
   for (i in seq_along(hub_list)) {
-    print(i)
-    cur_mod <- names(hub_list)[i]
-    print(i)
-    print(hub_list[[i]])
-    print(i)
-
     if (i == 1) {
       plot_list[[i]] <- DoHeatmap(
         seurat_plot,
@@ -394,7 +374,6 @@ DoHubGeneHeatmap <- function(
         plot.margin = margin(0, 0, 0, 0),
         axis.text.y = element_text(face = 'italic')
       ) + scale_y_discrete(position = 'right')
-    print(i)
   }
 
   # useful for ratios on colorbars

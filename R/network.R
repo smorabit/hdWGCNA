@@ -162,19 +162,11 @@ PlotSoftPowers <- function(
   if ('group' %in% colnames(pt)) {
     # select soft power for each group:
     power_tables <- pt %>% dplyr::group_split(group)
-    soft_powers <- sapply(power_tables, function(power_table) {
-      power_table %>%
-        subset(SFT.R.sq >= 0.8) %>%
-        .$Power %>%
-        min()
-    })
+    soft_powers <- vapply(power_tables, pick_soft_power, numeric(1))
   } else {
     # get soft power:
     if (is.null(selected_power)) {
-      soft_power <- pt %>%
-        subset(SFT.R.sq >= 0.8) %>%
-        .$Power %>%
-        min()
+      soft_power <- pick_soft_power(pt)
     } else {
       soft_power <- selected_power
     }
@@ -189,13 +181,8 @@ PlotSoftPowers <- function(
 
     if (!is.null(soft_powers)) {
       soft_power <- soft_powers[i]
-      print(i)
-      print(soft_power)
-
       pt <- pt %>% dplyr::select(-group)
     }
-
-    print(head(pt))
 
     # get other params:
     sft_r <- as.numeric(pt[pt$Power == soft_power, 'SFT.R.sq'])
@@ -694,4 +681,17 @@ dendrogram_segments <- function(hc, hang = 0.03) {
     xend = c(child_x[, 1], child_x[, 2], child_x[, 2]),
     yend = c(height, height, height)
   )
+}
+
+
+# Lowest soft power reaching a scale-free fit of 0.8; if none does, the power with the
+# best fit.
+pick_soft_power <- function(power_table, r2 = 0.8) {
+  ok <- power_table$SFT.R.sq >= r2
+  if (any(ok)) {
+    return(min(power_table$Power[ok]))
+  }
+  best <- power_table$Power[which.max(power_table$SFT.R.sq)]
+  message('No soft power reached a scale-free fit of ', r2, '; showing the best fit (power ', best, ').')
+  best
 }

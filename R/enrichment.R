@@ -501,21 +501,15 @@ OverlapDotPlot <- function(
   plot_significance = TRUE,
   ...
 ) {
-  label <- plot_var
-  if (logscale) {
-    overlap_df[[plot_var]] <- log(overlap_df[[plot_var]])
-    label <- paste0('log(', plot_var, ')')
-  }
-  if (neglog) {
-    overlap_df[[plot_var]] <- -1 * overlap_df[[plot_var]]
-    label <- paste0('-', label)
-  }
+  tr <- overlap_transform(overlap_df[[plot_var]], plot_var, logscale, neglog)
+  overlap_df[[plot_var]] <- tr$values
+  label <- tr$label
 
-  p <- overlap_df %>% ggplot(aes(x = module, y = group)) +
+  p <- overlap_df %>% ggplot(aes(x = .data$module, y = .data$group)) +
     geom_point(
       aes(
-        size = get(plot_var),
-        alpha = get(plot_var)
+        size = .data[[plot_var]],
+        alpha = .data[[plot_var]]
       ),
       color = overlap_df$color
     ) +
@@ -532,7 +526,7 @@ OverlapDotPlot <- function(
 
   # plot significance level?
   if (plot_significance) {
-    p <- p + geom_text(aes(label = Significance))
+    p <- p + geom_text(aes(label = .data$Significance))
   }
 
   p
@@ -559,23 +553,13 @@ OverlapBarPlot <- function(
   label_size = 2,
   ...
 ) {
-  label <- plot_var
-
-  if (plot_var == 'odds_ratio') {
-    yint <- 1
-  } else if (plot_var == 'fdr') {
-    yint <- 0.05
-  }
-
-  if (logscale) {
-    overlap_df[[plot_var]] <- log(overlap_df[[plot_var]])
-    label <- paste0('log(', plot_var, ')')
-    yint <- log(yint)
-  }
-  if (neglog) {
-    overlap_df[[plot_var]] <- -1 * log(overlap_df[[plot_var]])
-    label <- paste0('-log(', label, ')')
-    yint <- -1 * log(yint)
+  # reference line: odds ratio of 1, FDR of 0.05
+  yint <- switch(plot_var, odds_ratio = 1, fdr = 0.05, NULL)
+  tr <- overlap_transform(overlap_df[[plot_var]], plot_var, logscale, neglog)
+  overlap_df[[plot_var]] <- tr$values
+  label <- tr$label
+  if (!is.null(yint)) {
+    yint <- overlap_transform(yint, plot_var, logscale, neglog)$values
   }
 
   groups <- overlap_df$group %>%
@@ -588,7 +572,7 @@ OverlapBarPlot <- function(
       subset(group == cur_group)
 
     p <- cur_df %>%
-      ggplot(aes(x = reorder(module, get(plot_var)), y = get(plot_var))) +
+      ggplot(aes(x = stats::reorder(.data$module, .data[[plot_var]]), y = .data[[plot_var]])) +
       geom_bar(stat = 'identity', fill = cur_df$color) +
       coord_flip() +
       xlab('') +
@@ -601,14 +585,14 @@ OverlapBarPlot <- function(
         plot.title = element_text(hjust = 0.5)
       )
 
-    if (plot_var == 'fdr' || plot_var == 'odds_ratio') {
+    if (!is.null(yint)) {
       p <- p + geom_hline(yintercept = yint, linetype = 'dashed', color = 'gray')
     }
 
     # add the labels:
     p <- p +
       geom_text(
-        aes(label = module, x = module, y = get(plot_var)),
+        aes(label = .data$module, x = .data$module, y = .data[[plot_var]]),
         color = 'black', size = label_size, hjust = 'inward'
       )
 
@@ -636,4 +620,17 @@ enrichr_options <- function() {
     modEnrichR.use = TRUE,
     enrichR.sites = c('Enrichr', 'FlyEnrichr', 'WormEnrichr', 'YeastEnrichr', 'FishEnrichr', 'OxEnrichr')
   )
+}
+
+
+# Shared value transform of OverlapDotPlot / OverlapBarPlot: neglog gives -log(x)
+# (e.g. for p-values), otherwise logscale gives log(x).
+overlap_transform <- function(x, plot_var, logscale, neglog) {
+  if (neglog) {
+    list(values = -log(x), label = paste0('-log(', plot_var, ')'))
+  } else if (logscale) {
+    list(values = log(x), label = paste0('log(', plot_var, ')'))
+  } else {
+    list(values = x, label = plot_var)
+  }
 }
