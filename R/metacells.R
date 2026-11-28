@@ -1,24 +1,24 @@
 #' MetacellsByGroups
 #'
-#' This function takes a Seurat object and constructs averaged 'metacells' based
-#' on neighboring cells in provided groupings, such as cluster or cell type.
+#' This function takes a Seurat object and constructs 'metacells' by aggregating
+#' neighboring cells within the provided groupings, such as cell type and sample.
 #'
 #' @return The input Seurat object with the metacell Seurat object and metacell run statistics stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve the metacells with GetMetacellObject().
 #'
 #' @param seurat_obj A Seurat object.
-#' @param group.by A character vector of Seurat metadata column names representing groups for which metacells will be computed.
-#' @param ident.group A column name in group.by used to set the Idents of the metacell object. Default = 'seurat_clusters'
-#' @param k Number of nearest neighbors to aggregate. Default = 25
-#' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
+#' @param group.by Required. A character vector of Seurat metadata column names; metacells are built separately within each combination of these columns. Typically the cell population and the biological replicate, e.g. \code{c('cell_type', 'Sample')}, so that no metacell mixes cells from different samples.
+#' @param ident.group A column name in group.by used to set the Idents of the metacell object. Default = NULL to use the first column of group.by.
+#' @param k Number of nearest neighbors aggregated into each metacell. Default = 50. Use a smaller k (e.g. 25) for cell populations with few cells per group.
+#' @param reduction Required. The name of the dimensionality reduction used to find nearest neighbors, typically the integrated embedding (e.g. 'harmony').
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = NULL to use the default assay.
 #' @param slot Slot to extract data for aggregation. Default = 'counts'. Slot is used with Seurat v4 instead of layer.
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
-#' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
+#' @param mode How to combine the expression of the cells in a metacell: 'sum' (default) or 'average'.
 #' @param cells.use A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.
-#' @param min_cells the minimum number of cells in a particular grouping to construct metacells
-#' @param max_shared the maximum number of cells to be shared across two metacells
-#' @param target_metacells the maximum target number of metacells to construct
+#' @param min_cells The minimum number of cells in a group; smaller groups are skipped. Default = 100
+#' @param max_shared The maximum number of cells shared between any two metacells. Default = NULL to use k / 5 (10 for k = 50, 5 for k = 25).
+#' @param target_metacells The maximum number of metacells to construct per group. Default = 100
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
@@ -36,19 +36,20 @@
 #'
 #' @export
 MetacellsByGroups <- function(
-  seurat_obj, group.by = c('seurat_clusters'),
-  ident.group = 'seurat_clusters',
-  k = 25,
-  reduction = 'pca',
+  seurat_obj,
+  group.by,
+  ident.group = NULL,
+  k = 50,
+  reduction,
   dims = NULL,
   assay = NULL,
   slot = 'counts',
   layer = 'counts',
-  mode = 'average',
+  mode = 'sum',
   cells.use = NULL,
   min_cells = 100,
-  max_shared = 15,
-  target_metacells = 1000,
+  max_shared = NULL,
+  target_metacells = 100,
   max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
@@ -58,12 +59,37 @@ MetacellsByGroups <- function(
   }
   CheckWGCNAName(seurat_obj, wgcna_name)
 
+  # group.by and reduction have no defaults: the right choice depends on the dataset
+  if (missing(group.by)) {
+    stop(paste0(
+      'group.by is required: the metadata columns to build metacells within, typically ',
+      "the cell population and the sample, e.g. group.by = c('cell_type', 'Sample')."
+    ))
+  }
+  if (missing(reduction)) {
+    stop(paste0(
+      'reduction is required: the embedding used to find nearest neighbors, typically ',
+      "the integrated one, e.g. reduction = 'harmony'. Reductions in this object: ",
+      paste(names(seurat_obj@reductions), collapse = ', ')
+    ))
+  }
+  missing_cols <- setdiff(group.by, colnames(seurat_obj@meta.data))
+  if (length(missing_cols) > 0) {
+    stop(paste0(
+      'group.by column(s) not found in the metadata: ',
+      paste(missing_cols, collapse = ', ')
+    ))
+  }
+
   # check group.by for invalid characters:
   if (any(grepl('#', group.by))) {
     stop('Invalid character # found in group.by, please re-name the group.')
   }
 
   # check ident.group
+  if (is.null(ident.group)) {
+    ident.group <- group.by[1]
+  }
   if (!(ident.group %in% group.by)) {
     stop('ident.group must be in group.by')
   }
@@ -114,6 +140,9 @@ MetacellsByGroups <- function(
   }
 
   # check that max_shared is valid:
+  if (is.null(max_shared)) {
+    max_shared <- default_max_shared(k)
+  }
   if (max_shared < 0) {
     max_shared <- 0
     warning(paste0('max_shared specified (', max_shared, ') is too low, setting max_shared <- 0'))
@@ -221,6 +250,7 @@ MetacellsByGroups <- function(
   for (i in seq_along(group.by)) {
     run_stats[[group.by[i]]] <- do.call(rbind, strsplit(as.character(run_stats$name), '#'))[, i]
   }
+  message(metacell_summary(run_stats, k = k))
 
   # combine metacell objects
   if (length(metacell_list) > 1) {
@@ -276,8 +306,8 @@ MetacellsByGroups <- function(
 #' @param seurat_obj A Seurat object.
 #' @param name A string prefix for the resulting metacell names. Default = 'agg'
 #' @param ident.group Not currently used by this function; kept for compatibility with MetacellsByGroups.
-#' @param k Number of nearest neighbors to aggregate. Default = 25
-#' @param reduction A dimensionality reduction stored in the Seurat object. Default = 'pca'
+#' @param k Number of nearest neighbors aggregated into each metacell. Default = 50
+#' @param reduction Required. The name of the dimensionality reduction used to find nearest neighbors.
 #' @param dims A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.
 #' @param assay Assay to extract data for aggregation. Default = 'RNA'
 #' @param cells.use A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.
@@ -285,31 +315,40 @@ MetacellsByGroups <- function(
 #' @param layer Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.
 #' @param meta A named list of metadata values to add to every metacell (e.g. the grouping values). Default = NULL
 #' @param return_metacell Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.
-#' @param mode determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".
-#' @param max_shared the maximum number of cells to be shared across two metacells
-#' @param target_metacells the maximum target number of metacells to construct
+#' @param mode How to combine the expression of the cells in a metacell: 'sum' (default) or 'average'.
+#' @param max_shared The maximum number of cells shared between any two metacells. Default = NULL to use k / 5.
+#' @param target_metacells The maximum number of metacells to construct. Default = 100
 #' @param max_iter the maximum number of iterations in the metacells bootstrapping loop
 #' @param verbose logical indicating whether to print additional information
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
 #' @return If \code{return_metacell = TRUE}, the metacell Seurat object; otherwise the input Seurat object with the metacell object stored in \code{seurat_obj@misc[[wgcna_name]]} (retrieve with GetMetacellObject()). Returns NULL if metacell construction fails.
 #' @export
 ConstructMetacells <- function(
-  seurat_obj, name = 'agg', ident.group = 'seurat_clusters', k = 25,
-  reduction = 'pca',
+  seurat_obj, name = 'agg', ident.group = 'seurat_clusters', k = 50,
+  reduction,
   dims = NULL,
   assay = 'RNA',
   cells.use = NULL, # if we don't want to use all the cells to make metacells, good for train/test split
   slot = 'counts',
   layer = 'counts',
   meta = NULL, return_metacell = FALSE,
-  mode = 'average', max_shared = 15,
-  target_metacells = 1000,
+  mode = 'sum', max_shared = NULL,
+  target_metacells = 100,
   max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
 ) {
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
+  }
+  if (missing(reduction)) {
+    stop(paste0(
+      "reduction is required, e.g. reduction = 'harmony'. Reductions in this object: ",
+      paste(names(seurat_obj@reductions), collapse = ', ')
+    ))
+  }
+  if (is.null(max_shared)) {
+    max_shared <- default_max_shared(k)
   }
 
   # check reduction
@@ -626,4 +665,31 @@ RunUMAPMetacells <- function(seurat_obj, ...) {
 #' @export
 DimPlotMetacells <- function(seurat_obj, ...) {
   Seurat::DimPlot(seurat_obj@misc[[seurat_obj@misc$active_wgcna]]$wgcna_metacell_obj, ...)
+}
+
+
+# Default overlap allowed between two metacells: k / 5 (10 for k = 50, 5 for k = 25).
+default_max_shared <- function(k) {
+  floor(k / 5)
+}
+
+# One-line report of how many metacells each group produced, naming groups that
+# produced few, so it is clear when a population needs a smaller k.
+metacell_summary <- function(run_stats, k, few = 10) {
+  n <- run_stats$n
+  out <- paste0(
+    'Constructed ', sum(n), ' metacells (k = ', k, ') in ', length(n), ' group(s); ',
+    'per group: median ', stats::median(n), ', range ', min(n), '-', max(n), '.'
+  )
+  small <- run_stats$name[n < few]
+  if (length(small) > 0) {
+    shown <- utils::head(small, 10)
+    more <- if (length(small) > 10) paste0(' and ', length(small) - 10, ' more') else ''
+    out <- paste0(
+      out, '\n', length(small), ' group(s) produced fewer than ', few,
+      ' metacells; consider a smaller k for these populations: ',
+      paste(gsub('#', ' / ', shown), collapse = ', '), more, '.'
+    )
+  }
+  out
 }

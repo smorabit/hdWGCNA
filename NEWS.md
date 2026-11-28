@@ -11,6 +11,19 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   (UCell, enrichR, GeneOverlap, DESeq2, NetRep, xgboost, motifmatchr, ensembldb,
   GenomicRanges, corrplot, qgraph, ggseqlogo, ggrastr, tidyr, SingleCellExperiment).
   Functions that need them stop with a message explaining how to install them.
+- `MetacellsByGroups()` has new defaults, matching typical use (metacells built per
+  cell population x sample on the integrated embedding):
+  - `group.by` and `reduction` are now required (previously `'seurat_clusters'` and
+    `'pca'`), e.g. `group.by = c('cell_type', 'Sample'), reduction = 'harmony'`.
+  - `k = 50` (was 25), `max_shared = k / 5` (was 15), `target_metacells = 100` per
+    group (was 1000).
+  - `mode = 'sum'` (was `'average'`): metacell counts are the summed counts of their
+    cells.
+  - `ident.group` defaults to the first `group.by` column.
+  - Prints a summary of how many metacells each group produced and names groups with
+    fewer than 10, which usually need a smaller `k`.
+  `ConstructMetacells()` uses the same defaults. To reproduce earlier results, pass
+  `k = 25, max_shared = 15, target_metacells = 1000, mode = 'average'`.
 
 ## Deprecated
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and

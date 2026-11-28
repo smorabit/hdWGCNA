@@ -8,8 +8,8 @@ ConstructMetacells(
   seurat_obj,
   name = "agg",
   ident.group = "seurat_clusters",
-  k = 25,
-  reduction = "pca",
+  k = 50,
+  reduction,
   dims = NULL,
   assay = "RNA",
   cells.use = NULL,
@@ -17,9 +17,9 @@ ConstructMetacells(
   layer = "counts",
   meta = NULL,
   return_metacell = FALSE,
-  mode = "average",
-  max_shared = 15,
-  target_metacells = 1000,
+  mode = "sum",
+  max_shared = NULL,
+  target_metacells = 100,
   max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
@@ -32,9 +32,9 @@ ConstructMetacells(
 
 \item{ident.group}{Not currently used by this function; kept for compatibility with MetacellsByGroups.}
 
-\item{k}{Number of nearest neighbors to aggregate. Default = 25}
+\item{k}{Number of nearest neighbors aggregated into each metacell. Default = 50}
 
-\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'pca'}
+\item{reduction}{Required. The name of the dimensionality reduction used to find nearest neighbors.}
 
 \item{dims}{A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.}
 
@@ -50,11 +50,11 @@ ConstructMetacells(
 
 \item{return_metacell}{Logical to determine if we return the metacell seurat object (TRUE), or add it to the misc in the original Seurat object (FALSE). Default to FALSE.}
 
-\item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+\item{mode}{How to combine the expression of the cells in a metacell: 'sum' (default) or 'average'.}
 
-\item{max_shared}{the maximum number of cells to be shared across two metacells}
+\item{max_shared}{The maximum number of cells shared between any two metacells. Default = NULL to use k / 5.}
 
-\item{target_metacells}{the maximum target number of metacells to construct}
+\item{target_metacells}{The maximum number of metacells to construct. Default = 100}
 
 \item{max_iter}{the maximum number of iterations in the metacells bootstrapping loop}
 

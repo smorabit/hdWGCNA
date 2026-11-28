@@ -77,3 +77,50 @@ test_that('MetacellsByGroups works with graphs that have no dimnames', {
   expect_gt(ncol(GetMetacellObject(so)), 0)
   expect_true('RNA_snn' %in% names(so@graphs))  # the returned object keeps its graphs
 })
+
+test_that('MetacellsByGroups requires group.by and reduction', {
+  so <- sim_wgcna('setup')
+  expect_error(MetacellsByGroups(so, reduction = 'pca'), 'group.by is required')
+  expect_error(MetacellsByGroups(so, group.by = 'cell_type'), 'reduction is required.*pca')
+  expect_error(
+    MetacellsByGroups(so, group.by = c('cell_type', 'patient'), reduction = 'pca'),
+    'not found in the metadata: patient'
+  )
+})
+
+test_that('metacells sum the counts of their cells by default', {
+  so <- sim_wgcna('metacells')
+  m_obj <- GetMetacellObject(so)
+  m_counts <- SeuratObject::LayerData(m_obj, layer = 'counts')
+  counts <- SeuratObject::LayerData(so, layer = 'counts')
+  for (i in c(1, ncol(m_obj))) {
+    cells <- strsplit(m_obj$cells_merged[i], ',')[[1]]
+    expect_length(cells, 20)
+    expect_equal(unname(m_counts[, i]), unname(Matrix::rowSums(counts[, cells])))
+  }
+})
+
+test_that('max_shared defaults to k / 5 and ident.group to the first group.by column', {
+  expect_equal(default_max_shared(50), 10)
+  expect_equal(default_max_shared(25), 5)
+
+  skip_on_cran()
+  so <- sim_wgcna('setup')
+  so <- so[, so$cell_type == 'A' & so$Sample %in% c('S01', 'S02')]
+  expect_message(
+    so <- MetacellsByGroups(so, group.by = c('cell_type', 'Sample'), reduction = 'pca', k = 25),
+    'Constructed [0-9]+ metacells \\(k = 25\\) in 2 group'
+  )
+  stats <- GetWGCNAParams(so)$metacell_stats
+  expect_true(all(stats$max_shared <= 5))
+  expect_true(all(stats$n <= 100))
+  expect_true(all(as.character(Idents(GetMetacellObject(so))) == 'A'))
+})
+
+test_that('metacell_summary names groups that produced few metacells', {
+  stats <- data.frame(name = c('A#S01', 'B#S01', 'C#S01'), n = c(100, 4, 60))
+  msg <- metacell_summary(stats, k = 50)
+  expect_match(msg, 'Constructed 164 metacells \\(k = 50\\) in 3 group')
+  expect_match(msg, '1 group\\(s\\) produced fewer than 10 metacells.*B / S01')
+  expect_no_match(metacell_summary(stats[-2, ], k = 50), 'fewer than')
+})

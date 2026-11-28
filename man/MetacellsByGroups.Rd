@@ -6,19 +6,19 @@
 \usage{
 MetacellsByGroups(
   seurat_obj,
-  group.by = c("seurat_clusters"),
-  ident.group = "seurat_clusters",
-  k = 25,
-  reduction = "pca",
+  group.by,
+  ident.group = NULL,
+  k = 50,
+  reduction,
   dims = NULL,
   assay = NULL,
   slot = "counts",
   layer = "counts",
-  mode = "average",
+  mode = "sum",
   cells.use = NULL,
   min_cells = 100,
-  max_shared = 15,
-  target_metacells = 1000,
+  max_shared = NULL,
+  target_metacells = 100,
   max_iter = 5000,
   verbose = FALSE,
   wgcna_name = NULL
@@ -27,13 +27,13 @@ MetacellsByGroups(
 \arguments{
 \item{seurat_obj}{A Seurat object.}
 
-\item{group.by}{A character vector of Seurat metadata column names representing groups for which metacells will be computed.}
+\item{group.by}{Required. A character vector of Seurat metadata column names; metacells are built separately within each combination of these columns. Typically the cell population and the biological replicate, e.g. \code{c('cell_type', 'Sample')}, so that no metacell mixes cells from different samples.}
 
-\item{ident.group}{A column name in group.by used to set the Idents of the metacell object. Default = 'seurat_clusters'}
+\item{ident.group}{A column name in group.by used to set the Idents of the metacell object. Default = NULL to use the first column of group.by.}
 
-\item{k}{Number of nearest neighbors to aggregate. Default = 25}
+\item{k}{Number of nearest neighbors aggregated into each metacell. Default = 50. Use a smaller k (e.g. 25) for cell populations with few cells per group.}
 
-\item{reduction}{A dimensionality reduction stored in the Seurat object. Default = 'pca'}
+\item{reduction}{Required. The name of the dimensionality reduction used to find nearest neighbors, typically the integrated embedding (e.g. 'harmony').}
 
 \item{dims}{A vector represnting the dimensions of the reduction to use. Either specify the names of the dimensions or the indices. Default = NULL to include all dims.}
 
@@ -43,15 +43,15 @@ MetacellsByGroups(
 
 \item{layer}{Layer to extract data for aggregation. Default = 'counts'. Layer is used with Seurat v5 instead of slot.}
 
-\item{mode}{determines how to make gene expression profiles for metacells from their constituent single cells. Options are "average" or "sum".}
+\item{mode}{How to combine the expression of the cells in a metacell: 'sum' (default) or 'average'.}
 
 \item{cells.use}{A character vector of cell barcodes to use for metacell construction. Default = NULL to use all cells.}
 
-\item{min_cells}{the minimum number of cells in a particular grouping to construct metacells}
+\item{min_cells}{The minimum number of cells in a group; smaller groups are skipped. Default = 100}
 
-\item{max_shared}{the maximum number of cells to be shared across two metacells}
+\item{max_shared}{The maximum number of cells shared between any two metacells. Default = NULL to use k / 5 (10 for k = 50, 5 for k = 25).}
 
-\item{target_metacells}{the maximum target number of metacells to construct}
+\item{target_metacells}{The maximum number of metacells to construct per group. Default = 100}
 
 \item{max_iter}{the maximum number of iterations in the metacells bootstrapping loop}
 
@@ -63,8 +63,8 @@ MetacellsByGroups(
 The input Seurat object with the metacell Seurat object and metacell run statistics stored in \code{seurat_obj@misc[[wgcna_name]]}; retrieve the metacells with GetMetacellObject().
 }
 \description{
-This function takes a Seurat object and constructs averaged 'metacells' based
-on neighboring cells in provided groupings, such as cluster or cell type.
+This function takes a Seurat object and constructs 'metacells' by aggregating
+neighboring cells within the provided groupings, such as cell type and sample.
 }
 \details{
 MetacellsByGroups merges transcriptomically similar cells into "metacells".
