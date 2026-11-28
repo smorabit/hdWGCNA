@@ -8,11 +8,13 @@ PlotDendrogram(
   seurat_obj,
   groupLabels = "Module colors",
   wgcna_name = NULL,
+  engine = c("ggplot", "base"),
   dendroLabels = FALSE,
   hang = 0.03,
   addGuide = TRUE,
   guideHang = 0.05,
   main = "",
+  linewidth = 0.2,
   ...
 )
 }
@@ -23,22 +25,33 @@ PlotDendrogram(
 
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.}
 
-\item{dendroLabels}{Dendrogram leaf labels; FALSE to hide them. Default = FALSE}
+\item{engine}{'ggplot' (default) to return a ggplot/patchwork object, or 'base' to draw with \code{WGCNA::plotDendroAndColors}.}
 
-\item{hang}{Fraction of the plot height by which leaves hang below the branches. Default = 0.03}
+\item{dendroLabels}{Dendrogram leaf labels; FALSE to hide them. Only used when \code{engine = 'base'}. Default = FALSE}
 
-\item{addGuide}{logical; whether to draw vertical guide lines. Default = TRUE}
+\item{hang}{Fraction of the dendrogram height by which leaves hang below their branch; negative values draw all leaves at height zero. Default = 0.03}
 
-\item{guideHang}{Fraction of the dendrogram height to leave between the guide lines and the leaves. Default = 0.05}
+\item{addGuide}{logical; whether to draw vertical guide lines. Only used when \code{engine = 'base'}. Default = TRUE}
+
+\item{guideHang}{Fraction of the dendrogram height to leave between the guide lines and the leaves. Only used when \code{engine = 'base'}. Default = 0.05}
 
 \item{main}{Plot title. Default = ''}
 
-\item{...}{Additional arguments passed to WGCNA::plotDendroAndColors}
+\item{linewidth}{Line width of the dendrogram branches (ggplot engine). Default = 0.2}
+
+\item{...}{Additional arguments passed to \code{WGCNA::plotDendroAndColors} when \code{engine = 'base'}.}
 }
 \value{
-Called for its side effect of drawing the dendrogram and module colors on the current graphics device.
+With \code{engine = 'ggplot'}, a patchwork object with the dendrogram above the module color bar. With \code{engine = 'base'}, the plot is drawn on the current graphics device and NULL is returned invisibly.
 }
 \description{
-Plot WGCNA dendrogram
+Plot the gene dendrogram from \code{ConstructNetwork} with the module colors
+underneath.
+}
+\details{
+The default ggplot engine draws the tree as a single layer of segments
+computed directly from the \code{hclust} merge table, so it stays fast for
+networks with tens of thousands of genes. \code{engine = 'base'} draws the
+classic figure with \code{WGCNA::plotDendroAndColors}.
 }
 \keyword{scRNA-seq}

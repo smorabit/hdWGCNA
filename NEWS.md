@@ -24,6 +24,9 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
     fewer than 10, which usually need a smaller `k`.
   `ConstructMetacells()` uses the same defaults. To reproduce earlier results, pass
   `k = 25, max_shared = 15, target_metacells = 1000, mode = 'average'`.
+- `PlotDendrogram()` returns a ggplot (patchwork) object instead of drawing with base
+  graphics. Use `engine = 'base'` for the classic `WGCNA::plotDendroAndColors()` figure.
+  The ggplot version renders a 30,000-gene dendrogram in under a second.
 
 ## Deprecated
 - `ConstructPseudobulk()`: use `AggregatePseudobulk()`, `NormalizeCounts()` and

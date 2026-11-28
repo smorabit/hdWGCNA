@@ -563,43 +563,135 @@ ConstructNetwork <- function(
 
 #' PlotDendrogram
 #'
-#' Plot WGCNA dendrogram
+#' Plot the gene dendrogram from \code{ConstructNetwork} with the module colors
+#' underneath.
+#'
+#' The default ggplot engine draws the tree as a single layer of segments
+#' computed directly from the \code{hclust} merge table, so it stays fast for
+#' networks with tens of thousands of genes. \code{engine = 'base'} draws the
+#' classic figure with \code{WGCNA::plotDendroAndColors}.
 #'
 #' @param seurat_obj A Seurat object.
 #' @param groupLabels Label for the module color bar. Default = 'Module colors'
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot. Defaults to the active experiment.
-#' @param dendroLabels Dendrogram leaf labels; FALSE to hide them. Default = FALSE
-#' @param hang Fraction of the plot height by which leaves hang below the branches. Default = 0.03
-#' @param addGuide logical; whether to draw vertical guide lines. Default = TRUE
-#' @param guideHang Fraction of the dendrogram height to leave between the guide lines and the leaves. Default = 0.05
+#' @param engine 'ggplot' (default) to return a ggplot/patchwork object, or 'base' to draw with \code{WGCNA::plotDendroAndColors}.
+#' @param dendroLabels Dendrogram leaf labels; FALSE to hide them. Only used when \code{engine = 'base'}. Default = FALSE
+#' @param hang Fraction of the dendrogram height by which leaves hang below their branch; negative values draw all leaves at height zero. Default = 0.03
+#' @param addGuide logical; whether to draw vertical guide lines. Only used when \code{engine = 'base'}. Default = TRUE
+#' @param guideHang Fraction of the dendrogram height to leave between the guide lines and the leaves. Only used when \code{engine = 'base'}. Default = 0.05
 #' @param main Plot title. Default = ''
-#' @param ... Additional arguments passed to WGCNA::plotDendroAndColors
-#' @return Called for its side effect of drawing the dendrogram and module colors on the current graphics device.
+#' @param linewidth Line width of the dendrogram branches (ggplot engine). Default = 0.2
+#' @param ... Additional arguments passed to \code{WGCNA::plotDendroAndColors} when \code{engine = 'base'}.
+#' @return With \code{engine = 'ggplot'}, a patchwork object with the dendrogram above the module color bar. With \code{engine = 'base'}, the plot is drawn on the current graphics device and NULL is returned invisibly.
 #' @keywords scRNA-seq
 #' @export
 PlotDendrogram <- function(
   seurat_obj, groupLabels = 'Module colors', wgcna_name = NULL,
+  engine = c('ggplot', 'base'),
   dendroLabels = FALSE, hang = 0.03, addGuide = TRUE, guideHang = 0.05,
-  main = '', ...
+  main = '', linewidth = 0.2, ...
 ) {
+  engine <- match.arg(engine)
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
   # get WGCNA network and module data
   net <- GetNetworkData(seurat_obj, wgcna_name)
   modules <- GetModules(seurat_obj, wgcna_name)
+  hc <- net$dendrograms[[1]]
+  colors <- as.character(modules$color)
 
-  # plot dendrogram
-  WGCNA::plotDendroAndColors(
-    net$dendrograms[[1]],
-    as.character(modules$color),
-    groupLabels = groupLabels,
-    dendroLabels = dendroLabels,
-    hang = hang,
-    addGuide = addGuide,
-    guideHang = guideHang,
-    main = main,
-    ...
+  if (engine == 'base') {
+    WGCNA::plotDendroAndColors(
+      hc,
+      colors,
+      groupLabels = groupLabels,
+      dendroLabels = dendroLabels,
+      hang = hang,
+      addGuide = addGuide,
+      guideHang = guideHang,
+      main = main,
+      ...
+    )
+    return(invisible(NULL))
+  }
+
+  if (length(colors) != length(hc$order)) {
+    stop('The number of genes in the modules table does not match the dendrogram.')
+  }
+
+  segs <- dendrogram_segments(hc, hang = hang)
+  n <- length(hc$order)
+
+  p_dendro <- ggplot2::ggplot(segs) +
+    ggplot2::geom_segment(
+      ggplot2::aes(x = .data$x, y = .data$y, xend = .data$xend, yend = .data$yend),
+      linewidth = linewidth,
+      lineend = 'square'
+    ) +
+    ggplot2::scale_x_continuous(limits = c(0.5, n + 0.5), expand = c(0, 0)) +
+    ggplot2::labs(x = NULL, y = 'Height', title = if (nzchar(main)) main else NULL) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(hjust = 0.5)
+    )
+
+  bar_df <- data.frame(x = seq_len(n), y = 1, color = colors[hc$order])
+  p_bar <- ggplot2::ggplot(bar_df, ggplot2::aes(x = .data$x, y = .data$y, fill = .data$color)) +
+    ggplot2::geom_raster() +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_x_continuous(limits = c(0.5, n + 0.5), expand = c(0, 0)) +
+    ggplot2::scale_y_continuous(breaks = 1, labels = groupLabels, expand = c(0, 0)) +
+    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.line = ggplot2::element_blank()
+    )
+
+  patchwork::wrap_plots(p_dendro, p_bar, ncol = 1, heights = c(4, 1))
+}
+
+# Segment coordinates for drawing an hclust tree, computed from the merge table in
+# one pass (no recursion, so deep trees with many genes are fine). Leaves sit at
+# their position in hc$order; each merge is drawn as two vertical segments from
+# the children up to the merge height and one horizontal segment joining them,
+# like stats::plot.hclust.
+dendrogram_segments <- function(hc, hang = 0.03) {
+  merge <- hc$merge
+  height <- hc$height
+  n_merge <- nrow(merge)
+  leaf_x <- integer(n_merge + 1)
+  leaf_x[hc$order] <- seq_along(hc$order)
+  hang_by <- hang * diff(range(height))
+
+  node_x <- numeric(n_merge)
+  child_x <- matrix(0, n_merge, 2)
+  child_y <- matrix(0, n_merge, 2)
+  for (i in seq_len(n_merge)) {
+    for (j in 1:2) {
+      m <- merge[i, j]
+      if (m < 0) {
+        child_x[i, j] <- leaf_x[-m]
+        child_y[i, j] <- if (hang < 0) 0 else height[i] - hang_by
+      } else {
+        child_x[i, j] <- node_x[m]
+        child_y[i, j] <- height[m]
+      }
+    }
+    node_x[i] <- (child_x[i, 1] + child_x[i, 2]) / 2
+  }
+
+  data.frame(
+    x = c(child_x[, 1], child_x[, 2], child_x[, 1]),
+    y = c(child_y[, 1], child_y[, 2], height),
+    xend = c(child_x[, 1], child_x[, 2], child_x[, 2]),
+    yend = c(height, height, height)
   )
 }

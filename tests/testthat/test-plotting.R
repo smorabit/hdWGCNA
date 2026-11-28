@@ -1,8 +1,32 @@
 is_gg <- function(x) inherits(x, 'ggplot') || inherits(x, 'patchwork')
 
-test_that('PlotDendrogram draws without error', {
+test_that('PlotDendrogram returns a dendrogram above the module color bar', {
+  so <- sim_wgcna('network')
+  p <- PlotDendrogram(so, main = 'test')
+  expect_s3_class(p, 'patchwork')
+  hc <- GetNetworkData(so)$dendrograms[[1]]
+  # three segments per merge, and the color bar follows the leaf order
+  expect_equal(nrow(p[[1]]$data), 3 * nrow(hc$merge))
+  expect_equal(p[[2]]$data$color, as.character(GetModules(so)$color)[hc$order])
   local_null_device()
-  expect_no_error(PlotDendrogram(sim_wgcna('network'), main = 'test'))
+  expect_no_error(print(p))
+})
+
+test_that('PlotDendrogram still draws the WGCNA version with engine = base', {
+  local_null_device()
+  expect_null(PlotDendrogram(sim_wgcna('network'), engine = 'base'))
+})
+
+test_that('dendrogram_segments places merges like plot.hclust', {
+  hc <- stats::hclust(stats::dist(c(1, 2, 6, 7, 20)))
+  segs <- dendrogram_segments(hc, hang = -1)
+  # leaves start at height 0, every merge reaches its own height
+  expect_true(all(segs$y >= 0))
+  expect_setequal(unique(segs$yend), hc$height)
+  # the root joins the midpoints of its two children
+  root <- segs[segs$yend == max(hc$height) & segs$y == segs$yend, ]
+  expect_equal(nrow(root), 1)
+  expect_true(root$x < root$xend)
 })
 
 test_that('ModuleCorrelogram draws without error', {
