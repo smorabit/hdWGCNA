@@ -23,12 +23,19 @@ test_that('RunEnrichr requires enrichR', {
   }
 })
 
-test_that('EnrichrBarPlot writes one PDF per module', {
+test_that('EnrichrBarPlot returns one plot per module; outdir is deprecated', {
   so <- sim_wgcna('kmes')
   so <- SetEnrichrTable(so, fake_enrichr_table(so))
-  outdir <- withr::local_tempdir()
-  suppressMessages(EnrichrBarPlot(so, outdir = outdir, n_terms = 3))
   mods <- setdiff(levels(GetModules(so)$module), 'grey')
+  plots <- EnrichrBarPlot(so, n_terms = 3)
+  expect_named(plots, mods)
+  expect_s3_class(plots[[1]], 'patchwork')
+  # one panel per database, each with the top 3 terms
+  expect_length(plots[[1]]$patches$plots, 1)
+  expect_equal(nrow(plots[[1]][[2]]$data), 3)
+
+  outdir <- withr::local_tempdir()
+  expect_warning(EnrichrBarPlot(so, outdir = outdir, n_terms = 3), 'deprecated')
   expect_setequal(list.files(outdir), paste0(mods, '.pdf'))
 })
 

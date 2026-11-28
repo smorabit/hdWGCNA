@@ -246,3 +246,9 @@ repair_tom_path <- function(path) {
   }
   NA_character_
 }
+
+
+# Null-coalescing operator (in base R only from 4.4.0).
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
+}

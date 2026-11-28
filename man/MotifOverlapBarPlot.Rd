@@ -8,7 +8,7 @@ MotifOverlapBarPlot(
   seurat_obj,
   n_tfs = 10,
   plot_size = c(5, 6),
-  outdir = "MotifOverlaps/",
+  outdir = NULL,
   motif_font = "helvetica_regular",
   module_names = NULL,
   wgcna_name = NULL
@@ -19,9 +19,9 @@ MotifOverlapBarPlot(
 
 \item{n_tfs}{Number of top TFs (ranked by odds ratio) to plot for each module. Default = 10.}
 
-\item{plot_size}{A vector containing the width and height of the output PDFs. Default = c(5, 6).}
+\item{plot_size}{Width and height in inches of the PDFs written to \code{outdir}. Default = c(5, 6).}
 
-\item{outdir}{The directory where the plots will be stored.}
+\item{outdir}{Deprecated. If given, the plots are also written to this directory as one PDF per module (use \code{SavePlotList} instead). Default = NULL}
 
 \item{motif_font}{Font passed to \code{ggseqlogo::geom_logo} for the motif logos.}
 
@@ -30,7 +30,7 @@ MotifOverlapBarPlot(
 \item{wgcna_name}{The name of the hdWGCNA experiment in the seurat_obj@misc slot}
 }
 \value{
-Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
+A named list with one patchwork object per module: the motif logos of the top TFs next to their odds ratios.
 }
 \description{
 Displays the top n TFs in a set of modules as a bar plot

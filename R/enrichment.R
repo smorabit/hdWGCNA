@@ -82,16 +82,16 @@ RunEnrichr <- function(
 
 #' EnrichrBarPlot
 #'
-#' Generates bar plots from Enrichr data to visualize enriched terms for hdWGCNA modules in a Seurat object.
-#' The function outputs a PDF file for each module, with separate bar plots for each database.
+#' Bar plots of the top Enrichr terms for each hdWGCNA module, one panel per
+#' database.
 #'
 #' @param seurat_obj A Seurat object
-#' @param outdir A string specifying the directory where the output PDF files will be saved. Default is "enrichr_plots".
+#' @param outdir Deprecated. If given, the plots are also written to this directory as one PDF per module (use \code{SavePlotList} instead). Default = NULL
 #' @param n_terms An integer indicating the number of top enriched terms to include in each bar plot. Default is 25.
 #' @param p_cutoff A numeric value specifying the significance threshold for including terms (p-value or adjusted p-value).
 #'                 Only terms with p-values below this threshold are plotted. Default is 0.05.
 #' @param p_adj Logical indicating whether to use the adjusted p-value (default: TRUE) or raw p-value for filtering terms.
-#' @param plot_size A numeric vector of length 2 specifying the width and height of the output PDF files in inches. Default is c(6, 15).
+#' @param plot_size Width and height in inches of the PDFs written to \code{outdir}. Default is c(6, 15).
 #' @param logscale Logical specifying whether to log-transform the enrichment scores before plotting. Default is FALSE.
 #' @param plot_bar_color A string specifying the color of the bars in the bar plots. If NULL (default), bars are colored according
 #'                       to the module's assigned color.
@@ -100,22 +100,18 @@ RunEnrichr <- function(
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
 #'
 #' @details
-#' This function processes the Enrichr output stored in a Seurat object, filters enriched terms by significance, and generates
-#' bar plots for each WGCNA module. Separate plots are created for each database included in the Enrichr results. The top
-#' enriched terms for each module and database are ordered by their combined enrichment score. If there are ties in the enrichment
-#' scores, the function uses all tied terms.
-#'
-#' The bar plot text and bar colors can be customized, and plots can be saved with log-transformed enrichment scores if specified.
-#' Text wrapping is applied to long term names for better readability.
+#' This function takes the Enrichr output stored in a Seurat object (see \code{RunEnrichr}), filters enriched terms by
+#' significance, and plots the top terms of each module, ordered by their combined enrichment score, with one panel per
+#' database. If there are ties in the enrichment scores, all tied terms are kept. Long term names are wrapped.
 #'
 #' @return
-#' Generates PDF files in the specified output directory, with one file per WGCNA module. Each file contains bar plots for
-#' all databases associated with that module.
+#' A named list with one element per module that has significant terms: a patchwork object with one bar plot per database,
+#' stacked vertically.
 #'
 #' @export
 EnrichrBarPlot <- function(
   seurat_obj,
-  outdir = 'enrichr_plots',
+  outdir = NULL,
   n_terms = 25,
   p_cutoff = 0.05,
   p_adj = TRUE,
@@ -125,113 +121,80 @@ EnrichrBarPlot <- function(
   plot_text_color = NULL,
   wgcna_name = NULL
 ) {
-  # get data from active assay if wgcna_name is not given
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # get modules:
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- levels(modules$module)
-  mods <- mods[mods != 'grey']
+  mods <- setdiff(levels(modules$module), 'grey')
 
-  # get Enrichr table
   enrichr_df <- GetEnrichrTable(seurat_obj, wgcna_name)
+  if (is.null(enrichr_df) || nrow(enrichr_df) == 0) {
+    stop('No Enrichr results found. Run RunEnrichr first.')
+  }
   dbs <- as.character(unique(enrichr_df$db))
 
   # subset based on significance level:
-  if (p_adj) {
-    enrichr_df <- subset(enrichr_df, Adjusted.P.value <= p_cutoff)
+  p_col <- if (p_adj) 'Adjusted.P.value' else 'P.value'
+  enrichr_df <- enrichr_df[enrichr_df[[p_col]] <= p_cutoff, ]
+  enrichr_df$wrap <- vapply(
+    enrichr_df$Term,
+    function(y) paste(strwrap(y, 45), collapse = '\n'),
+    character(1),
+    USE.NAMES = FALSE
+  )
+
+  if (logscale) {
+    enrichr_df$Combined.Score <- log(enrichr_df$Combined.Score)
+    lab <- 'Enrichment log(combined score)'
+    text_x <- 0.2
   } else {
-    enrichr_df <- subset(enrichr_df, P.value <= p_cutoff)
+    lab <- 'Enrichment (combined score)'
+    text_x <- 5
   }
 
-  # helper function to wrap text
-  wrapText <- function(x, len) {
-    sapply(x, function(y) paste(strwrap(y, len), collapse = '\n'), USE.NAMES = FALSE)
-  }
-
-  # make output dir if it doesn't exist:
-  if (!dir.exists(outdir)) {
-    dir.create(outdir)
-  }
-
-  # loop through modules:
-  for (i in seq_along(mods)) {
-    cur_mod <- mods[i]
-    cur_terms <- subset(enrichr_df, module == cur_mod)
-    print(cur_mod)
-
-    # get color for this module:
-    cur_color <- modules %>%
-      subset(module == cur_mod) %>%
-      .$color %>%
-      unique() %>%
-      as.character()
-    if (!is.null(plot_bar_color)) {
-      cur_color <- plot_bar_color
-    }
-
-    # skip if there are not any terms for this module:
+  plot_list <- list()
+  for (cur_mod in mods) {
+    cur_terms <- enrichr_df[enrichr_df$module == cur_mod, ]
     if (nrow(cur_terms) == 0) {
       next
     }
-    cur_terms$wrap <- wrapText(cur_terms$Term, 45)
+    cur_color <- plot_bar_color %||% unique(as.character(modules$color[modules$module == cur_mod]))
+    text_color <- plot_text_color %||% (if (cur_color == 'black') 'grey' else 'black')
 
-    # plot top n_terms as barplot
-    plot_list <- list()
-    for (cur_db in dbs) {
-      plot_df <- subset(cur_terms, db == cur_db) %>%
-        slice_max(order_by = Combined.Score, n = n_terms)
+    db_plots <- list()
+    for (cur_db in intersect(dbs, cur_terms$db)) {
+      plot_df <- cur_terms[cur_terms$db == cur_db, ] %>%
+        dplyr::slice_max(order_by = .data$Combined.Score, n = n_terms)
 
-      # text color:
-      if (is.null(plot_text_color)) {
-        if (cur_color == 'black') {
-          text_color <- 'grey'
-        } else {
-          text_color <- 'black'
-        }
-      } else {
-        text_color <- plot_text_color
-      }
-
-
-      # logscale?
-      if (logscale) {
-        plot_df$Combined.Score <- log(plot_df$Combined.Score)
-        lab <- 'Enrichment log(combined score)'
-        x <- 0.2
-      } else {
-        lab <- 'Enrichment (combined score)'
-        x <- 5
-      }
-
-      # make bar plot:
-      plot_list[[cur_db]] <- ggplot(plot_df, aes(x = Combined.Score, y = reorder(wrap, Combined.Score))) +
-        geom_bar(stat = 'identity', position = 'identity', color = 'white', fill = cur_color) +
-        geom_text(aes(label = wrap), x = x, color = text_color, size = 3.5, hjust = 'left') +
-        scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
-        xlab(lab) +
-        ylab('') +
-        ggtitle(cur_db) +
-        theme(
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.title = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.y = element_blank(),
-          plot.title = element_text(hjust = 0.5),
-          axis.line.y = element_blank()
+      db_plots[[cur_db]] <- ggplot2::ggplot(
+        plot_df,
+        ggplot2::aes(x = .data$Combined.Score, y = stats::reorder(.data$wrap, .data$Combined.Score))
+      ) +
+        ggplot2::geom_col(color = 'white', fill = cur_color) +
+        ggplot2::geom_text(ggplot2::aes(label = .data$wrap), x = text_x, color = text_color, size = 3.5, hjust = 'left') +
+        ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+        ggplot2::labs(x = lab, y = NULL, title = cur_db) +
+        ggplot2::theme(
+          panel.grid.major = ggplot2::element_blank(),
+          panel.grid.minor = ggplot2::element_blank(),
+          legend.title = ggplot2::element_blank(),
+          axis.ticks.y = ggplot2::element_blank(),
+          axis.text.y = ggplot2::element_blank(),
+          plot.title = ggplot2::element_text(hjust = 0.5),
+          axis.line.y = ggplot2::element_blank()
         )
     }
-
-    # make pdfs in output dir
-    pdf(paste0(outdir, '/', cur_mod, '.pdf'), width = plot_size[1], height = plot_size[2])
-    for (plot in plot_list) {
-      print(plot)
-    }
-    dev.off()
+    plot_list[[cur_mod]] <- patchwork::wrap_plots(db_plots, ncol = 1) +
+      patchwork::plot_annotation(title = cur_mod)
   }
+
+  if (!is.null(outdir)) {
+    deprecated_outdir('EnrichrBarPlot')
+    SavePlotList(plot_list, outdir = outdir, width = plot_size[1], height = plot_size[2])
+  }
+  plot_list
 }
 
 

@@ -269,19 +269,19 @@ OverlapModulesMotifs <- function(
 #'
 #' @param seurat_obj A Seurat object
 #' @param n_tfs Number of top TFs (ranked by odds ratio) to plot for each module. Default = 10.
-#' @param plot_size A vector containing the width and height of the output PDFs. Default = c(5, 6).
-#' @param outdir The directory where the plots will be stored.
+#' @param plot_size Width and height in inches of the PDFs written to \code{outdir}. Default = c(5, 6).
+#' @param outdir Deprecated. If given, the plots are also written to this directory as one PDF per module (use \code{SavePlotList} instead). Default = NULL
 #' @param motif_font Font passed to \code{ggseqlogo::geom_logo} for the motif logos.
 #' @param module_names Character vector of modules to plot. Defaults to all non-grey modules.
 #' @param wgcna_name The name of the hdWGCNA experiment in the seurat_obj@misc slot
-#' @return Called for its side effect of writing one PDF per module to \code{outdir}; returns \code{NULL} invisibly.
+#' @return A named list with one patchwork object per module: the motif logos of the top TFs next to their odds ratios.
 #' @keywords scRNA-seq
 #' @export
 MotifOverlapBarPlot <- function(
   seurat_obj,
   n_tfs = 10,
   plot_size = c(5, 6),
-  outdir = 'MotifOverlaps/',
+  outdir = NULL,
   motif_font = 'helvetica_regular',
   module_names = NULL,
   wgcna_name = NULL
@@ -291,92 +291,76 @@ MotifOverlapBarPlot <- function(
   if (is.null(wgcna_name)) {
     wgcna_name <- seurat_obj@misc$active_wgcna
   }
+  CheckWGCNAName(seurat_obj, wgcna_name)
 
-  # make output dir if it doesn't exist:
-  if (!dir.exists(outdir)) {
-    dir.create(outdir)
-  }
-
-  # get Modules
   modules <- GetModules(seurat_obj, wgcna_name)
-  mods <- levels(modules$module)
-  mods <- mods[mods != 'grey']
-
   if (is.null(module_names)) {
-    module_names <- mods
+    module_names <- setdiff(levels(modules$module), 'grey')
   }
 
-  # get overlap info from Seurat obj
   overlap_df <- GetMotifOverlap(seurat_obj, wgcna_name)
   motif_df <- GetMotifs(seurat_obj)
-
-  # get pfm list from Seurat obj
   pfm <- GetPFMList(seurat_obj)
 
-  # add motif ID to the overlap_df
-  overlap_df$motif_ID <- motif_df$motif_ID[match(overlap_df$tf, motif_df$motif_name)]
+  # the tf column holds motif IDs (MotifScan keys targets by motif ID); fall back to
+  # motif names for TFs whose motifs were merged
+  overlap_df$motif_ID <- ifelse(
+    overlap_df$tf %in% motif_df$motif_ID,
+    as.character(overlap_df$tf),
+    motif_df$motif_ID[match(overlap_df$tf, motif_df$motif_name)]
+  )
+  overlap_df$label <- motif_df$motif_name[match(overlap_df$motif_ID, motif_df$motif_ID)]
+  overlap_df <- overlap_df[overlap_df$module %in% module_names & overlap_df$motif_ID %in% names(pfm), ]
 
-  # subset by the modules that we are using:
-  overlap_df <- overlap_df %>% subset(module %in% module_names)
-
+  plot_list <- list()
   for (cur_mod in module_names) {
-    print(cur_mod)
-    # get df for cur mod
-    plot_df <- overlap_df %>%
-      subset(module == cur_mod) %>%
-      top_n(n_tfs, wt = odds_ratio) %>%
-      arrange(desc(odds_ratio))
-
-    # make the barplot
-    p1 <- plot_df %>% ggplot(aes(y = reorder(tf, odds_ratio), fill = odds_ratio, x = odds_ratio)) +
-      geom_bar(stat = 'identity', width = 0.7) +
-      NoLegend() +
-      scale_fill_gradient(high = unique(plot_df$color), low = 'grey90') +
-      ylab('') +
-      theme(
-        axis.line.y = element_blank(),
-        axis.text.y = element_blank(),
-        plot.margin = margin(
-          t = 0, r = 0, b = 0, l = 0
-        )
-      )
-
-    # make the motif logo plots:
-    plot_list <- list()
-    for (i in seq_len(nrow(plot_df))) {
-      cur_id <- plot_df[i, 'motif_ID']
-      cur_name <- plot_df[i, 'tf']
-      plot_list[[cur_id]] <- ggplot() +
-        ggseqlogo::geom_logo(as.matrix(pfm[[cur_id]]), font = motif_font) +
-        ggseqlogo::theme_logo() +
-        xlab('') +
-        ylab(cur_name) +
-        theme(
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
-          axis.title.y = element_text(angle = 0),
-          plot.margin = margin(
-            t = 0, # Top margin
-            r = 0, # Right margin
-            b = 0, # Bottom margin
-            l = 0
-          ) # Left margin
-        )
+    plot_df <- overlap_df[overlap_df$module == cur_mod, ] %>%
+      dplyr::slice_max(order_by = .data$odds_ratio, n = n_tfs, with_ties = FALSE)
+    if (nrow(plot_df) == 0) {
+      next
     }
+    plot_df <- plot_df[order(plot_df$odds_ratio, decreasing = TRUE), ]
+    cur_color <- unique(as.character(modules$color[modules$module == cur_mod]))
 
-    # wrap the motif logos
-    patch1 <- wrap_plots(plot_list, ncol = 1)
-
-    # assemble the plot with patchwork
-    outplot <- (patch1 | p1) +
-      plot_layout(ncol = 2, widths = c(1, 2)) +
-      plot_annotation(
-        title = paste0('Motif overlaps with ', cur_mod),
-        theme = theme(plot.title = element_text(hjust = 0.5))
+    # odds ratio bars, in the same order as the logos (top = highest)
+    p1 <- ggplot2::ggplot(
+      plot_df,
+      ggplot2::aes(y = stats::reorder(.data$motif_ID, .data$odds_ratio), x = .data$odds_ratio, fill = .data$odds_ratio)
+    ) +
+      ggplot2::geom_col(width = 0.7) +
+      ggplot2::scale_fill_gradient(high = cur_color, low = 'grey90', guide = 'none') +
+      ggplot2::labs(x = 'Odds ratio', y = NULL) +
+      ggplot2::theme(
+        axis.line.y = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank(),
+        plot.margin = ggplot2::margin(0, 0, 0, 0)
       )
 
-    pdf(paste0(outdir, '/', cur_mod, '_motif_overlaps.pdf'), width = plot_size[1], height = plot_size[2], useDingbats = FALSE)
-    print(outplot)
-    dev.off()
+    logos <- lapply(seq_len(nrow(plot_df)), function(i) {
+      ggplot2::ggplot() +
+        ggseqlogo::geom_logo(as.matrix(pfm[[plot_df$motif_ID[i]]]), font = motif_font) +
+        ggseqlogo::theme_logo() +
+        ggplot2::labs(x = NULL, y = plot_df$label[i]) +
+        ggplot2::theme(
+          axis.text.x = ggplot2::element_blank(),
+          axis.text.y = ggplot2::element_blank(),
+          axis.title.y = ggplot2::element_text(angle = 0, vjust = 0.5),
+          plot.margin = ggplot2::margin(0, 0, 0, 0)
+        )
+    })
+
+    plot_list[[cur_mod]] <- (patchwork::wrap_plots(logos, ncol = 1) | p1) +
+      patchwork::plot_layout(widths = c(1, 2)) +
+      patchwork::plot_annotation(
+        title = paste0('Motif overlaps with ', cur_mod),
+        theme = ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+      )
   }
+
+  if (!is.null(outdir)) {
+    deprecated_outdir('MotifOverlapBarPlot')
+    SavePlotList(plot_list, outdir = outdir, width = plot_size[1], height = plot_size[2])
+  }
+  plot_list
 }

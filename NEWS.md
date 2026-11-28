@@ -36,8 +36,9 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   `ModuleCorrNetwork()`. `return_graph = TRUE` still returns the igraph object.
   `ModuleCorrNetwork()` no longer needs qgraph and now uses the cluster centroids
   in `reduction` as the starting layout, as documented.
-- `ModuleNetworkPlot()` returns a named list of plots, one per module. Its `outdir`
-  argument is deprecated; save plots with the new `SavePlotList()`.
+- `ModuleNetworkPlot()`, `EnrichrBarPlot()` and `MotifOverlapBarPlot()` return a named
+  list of plots, one per module, instead of writing PDFs. Their `outdir` argument is
+  deprecated; save plots with the new `SavePlotList()`.
 - `HubGeneNetworkPlot()`: `...` is passed only to `igraph::layout_with_fr()`.
 - `ModuleRadarPlot()` is drawn with plain ggplot2 and no longer needs the GitHub-only
   ggradar package. Group means are now scaled to each module's maximum, so the
@@ -64,6 +65,8 @@ Work towards hdWGCNA 1.0.0 (CRAN release).
   depend on packages being attached.
 - Removed deprecated ggplot2 and igraph calls.
 - `RunEnrichr()` and `RunEnrichrRegulons()` work without `library(enrichR)`.
+- `MotifOverlapBarPlot()` looked up motif logos by motif name although the overlap table
+  holds motif IDs, so it could not plot `MotifScan()` results.
 - `ModuleEigengenes()`: module eigengene loadings (`GetMELoadings()`) are now a
   numeric vector and are replaced, not appended to, when MEs are recomputed.
 - Every exported function now documents all of its arguments and its return value.
